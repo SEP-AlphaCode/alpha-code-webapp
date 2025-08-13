@@ -1,19 +1,14 @@
-<<<<<<< Updated upstream
 'use client';
 
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
-=======
 import Image from "next/image";
 import Link from "next/link";
->>>>>>> Stashed changes
-
 export default function Home() {
   const router = useRouter();
   const { user, isLoading } = useAuth();
 
-<<<<<<< Updated upstream
   useEffect(() => {
     if (!isLoading) {
       if (user) {
@@ -43,7 +38,21 @@ export default function Home() {
             AlphaCode
           </h1>
           <div className="w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto"></div>
-=======
+        <div className="flex gap-4 items-center flex-col sm:flex-row">
+          <Link
+            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5"
+            href="/login"
+          >
+            Đăng nhập
+          </Link>
+          <Link
+            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5"
+            href="/register"
+          >
+            Đăng ký
+          </Link>
+        </div>
+
         <div className="flex gap-4 items-center flex-col sm:flex-row">
           <Link
             className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5"
@@ -83,8 +92,8 @@ export default function Home() {
           >
             Read our docs
           </a>
->>>>>>> Stashed changes
         </div>
+      </div>
       </div>
     );
   }
