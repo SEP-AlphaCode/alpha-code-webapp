@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import Image from "next/image"
 
 export function LoginForm({
   className,
@@ -10,14 +11,23 @@ export function LoginForm({
 }: React.ComponentProps<"div">) {
   return (
     <div className={cn("flex flex-col gap-6", className)} {...props}>
-      <Card className="overflow-hidden p-0 shadow-xl">
+      <Card className="overflow-hidden p-0 shadow-[0_0_64px_0_rgba(0,0,0,0.25)]">
         <CardContent className="grid p-0 md:grid-cols-2">
           <form className="p-6 md:p-8">
             <div className="flex flex-col gap-6">
               <div className="flex flex-col items-center text-center">
+                <div className="w-16 h-16 rounded-2xl flex items-center justify-center mb-4 overflow-hidden">
+                  <Image 
+                    src="/alphacodelogo.png" 
+                    alt="Alpha Logo" 
+                    width={64} 
+                    height={64}
+                    className="object-contain"
+                  />
+                </div>
                 <h1 className="text-2xl font-bold">Welcome back</h1>
                 <p className="text-muted-foreground text-balance">
-                  Login to your Acme Inc account
+                  Login to your account
                 </p>
               </div>
               <div className="grid gap-3">
@@ -41,7 +51,7 @@ export function LoginForm({
                 </div>
                 <Input id="password" type="password" required />
               </div>
-              <Button type="submit" className="w-full">
+              <Button type="submit" className="w-full bg-black text-white">
                 Login
               </Button>
               <div className="relative flex items-center">

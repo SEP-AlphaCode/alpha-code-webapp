@@ -1,173 +1,224 @@
-'use client';
-
-import { TeacherLayout } from '@/components/layouts';
-import { useAuth } from '@/contexts/AuthContext';
-import { Users, Bot, Calendar, BookOpen, CheckCircle, Clock } from 'lucide-react';
+import React from 'react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import Image from 'next/image';
 
 export default function TeacherDashboard() {
-  const { user } = useAuth();
-
-  const todayClasses = [
-    {
-      id: '1',
-      name: 'Preschool A',
-      time: '9:00 AM - 10:30 AM',
-      students: 12,
-      lesson: 'Introduction to Sequences',
-      status: 'upcoming'
-    },
-    {
-      id: '2',
-      name: 'Preschool B',
-      time: '11:00 AM - 12:30 PM',
-      students: 15,
-      lesson: 'Robot Movement Basics',
-      status: 'upcoming'
-    },
-    {
-      id: '3',
-      name: 'Preschool C',
-      time: '2:00 PM - 3:30 PM',
-      students: 10,
-      lesson: 'Problem Solving Games',
-      status: 'upcoming'
-    }
-  ];
-
-  const recentActivities = [
-    {
-      type: 'lesson',
-      message: 'Completed "Conditional Logic" with Preschool A',
-      time: '30 minutes ago',
-      icon: BookOpen,
-      color: 'text-blue-600'
-    },
-    {
-      type: 'robot',
-      message: 'Alpha Mini successfully connected to classroom network',
-      time: '1 hour ago',
-      icon: Bot,
-      color: 'text-purple-600'
-    },
-    {
-      type: 'assessment',
-      message: 'Graded 12 coding block assignments',
-      time: '2 hours ago',
-      icon: CheckCircle,
-      color: 'text-green-600'
-    }
-  ];
-
-  return (
-    <TeacherLayout user={user || undefined}>
-      <div className="p-6">
-        <div className="mb-8">
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
-            Good morning, {user?.name}!
-          </h1>
-          <p className="text-gray-600 dark:text-gray-400">
-            You have 3 classes scheduled for today. Alpha Mini is ready for interactive learning.
-          </p>
-        </div>
-
-        {/* Today's Schedule */}
-        <div className="mb-8">
-          <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
-            Today's Classes
-          </h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            {todayClasses.map((class_) => (
-              <div key={class_.id} className="bg-gray-50 dark:bg-gray-700 rounded-lg p-4">
-                <div className="flex items-center justify-between mb-3">
-                  <h3 className="font-semibold text-gray-900 dark:text-white">
-                    {class_.name}
-                  </h3>
-                  <span className="text-xs bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200 px-2 py-1 rounded">
-                    {class_.status}
-                  </span>
+    return (
+        <div className="min-h-screen bg-background">
+            {/* Header */}
+            <header className="bg-card border-b border-border">
+                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                    <div className="flex items-center justify-between h-16">
+                        <div className="flex items-center space-x-4">
+                            <div className="w-16 h-16 bg-primary rounded-lg flex items-center justify-center">
+                                <Image
+                                    src="/alphacodelogo.png"
+                                    alt="Alpha Logo"
+                                    width={64}
+                                    height={64}
+                                    className="object-contain"
+                                />
+                            </div>
+                            <h1 className="text-xl font-bold text-foreground">AlphaCode</h1>
+                            <span className="text-sm bg-secondary text-secondary-foreground px-2 py-1 rounded">
+                                Teacher Dashboard
+                            </span>
+                        </div>
+                        <div className="flex items-center space-x-4">
+                            <Button variant="outline" size="sm">🔔</Button>
+                            <Button variant="outline" size="sm">⚙️</Button>
+                            <div className="w-8 h-8 bg-muted rounded-full flex items-center justify-center">
+                                <span className="text-muted-foreground text-sm">TC</span>
+                            </div>
+                        </div>
+                    </div>
                 </div>
-                <div className="space-y-2 text-sm text-gray-600 dark:text-gray-400">
-                  <div className="flex items-center">
-                    <Clock className="w-4 h-4 mr-2" />
-                    {class_.time}
-                  </div>
-                  <div className="flex items-center">
-                    <Users className="w-4 h-4 mr-2" />
-                    {class_.students} students
-                  </div>
-                  <div className="flex items-center">
-                    <BookOpen className="w-4 h-4 mr-2" />
-                    {class_.lesson}
-                  </div>
-                </div>
-                <button className="w-full mt-3 bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 transition-colors">
-                  Start Class
-                </button>
-              </div>
-            ))}
-          </div>
-        </div>
+            </header>
 
-        {/* Quick Actions & Recent Activity */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {/* Quick Actions */}
-          <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-6">
-            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
-              Quick Actions
-            </h3>
-            <div className="grid grid-cols-2 gap-3">
-              <button className="flex flex-col items-center p-4 bg-white dark:bg-gray-600 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-500 transition-colors">
-                <Bot className="w-8 h-8 text-purple-600 mb-2" />
-                <span className="text-sm font-medium text-gray-900 dark:text-white">
-                  Control Robot
-                </span>
-              </button>
-              <button className="flex flex-col items-center p-4 bg-white dark:bg-gray-600 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-500 transition-colors">
-                <BookOpen className="w-8 h-8 text-blue-600 mb-2" />
-                <span className="text-sm font-medium text-gray-900 dark:text-white">
-                  Create Lesson
-                </span>
-              </button>
-              <button className="flex flex-col items-center p-4 bg-white dark:bg-gray-600 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-500 transition-colors">
-                <Users className="w-8 h-8 text-green-600 mb-2" />
-                <span className="text-sm font-medium text-gray-900 dark:text-white">
-                  View Students
-                </span>
-              </button>
-              <button className="flex flex-col items-center p-4 bg-white dark:bg-gray-600 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-500 transition-colors">
-                <Calendar className="w-8 h-8 text-orange-600 mb-2" />
-                <span className="text-sm font-medium text-gray-900 dark:text-white">
-                  Schedule
-                </span>
-              </button>
-            </div>
-          </div>
-
-          {/* Recent Activity */}
-          <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-6">
-            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
-              Recent Activity
-            </h3>
-            <div className="space-y-4">
-              {recentActivities.map((activity, index) => (
-                <div key={index} className="flex items-start space-x-3">
-                  <div className={`p-2 rounded-lg bg-white dark:bg-gray-600 ${activity.color}`}>
-                    <activity.icon className="w-4 h-4" />
-                  </div>
-                  <div className="flex-1">
-                    <p className="text-sm text-gray-900 dark:text-white">
-                      {activity.message}
-                    </p>
-                    <p className="text-xs text-gray-500 dark:text-gray-500">
-                      {activity.time}
-                    </p>
-                  </div>
+            {/* Navigation Tabs */}
+            <nav className="bg-card border-b border-border">
+                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                    <div className="flex space-x-8">
+                        {['Overview', 'Robots', 'Students', 'Programming', 'Classroom', 'Analytics'].map((tab, index) => (
+                            <button
+                                key={tab}
+                                className={`py-4 px-1 border-b-2 font-medium text-sm ${index === 0
+                                        ? 'border-primary text-primary'
+                                        : 'border-transparent text-muted-foreground hover:text-foreground hover:border-border'
+                                    }`}
+                            >
+                                {tab}
+                            </button>
+                        ))}
+                    </div>
                 </div>
-              ))}
-            </div>
-          </div>
+            </nav>
+
+            {/* Main Content */}
+            <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+                {/* Top Metrics Row */}
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                    {/* Total Robots */}
+                    <Card>
+                        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                            <CardTitle className="text-sm font-medium text-muted-foreground">
+                                Total Robots
+                            </CardTitle>
+                            <div className="h-4 w-4 text-muted-foreground">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                    <rect width="18" height="18" x="3" y="4" rx="2" ry="2" />
+                                    <line x1="16" y1="2" x2="16" y2="6" />
+                                    <line x1="8" y1="2" x2="8" y2="6" />
+                                    <line x1="3" y1="10" x2="21" y2="10" />
+                                </svg>
+                            </div>
+                        </CardHeader>
+                        <CardContent>
+                            <div className="text-2xl font-bold">12</div>
+                            <p className="text-xs text-muted-foreground">4 online, 8 offline</p>
+                        </CardContent>
+                    </Card>
+
+                    {/* Active Students */}
+                    <Card>
+                        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                            <CardTitle className="text-sm font-medium text-muted-foreground">
+                                Active Students
+                            </CardTitle>
+                            <div className="h-4 w-4 text-muted-foreground">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                    <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
+                                    <circle cx="9" cy="7" r="4" />
+                                    <path d="M22 21v-2a4 4 0 0 0-3-3.87" />
+                                    <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+                                </svg>
+                            </div>
+                        </CardHeader>
+                        <CardContent>
+                            <div className="text-2xl font-bold">24</div>
+                            <p className="text-xs text-muted-foreground">from last 365 days</p>
+                        </CardContent>
+                    </Card>
+
+                    {/* Lessons Completed */}
+                    <Card>
+                        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                            <CardTitle className="text-sm font-medium text-muted-foreground">
+                                Lessons Completed
+                            </CardTitle>
+                            <div className="h-4 w-4 text-muted-foreground">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                    <polyline points="22,12 18,12 15,21 9,3 6,12 2,12" />
+                                </svg>
+                            </div>
+                        </CardHeader>
+                        <CardContent>
+                            <div className="text-2xl font-bold">156</div>
+                            <p className="text-xs text-muted-foreground">across 8 courses</p>
+                        </CardContent>
+                    </Card>
+
+                    {/* System Health */}
+                    <Card>
+                        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                            <CardTitle className="text-sm font-medium text-muted-foreground">
+                                System Health
+                            </CardTitle>
+                            <div className="h-4 w-4 text-muted-foreground">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                    <path d="M22 12h-4l-3 9L9 3l-3 9H2" />
+                                </svg>
+                            </div>
+                        </CardHeader>
+                        <CardContent>
+                            <div className="text-2xl font-bold text-green-600">98%</div>
+                            <p className="text-xs text-muted-foreground">All systems operational</p>
+                        </CardContent>
+                    </Card>
+                </div>
+
+                {/* Bottom Section */}
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                    {/* Recent Student Activity */}
+                    <Card>
+                        <CardHeader>
+                            <CardTitle className="text-lg font-semibold">Recent Student Activity</CardTitle>
+                            <p className="text-sm text-muted-foreground">Latest interactions with Alpha Mini robots</p>
+                        </CardHeader>
+                        <CardContent>
+                            <div className="space-y-4">
+                                {[
+                                    { name: 'Emma', action: 'Completed Draw Robot lesson', time: '2 min ago', status: 'success' },
+                                    { name: 'Liam', action: 'Started servo sequence', time: '5 min ago', status: 'active' },
+                                    { name: 'Sofia', action: 'LED light command', time: '8 min ago', status: 'success' },
+                                    { name: 'Noah', action: 'Sensors DE read', time: '12 min ago', status: 'success' }
+                                ].map((activity, index) => (
+                                    <div key={index} className="flex items-center space-x-4 p-2 rounded-lg hover:bg-muted/50">
+                                        <div className="w-8 h-8 bg-secondary rounded-full flex items-center justify-center">
+                                            <span className="text-xs font-medium">{activity.name.slice(0, 2)}</span>
+                                        </div>
+                                        <div className="flex-1 min-w-0">
+                                            <p className="text-sm font-medium text-foreground truncate">{activity.name}</p>
+                                            <p className="text-xs text-muted-foreground truncate">{activity.action}</p>
+                                        </div>
+                                        <div className="text-xs text-muted-foreground">{activity.time}</div>
+                                    </div>
+                                ))}
+                            </div>
+                        </CardContent>
+                    </Card>
+
+                    {/* Robot Fleet Status */}
+                    <Card>
+                        <CardHeader>
+                            <CardTitle className="text-lg font-semibold">Robot Fleet Status</CardTitle>
+                            <p className="text-sm text-muted-foreground">Real-time status of all Alpha Mini robots</p>
+                        </CardHeader>
+                        <CardContent>
+                            <div className="grid grid-cols-2 gap-4">
+                                {[
+                                    { id: 'Alpha-01', status: 'Online', battery: '94%', classroom: 'Classroom A' },
+                                    { id: 'Alpha-02', status: 'Online', battery: '73%', classroom: 'Classroom B' },
+                                    { id: 'Alpha-03', status: 'Online', battery: '89%', classroom: 'Classroom C' },
+                                    { id: 'Alpha-04', status: 'Offline', battery: '31%', classroom: 'Classroom D' },
+                                    { id: 'Alpha-05', status: 'Online', battery: '53%', classroom: 'Classroom B' },
+                                    { id: 'Alpha-06', status: 'Online', battery: '40%', classroom: 'Classroom C' },
+                                    { id: 'Alpha-07', status: 'Offline', battery: '37%', classroom: 'Charging Station' },
+                                    { id: 'Alpha-08', status: 'Offline', battery: '29%', classroom: 'Charging Station' }
+                                ].map((robot, index) => (
+                                    <div key={index} className="p-3 border border-border rounded-lg">
+                                        <div className="flex items-center justify-between mb-2">
+                                            <span className="text-sm font-medium">{robot.id}</span>
+                                            <span className={`text-xs px-2 py-1 rounded ${robot.status === 'Online'
+                                                    ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300'
+                                                    : 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-300'
+                                                }`}>
+                                                {robot.status}
+                                            </span>
+                                        </div>
+                                        <div className="space-y-1">
+                                            <div className="flex justify-between text-xs">
+                                                <span className="text-muted-foreground">Battery</span>
+                                                <span>{robot.battery}</span>
+                                            </div>
+                                            <div className="w-full bg-muted rounded-full h-1.5">
+                                                <div
+                                                    className={`h-1.5 rounded-full ${parseInt(robot.battery) > 60 ? 'bg-green-600' :
+                                                            parseInt(robot.battery) > 30 ? 'bg-yellow-600' : 'bg-red-600'
+                                                        }`}
+                                                    style={{ width: robot.battery }}
+                                                ></div>
+                                            </div>
+                                            <p className="text-xs text-muted-foreground">{robot.classroom}</p>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        </CardContent>
+                    </Card>
+                </div>
+            </main>
         </div>
-      </div>
-    </TeacherLayout>
-  );
+    );
 }
