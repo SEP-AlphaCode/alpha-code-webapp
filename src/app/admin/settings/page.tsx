@@ -104,7 +104,7 @@ export default function AdminSettings() {
     }
   };
 
-  const updateSetting = (category: string, key: string, value: any) => {
+  const updateSetting = (category: string, key: string, value: boolean | string | number) => {
     setSettings(prev => ({
       ...prev,
       [category]: {

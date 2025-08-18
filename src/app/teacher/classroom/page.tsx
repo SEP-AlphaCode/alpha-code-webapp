@@ -255,7 +255,7 @@ export default function ClassroomPage() {
 
                                 {/* Schedule */}
                                 <div suppressHydrationWarning>
-                                    <h4 className="font-medium mb-3" suppressHydrationWarning>Today's Schedule</h4>
+                                    <h4 className="font-medium mb-3" suppressHydrationWarning>Today&apos;s Schedule</h4>
                                     <div className="space-y-2" suppressHydrationWarning>
                                         {selectedClassroomData.schedule.map((session, index) => (
                                             <div key={index} className="flex items-center justify-between p-2 border rounded" suppressHydrationWarning>
