@@ -1,6 +1,7 @@
 import React from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import Image from 'next/image';
 
 export default function Home() {
 
@@ -8,13 +9,19 @@ export default function Home() {
     <div className="min-h-screen bg-background">
       {/* Header */}
       <header className="bg-card/80 backdrop-blur-sm shadow-sm border-b border-border">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-2 py-0">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-3">
-              <div className="w-10 h-10 bg-primary rounded-lg flex items-center justify-center">
-                <span className="text-primary-foreground font-bold text-lg">α</span>
+              <div className="w-20 h-20 bg-primary rounded-lg flex items-center justify-center">
+                <Image
+                  src="/logo.PNG"
+                  alt="Alpha Logo"
+                  width={192}
+                  height={192}
+                  className="object-contain"
+                />
               </div>
-              <h1 className="text-2xl font-bold text-foreground">AlphaCode</h1>
+              {/* <h1 className="text-2xl font-bold text-foreground">AlphaCode</h1> */}
             </div>
             <Button variant="outline">Get Started</Button>
           </div>
@@ -28,7 +35,7 @@ export default function Home() {
             Meet <span className="text-primary">Alpha Mini</span>
           </h2>
           <p className="text-xl text-muted-foreground max-w-3xl mx-auto mb-12">
-            Một AI assistant thông minh, compact và mạnh mẽ được thiết kế để hỗ trợ bạn trong mọi tác vụ hàng ngày. 
+            Một AI assistant thông minh, compact và mạnh mẽ được thiết kế để hỗ trợ bạn trong mọi tác vụ hàng ngày.
             Với khả năng xử lý ngôn ngữ tự nhiên tiên tiến và hiểu biết sâu sắc về ngữ cảnh.
           </p>
           <div className="flex justify-center space-x-4">
@@ -93,12 +100,12 @@ export default function Home() {
             <div>
               <h3 className="text-3xl font-bold text-foreground mb-6">Về Alpha Mini</h3>
               <p className="text-lg text-muted-foreground mb-6">
-                Alpha Mini là phiên bản compact của dòng sản phẩm AI Alpha, được tối ưu hóa để mang lại hiệu suất cao 
-                trong một package nhỏ gọn. Được phát triển bởi đội ngũ kỹ sư tài năng, Alpha Mini kết hợp công nghệ 
+                Alpha Mini là phiên bản compact của dòng sản phẩm AI Alpha, được tối ưu hóa để mang lại hiệu suất cao
+                trong một package nhỏ gọn. Được phát triển bởi đội ngũ kỹ sư tài năng, Alpha Mini kết hợp công nghệ
                 AI tiên tiến với thiết kế thân thiện với người dùng.
               </p>
               <p className="text-lg text-muted-foreground mb-8">
-                Từ việc trả lời câu hỏi, hỗ trợ viết lách, phân tích dữ liệu đến giải quyết các vấn đề phức tạp, 
+                Từ việc trả lời câu hỏi, hỗ trợ viết lách, phân tích dữ liệu đến giải quyết các vấn đề phức tạp,
                 Alpha Mini là người bạn đồng hành đáng tin cậy trong công việc và cuộc sống.
               </p>
               <Button className="bg-primary text-primary-foreground hover:bg-primary/90">
