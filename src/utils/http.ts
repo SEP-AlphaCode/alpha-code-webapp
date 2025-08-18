@@ -22,6 +22,7 @@ class Http {
       }
       return config
     })
+    
 
     // Response interceptor
     // this.instance.interceptors.response.use(
