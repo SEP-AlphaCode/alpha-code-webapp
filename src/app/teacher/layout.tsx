@@ -46,18 +46,18 @@ export default function TeacherLayout({ children }: TeacherLayoutProps) {
       icon: '🏫',
       description: 'Virtual classroom'
     },
-    {
-      name: 'Analytics',
-      href: '/teacher/analytics',
-      icon: '📈',
-      description: 'Performance analytics'
-    },
-    {
-      name: 'Settings',
-      href: '/teacher/settings',
-      icon: '⚙️',
-      description: 'Account settings'
-    }
+    // {
+    //   name: 'Analytics',
+    //   href: '/teacher/analytics',
+    //   icon: '📈',
+    //   description: 'Performance analytics'
+    // },
+    // {
+    //   name: 'Settings',
+    //   href: '/teacher/settings',
+    //   icon: '⚙️',
+    //   description: 'Account settings'
+    // }
   ];
 
   const isActiveRoute = (href: string) => {
