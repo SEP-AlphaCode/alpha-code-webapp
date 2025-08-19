@@ -1,14 +1,35 @@
+'use client'
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import Image from "next/image"
+import { useState } from "react"
+import { useLogin } from "@/hooks/useLogin"
+import { LoginRequest } from "@/types/login"
 
 export function LoginForm({
   className,
   ...props
 }: React.ComponentProps<"div">) {
+  const [formData, setFormData] = useState<LoginRequest>({
+    username: "",
+    password: "",
+  });
+
+  const loginMutation = useLogin();
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    loginMutation.mutate(formData);
+  };
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
+  };
+
   return (
     <div className={cn("flex flex-col gap-6", className)} {...props}>
       <Card className="overflow-hidden p-0 shadow-[0_0_64px_0_rgba(0,0,0,0.25)]">
@@ -31,12 +52,16 @@ export function LoginForm({
                 </p>
               </div>
               <div className="grid gap-3">
-                <Label htmlFor="email">Email</Label>
+                <Label htmlFor="username">Username</Label>
                 <Input
-                  id="email"
-                  type="email"
-                  placeholder="m@example.com"
+                  id="username"
+                  name="username"
+                  type="text"
+                  placeholder="Enter your username"
+                  value={formData.username}
+                  onChange={handleInputChange}
                   required
+                  disabled={loginMutation.isPending}
                 />
               </div>
               <div className="grid gap-3">
@@ -49,10 +74,23 @@ export function LoginForm({
                     Forgot your password?
                   </a>
                 </div>
-                <Input id="password" type="password" required />
+                <Input
+                  id="password"
+                  name="password"
+                  type="password"
+                  placeholder="Enter your password"
+                  value={formData.password}
+                  onChange={handleInputChange}
+                  required
+                  disabled={loginMutation.isPending}
+                />
               </div>
-              <Button type="submit" className="w-full bg-black text-white">
-                Login
+              <Button 
+                type="submit" 
+                className="w-full bg-black text-white"
+                disabled={loginMutation.isPending}
+              >
+                {loginMutation.isPending ? 'Đang đăng nhập...' : 'Login'}
               </Button>
               <div className="relative flex items-center">
                 <div className="flex-grow border-t border-border"></div>

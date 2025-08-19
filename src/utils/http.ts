@@ -23,7 +23,23 @@ class Http {
       return config
     })
     
-
+    // Response interceptor
+    this.instance.interceptors.response.use(
+      (response) => {
+        // Trả về data thay vì toàn bộ response
+        return response.data;
+      },
+      (error) => {
+        // Handle 401 errors
+        if (error.response?.status === 401) {
+          sessionStorage.removeItem('accessToken');
+          sessionStorage.removeItem('user');
+          window.location.href = '/login';
+        }
+        
+        return Promise.reject(error);
+      }
+    );
     // Response interceptor
     // this.instance.interceptors.response.use(
     //   (response) => response,
