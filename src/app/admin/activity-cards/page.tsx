@@ -3,18 +3,15 @@
 import React, { useState } from 'react';
 import { 
   CreditCard, 
-  Plus, 
   Edit, 
   Trash2, 
   Search,
-  Filter,
   Download,
   Upload,
   Eye,
   Copy,
   Star,
   Tag,
-  Calendar,
   Users,
   Book,
   Volume2,
@@ -62,7 +59,7 @@ export default function ActivityCardsManagement() {
   const [searchTerm, setSearchTerm] = useState('');
   const [filterCategory, setFilterCategory] = useState<string>('all');
   const [filterDifficulty, setFilterDifficulty] = useState<string>('all');
-  const [showAddModal, setShowAddModal] = useState(false);
+  // const [ showAddModal, setShowAddModal] = useState(false);
   const [selectedTab, setSelectedTab] = useState<'cards' | 'collections'>('cards');
 
   // Mock data - replace with real API calls
@@ -289,10 +286,10 @@ export default function ActivityCardsManagement() {
             <Upload className="mr-2 h-4 w-4" />
             Import
           </Button>
-          <Button onClick={() => setShowAddModal(true)}>
+          {/* <Button onClick={() => setShowAddModal(true)}>
             <Plus className="mr-2 h-4 w-4" />
             Add New Card
-          </Button>
+          </Button> */}
         </div>
       </div>
 
@@ -551,10 +548,10 @@ export default function ActivityCardsManagement() {
               <CardContent className="p-12 text-center">
                 <CreditCard className="h-12 w-12 text-gray-400 mx-auto mb-4" />
                 <p className="text-gray-500">No activity cards found matching your criteria.</p>
-                <Button className="mt-4" onClick={() => setShowAddModal(true)}>
+                {/* <Button className="mt-4" onClick={() => setShowAddModal(true)}>
                   <Plus className="mr-2 h-4 w-4" />
                   Create Your First Card
-                </Button>
+                </Button> */}
               </CardContent>
             </Card>
           )}

@@ -99,10 +99,12 @@ export function LoginForm({
             </div>
           </form>
           <div className="bg-muted relative hidden md:block">
-            <img
+            <Image
               src="/alpha-mini-2.webp"
               alt="Image"
-              className="absolute inset-0 h-full w-full object-cover"
+              fill
+              className="object-cover"
+              priority
             />
           </div>
         </CardContent>

@@ -6,12 +6,10 @@ import {
   Users, 
   Bot, 
   Activity,
-  Calendar,
   Download,
   RefreshCw,
   BarChart3,
   PieChart,
-  LineChart
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -175,7 +173,7 @@ export default function SystemAnalytics() {
           </CardHeader>
           <CardContent>
             <div className="h-64 flex items-end justify-between space-x-2">
-              {weeklyData.map((day, index) => (
+              {weeklyData.map((day) => (
                 <div key={day.day} className="flex-1 flex flex-col items-center space-y-2">
                   <div className="w-full flex flex-col items-center space-y-1">
                     <div 
@@ -225,7 +223,7 @@ export default function SystemAnalytics() {
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              {robotUsageData.map((robot, index) => (
+              {robotUsageData.map((robot) => (
                 <div key={robot.robot} className="flex items-center justify-between">
                   <div className="flex items-center space-x-3">
                     <div className="w-3 h-3 bg-blue-500 rounded-full"></div>

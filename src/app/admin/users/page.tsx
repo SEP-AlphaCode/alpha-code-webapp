@@ -1,94 +1,60 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { 
   Search, 
   Plus, 
   Edit, 
   Trash2, 
-  Filter,
-  MoreHorizontal,
   UserCheck,
   UserX,
   Mail,
-  Phone
+  Phone,
+  Loader2
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-
-interface User {
-  id: string;
-  name: string;
-  email: string;
-  role: 'teacher' | 'admin' | 'student';
-  status: 'active' | 'inactive' | 'pending';
-  lastLogin: string;
-  classroom?: string;
-  phone?: string;
-  createdAt: string;
-}
+import { useAccounts, useDeleteAccount, useUpdateAccount, convertAccountForDisplay } from '@/hooks/useAccounts';
+import CreateUserModal from '@/components/CreateUserModal';
 
 export default function UserManagement() {
   const [searchTerm, setSearchTerm] = useState('');
   const [filterRole, setFilterRole] = useState<string>('all');
   const [showAddModal, setShowAddModal] = useState(false);
+  const [currentPage] = useState(1);
+  const pageSize = 10;
 
-  // Mock data - replace with real API calls
-  const users: User[] = [
-    {
-      id: '1',
-      name: 'Sarah Johnson',
-      email: 'sarah.johnson@school.edu',
-      role: 'teacher',
-      status: 'active',
-      lastLogin: '2024-08-18 09:30',
-      classroom: 'Classroom A',
-      phone: '+1 234 567 8901',
-      createdAt: '2024-01-15'
-    },
-    {
-      id: '2',
-      name: 'Mike Chen',
-      email: 'mike.chen@school.edu',
-      role: 'teacher',
-      status: 'active',
-      lastLogin: '2024-08-17 14:20',
-      classroom: 'Classroom B',
-      phone: '+1 234 567 8902',
-      createdAt: '2024-02-01'
-    },
-    {
-      id: '3',
-      name: 'Emma Davis',
-      email: 'emma.davis@school.edu',
-      role: 'admin',
-      status: 'active',
-      lastLogin: '2024-08-18 08:15',
-      phone: '+1 234 567 8903',
-      createdAt: '2023-12-10'
-    },
-    {
-      id: '4',
-      name: 'John Smith',
-      email: 'john.smith@school.edu',
-      role: 'teacher',
-      status: 'inactive',
-      lastLogin: '2024-08-10 16:45',
-      classroom: 'Classroom C',
-      phone: '+1 234 567 8904',
-      createdAt: '2024-03-20'
-    }
-  ];
-
-  const filteredUsers = users.filter(user => {
-    const matchesSearch = user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         user.email.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesRole = filterRole === 'all' || user.role === filterRole;
-    return matchesSearch && matchesRole;
+  // Sử dụng TanStack Query để fetch data
+  const { 
+    data: accountsResponse, 
+    isLoading, 
+    isError, 
+    error 
+  } = useAccounts({
+    page: currentPage,
+    limit: pageSize,
+    search: searchTerm || undefined,
+    role: filterRole !== 'all' ? filterRole : undefined
   });
 
+  // Mutations
+  const deleteAccountMutation = useDeleteAccount();
+  const updateAccountMutation = useUpdateAccount();
+
+  // Memoized filtered data với conversion
+  const filteredUsers = useMemo(() => {
+    if (!accountsResponse?.data) return [];
+    return accountsResponse.data.map(convertAccountForDisplay);
+  }, [accountsResponse?.data]);
+
+  const totalUsers = accountsResponse?.total || 0;
+  const activeUsers = filteredUsers.filter(user => user.status === 1).length;
+  const teachers = filteredUsers.filter(user => user.roleName === 'teacher').length;
+  const admins = filteredUsers.filter(user => user.roleName === 'admin').length;
+
+  // Helper functions
   const getRoleColor = (role: string) => {
     switch (role) {
       case 'admin': return 'bg-red-100 text-red-800';
@@ -98,26 +64,36 @@ export default function UserManagement() {
     }
   };
 
-  const getStatusColor = (status: string) => {
+  const getStatusColor = (status: number) => {
     switch (status) {
-      case 'active': return 'bg-green-100 text-green-800';
-      case 'inactive': return 'bg-gray-100 text-gray-800';
-      case 'pending': return 'bg-yellow-100 text-yellow-800';
+      case 1: return 'bg-green-100 text-green-800'; // active
+      case 0: return 'bg-gray-100 text-gray-800';   // inactive
+      case 2: return 'bg-yellow-100 text-yellow-800'; // pending
+      case 3: return 'bg-red-100 text-red-800';      // banned
       default: return 'bg-gray-100 text-gray-800';
     }
   };
 
-  const handleDeleteUser = (userId: string) => {
-    if (confirm('Are you sure you want to delete this user?')) {
-      // Handle delete logic here
-      console.log('Deleting user:', userId);
+  const handleDeleteUser = async (userId: string) => {
+    if (confirm('Bạn có chắc chắn muốn xóa người dùng này?')) {
+      try {
+        await deleteAccountMutation.mutateAsync(userId);
+      } catch (error) {
+        console.error('Error deleting user:', error);
+      }
     }
   };
 
-  const handleToggleStatus = (userId: string, currentStatus: string) => {
-    const newStatus = currentStatus === 'active' ? 'inactive' : 'active';
-    // Handle status toggle logic here
-    console.log('Toggling user status:', userId, newStatus);
+  const handleToggleStatus = async (userId: string, currentStatus: number) => {
+    const newStatus = currentStatus === 1 ? 0 : 1; // toggle between active (1) and inactive (0)
+    try {
+      await updateAccountMutation.mutateAsync({
+        id: userId,
+        data: { status: newStatus }
+      });
+    } catch (error) {
+      console.error('Error updating user status:', error);
+    }
   };
 
   return (
@@ -141,7 +117,9 @@ export default function UserManagement() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-gray-600">Total Users</p>
-                <p className="text-2xl font-bold">{users.length}</p>
+                <p className="text-2xl font-bold">
+                  {isLoading ? <Loader2 className="h-5 w-5 animate-spin" /> : totalUsers}
+                </p>
               </div>
               <div className="h-8 w-8 bg-blue-100 rounded-lg flex items-center justify-center">
                 <UserCheck className="h-4 w-4 text-blue-600" />
@@ -155,7 +133,9 @@ export default function UserManagement() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-gray-600">Active Users</p>
-                <p className="text-2xl font-bold">{users.filter(u => u.status === 'active').length}</p>
+                <p className="text-2xl font-bold">
+                  {isLoading ? <Loader2 className="h-5 w-5 animate-spin" /> : activeUsers}
+                </p>
               </div>
               <div className="h-8 w-8 bg-green-100 rounded-lg flex items-center justify-center">
                 <UserCheck className="h-4 w-4 text-green-600" />
@@ -169,7 +149,9 @@ export default function UserManagement() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-gray-600">Teachers</p>
-                <p className="text-2xl font-bold">{users.filter(u => u.role === 'teacher').length}</p>
+                <p className="text-2xl font-bold">
+                  {isLoading ? <Loader2 className="h-5 w-5 animate-spin" /> : teachers}
+                </p>
               </div>
               <div className="h-8 w-8 bg-purple-100 rounded-lg flex items-center justify-center">
                 <UserCheck className="h-4 w-4 text-purple-600" />
@@ -183,7 +165,9 @@ export default function UserManagement() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-gray-600">Admins</p>
-                <p className="text-2xl font-bold">{users.filter(u => u.role === 'admin').length}</p>
+                <p className="text-2xl font-bold">
+                  {isLoading ? <Loader2 className="h-5 w-5 animate-spin" /> : admins}
+                </p>
               </div>
               <div className="h-8 w-8 bg-red-100 rounded-lg flex items-center justify-center">
                 <UserCheck className="h-4 w-4 text-red-600" />
@@ -229,85 +213,110 @@ export default function UserManagement() {
                   <th className="text-left py-3 px-4 font-medium text-gray-500">User</th>
                   <th className="text-left py-3 px-4 font-medium text-gray-500">Role</th>
                   <th className="text-left py-3 px-4 font-medium text-gray-500">Status</th>
-                  <th className="text-left py-3 px-4 font-medium text-gray-500">Classroom</th>
-                  <th className="text-left py-3 px-4 font-medium text-gray-500">Last Login</th>
+                  <th className="text-left py-3 px-4 font-medium text-gray-500">Gender</th>
+                  <th className="text-left py-3 px-4 font-medium text-gray-500">Created Date</th>
                   <th className="text-left py-3 px-4 font-medium text-gray-500">Actions</th>
                 </tr>
               </thead>
               <tbody>
-                {filteredUsers.map((user) => (
-                  <tr key={user.id} className="border-b hover:bg-gray-50">
-                    <td className="py-4 px-4">
-                      <div>
-                        <div className="font-medium text-gray-900">{user.name}</div>
-                        <div className="text-sm text-gray-500 flex items-center mt-1">
-                          <Mail className="h-3 w-3 mr-1" />
-                          {user.email}
-                        </div>
-                        {user.phone && (
-                          <div className="text-sm text-gray-500 flex items-center">
-                            <Phone className="h-3 w-3 mr-1" />
-                            {user.phone}
-                          </div>
-                        )}
-                      </div>
-                    </td>
-                    <td className="py-4 px-4">
-                      <Badge className={getRoleColor(user.role)}>
-                        {user.role.charAt(0).toUpperCase() + user.role.slice(1)}
-                      </Badge>
-                    </td>
-                    <td className="py-4 px-4">
-                      <Badge className={getStatusColor(user.status)}>
-                        {user.status.charAt(0).toUpperCase() + user.status.slice(1)}
-                      </Badge>
-                    </td>
-                    <td className="py-4 px-4">
-                      <span className="text-sm text-gray-900">
-                        {user.classroom || 'N/A'}
-                      </span>
-                    </td>
-                    <td className="py-4 px-4">
-                      <span className="text-sm text-gray-900">{user.lastLogin}</span>
-                    </td>
-                    <td className="py-4 px-4">
-                      <div className="flex items-center space-x-2">
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={() => handleToggleStatus(user.id, user.status)}
-                        >
-                          {user.status === 'active' ? (
-                            <UserX className="h-4 w-4" />
-                          ) : (
-                            <UserCheck className="h-4 w-4" />
-                          )}
-                        </Button>
-                        <Button size="sm" variant="outline">
-                          <Edit className="h-4 w-4" />
-                        </Button>
-                        <Button 
-                          size="sm" 
-                          variant="outline"
-                          onClick={() => handleDeleteUser(user.id)}
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      </div>
+                {isLoading ? (
+                  <tr>
+                    <td colSpan={6} className="py-8 text-center">
+                      <Loader2 className="h-6 w-6 animate-spin mx-auto" />
+                      <p className="text-gray-500 mt-2">Đang tải dữ liệu...</p>
                     </td>
                   </tr>
-                ))}
+                ) : isError ? (
+                  <tr>
+                    <td colSpan={6} className="py-8 text-center">
+                      <p className="text-red-500">Có lỗi xảy ra: {error?.message}</p>
+                    </td>
+                  </tr>
+                ) : filteredUsers.length === 0 ? (
+                  <tr>
+                    <td colSpan={6} className="py-8 text-center">
+                      <p className="text-gray-500">Không tìm thấy người dùng nào</p>
+                    </td>
+                  </tr>
+                ) : (
+                  filteredUsers.map((user) => (
+                    <tr key={user.id} className="border-b hover:bg-gray-50">
+                      <td className="py-4 px-4">
+                        <div>
+                          <div className="font-medium text-gray-900">{user.fullName}</div>
+                          <div className="text-sm text-gray-500 flex items-center mt-1">
+                            <Mail className="h-3 w-3 mr-1" />
+                            {user.email}
+                          </div>
+                          {user.phone && (
+                            <div className="text-sm text-gray-500 flex items-center">
+                              <Phone className="h-3 w-3 mr-1" />
+                              {user.phone}
+                            </div>
+                          )}
+                        </div>
+                      </td>
+                      <td className="py-4 px-4">
+                        <Badge className={getRoleColor(user.roleName)}>
+                          {user.roleName.charAt(0).toUpperCase() + user.roleName.slice(1)}
+                        </Badge>
+                      </td>
+                      <td className="py-4 px-4">
+                        <Badge className={getStatusColor(user.status)}>
+                          {user.statusText.charAt(0).toUpperCase() + user.statusText.slice(1)}
+                        </Badge>
+                      </td>
+                      <td className="py-4 px-4">
+                        <span className="text-sm text-gray-900">
+                          {user.genderText === 'male' ? 'Nam' : user.genderText === 'female' ? 'Nữ' : 'Khác'}
+                        </span>
+                      </td>
+                      <td className="py-4 px-4">
+                        <span className="text-sm text-gray-900">
+                          {new Date(user.createdDate).toLocaleDateString('vi-VN')}
+                        </span>
+                      </td>
+                      <td className="py-4 px-4">
+                        <div className="flex items-center space-x-2">
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => handleToggleStatus(user.id, user.status)}
+                            disabled={updateAccountMutation.isPending}
+                          >
+                            {user.status === 1 ? (
+                              <UserX className="h-4 w-4" />
+                            ) : (
+                              <UserCheck className="h-4 w-4" />
+                            )}
+                          </Button>
+                          <Button size="sm" variant="outline">
+                            <Edit className="h-4 w-4" />
+                          </Button>
+                          <Button 
+                            size="sm" 
+                            variant="outline"
+                            onClick={() => handleDeleteUser(user.id)}
+                            disabled={deleteAccountMutation.isPending}
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))
+                )}
               </tbody>
             </table>
           </div>
-
-          {filteredUsers.length === 0 && (
-            <div className="text-center py-8">
-              <p className="text-gray-500">No users found matching your criteria.</p>
-            </div>
-          )}
         </CardContent>
       </Card>
+
+      {/* Create User Modal */}
+      <CreateUserModal 
+        isOpen={showAddModal} 
+        onClose={() => setShowAddModal(false)} 
+      />
     </div>
   );
 }

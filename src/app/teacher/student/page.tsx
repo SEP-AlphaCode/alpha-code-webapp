@@ -37,7 +37,7 @@ export default function StudentManagementPage() {
   const [students, setStudents] = useState<Student[]>([]);
   const [classes, setClasses] = useState<ClassGroup[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [showAddStudent, setShowAddStudent] = useState(false);
+  // const [showAddStudent, setShowAddStudent] = useState(false);
 
   // Mock data - replace with actual API calls
   useEffect(() => {
@@ -198,7 +198,7 @@ export default function StudentManagementPage() {
           <h2 className="text-2xl font-bold text-gray-900">Quản lý học sinh</h2>
           <p className="text-gray-600">Quản lý thông tin và tiến độ học tập của học sinh</p>
         </div>
-        <Button 
+        {/* <Button 
           onClick={() => setShowAddStudent(true)}
           className="bg-blue-600 hover:bg-blue-700"
         >
@@ -206,7 +206,7 @@ export default function StudentManagementPage() {
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
           </svg>
           Thêm học sinh
-        </Button>
+        </Button> */}
       </div>
 
       {/* Filters */}
