@@ -27,7 +27,7 @@ class Http {
     this.instance.interceptors.response.use(
       (response) => {
         // Trả về data thay vì toàn bộ response
-        return response.data;
+        return response;
       },
       (error) => {
         // Handle 401 errors

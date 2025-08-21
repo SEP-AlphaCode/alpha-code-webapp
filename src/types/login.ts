@@ -5,7 +5,7 @@ export interface LoginRequest {
 
 export interface LoginResponse {
    token: string;
-  account: {
+   account: {
     id: string;
     username: string;
     password: string;
@@ -14,10 +14,10 @@ export interface LoginResponse {
     email: string;
     gender: number;
     createdDate: string;
-    lastEdited: string;
+    lastEdited: string | null;
     status: number;
     image: string;
-    bannedReason: string;
+    bannedReason: string | null;
     roleId: string;
     roleName: string;
   };
