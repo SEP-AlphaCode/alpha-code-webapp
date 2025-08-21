@@ -1,9 +1,8 @@
 "use client";
 
-import React, { useState } from 'react';
+import React from 'react';
 import { 
   Bot, 
-  Plus, 
   Settings, 
   Power, 
   PowerOff,
@@ -15,8 +14,6 @@ import {
   Clock,
   MapPin,
   Edit,
-  Trash2,
-  MoreHorizontal
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -39,9 +36,6 @@ interface Robot {
 }
 
 export default function RobotManagement() {
-  const [selectedRobot, setSelectedRobot] = useState<string | null>(null);
-  const [showAddModal, setShowAddModal] = useState(false);
-
   // Mock data - replace with real API calls
   const robots: Robot[] = [
     {
@@ -160,10 +154,10 @@ export default function RobotManagement() {
           <h1 className="text-3xl font-bold text-gray-900">Robot Management</h1>
           <p className="text-gray-600">Monitor and manage Alpha Mini robots</p>
         </div>
-        <Button onClick={() => setShowAddModal(true)}>
+        {/* <Button onClick={() => setShowAddModal(true)}>
           <Plus className="mr-2 h-4 w-4" />
           Add New Robot
-        </Button>
+        </Button> */}
       </div>
 
       {/* Statistics Cards */}

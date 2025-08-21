@@ -1,19 +1,66 @@
+'use client'
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import Image from "next/image"
+import { useState, useEffect } from "react"
+import { useLogin } from "@/hooks/useLogin"
+import { LoginRequest } from "@/types/login"
 
 export function LoginForm({
   className,
   ...props
 }: React.ComponentProps<"div">) {
+  const [formData, setFormData] = useState<LoginRequest>({
+    username: "",
+    password: "",
+  });
+
+  const loginMutation = useLogin();
+
+  // Clear error when user starts typing
+  useEffect(() => {
+    if (loginMutation.error && (formData.username || formData.password)) {
+      loginMutation.reset();
+    }
+  }, [formData.username, formData.password, loginMutation]);
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    loginMutation.mutate(formData);
+  };
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const getErrorMessage = () => {
+    if (!loginMutation.error) return null;
+    
+    const error = loginMutation.error as Error & { 
+      response?: { status: number }; 
+      message?: string; 
+    };
+    if (error.response?.status === 404) {
+      return "Login endpoint not found. Please check your server configuration.";
+    }
+    if (error.response?.status === 401) {
+      return "Invalid username or password.";
+    }
+    if (error.response?.status && error.response.status >= 500) {
+      return "Server error. Please try again later.";
+    }
+    return error.message || "An error occurred during login.";
+  };
+
   return (
     <div className={cn("flex flex-col gap-6", className)} {...props}>
       <Card className="overflow-hidden p-0 shadow-[0_0_64px_0_rgba(0,0,0,0.25)]">
         <CardContent className="grid p-0 md:grid-cols-2">
-          <form className="p-6 md:p-8">
+          <form className="p-6 md:p-8" onSubmit={handleSubmit}>
             <div className="flex flex-col gap-6">
               <div className="flex flex-col items-center text-center">
                 <div className="w-16 h-16 rounded-2xl flex items-center justify-center mb-4 overflow-hidden">
@@ -31,12 +78,16 @@ export function LoginForm({
                 </p>
               </div>
               <div className="grid gap-3">
-                <Label htmlFor="email">Email</Label>
+                <Label htmlFor="username">Username</Label>
                 <Input
-                  id="email"
-                  type="email"
-                  placeholder="m@example.com"
+                  id="username"
+                  name="username"
+                  type="text"
+                  placeholder="Enter your username"
+                  value={formData.username}
+                  onChange={handleInputChange}
                   required
+                  disabled={loginMutation.isPending}
                 />
               </div>
               <div className="grid gap-3">
@@ -49,10 +100,28 @@ export function LoginForm({
                     Forgot your password?
                   </a>
                 </div>
-                <Input id="password" type="password" required />
+                <Input
+                  id="password"
+                  name="password"
+                  type="password"
+                  placeholder="Enter your password"
+                  value={formData.password}
+                  onChange={handleInputChange}
+                  required
+                  disabled={loginMutation.isPending}
+                />
               </div>
-              <Button type="submit" className="w-full bg-black text-white">
-                Login
+              {loginMutation.error && (
+                <div className="p-3 rounded-md bg-red-50 border border-red-200">
+                  <p className="text-sm text-red-600">{getErrorMessage()}</p>
+                </div>
+              )}
+              <Button 
+                type="submit" 
+                className="w-full bg-black text-white"
+                disabled={loginMutation.isPending}
+              >
+                {loginMutation.isPending ? 'Đang đăng nhập...' : 'Login'}
               </Button>
               <div className="relative flex items-center">
                 <div className="flex-grow border-t border-border"></div>
@@ -99,10 +168,12 @@ export function LoginForm({
             </div>
           </form>
           <div className="bg-muted relative hidden md:block">
-            <img
+            <Image
               src="/alpha-mini-2.webp"
               alt="Image"
-              className="absolute inset-0 h-full w-full object-cover"
+              fill
+              className="object-cover"
+              priority
             />
           </div>
         </CardContent>

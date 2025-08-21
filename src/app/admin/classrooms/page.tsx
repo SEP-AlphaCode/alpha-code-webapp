@@ -1,19 +1,15 @@
 "use client";
 
-import React, { useState } from 'react';
+import React from 'react';
 import { 
   School, 
-  Plus, 
   Edit, 
   Trash2, 
   Users, 
   Bot, 
   Calendar,
   MapPin,
-  Clock,
   BookOpen,
-  Settings,
-  MoreHorizontal,
   User,
   GraduationCap
 } from 'lucide-react';
@@ -50,9 +46,6 @@ interface Classroom {
 }
 
 export default function ClassroomManagement() {
-  const [showAddModal, setShowAddModal] = useState(false);
-  const [selectedClassroom, setSelectedClassroom] = useState<string | null>(null);
-
   // Mock data - replace with real API calls
   const classrooms: Classroom[] = [
     {
@@ -175,10 +168,10 @@ export default function ClassroomManagement() {
           <h1 className="text-3xl font-bold text-gray-900">Classroom Management</h1>
           <p className="text-gray-600">Manage classrooms, schedules, and assignments</p>
         </div>
-        <Button onClick={() => setShowAddModal(true)}>
+        {/* <Button onClick={() => setShowAddModal(true)}>
           <Plus className="mr-2 h-4 w-4" />
           Add New Classroom
-        </Button>
+        </Button> */}
       </div>
 
       {/* Statistics Cards */}
