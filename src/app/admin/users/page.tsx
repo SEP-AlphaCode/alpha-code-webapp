@@ -27,21 +27,24 @@ export default function UserManagement() {
   const updateAccountMutation = accountHooks.useUpdateAccount();
 
   // Convert Account type to User interface for compatibility - React Query handles memoization
-  const users = !accounts || !Array.isArray(accounts) ? [] : accounts.map((account: Account) => ({
-    id: account.id,
-    name: account.fullName || 'Unknown',
-    email: account.email || '',
-    role: (account.roleName?.toLowerCase() as 'teacher' | 'admin' | 'student') || 'student',
-    status: account.status === 1 ? 'active' : 'inactive' as 'active' | 'inactive',
-    lastLogin: account.lastEdited || '',
-    phone: account.phone || '',
-    createdAt: account.createdDate || '',
-    username: account.username || '',
-    gender: account.gender || 0,
-    image: account.image || '',
-    bannedReason: account.bannedReason || '',
-    roleId: account.roleId || ''
-  }));
+  const users = useMemo(() => {
+    if (!accounts || !Array.isArray(accounts)) return [];
+    return accounts.map((account: Account) => ({
+      id: account.id,
+      name: account.fullName || 'Unknown',
+      email: account.email || '',
+      role: (account.roleName?.toLowerCase() as 'teacher' | 'admin' | 'student') || 'student',
+      status: account.status === 1 ? 'active' : 'inactive' as 'active' | 'inactive',
+      lastLogin: account.lastEdited || '',
+      phone: account.phone || '',
+      createdAt: account.createdDate || '',
+      username: account.username || '',
+      gender: account.gender || 0,
+      image: account.image || '',
+      bannedReason: account.bannedReason || '',
+      roleId: account.roleId || ''
+    }));
+  }, [accounts]);
 
   // Get unique roles dynamically from data
   const availableRoles = useMemo(() => {

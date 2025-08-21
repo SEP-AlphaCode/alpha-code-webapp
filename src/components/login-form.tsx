@@ -25,7 +25,7 @@ export function LoginForm({
     if (loginMutation.error && (formData.username || formData.password)) {
       loginMutation.reset();
     }
-  }, [formData.username, formData.password]);
+  }, [formData.username, formData.password, loginMutation]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -40,14 +40,17 @@ export function LoginForm({
   const getErrorMessage = () => {
     if (!loginMutation.error) return null;
     
-    const error = loginMutation.error as any;
+    const error = loginMutation.error as Error & { 
+      response?: { status: number }; 
+      message?: string; 
+    };
     if (error.response?.status === 404) {
       return "Login endpoint not found. Please check your server configuration.";
     }
     if (error.response?.status === 401) {
       return "Invalid username or password.";
     }
-    if (error.response?.status >= 500) {
+    if (error.response?.status && error.response.status >= 500) {
       return "Server error. Please try again later.";
     }
     return error.message || "An error occurred during login.";

@@ -3,7 +3,7 @@ import { login } from '@/api/authApi';
 import { useRouter } from 'next/navigation';
 import { toast } from 'react-toastify';
 import { LoginRequest, LoginResponse } from '@/types/login';
-import { getRoleFromToken, getUsernameFromToken, saveAccountDataFromToken } from '@/utils/roleUtils';
+import { saveAccountDataFromToken } from '@/utils/roleUtils';
 
 export const useLogin = () => {
   const router = useRouter();
@@ -77,7 +77,13 @@ export const useLogin = () => {
       console.error('Login error:', error);
       
       // Handle network errors
-      const err = error as any;
+      const err = error as Error & { 
+        response?: { 
+          status: number; 
+          data?: unknown; 
+        };
+        request?: unknown;
+      };
       if (err.response) {
         // Server responded with error status
         console.error('Server error response:', err.response);

@@ -37,7 +37,7 @@ export const useAccount = () => {
     // Update account mutation
     const useUpdateAccount = () => {
         return useMutation({
-            mutationFn: ({ id, accountData }: { id: string; accountData: any }) => 
+            mutationFn: ({ id, accountData }: { id: string; accountData: Partial<Omit<Account, 'id' | 'createdDate'>> }) => 
                 updateAccount(id, accountData),
             onSuccess: () => {
                 queryClient.invalidateQueries({ queryKey: ['accounts'] });
