@@ -4,21 +4,11 @@ export interface LoginRequest {
 }
 
 export interface LoginResponse {
-   token: string;
-   account: {
-    id: string;
-    username: string;
-    password: string;
-    fullName: string;
-    phone: string;
-    email: string;
-    gender: number;
-    createdDate: string;
-    lastEdited: string | null;
-    status: number;
-    image: string;
-    bannedReason: string | null;
-    roleId: string;
-    roleName: string;
-  };
+  accessToken: string;
+  refreshToken: string;
+}
+
+export interface RefreshTokenResponse {
+  accessToken: string;
+  refreshToken: string;
 }
