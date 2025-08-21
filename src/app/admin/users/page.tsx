@@ -1,6 +1,5 @@
 "use client";
-
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { 
   Search, 
   Edit, 
@@ -8,82 +7,68 @@ import {
   UserCheck,
   UserX,
   Mail,
-  Phone
+  Phone,
+  Loader2
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-
-interface User {
-  id: string;
-  name: string;
-  email: string;
-  role: 'teacher' | 'admin' | 'student';
-  status: 'active' | 'inactive' | 'pending';
-  lastLogin: string;
-  classroom?: string;
-  phone?: string;
-  createdAt: string;
-}
+import { useAccount } from '@/hooks/useAccount';
+import { Account } from '@/types/account';
 
 export default function UserManagement() {
   const [searchTerm, setSearchTerm] = useState('');
   const [filterRole, setFilterRole] = useState<string>('all');
+  
+  const accountHooks = useAccount();
+  const { data: accounts, isLoading, error } = accountHooks.useGetAllAccounts();
+  const deleteAccountMutation = accountHooks.useDeleteAccount();
+  const updateAccountMutation = accountHooks.useUpdateAccount();
 
-  // Mock data - replace with real API calls
-  const users: User[] = [
-    {
-      id: '1',
-      name: 'Sarah Johnson',
-      email: 'sarah.johnson@school.edu',
-      role: 'teacher',
-      status: 'active',
-      lastLogin: '2024-08-18 09:30',
-      classroom: 'Classroom A',
-      phone: '+1 234 567 8901',
-      createdAt: '2024-01-15'
-    },
-    {
-      id: '2',
-      name: 'Mike Chen',
-      email: 'mike.chen@school.edu',
-      role: 'teacher',
-      status: 'active',
-      lastLogin: '2024-08-17 14:20',
-      classroom: 'Classroom B',
-      phone: '+1 234 567 8902',
-      createdAt: '2024-02-01'
-    },
-    {
-      id: '3',
-      name: 'Emma Davis',
-      email: 'emma.davis@school.edu',
-      role: 'admin',
-      status: 'active',
-      lastLogin: '2024-08-18 08:15',
-      phone: '+1 234 567 8903',
-      createdAt: '2023-12-10'
-    },
-    {
-      id: '4',
-      name: 'John Smith',
-      email: 'john.smith@school.edu',
-      role: 'teacher',
-      status: 'inactive',
-      lastLogin: '2024-08-10 16:45',
-      classroom: 'Classroom C',
-      phone: '+1 234 567 8904',
-      createdAt: '2024-03-20'
-    }
-  ];
+  // Convert Account type to User interface for compatibility - React Query handles memoization
+  const users = !accounts || !Array.isArray(accounts) ? [] : accounts.map((account: Account) => ({
+    id: account.id,
+    name: account.fullName || 'Unknown',
+    email: account.email || '',
+    role: (account.roleName?.toLowerCase() as 'teacher' | 'admin' | 'student') || 'student',
+    status: account.status === 1 ? 'active' : 'inactive' as 'active' | 'inactive',
+    lastLogin: account.lastEdited || '',
+    phone: account.phone || '',
+    createdAt: account.createdDate || '',
+    username: account.username || '',
+    gender: account.gender || 0,
+    image: account.image || '',
+    bannedReason: account.bannedReason || '',
+    roleId: account.roleId || ''
+  }));
 
-  const filteredUsers = users.filter(user => {
-    const matchesSearch = user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         user.email.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesRole = filterRole === 'all' || user.role === filterRole;
-    return matchesSearch && matchesRole;
-  });
+  // Get unique roles dynamically from data
+  const availableRoles = useMemo(() => {
+    const roles = [...new Set(users.map(user => user.role))];
+    return roles.filter(role => role); // Remove empty roles
+  }, [users]);
+
+  const filteredUsers = useMemo(() => {
+    return users.filter(user => {
+      const matchesSearch = user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                           user.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                           user.username?.toLowerCase().includes(searchTerm.toLowerCase());
+      const matchesRole = filterRole === 'all' || user.role === filterRole;
+      return matchesSearch && matchesRole;
+    });
+  }, [users, searchTerm, filterRole]);
+
+  // Get role colors dynamically
+  const getRoleCardColor = (role: string) => {
+    const colors = {
+      admin: 'bg-red-100 text-red-600',
+      teacher: 'bg-purple-100 text-purple-600', 
+      student: 'bg-blue-100 text-blue-600',
+      default: 'bg-gray-100 text-gray-600'
+    };
+    return colors[role as keyof typeof colors] || colors.default;
+  };
 
   const getRoleColor = (role: string) => {
     switch (role) {
@@ -98,23 +83,61 @@ export default function UserManagement() {
     switch (status) {
       case 'active': return 'bg-green-100 text-green-800';
       case 'inactive': return 'bg-gray-100 text-gray-800';
-      case 'pending': return 'bg-yellow-100 text-yellow-800';
       default: return 'bg-gray-100 text-gray-800';
     }
   };
 
-  const handleDeleteUser = (userId: string) => {
+  const handleDeleteUser = async (userId: string) => {
     if (confirm('Are you sure you want to delete this user?')) {
-      // Handle delete logic here
-      console.log('Deleting user:', userId);
+      try {
+        await deleteAccountMutation.mutateAsync(userId);
+        // Success notification could be added here
+      } catch (error) {
+        console.error('Error deleting user:', error);
+        // Error notification could be added here
+      }
     }
   };
 
-  const handleToggleStatus = (userId: string, currentStatus: string) => {
-    const newStatus = currentStatus === 'active' ? 'inactive' : 'active';
-    // Handle status toggle logic here
-    console.log('Toggling user status:', userId, newStatus);
+  const handleToggleStatus = async (userId: string, currentStatus: string) => {
+    const newStatus = currentStatus === 'active' ? 0 : 1; // 0 for inactive, 1 for active
+    try {
+      await updateAccountMutation.mutateAsync({ 
+        id: userId, 
+        accountData: { status: newStatus } 
+      });
+      // Success notification could be added here
+    } catch (error) {
+      console.error('Error updating user status:', error);
+      // Error notification could be added here
+    }
   };
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <Loader2 className="h-8 w-8 animate-spin" />
+        <span className="ml-2">Loading users...</span>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="text-center">
+          <p className="text-red-600 mb-2">Error loading users</p>
+          <p className="text-gray-500">{error?.message || 'Please try again later'}</p>
+          <Button 
+            onClick={() => window.location.reload()} 
+            className="mt-4"
+          >
+            Retry
+          </Button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -156,33 +179,26 @@ export default function UserManagement() {
           </CardContent>
         </Card>
 
-        <Card>
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-gray-600">Teachers</p>
-                <p className="text-2xl font-bold">{users.filter(u => u.role === 'teacher').length}</p>
+        {/* Dynamic Role Cards */}
+        {availableRoles.slice(0, 2).map((role) => (
+          <Card key={role}>
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-gray-600">
+                    {role.charAt(0).toUpperCase() + role.slice(1)}s
+                  </p>
+                  <p className="text-2xl font-bold">
+                    {users.filter(u => u.role === role).length}
+                  </p>
+                </div>
+                <div className={`h-8 w-8 rounded-lg flex items-center justify-center ${getRoleCardColor(role)}`}>
+                  <UserCheck className="h-4 w-4" />
+                </div>
               </div>
-              <div className="h-8 w-8 bg-purple-100 rounded-lg flex items-center justify-center">
-                <UserCheck className="h-4 w-4 text-purple-600" />
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-gray-600">Admins</p>
-                <p className="text-2xl font-bold">{users.filter(u => u.role === 'admin').length}</p>
-              </div>
-              <div className="h-8 w-8 bg-red-100 rounded-lg flex items-center justify-center">
-                <UserCheck className="h-4 w-4 text-red-600" />
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+            </CardContent>
+          </Card>
+        ))}
       </div>
 
       {/* Filters and Search */}
@@ -207,9 +223,11 @@ export default function UserManagement() {
               className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
             >
               <option value="all">All Roles</option>
-              <option value="admin">Admin</option>
-              <option value="teacher">Teacher</option>
-              <option value="student">Student</option>
+              {availableRoles.map(role => (
+                <option key={role} value={role}>
+                  {role.charAt(0).toUpperCase() + role.slice(1)}
+                </option>
+              ))}
             </select>
           </div>
 
@@ -221,8 +239,8 @@ export default function UserManagement() {
                   <th className="text-left py-3 px-4 font-medium text-gray-500">User</th>
                   <th className="text-left py-3 px-4 font-medium text-gray-500">Role</th>
                   <th className="text-left py-3 px-4 font-medium text-gray-500">Status</th>
-                  <th className="text-left py-3 px-4 font-medium text-gray-500">Classroom</th>
-                  <th className="text-left py-3 px-4 font-medium text-gray-500">Last Login</th>
+                  <th className="text-left py-3 px-4 font-medium text-gray-500">Username</th>
+                  <th className="text-left py-3 px-4 font-medium text-gray-500">Last Edited</th>
                   <th className="text-left py-3 px-4 font-medium text-gray-500">Actions</th>
                 </tr>
               </thead>
@@ -256,11 +274,13 @@ export default function UserManagement() {
                     </td>
                     <td className="py-4 px-4">
                       <span className="text-sm text-gray-900">
-                        {user.classroom || 'N/A'}
+                        {user.username}
                       </span>
                     </td>
                     <td className="py-4 px-4">
-                      <span className="text-sm text-gray-900">{user.lastLogin}</span>
+                      <span className="text-sm text-gray-900">
+                        {new Date(user.lastLogin).toLocaleDateString()}
+                      </span>
                     </td>
                     <td className="py-4 px-4">
                       <div className="flex items-center space-x-2">
@@ -268,6 +288,7 @@ export default function UserManagement() {
                           size="sm"
                           variant="outline"
                           onClick={() => handleToggleStatus(user.id, user.status)}
+                          disabled={updateAccountMutation.isPending}
                         >
                           {user.status === 'active' ? (
                             <UserX className="h-4 w-4" />
@@ -282,6 +303,7 @@ export default function UserManagement() {
                           size="sm" 
                           variant="outline"
                           onClick={() => handleDeleteUser(user.id)}
+                          disabled={deleteAccountMutation.isPending}
                         >
                           <Trash2 className="h-4 w-4" />
                         </Button>
@@ -293,9 +315,13 @@ export default function UserManagement() {
             </table>
           </div>
 
-          {filteredUsers.length === 0 && (
+          {filteredUsers.length === 0 && !isLoading && (
             <div className="text-center py-8">
-              <p className="text-gray-500">No users found matching your criteria.</p>
+              {users.length === 0 ? (
+                <p className="text-gray-500">No users found in the system.</p>
+              ) : (
+                <p className="text-gray-500">No users found matching your criteria.</p>
+              )}
             </div>
           )}
         </CardContent>
