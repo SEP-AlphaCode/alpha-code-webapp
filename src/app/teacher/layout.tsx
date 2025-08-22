@@ -129,7 +129,7 @@ export default function TeacherLayout({ children }: TeacherLayoutProps) {
                   className="text-red-600 hover:text-red-700 hover:bg-red-50 flex items-center space-x-1"
                 >
                   <LogOut className="w-4 h-4" />
-                  <span>{logoutMutation.isPending ? 'Đang đăng xuất...' : 'Logout'}</span>
+                  <span>{logoutMutation.isPending ? 'Logging out...' : 'Logout'}</span>
                 </Button>
               </div>
             </div>

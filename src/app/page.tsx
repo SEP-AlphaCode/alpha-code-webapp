@@ -35,15 +35,15 @@ export default function Home() {
             Meet <span className="text-primary">Alpha Mini</span>
           </h2>
           <p className="text-xl text-muted-foreground max-w-3xl mx-auto mb-12">
-            Một AI assistant thông minh, compact và mạnh mẽ được thiết kế để hỗ trợ bạn trong mọi tác vụ hàng ngày.
-            Với khả năng xử lý ngôn ngữ tự nhiên tiên tiến và hiểu biết sâu sắc về ngữ cảnh.
+            A smart, compact and powerful AI assistant designed to support you in all your daily tasks.
+            With advanced natural language processing capabilities and deep contextual understanding.
           </p>
           <div className="flex justify-center space-x-4">
             <Button size="lg" className="bg-primary text-primary-foreground hover:bg-primary/90">
-              Trải nghiệm ngay
+              Try it now
             </Button>
             <Button variant="outline" size="lg">
-              Tìm hiểu thêm
+              Learn more
             </Button>
           </div>
         </div>
@@ -52,7 +52,7 @@ export default function Home() {
       {/* Features Section */}
       <section className="py-20 bg-muted/30">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <h3 className="text-3xl font-bold text-center text-foreground mb-16">Tính năng nổi bật</h3>
+          <h3 className="text-3xl font-bold text-center text-foreground mb-16">Key Features</h3>
           <div className="grid md:grid-cols-3 gap-8">
             <Card className="border border-border shadow-lg hover:shadow-xl transition-shadow">
               <CardContent className="p-8 text-center">
@@ -61,8 +61,8 @@ export default function Home() {
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
                   </svg>
                 </div>
-                <h4 className="text-xl font-semibold text-foreground mb-4">Tốc độ cao</h4>
-                <p className="text-muted-foreground">Xử lý và phản hồi cực nhanh, giúp bạn tiết kiệm thời gian và tăng hiệu suất làm việc.</p>
+                <h4 className="text-xl font-semibold text-foreground mb-4">High Speed</h4>
+                <p className="text-muted-foreground">Extremely fast processing and response, helping you save time and increase work efficiency.</p>
               </CardContent>
             </Card>
 
@@ -73,8 +73,8 @@ export default function Home() {
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
                   </svg>
                 </div>
-                <h4 className="text-xl font-semibold text-foreground mb-4">Thông minh</h4>
-                <p className="text-muted-foreground">Hiểu ngữ cảnh và ý định của bạn, đưa ra câu trả lời chính xác và hữu ích.</p>
+                <h4 className="text-xl font-semibold text-foreground mb-4">Smart</h4>
+                <p className="text-muted-foreground">Understands context and your intentions, providing accurate and helpful answers.</p>
               </CardContent>
             </Card>
 
@@ -85,8 +85,8 @@ export default function Home() {
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
                   </svg>
                 </div>
-                <h4 className="text-xl font-semibold text-foreground mb-4">Thân thiện</h4>
-                <p className="text-muted-foreground">Giao diện đơn giản, dễ sử dụng và phù hợp với mọi đối tượng người dùng.</p>
+                <h4 className="text-xl font-semibold text-foreground mb-4">User-friendly</h4>
+                <p className="text-muted-foreground">Simple interface, easy to use and suitable for all types of users.</p>
               </CardContent>
             </Card>
           </div>
@@ -98,18 +98,18 @@ export default function Home() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid md:grid-cols-2 gap-12 items-center">
             <div>
-              <h3 className="text-3xl font-bold text-foreground mb-6">Về Alpha Mini</h3>
+              <h3 className="text-3xl font-bold text-foreground mb-6">About Alpha Mini</h3>
               <p className="text-lg text-muted-foreground mb-6">
-                Alpha Mini là phiên bản compact của dòng sản phẩm AI Alpha, được tối ưu hóa để mang lại hiệu suất cao
-                trong một package nhỏ gọn. Được phát triển bởi đội ngũ kỹ sư tài năng, Alpha Mini kết hợp công nghệ
-                AI tiên tiến với thiết kế thân thiện với người dùng.
+                Alpha Mini is the compact version of the Alpha AI product line, optimized to deliver high performance
+                in a compact package. Developed by a team of talented engineers, Alpha Mini combines advanced
+                AI technology with user-friendly design.
               </p>
               <p className="text-lg text-muted-foreground mb-8">
-                Từ việc trả lời câu hỏi, hỗ trợ viết lách, phân tích dữ liệu đến giải quyết các vấn đề phức tạp,
-                Alpha Mini là người bạn đồng hành đáng tin cậy trong công việc và cuộc sống.
+                From answering questions, writing assistance, data analysis to solving complex problems,
+                Alpha Mini is a reliable companion in work and life.
               </p>
               <Button className="bg-primary text-primary-foreground hover:bg-primary/90">
-                Khám phá ngay
+                Explore now
               </Button>
             </div>
             <div className="relative">
@@ -131,7 +131,7 @@ export default function Home() {
             <span className="text-xl font-bold text-foreground">Alpha Mini</span>
           </div>
           <p className="text-muted-foreground mb-4">
-            © 2025 Alpha Mini. Được phát triển với ❤️ bởi SEP-AlphaCode.
+            © 2025 Alpha Mini. Developed with ❤️ by SEP-AlphaCode.
           </p>
           <div className="flex justify-center space-x-6">
             <a href="#" className="text-muted-foreground hover:text-foreground transition-colors">Privacy</a>

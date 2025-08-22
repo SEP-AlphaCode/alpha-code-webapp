@@ -121,7 +121,7 @@ export function LoginForm({
                 className="w-full bg-black text-white"
                 disabled={loginMutation.isPending}
               >
-                {loginMutation.isPending ? 'Đang đăng nhập...' : 'Login'}
+                {loginMutation.isPending ? 'Logging in...' : 'Login'}
               </Button>
               <div className="relative flex items-center">
                 <div className="flex-grow border-t border-border"></div>

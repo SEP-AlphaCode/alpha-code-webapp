@@ -29,12 +29,12 @@ class Http {
       async (error) => {
         const originalRequest = error.config;
 
-        // ❗️Chặn retry cho chính API refresh-token
+        // ❗️Block retry for the refresh-token API itself
         if (
           error.response?.status === 401 &&
           !originalRequest._retry &&
           sessionStorage.getItem('refreshToken') &&
-          !originalRequest.url?.includes('/refresh-token') // 🔥 tránh lặp vô hạn
+          !originalRequest.url?.includes('/refresh-token') // 🔥 avoid infinite loop
         ) {
           originalRequest._retry = true;
           try {

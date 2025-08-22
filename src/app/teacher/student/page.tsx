@@ -43,9 +43,9 @@ export default function StudentManagementPage() {
     const mockStudents: Student[] = [
       {
         id: '1',
-        name: 'Nguyễn Văn An',
+        name: 'Nguyen Van An',
         email: 'an.nguyen@email.com',
-        class: 'Lớp 6A',
+        class: 'Class 6A',
         status: 'active',
         joinDate: '2024-09-01',
         lastActivity: '2024-12-10',
@@ -57,9 +57,9 @@ export default function StudentManagementPage() {
       },
       {
         id: '2',
-        name: 'Trần Thị Bình',
+        name: 'Tran Thi Binh',
         email: 'binh.tran@email.com',
-        class: 'Lớp 6A',
+        class: 'Class 6A',
         status: 'active',
         joinDate: '2024-09-01',
         lastActivity: '2024-12-09',
@@ -71,9 +71,9 @@ export default function StudentManagementPage() {
       },
       {
         id: '3',
-        name: 'Lê Văn Cường',
+        name: 'Le Van Cuong',
         email: 'cuong.le@email.com',
-        class: 'Lớp 6B',
+        class: 'Class 6B',
         status: 'pending',
         joinDate: '2024-12-01',
         lastActivity: '2024-12-05',
@@ -85,9 +85,9 @@ export default function StudentManagementPage() {
       },
       {
         id: '4',
-        name: 'Phạm Thị Duyên',
+        name: 'Pham Thi Duyen',
         email: 'duyen.pham@email.com',
-        class: 'Lớp 7A',
+        class: 'Class 7A',
         status: 'active',
         joinDate: '2024-08-15',
         lastActivity: '2024-12-10',
@@ -99,9 +99,9 @@ export default function StudentManagementPage() {
       },
       {
         id: '5',
-        name: 'Hoàng Văn Em',
+        name: 'Hoang Van Em',
         email: 'em.hoang@email.com',
-        class: 'Lớp 7A',
+        class: 'Class 7A',
         status: 'inactive',
         joinDate: '2024-09-01',
         lastActivity: '2024-11-20',
@@ -116,24 +116,24 @@ export default function StudentManagementPage() {
     const mockClasses: ClassGroup[] = [
       {
         id: '1',
-        name: 'Lớp 6A',
+        name: 'Class 6A',
         studentCount: 25,
-        teacher: 'Cô Nguyễn Thị Lan',
-        description: 'Lớp học lập trình cơ bản cho học sinh lớp 6'
+        teacher: 'Ms. Nguyen Thi Lan',
+        description: 'Basic programming class for 6th grade students'
       },
       {
         id: '2',
-        name: 'Lớp 6B',
+        name: 'Class 6B',
         studentCount: 22,
-        teacher: 'Thầy Trần Văn Nam',
-        description: 'Lớp học lập trình nâng cao cho học sinh lớp 6'
+        teacher: 'Mr. Tran Van Nam',
+        description: 'Advanced programming class for 6th grade students'
       },
       {
         id: '3',
-        name: 'Lớp 7A',
+        name: 'Class 7A',
         studentCount: 28,
-        teacher: 'Cô Lê Thị Hoa',
-        description: 'Lớp học lập trình trung cấp cho học sinh lớp 7'
+        teacher: 'Ms. Le Thi Hoa',
+        description: 'Intermediate programming class for 7th grade students'
       }
     ];
 
@@ -157,9 +157,9 @@ export default function StudentManagementPage() {
     };
     
     const labels = {
-      active: 'Hoạt động',
-      inactive: 'Không hoạt động',
-      pending: 'Chờ xác nhận'
+      active: 'Active',
+      inactive: 'Inactive',
+      pending: 'Pending'
     };
 
     return (
@@ -194,8 +194,8 @@ export default function StudentManagementPage() {
       {/* Header and Controls */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h2 className="text-2xl font-bold text-gray-900">Quản lý học sinh</h2>
-          <p className="text-gray-600">Quản lý thông tin và tiến độ học tập của học sinh</p>
+          <h2 className="text-2xl font-bold text-gray-900">Student Management</h2>
+          <p className="text-gray-600">Manage student information and learning progress</p>
         </div>
         {/* <Button 
           onClick={() => setShowAddStudent(true)}
