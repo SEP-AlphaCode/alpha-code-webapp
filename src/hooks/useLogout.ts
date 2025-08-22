@@ -13,9 +13,6 @@ export const useLogout = () => {
       router.push('/login');
     },
     onError: (error) => {
-      console.error('Logout error:', error);
-      // Even if there's an error, the logout function handles cleanup
-      // So we can still redirect to login
       toast.success('Đăng xuất thành công!');
       router.push('/login');
     }
