@@ -1,3 +1,5 @@
+"use client";
+
 import { initializeApp } from "firebase/app";
 import { getAuth, GoogleAuthProvider, FacebookAuthProvider, signInWithPopup } from "firebase/auth";
 // import { getStorage } from "firebase/storage";
