@@ -38,6 +38,10 @@ export function LoginForm({
   };
 
   const handleGoogleLogin = async () => {
+    if (!auth) {
+      toast.error("Firebase chưa sẵn sàng!");
+      return;
+    }
     const provider = new GoogleAuthProvider();
     try {
       const result = await signInWithPopup(auth, provider);
