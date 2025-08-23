@@ -118,7 +118,7 @@ export default function AdminLayout({
               disabled={logoutMutation.isPending}
             >
               <LogOut className="mr-3 h-4 w-4" />
-              {logoutMutation.isPending ? 'Đang đăng xuất...' : 'Logout'}
+              {logoutMutation.isPending ? 'Logging out...' : 'Logout'}
             </Button>
           </div>
         </div>

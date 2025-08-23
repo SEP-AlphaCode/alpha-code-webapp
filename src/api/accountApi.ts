@@ -3,19 +3,15 @@ import http from '@/utils/http';
 export const getAllAccounts = async () => {
   try {
     const response = await http.get('/accounts');
-    console.log('API Response:', response); // Debug log
-    
     // Handle different response structures
     if (response.data?.data && Array.isArray(response.data.data)) {
       return response.data.data;
     } else if (Array.isArray(response.data)) {
       return response.data;
     } else {
-      console.warn('Unexpected API response structure:', response.data);
       return [];
     }
   } catch (error) {
-    console.error('Error fetching accounts:', error);
     throw error;
   }
 };

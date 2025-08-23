@@ -9,14 +9,11 @@ export const useLogout = () => {
   return useMutation({
     mutationFn: logout,
     onSuccess: () => {
-      toast.success('Đăng xuất thành công!');
+      toast.success('Logout successful!');
       router.push('/login');
     },
     onError: (error) => {
-      console.error('Logout error:', error);
-      // Even if there's an error, the logout function handles cleanup
-      // So we can still redirect to login
-      toast.success('Đăng xuất thành công!');
+      toast.success('Logout successful!');
       router.push('/login');
     }
   });

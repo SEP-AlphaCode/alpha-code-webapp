@@ -1,4 +1,4 @@
-"use client"; // Đánh dấu đây là client component
+"use client"; // Mark this as a client component
 
 import { useState } from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
