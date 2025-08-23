@@ -44,11 +44,11 @@ export const refreshToken = async (): Promise<{ accessToken: string; refreshToke
 
     // Handle different response structures
     let responseData = response.data;
-    
+
     if (responseData && responseData.data) {
       responseData = responseData.data;
     }
-    
+
     if (responseData && responseData.result) {
       responseData = responseData.result;
     }
@@ -67,11 +67,11 @@ export const logout = async (): Promise<void> => {
     // Since there's no logout API endpoint, we only clear local storage
     // In a real application, you might want to invalidate the token on the server
   } catch (error) {
+    throw error;
   } finally {
     // Clear all tokens from sessionStorage
     sessionStorage.removeItem('accessToken');
     sessionStorage.removeItem('refreshToken');
     sessionStorage.removeItem('account');
-    console.log('Session data cleared successfully');
   }
 };

@@ -12,7 +12,7 @@ export const useLogout = () => {
       toast.success('Logout successful!');
       router.push('/login');
     },
-    onError: (error) => {
+    onError: () => {
       toast.success('Logout successful!');
       router.push('/login');
     }

@@ -65,7 +65,7 @@ export function LoginForm({
               <div className="flex flex-col items-center text-center">
                 <div className="w-16 h-16 rounded-2xl flex items-center justify-center mb-4 overflow-hidden">
                   <Image 
-                    src="/alphacodelogo.png" 
+                    src="/alphaminilogoo.png" 
                     alt="Alpha Logo" 
                     width={64} 
                     height={64}
