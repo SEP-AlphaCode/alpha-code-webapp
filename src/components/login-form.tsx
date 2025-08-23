@@ -11,7 +11,6 @@ import { LoginRequest } from "@/types/login"
 import { auth, GoogleAuthProvider, signInWithPopup } from "@/config/firebaseConfig"
 import { toast } from "react-toastify"
 import { useRouter } from "next/navigation"
-import { log } from "console"
 
 export function LoginForm({
   className,
@@ -45,7 +44,7 @@ export function LoginForm({
       const user = result.user;
       const token = await user.getIdToken();
       loginGoogleMutation.mutate(token, {
-        onSuccess: (data) => {
+        onSuccess: () => {
           toast.success("Login successful!");
           router.push("/");
         },
@@ -53,9 +52,14 @@ export function LoginForm({
           toast.error(error.message || "Google login failed");
         },
       });
-    } catch (error: any) {
-      toast.error(error.message || "Google login failed");
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        toast.error(error.message);
+      } else {
+        toast.error("Google login failed");
+      }
     }
+
   };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
