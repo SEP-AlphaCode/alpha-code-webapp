@@ -75,3 +75,14 @@ export const logout = async (): Promise<void> => {
     sessionStorage.removeItem('account');
   }
 };
+
+export const googleLogin = async (idToken: string): Promise<LoginResponse> => {
+  try {
+    const response = await http.post('/auth/google-login', idToken, {
+      headers: { "Content-Type": "text/plain" }
+    });
+    return response.data;
+  } catch (error) {
+    throw error;
+  }
+}
