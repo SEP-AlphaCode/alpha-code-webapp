@@ -1,3 +1,5 @@
+"use client";
+
 import { LoginForm } from "@/components/login-form"
 import { AuthRedirect } from "@/components/auth-redirect"
 
