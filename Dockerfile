@@ -4,7 +4,6 @@ FROM node:20-alpine AS builder
 WORKDIR /app
 
 COPY package.json package-lock.json* yarn.lock* ./
-COPY .env .env
 RUN yarn install --frozen-lockfile || npm install
 
 COPY . .
