@@ -38,10 +38,6 @@ export function LoginForm({
   };
 
   const handleGoogleLogin = async () => {
-    if (!auth) {
-      toast.error("Firebase chưa sẵn sàng!");
-      return;
-    }
     const provider = new GoogleAuthProvider();
     try {
       const result = await signInWithPopup(auth, provider);
@@ -50,7 +46,6 @@ export function LoginForm({
       loginGoogleMutation.mutate(token, {
         onSuccess: () => {
           toast.success("Login successful!");
-          router.push("/");
         },
         onError: (error) => {
           toast.error(error.message || "Google login failed");
