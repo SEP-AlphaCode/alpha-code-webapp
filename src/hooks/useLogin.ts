@@ -1,5 +1,5 @@
 import { useMutation } from '@tanstack/react-query';
-import { login } from '@/api/authApi';
+import { login, googleLogin } from '@/api/authApi';
 import { useRouter } from 'next/navigation';
 import { toast } from 'react-toastify';
 import { LoginRequest, LoginResponse } from '@/types/login';
@@ -80,6 +80,49 @@ export const useLogin = () => {
         // Other error
         toast.error('Login failed. Please check your information again!');
       }
+    }
+  });
+};
+
+export const useGoogleLogin = () => {
+  const router = useRouter();
+
+  return useMutation<LoginResponse, Error, string>({
+    mutationFn: googleLogin, // Nhận vào idToken (string)
+    onSuccess: (data) => {
+      if (!data || Object.keys(data).length === 0) {
+        toast.error('Error: Server returned empty response. Please check the API endpoint.');
+        return;
+      }
+      const accessToken = data.accessToken;
+      if (!accessToken) {
+        toast.error('Error: No access token received from server.');
+        return;
+      }
+      const refreshToken = data.refreshToken;
+      if (!refreshToken) {
+        toast.error('Error: No refresh token received from server.');
+        return;
+      }
+      sessionStorage.setItem('accessToken', accessToken);
+      sessionStorage.setItem('refreshToken', refreshToken);
+      const accountData = saveAccountDataFromToken(accessToken);
+      if (!accountData) {
+        toast.error('Error: Unable to get account information from token');
+        return;
+      }
+      toast.success(`Welcome ${accountData.fullName}! Login successful.`);
+      const roleNameLower = accountData.roleName.toLowerCase();
+      if (roleNameLower === 'admin') {
+        router.push('/admin');
+      } else if (roleNameLower === 'teacher') {
+        router.push('/teacher');
+      } else {
+        router.push('/student');
+      }
+    },
+    onError: (error) => {
+      toast.error(error.message || 'Google login failed');
     }
   });
 };
