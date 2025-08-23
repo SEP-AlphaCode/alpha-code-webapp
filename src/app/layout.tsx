@@ -4,6 +4,7 @@ import "./globals.css";
 import Provider from "./provider";
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css'; // import the CSS for the Toastify component
+import { PublicEnvScript } from 'next-runtime-env';
 
 
 
@@ -28,6 +29,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
+      <PublicEnvScript />
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
         suppressHydrationWarning
