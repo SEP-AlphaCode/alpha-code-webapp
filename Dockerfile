@@ -7,6 +7,7 @@ COPY package.json package-lock.json* yarn.lock* ./
 RUN yarn install --frozen-lockfile || npm install
 
 COPY . .
+COPY .env .env
 RUN yarn build || npm run build
 
 # Stage 2: Run
