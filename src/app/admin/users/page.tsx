@@ -1,9 +1,7 @@
 "use client";
-
 import React, { useState, useMemo } from 'react';
 import { 
   Search, 
-  Plus, 
   Edit, 
   Trash2, 
   UserCheck,
@@ -18,6 +16,8 @@ import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { useAccounts, useDeleteAccount, useUpdateAccount, convertAccountForDisplay } from '@/hooks/useAccounts';
 import CreateUserModal from '@/components/CreateUserModal';
+import { useAccount } from '@/hooks/use-account';
+import { Account } from '@/types/account';
 
 export default function UserManagement() {
   const [searchTerm, setSearchTerm] = useState('');
@@ -38,6 +38,58 @@ export default function UserManagement() {
     search: searchTerm || undefined,
     role: filterRole !== 'all' ? filterRole : undefined
   });
+  
+  const accountHooks = useAccount();
+  const { data: accounts, isLoading, error } = accountHooks.useGetAllAccounts();
+  const deleteAccountMutation = accountHooks.useDeleteAccount();
+  const updateAccountMutation = accountHooks.useUpdateAccount();
+
+  // Convert Account type to User interface for compatibility - React Query handles memoization
+  const users = useMemo(() => {
+    if (!accounts || !Array.isArray(accounts)) return [];
+    return accounts.map((account: Account) => ({
+      id: account.id,
+      name: account.fullName || 'Unknown',
+      email: account.email || '',
+      role: (account.roleName?.toLowerCase() as 'teacher' | 'admin' | 'student') || 'student',
+      status: account.status === 1 ? 'active' : 'inactive' as 'active' | 'inactive',
+      lastLogin: account.lastEdited || '',
+      phone: account.phone || '',
+      createdAt: account.createdDate || '',
+      username: account.username || '',
+      gender: account.gender || 0,
+      image: account.image || '',
+      bannedReason: account.bannedReason || '',
+      roleId: account.roleId || ''
+    }));
+  }, [accounts]);
+
+  // Get unique roles dynamically from data
+  const availableRoles = useMemo(() => {
+    const roles = [...new Set(users.map(user => user.role))];
+    return roles.filter(role => role); // Remove empty roles
+  }, [users]);
+
+  const filteredUsers = useMemo(() => {
+    return users.filter(user => {
+      const matchesSearch = user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                           user.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                           user.username?.toLowerCase().includes(searchTerm.toLowerCase());
+      const matchesRole = filterRole === 'all' || user.role === filterRole;
+      return matchesSearch && matchesRole;
+    });
+  }, [users, searchTerm, filterRole]);
+
+  // Get role colors dynamically
+  const getRoleCardColor = (role: string) => {
+    const colors = {
+      admin: 'bg-red-100 text-red-600',
+      teacher: 'bg-purple-100 text-purple-600', 
+      student: 'bg-blue-100 text-blue-600',
+      default: 'bg-gray-100 text-gray-600'
+    };
+    return colors[role as keyof typeof colors] || colors.default;
+  };
 
   // Mutations
   const deleteAccountMutation = useDeleteAccount();
@@ -75,11 +127,13 @@ export default function UserManagement() {
   };
 
   const handleDeleteUser = async (userId: string) => {
-    if (confirm('Bạn có chắc chắn muốn xóa người dùng này?')) {
+    if (confirm('Are you sure you want to delete this user?')) {
       try {
         await deleteAccountMutation.mutateAsync(userId);
+        // Success notification could be added here
       } catch (error) {
         console.error('Error deleting user:', error);
+        // Error notification could be added here
       }
     }
   };
@@ -96,6 +150,32 @@ export default function UserManagement() {
     }
   };
 
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <Loader2 className="h-8 w-8 animate-spin" />
+        <span className="ml-2">Loading users...</span>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="text-center">
+          <p className="text-red-600 mb-2">Error loading users</p>
+          <p className="text-gray-500">{error?.message || 'Please try again later'}</p>
+          <Button 
+            onClick={() => window.location.reload()} 
+            className="mt-4"
+          >
+            Retry
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6">
       {/* Page Header */}
@@ -104,10 +184,6 @@ export default function UserManagement() {
           <h1 className="text-3xl font-bold text-gray-900">User Management</h1>
           <p className="text-gray-600">Manage user accounts and permissions</p>
         </div>
-        <Button className='bg-black text-white' onClick={() => setShowAddModal(true)}>
-          <Plus className="mr-2 h-4 w-4" />
-          Add New User
-        </Button>
       </div>
 
       {/* Statistics Cards */}
@@ -199,9 +275,11 @@ export default function UserManagement() {
               className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
             >
               <option value="all">All Roles</option>
-              <option value="admin">Admin</option>
-              <option value="teacher">Teacher</option>
-              <option value="student">Student</option>
+              {availableRoles.map(role => (
+                <option key={role} value={role}>
+                  {role.charAt(0).toUpperCase() + role.slice(1)}
+                </option>
+              ))}
             </select>
           </div>
 

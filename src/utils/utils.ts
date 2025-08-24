@@ -9,10 +9,10 @@ export const useQueryString = () => {
   const searchParams = useSearchParams()
 
   useEffect(() => {
-    // Chỉ thực thi khi trang được render trên client
+    // Only execute when the page is rendered on the client
     const paramsObject = Object.fromEntries(searchParams.entries())
     setSearchParamsObject(paramsObject)
-  }, [searchParams]) // Khi searchParams thay đổi
+  }, [searchParams]) // When searchParams changes
 
   return searchParamsObject
 }

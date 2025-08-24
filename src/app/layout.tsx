@@ -4,6 +4,8 @@ import "./globals.css";
 import Provider from "./provider";
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css'; // import the CSS for the Toastify component
+import { PublicEnvScript } from 'next-runtime-env';
+import alphaminilogoo from '@/public/logo2.png';
 
 
 
@@ -18,8 +20,19 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Alpha Code",
+  title: "AlphaCode",
+  description: "Platform manage robot learning assistant",
+  openGraph: {
+    title: "AlphaCode",
+    description: "Platform manage robot learning assistant",
+    url: "https://alpha-code.site",
+    siteName: "AlphaCode",
+    images: [{ url: alphaminilogoo.src }],
+    locale: "vi_VN",
+    type: "website",
+  },
 };
+
 
 export default function RootLayout({
   children,
@@ -28,12 +41,16 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
+      <head>
+        <PublicEnvScript />
+      </head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
         suppressHydrationWarning
       >
-        <Provider>{children}</Provider>
-        <ToastContainer />
+        <Provider>{children}
+          <ToastContainer />
+        </Provider>
       </body>
     </html>
   );

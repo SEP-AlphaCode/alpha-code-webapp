@@ -178,7 +178,6 @@ export default function RobotManagement() {
     const onlineRobots = robots.filter(robot => robot.status === 'online').length;
     const offlineRobots = robots.filter(robot => robot.status === 'offline').length;
     const chargingRobots = robots.filter(robot => robot.status === 'charging').length;
-    // const maintenanceRobots = robots.filter(robot => robot.status === 'maintenance').length;
     const totalStudents = robots.reduce((sum, robot) => sum + robot.students, 0);
 
     return (
