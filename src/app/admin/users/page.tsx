@@ -14,50 +14,38 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-import { useAccounts, useDeleteAccount, useUpdateAccount, convertAccountForDisplay } from '@/hooks/useAccounts';
-import CreateUserModal from '@/components/CreateUserModal';
 import { useAccount } from '@/hooks/use-account';
 import { Account } from '@/types/account';
 
 export default function UserManagement() {
   const [searchTerm, setSearchTerm] = useState('');
   const [filterRole, setFilterRole] = useState<string>('all');
-  const [showAddModal, setShowAddModal] = useState(false);
-  const [currentPage] = useState(1);
-  const pageSize = 10;
 
-  // Sử dụng TanStack Query để fetch data
-  const { 
-    data: accountsResponse, 
-    isLoading, 
-    isError, 
-    error 
-  } = useAccounts({
-    page: currentPage,
-    limit: pageSize,
-    search: searchTerm || undefined,
-    role: filterRole !== 'all' ? filterRole : undefined
-  });
-  
   const accountHooks = useAccount();
   const { data: accounts, isLoading, error } = accountHooks.useGetAllAccounts();
   const deleteAccountMutation = accountHooks.useDeleteAccount();
   const updateAccountMutation = accountHooks.useUpdateAccount();
 
-  // Convert Account type to User interface for compatibility - React Query handles memoization
+  // Convert Account type to User interface for compatibility
   const users = useMemo(() => {
     if (!accounts || !Array.isArray(accounts)) return [];
     return accounts.map((account: Account) => ({
       id: account.id,
       name: account.fullName || 'Unknown',
+      fullName: account.fullName || 'Unknown',
       email: account.email || '',
       role: (account.roleName?.toLowerCase() as 'teacher' | 'admin' | 'student') || 'student',
+      roleName: account.roleName || 'student',
       status: account.status === 1 ? 'active' : 'inactive' as 'active' | 'inactive',
+      statusNumber: account.status || 0,
+      statusText: account.status === 1 ? 'active' : 'inactive',
       lastLogin: account.lastEdited || '',
       phone: account.phone || '',
       createdAt: account.createdDate || '',
+      createdDate: account.createdDate || '',
       username: account.username || '',
       gender: account.gender || 0,
+      genderText: account.gender === 1 ? 'male' : account.gender === 2 ? 'female' : 'other',
       image: account.image || '',
       bannedReason: account.bannedReason || '',
       roleId: account.roleId || ''
@@ -67,7 +55,7 @@ export default function UserManagement() {
   // Get unique roles dynamically from data
   const availableRoles = useMemo(() => {
     const roles = [...new Set(users.map(user => user.role))];
-    return roles.filter(role => role); // Remove empty roles
+    return roles;
   }, [users]);
 
   const filteredUsers = useMemo(() => {
@@ -81,7 +69,7 @@ export default function UserManagement() {
   }, [users, searchTerm, filterRole]);
 
   // Get role colors dynamically
-  const getRoleCardColor = (role: string) => {
+  const getRoleColor = (role: string) => {
     const colors = {
       admin: 'bg-red-100 text-red-600',
       teacher: 'bg-purple-100 text-purple-600', 
@@ -91,90 +79,50 @@ export default function UserManagement() {
     return colors[role as keyof typeof colors] || colors.default;
   };
 
-  // Mutations
-  const deleteAccountMutation = useDeleteAccount();
-  const updateAccountMutation = useUpdateAccount();
-
-  // Memoized filtered data với conversion
-  const filteredUsers = useMemo(() => {
-    if (!accountsResponse?.data) return [];
-    return accountsResponse.data.map(convertAccountForDisplay);
-  }, [accountsResponse?.data]);
-
-  const totalUsers = accountsResponse?.total || 0;
-  const activeUsers = filteredUsers.filter(user => user.status === 1).length;
-  const teachers = filteredUsers.filter(user => user.roleName === 'teacher').length;
-  const admins = filteredUsers.filter(user => user.roleName === 'admin').length;
-
-  // Helper functions
-  const getRoleColor = (role: string) => {
-    switch (role) {
-      case 'admin': return 'bg-red-100 text-red-800';
-      case 'teacher': return 'bg-blue-100 text-blue-800';
-      case 'student': return 'bg-green-100 text-green-800';
-      default: return 'bg-gray-100 text-gray-800';
-    }
-  };
-
   const getStatusColor = (status: number) => {
-    switch (status) {
-      case 1: return 'bg-green-100 text-green-800'; // active
-      case 0: return 'bg-gray-100 text-gray-800';   // inactive
-      case 2: return 'bg-yellow-100 text-yellow-800'; // pending
-      case 3: return 'bg-red-100 text-red-800';      // banned
-      default: return 'bg-gray-100 text-gray-800';
+    return status === 1 ? 'bg-green-100 text-green-600' : 'bg-red-100 text-red-600';
+  };
+
+  const handleDeleteUser = (userId: string) => {
+    if (window.confirm('Are you sure you want to delete this user?')) {
+      deleteAccountMutation.mutate(userId);
     }
   };
 
-  const handleDeleteUser = async (userId: string) => {
-    if (confirm('Are you sure you want to delete this user?')) {
-      try {
-        await deleteAccountMutation.mutateAsync(userId);
-        // Success notification could be added here
-      } catch (error) {
-        console.error('Error deleting user:', error);
-        // Error notification could be added here
-      }
-    }
-  };
-
-  const handleToggleStatus = async (userId: string, currentStatus: number) => {
-    const newStatus = currentStatus === 1 ? 0 : 1; // toggle between active (1) and inactive (0)
-    try {
-      await updateAccountMutation.mutateAsync({
-        id: userId,
-        data: { status: newStatus }
-      });
-    } catch (error) {
-      console.error('Error updating user status:', error);
-    }
+  const handleToggleStatus = (userId: string, currentStatus: number) => {
+    const newStatus = currentStatus === 1 ? 0 : 1;
+    updateAccountMutation.mutate({
+      id: userId,
+      accountData: { status: newStatus }
+    });
   };
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center h-64">
-        <Loader2 className="h-8 w-8 animate-spin" />
-        <span className="ml-2">Loading users...</span>
+      <div className="space-y-6">
+        <div className="flex items-center justify-center py-8">
+          <Loader2 className="h-8 w-8 animate-spin" />
+          <span className="ml-2">Loading users...</span>
+        </div>
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="flex items-center justify-center h-64">
-        <div className="text-center">
-          <p className="text-red-600 mb-2">Error loading users</p>
-          <p className="text-gray-500">{error?.message || 'Please try again later'}</p>
-          <Button 
-            onClick={() => window.location.reload()} 
-            className="mt-4"
-          >
-            Retry
-          </Button>
+      <div className="space-y-6">
+        <div className="flex items-center justify-center py-8">
+          <p className="text-red-500">Có lỗi xảy ra: {(error as Error)?.message}</p>
         </div>
       </div>
     );
   }
+
+  // Statistics
+  const totalUsers = filteredUsers.length;
+  const activeUsers = filteredUsers.filter(user => user.statusNumber === 1).length;
+  const teachers = filteredUsers.filter(user => user.roleName === 'teacher').length;
+  const admins = filteredUsers.filter(user => user.roleName === 'admin').length;
 
   return (
     <div className="space-y-6">
@@ -193,12 +141,10 @@ export default function UserManagement() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-gray-600">Total Users</p>
-                <p className="text-2xl font-bold">
-                  {isLoading ? <Loader2 className="h-5 w-5 animate-spin" /> : totalUsers}
-                </p>
+                <p className="text-3xl font-bold text-gray-900">{totalUsers}</p>
               </div>
-              <div className="h-8 w-8 bg-blue-100 rounded-lg flex items-center justify-center">
-                <UserCheck className="h-4 w-4 text-blue-600" />
+              <div className="bg-blue-100 p-3 rounded-full">
+                <UserCheck className="h-6 w-6 text-blue-600" />
               </div>
             </div>
           </CardContent>
@@ -209,12 +155,10 @@ export default function UserManagement() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-gray-600">Active Users</p>
-                <p className="text-2xl font-bold">
-                  {isLoading ? <Loader2 className="h-5 w-5 animate-spin" /> : activeUsers}
-                </p>
+                <p className="text-3xl font-bold text-green-600">{activeUsers}</p>
               </div>
-              <div className="h-8 w-8 bg-green-100 rounded-lg flex items-center justify-center">
-                <UserCheck className="h-4 w-4 text-green-600" />
+              <div className="bg-green-100 p-3 rounded-full">
+                <UserCheck className="h-6 w-6 text-green-600" />
               </div>
             </div>
           </CardContent>
@@ -225,12 +169,10 @@ export default function UserManagement() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-gray-600">Teachers</p>
-                <p className="text-2xl font-bold">
-                  {isLoading ? <Loader2 className="h-5 w-5 animate-spin" /> : teachers}
-                </p>
+                <p className="text-3xl font-bold text-purple-600">{teachers}</p>
               </div>
-              <div className="h-8 w-8 bg-purple-100 rounded-lg flex items-center justify-center">
-                <UserCheck className="h-4 w-4 text-purple-600" />
+              <div className="bg-purple-100 p-3 rounded-full">
+                <UserCheck className="h-6 w-6 text-purple-600" />
               </div>
             </div>
           </CardContent>
@@ -241,29 +183,27 @@ export default function UserManagement() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-gray-600">Admins</p>
-                <p className="text-2xl font-bold">
-                  {isLoading ? <Loader2 className="h-5 w-5 animate-spin" /> : admins}
-                </p>
+                <p className="text-3xl font-bold text-red-600">{admins}</p>
               </div>
-              <div className="h-8 w-8 bg-red-100 rounded-lg flex items-center justify-center">
-                <UserCheck className="h-4 w-4 text-red-600" />
+              <div className="bg-red-100 p-3 rounded-full">
+                <UserCheck className="h-6 w-6 text-red-600" />
               </div>
             </div>
           </CardContent>
         </Card>
       </div>
 
-      {/* Filters and Search */}
+      {/* Search and Filter */}
       <Card>
         <CardHeader>
-          <CardTitle>Users List</CardTitle>
+          <CardTitle>User List</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="flex flex-col sm:flex-row gap-4 mb-6">
+          <div className="flex flex-col md:flex-row gap-4 mb-6">
             <div className="relative flex-1">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
               <Input
-                placeholder="Search users..."
+                placeholder="Search by name, email, or username..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="pl-10"
@@ -272,7 +212,7 @@ export default function UserManagement() {
             <select
               value={filterRole}
               onChange={(e) => setFilterRole(e.target.value)}
-              className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             >
               <option value="all">All Roles</option>
               {availableRoles.map(role => (
@@ -285,116 +225,102 @@ export default function UserManagement() {
 
           {/* Users Table */}
           <div className="overflow-x-auto">
-            <table className="w-full">
+            <table className="w-full border-collapse">
               <thead>
-                <tr className="border-b">
-                  <th className="text-left py-3 px-4 font-medium text-gray-500">User</th>
-                  <th className="text-left py-3 px-4 font-medium text-gray-500">Role</th>
-                  <th className="text-left py-3 px-4 font-medium text-gray-500">Status</th>
-                  <th className="text-left py-3 px-4 font-medium text-gray-500">Gender</th>
-                  <th className="text-left py-3 px-4 font-medium text-gray-500">Created Date</th>
-                  <th className="text-left py-3 px-4 font-medium text-gray-500">Actions</th>
+                <tr className="bg-gray-50">
+                  <th className="text-left p-4 font-medium text-gray-900">User</th>
+                  <th className="text-left p-4 font-medium text-gray-900">Role</th>
+                  <th className="text-left p-4 font-medium text-gray-900">Status</th>
+                  <th className="text-left p-4 font-medium text-gray-900">Gender</th>
+                  <th className="text-left p-4 font-medium text-gray-900">Created</th>
+                  <th className="text-left p-4 font-medium text-gray-900">Actions</th>
                 </tr>
               </thead>
               <tbody>
-                {isLoading ? (
-                  <tr>
-                    <td colSpan={6} className="py-8 text-center">
-                      <Loader2 className="h-6 w-6 animate-spin mx-auto" />
-                      <p className="text-gray-500 mt-2">Đang tải dữ liệu...</p>
-                    </td>
-                  </tr>
-                ) : isError ? (
-                  <tr>
-                    <td colSpan={6} className="py-8 text-center">
-                      <p className="text-red-500">Có lỗi xảy ra: {error?.message}</p>
-                    </td>
-                  </tr>
-                ) : filteredUsers.length === 0 ? (
-                  <tr>
-                    <td colSpan={6} className="py-8 text-center">
-                      <p className="text-gray-500">Không tìm thấy người dùng nào</p>
-                    </td>
-                  </tr>
-                ) : (
-                  filteredUsers.map((user) => (
-                    <tr key={user.id} className="border-b hover:bg-gray-50">
-                      <td className="py-4 px-4">
+                {filteredUsers.map((user) => (
+                  <tr key={user.id} className="border-b border-gray-200 hover:bg-gray-50">
+                    <td className="p-4">
+                      <div className="flex items-center space-x-3">
+                        <div className="bg-gray-200 rounded-full h-10 w-10 flex items-center justify-center">
+                          <span className="text-sm font-medium text-gray-600">
+                            {user.fullName.charAt(0).toUpperCase()}
+                          </span>
+                        </div>
                         <div>
                           <div className="font-medium text-gray-900">{user.fullName}</div>
-                          <div className="text-sm text-gray-500 flex items-center mt-1">
-                            <Mail className="h-3 w-3 mr-1" />
-                            {user.email}
-                          </div>
-                          {user.phone && (
-                            <div className="text-sm text-gray-500 flex items-center">
-                              <Phone className="h-3 w-3 mr-1" />
-                              {user.phone}
-                            </div>
-                          )}
+                          <div className="text-sm text-gray-500">{user.email}</div>
+                          <div className="text-sm text-gray-500">@{user.username}</div>
                         </div>
-                      </td>
-                      <td className="py-4 px-4">
-                        <Badge className={getRoleColor(user.roleName)}>
-                          {user.roleName.charAt(0).toUpperCase() + user.roleName.slice(1)}
-                        </Badge>
-                      </td>
-                      <td className="py-4 px-4">
-                        <Badge className={getStatusColor(user.status)}>
-                          {user.statusText.charAt(0).toUpperCase() + user.statusText.slice(1)}
-                        </Badge>
-                      </td>
-                      <td className="py-4 px-4">
-                        <span className="text-sm text-gray-900">
-                          {user.genderText === 'male' ? 'Nam' : user.genderText === 'female' ? 'Nữ' : 'Khác'}
-                        </span>
-                      </td>
-                      <td className="py-4 px-4">
-                        <span className="text-sm text-gray-900">
-                          {new Date(user.createdDate).toLocaleDateString('vi-VN')}
-                        </span>
-                      </td>
-                      <td className="py-4 px-4">
-                        <div className="flex items-center space-x-2">
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            onClick={() => handleToggleStatus(user.id, user.status)}
-                            disabled={updateAccountMutation.isPending}
-                          >
-                            {user.status === 1 ? (
+                      </div>
+                    </td>
+                    <td className="p-4">
+                      <Badge className={getRoleColor(user.roleName)}>
+                        {user.roleName.charAt(0).toUpperCase() + user.roleName.slice(1)}
+                      </Badge>
+                    </td>
+                    <td className="p-4">
+                      <Badge className={getStatusColor(user.statusNumber)}>
+                        {user.statusText.charAt(0).toUpperCase() + user.statusText.slice(1)}
+                      </Badge>
+                    </td>
+                    <td className="p-4">
+                      <span className="text-sm text-gray-900">
+                        {user.genderText === 'male' ? 'Nam' : user.genderText === 'female' ? 'Nữ' : 'Khác'}
+                      </span>
+                    </td>
+                    <td className="p-4">
+                      <span className="text-sm text-gray-900">
+                        {new Date(user.createdDate).toLocaleDateString('vi-VN')}
+                      </span>
+                    </td>
+                    <td className="p-4">
+                      <div className="flex items-center space-x-2">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleToggleStatus(user.id, user.statusNumber)}
+                          className="flex items-center space-x-1"
+                        >
+                          {user.statusNumber === 1 ? (
+                            <>
                               <UserX className="h-4 w-4" />
-                            ) : (
+                              <span>Deactivate</span>
+                            </>
+                          ) : (
+                            <>
                               <UserCheck className="h-4 w-4" />
-                            )}
-                          </Button>
-                          <Button size="sm" variant="outline">
-                            <Edit className="h-4 w-4" />
-                          </Button>
-                          <Button 
-                            size="sm" 
-                            variant="outline"
-                            onClick={() => handleDeleteUser(user.id)}
-                            disabled={deleteAccountMutation.isPending}
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
-                        </div>
-                      </td>
-                    </tr>
-                  ))
-                )}
+                              <span>Activate</span>
+                            </>
+                          )}
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleDeleteUser(user.id)}
+                          className="text-red-600 hover:text-red-700 flex items-center space-x-1"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                          <span>Delete</span>
+                        </Button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
               </tbody>
             </table>
           </div>
+
+          {filteredUsers.length === 0 && !isLoading && (
+            <div className="text-center py-8">
+              {users.length === 0 ? (
+                <p className="text-gray-500">No users found in the system.</p>
+              ) : (
+                <p className="text-gray-500">No users found matching your criteria.</p>
+              )}
+            </div>
+          )}
         </CardContent>
       </Card>
-
-      {/* Create User Modal */}
-      <CreateUserModal 
-        isOpen={showAddModal} 
-        onClose={() => setShowAddModal(false)} 
-      />
     </div>
   );
 }
