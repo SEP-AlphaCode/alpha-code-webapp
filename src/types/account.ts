@@ -14,3 +14,12 @@ export type Account = {
   roleId: string;
   roleName: string;
 };
+
+export type AccountData = {
+  id: string;
+  username: string;
+  email: string;
+  fullName: string;
+  roleName: string;
+  roleId: string;
+}

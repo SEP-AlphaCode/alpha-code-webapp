@@ -72,7 +72,6 @@ export const logout = async (): Promise<void> => {
     // Clear all tokens from sessionStorage
     sessionStorage.removeItem('accessToken');
     sessionStorage.removeItem('refreshToken');
-    sessionStorage.removeItem('account');
   }
 };
 

@@ -3,14 +3,14 @@ import { login, googleLogin } from '@/api/authApi';
 import { useRouter } from 'next/navigation';
 import { toast } from 'react-toastify';
 import { LoginRequest, LoginResponse } from '@/types/login';
-import { saveAccountDataFromToken } from '@/utils/roleUtils';
+import { getTokenPayload } from '@/utils/tokenUtils';
 
 export const useLogin = () => {
   const router = useRouter();
 
   return useMutation<LoginResponse, Error, LoginRequest>({
     mutationFn: login,
-    onSuccess: (data) => {
+    onSuccess: async (data) => {
       // Check for empty response
       if (!data || Object.keys(data).length === 0) {
         toast.error('Error: Server returned empty response. Please check the API endpoint.');
@@ -33,14 +33,14 @@ export const useLogin = () => {
       // Save tokens to sessionStorage
       sessionStorage.setItem('accessToken', accessToken);
       sessionStorage.setItem('refreshToken', refreshToken);
-      // Extract and save account data from JWT token
-      const accountData = saveAccountDataFromToken(accessToken);
+
+      var accountData = getTokenPayload(accessToken);
       
       if (!accountData) {
         toast.error('Error: Unable to get account information from token');
         return;
       }
-      toast.success(`Welcome ${accountData.fullName}! Login successful.`);
+      toast.success(`Welcome ${accountData.fullName}!`);
       
       // Redirect based on role from account data
       const roleNameLower = accountData.roleName.toLowerCase();
@@ -106,7 +106,9 @@ export const useGoogleLogin = () => {
       }
       sessionStorage.setItem('accessToken', accessToken);
       sessionStorage.setItem('refreshToken', refreshToken);
-      const accountData = saveAccountDataFromToken(accessToken);
+
+      var accountData = getTokenPayload(accessToken);
+      
       if (!accountData) {
         toast.error('Error: Unable to get account information from token');
         return;

@@ -6,9 +6,9 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { AuthGuard } from '@/components/auth-guard';
-import { useLogout } from '@/hooks/useLogout';
+import { useLogout } from '@/hooks/use-logout';
 import { LogOut } from 'lucide-react';
-import { getAccountDataFromStorage, type AccountData } from '@/utils/roleUtils';
+import { AccountData } from '@/types/account';
 
 interface TeacherLayoutProps {
   children: React.ReactNode;
@@ -21,8 +21,8 @@ export default function TeacherLayout({ children }: TeacherLayoutProps) {
   const logoutMutation = useLogout();
 
   useEffect(() => {
-    const data = getAccountDataFromStorage();
-    setAccountData(data);
+    // const data = getAccountDataFromStorage();
+    // setAccountData(data);
   }, []);
 
   const navigationItems = [

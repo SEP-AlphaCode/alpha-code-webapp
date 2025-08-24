@@ -14,7 +14,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-import { useAccount } from '@/hooks/useAccount';
+import { useAccount } from '@/hooks/use-account';
 import { Account } from '@/types/account';
 
 export default function UserManagement() {

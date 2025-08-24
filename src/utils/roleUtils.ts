@@ -1,66 +1,29 @@
 import { jwtDecode } from 'jwt-decode';
 
-// JWT Payload interface based on your token structure
-export interface JWTPayload {
-  sub: string;
-  email: string;
-  roleName: string;
-  username: string;
-  id: string;
-  roleId: string;
-  fullName: string;
-  iat: number;
-  exp: number;
-}
-
-// Account data interface for session storage
-export interface AccountData {
-  id: string;
-  username: string;
-  email: string;
-  fullName: string;
-  roleName: string;
-  roleId: string;
-}
-
 // Function to extract and save account data from JWT token to session storage
-export const saveAccountDataFromToken = (token: string): AccountData | null => {
-  try {
-    const payload = jwtDecode<JWTPayload>(token);
+// export const saveAccountDataFromToken = (token: string): AccountData | null => {
+//   try {
+//     const payload = jwtDecode<JWTPayload>(token);
     
-    const accountData: AccountData = {
-      id: payload.id,
-      username: payload.username,
-      email: payload.email,
-      fullName: payload.fullName,
-      roleName: payload.roleName,
-      roleId: payload.roleId
-    };
+//     const accountData: AccountData = {
+//       id: payload.id,
+//       username: payload.username,
+//       email: payload.email,
+//       fullName: payload.fullName,
+//       roleName: payload.roleName,
+//       roleId: payload.roleId
+//     };
     
-    // Save to session storage
-    sessionStorage.setItem('account', JSON.stringify(accountData));
-    console.log('Account data saved to session storage:', accountData);
+//     // Save to session storage
+//     sessionStorage.setItem('account', JSON.stringify(accountData));
+//     console.log('Account data saved to session storage:', accountData);
     
-    return accountData;
-  } catch (error) {
-    console.error('Error extracting account data from token:', error);
-    return null;
-  }
-};
-
-// Function to get account data from session storage
-export const getAccountDataFromStorage = (): AccountData | null => {
-  try {
-    const accountStr = sessionStorage.getItem('account');
-    if (accountStr) {
-      return JSON.parse(accountStr) as AccountData;
-    }
-    return null;
-  } catch (error) {
-    console.error('Error parsing account data from session storage:', error);
-    return null;
-  }
-};
+//     return accountData;
+//   } catch (error) {
+//     console.error('Error extracting account data from token:', error);
+//     return null;
+//   }
+// };
 
 export const getRoleFromToken = (token: string): string | null => {
   try {

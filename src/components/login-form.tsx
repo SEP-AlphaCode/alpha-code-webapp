@@ -6,11 +6,10 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import Image from "next/image"
 import { useState, useEffect } from "react"
-import { useGoogleLogin, useLogin } from "@/hooks/useLogin"
+import { useGoogleLogin, useLogin } from "@/hooks/use-login"
 import { LoginRequest } from "@/types/login"
-import { auth, GoogleAuthProvider, signInWithPopup } from "@/config/firebaseConfig"
+import { auth, GoogleAuthProvider, signInWithPopup } from "@/config/firebase-config"
 import { toast } from "react-toastify"
-import { useRouter } from "next/navigation"
 
 export function LoginForm({
   className,
@@ -23,7 +22,6 @@ export function LoginForm({
 
   const loginMutation = useLogin();
   const loginGoogleMutation = useGoogleLogin();
-  const router = useRouter();
 
   // Clear error when user starts typing
   useEffect(() => {

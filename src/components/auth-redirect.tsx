@@ -2,8 +2,8 @@
 
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { isValidToken } from '@/utils/tokenUtils';
-import { getRoleFromToken, getAccountDataFromStorage } from '@/utils/roleUtils';
+import { getTokenPayload, isValidToken } from '@/utils/tokenUtils';
+import { getRoleFromToken } from '@/utils/roleUtils';
 
 export const AuthRedirect = () => {
   const router = useRouter();
@@ -15,7 +15,7 @@ export const AuthRedirect = () => {
       // If user is already logged in, redirect to appropriate dashboard
       if (accessToken && isValidToken(accessToken)) {
         // First try to get account data from session storage
-        const accountData = getAccountDataFromStorage();
+        const accountData = getTokenPayload(accessToken);
         
         if (accountData && accountData.roleName) {
           console.log('User already logged in, redirecting based on stored role:', accountData.roleName);
