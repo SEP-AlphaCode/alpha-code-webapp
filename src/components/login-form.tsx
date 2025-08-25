@@ -10,6 +10,7 @@ import { useGoogleLogin, useLogin } from "@/hooks/use-login"
 import { LoginRequest } from "@/types/login"
 import { auth, GoogleAuthProvider, signInWithPopup } from "@/config/firebase-config"
 import { toast } from "react-toastify"
+import logo2 from '@/public/logo2.png'
 
 export function LoginForm({
   className,
@@ -92,10 +93,10 @@ export function LoginForm({
               <div className="flex flex-col items-center text-center">
                 <div className="w-16 h-16 rounded-2xl flex items-center justify-center mb-4 overflow-hidden">
                   <Image
-                    src="/alphaminilogoo.png"
+                    src={logo2}
                     alt="Alpha Logo"
-                    width={64}
-                    height={64}
+                    width={50}
+                    height={50}
                     className="object-contain"
                   />
                 </div>

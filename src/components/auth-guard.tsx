@@ -2,8 +2,8 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { isValidToken, clearAuthData } from '@/utils/tokenUtils';
-import { getRoleFromToken, getAccountDataFromStorage } from '@/utils/roleUtils';
+import { isValidToken, clearAuthData, getTokenPayload } from '@/utils/tokenUtils';
+import { getRoleFromToken } from '@/utils/roleUtils';
 
 interface AuthGuardProps {
   children: React.ReactNode;
@@ -18,6 +18,9 @@ export const AuthGuard = ({ children, allowedRoles }: AuthGuardProps) => {
   useEffect(() => {
     const checkAuth = () => {
       const accessToken = sessionStorage.getItem('accessToken');
+      const accountData = getTokenPayload(accessToken || '');
+
+      // If no token, redirect to login
 
       if (!accessToken) {
         clearAuthData();
@@ -35,9 +38,7 @@ export const AuthGuard = ({ children, allowedRoles }: AuthGuardProps) => {
 
       // Check role-based access
       if (allowedRoles && allowedRoles.length > 0) {
-        // First try to get account data from session storage
-        const accountData = getAccountDataFromStorage();
-        
+        // First try to get account data from session storage        
         if (accountData && accountData.roleName) {
           const userRole = accountData.roleName.toLowerCase();
           const hasRequiredRole = allowedRoles.some(role => 
