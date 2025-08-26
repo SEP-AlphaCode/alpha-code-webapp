@@ -67,7 +67,7 @@ function AdminBreadcrumb() {
     <Breadcrumb>
       <BreadcrumbList>
         {breadcrumbItems.map((item, index) => (
-          <React.Fragment key={item.href}>
+          <React.Fragment key={`${item.href}-${item.label}-${index}`}>
             <BreadcrumbItem className={index === 0 ? "hidden md:block" : ""}>
               {item.isLast ? (
                 <BreadcrumbPage>{item.label}</BreadcrumbPage>
