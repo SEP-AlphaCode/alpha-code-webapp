@@ -6,13 +6,17 @@ import {
   Bot,
   CreditCard,
   Home,
-  QrCode,
+  LifeBuoy,
   School,
+  Send,
+  Settings2,
+  SquareTerminal,
   Users,
-  MapPin,
 } from "lucide-react"
 
+import { NavMain } from "@/components/nav-main"
 import { NavProjects } from "@/components/nav-projects"
+import { NavSecondary } from "@/components/nav-secondary"
 import { NavUser } from "@/components/nav-user"
 import {
   Sidebar,
@@ -40,29 +44,24 @@ const defaultProjects = [
     icon: Users,
   },
   {
-    name: "Robot Management",
-    url: "/admin/robots",
-    icon: Bot,
-  },
-  {
-    name: "Activity Management",
-    url: "/admin/activity-cards",
+    name: "System Analytics",
+    url: "/admin/analytics",
     icon: BarChart3,
   },
   {
-    name: "Osmo Card Management",
+    name: "Robot Management",
+    url: "admin/robots",
+    icon: Bot,
+  },
+  {
+    name: "Classroom Management",
     url: "/admin/classrooms",
     icon: School,
   },
   {
-    name: "QR Card Management", 
-    url: "/admin/qrcodes",
-    icon: QrCode,
-  },
-  {
-    name: "Marker Management",
-    url: "/admin/markers",
-    icon: MapPin,
+    name: "Activity Cards",
+    url: "/admin/activity-cards",
+    icon: CreditCard
   }
 ];
 
@@ -89,6 +88,63 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
 
   const data = {
     user: userData,
+    navMain: [
+      {
+        title: "Activities",
+        url: "/admin",
+        icon: SquareTerminal,
+        isActive: true,
+        items: [
+          {
+            title: "Action",
+            url: "/admin/activities/actions",
+          },
+          {
+            title: "Dance",
+            url: "#",
+          },
+          {
+            title: "Expression",
+            url: "#",
+          },
+        ],
+      },
+      {
+        title: "Settings",
+        url: "#",
+        icon: Settings2,
+        items: [
+          {
+            title: "Robots",
+            url: "/admin/settings",
+          },
+          {
+            title: "Team",
+            url: "#",
+          },
+          {
+            title: "Billing",
+            url: "#",
+          },
+          {
+            title: "Limits",
+            url: "#",
+          },
+        ],
+      },
+    ],
+    navSecondary: [
+      {
+        title: "Support",
+        url: "#",
+        icon: LifeBuoy,
+      },
+      {
+        title: "Feedback",
+        url: "#",
+        icon: Send,
+      },
+    ],
     projects: defaultProjects,
   };
 
@@ -109,6 +165,8 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       </SidebarHeader>
       <SidebarContent>
         <NavProjects projects={data.projects} />
+        <NavMain items={data.navMain} />
+        <NavSecondary items={data.navSecondary} className="mt-auto" />
       </SidebarContent>
       <SidebarFooter>
         <NavUser user={data.user} />

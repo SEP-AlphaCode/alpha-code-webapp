@@ -34,7 +34,7 @@ export const useLogin = () => {
       sessionStorage.setItem('accessToken', accessToken);
       sessionStorage.setItem('refreshToken', refreshToken);
 
-      var accountData = getTokenPayload(accessToken);
+      const accountData = getTokenPayload(accessToken);
       
       if (!accountData) {
         toast.error('Error: Unable to get account information from token');
@@ -107,8 +107,8 @@ export const useGoogleLogin = () => {
       sessionStorage.setItem('accessToken', accessToken);
       sessionStorage.setItem('refreshToken', refreshToken);
 
-      var accountData = getTokenPayload(accessToken);
-      
+      const accountData = getTokenPayload(accessToken);
+
       if (!accountData) {
         toast.error('Error: Unable to get account information from token');
         return;
