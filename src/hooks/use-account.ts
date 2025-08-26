@@ -1,4 +1,4 @@
-import { getAllAccounts, getAccountById, createAccount, updateAccount, deleteAccount } from "@/api/accountApi";
+import { getAllAccounts, getAccountById, createAccount, updateAccount, deleteAccount } from "@/api/account-api";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Account } from "@/types/account";
 

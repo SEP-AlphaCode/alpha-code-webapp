@@ -1,4 +1,4 @@
-import { createQRCode, getAllQRCodes, getQRCodeById, updateQRCode, deleteQRCode, updateQRCodeStatus } from "@/api/qrcodeApi"
+import { createQRCode, getAllQRCodes, getQRCodeById, updateQRCode, deleteQRCode, updateQRCodeStatus } from "@/api/qr-code-api"
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { QRCodeRequest, QRCodeResponse } from "@/types/qrcode";
 

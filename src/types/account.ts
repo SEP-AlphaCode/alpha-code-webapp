@@ -23,3 +23,12 @@ export type AccountData = {
   roleName: string;
   roleId: string;
 }
+
+// Types for query parameters
+export interface AccountsQueryParams {
+  page?: number
+  limit?: number
+  search?: string
+  role?: string
+  status?: string
+}

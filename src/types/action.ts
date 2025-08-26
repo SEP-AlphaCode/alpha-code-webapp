@@ -8,3 +8,11 @@ export type Action = {
     lastUpdate: string
     canInterrupt: boolean
 }
+
+export type CreateAction = {
+    name: string
+    description: string
+    duration: number
+    status: number
+    canInterrupt: boolean
+}
