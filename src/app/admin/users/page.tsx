@@ -2,12 +2,9 @@
 import React, { useState, useMemo } from 'react';
 import { 
   Search, 
-  Edit, 
   Trash2, 
   UserCheck,
   UserX,
-  Mail,
-  Phone,
   Loader2
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
