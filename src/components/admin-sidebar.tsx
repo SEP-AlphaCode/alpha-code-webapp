@@ -3,7 +3,6 @@
 import * as React from "react"
 import {
   BarChart3,
-  BookOpen,
   Bot,
   CreditCard,
   Home,
@@ -91,63 +90,21 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
     user: userData,
     navMain: [
       {
-        title: "Playground",
-        url: "#",
+        title: "Activities",
+        url: "/admin",
         icon: SquareTerminal,
         isActive: true,
         items: [
           {
-            title: "History",
+            title: "Action",
+            url: "/admin/activities/actions",
+          },
+          {
+            title: "Dance",
             url: "#",
           },
           {
-            title: "Starred",
-            url: "#",
-          },
-          {
-            title: "Settings",
-            url: "#",
-          },
-        ],
-      },
-      {
-        title: "Models",
-        url: "#",
-        icon: Bot,
-        items: [
-          {
-            title: "Genesis",
-            url: "#",
-          },
-          {
-            title: "Explorer",
-            url: "#",
-          },
-          {
-            title: "Quantum",
-            url: "#",
-          },
-        ],
-      },
-      {
-        title: "Documentation",
-        url: "#",
-        icon: BookOpen,
-        items: [
-          {
-            title: "Introduction",
-            url: "#",
-          },
-          {
-            title: "Get Started",
-            url: "#",
-          },
-          {
-            title: "Tutorials",
-            url: "#",
-          },
-          {
-            title: "Changelog",
+            title: "Expression",
             url: "#",
           },
         ],
