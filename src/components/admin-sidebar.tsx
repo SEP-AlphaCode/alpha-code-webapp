@@ -92,13 +92,13 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
     navMain: [
       {
         title: "Activities",
-        url: "#",
+        url: "/admin",
         icon: SquareTerminal,
         isActive: true,
         items: [
           {
             title: "Action",
-            url: "#",
+            url: "/admin/activities/actions",
           },
           {
             title: "Dance",
