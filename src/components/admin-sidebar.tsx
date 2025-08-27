@@ -101,11 +101,11 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
           },
           {
             title: "Dance",
-            url: "#",
+            url: "/admin/activities/dances",
           },
           {
             title: "Expression",
-            url: "#",
+            url: "/admin/activities/expressions",
           },
         ],
       },

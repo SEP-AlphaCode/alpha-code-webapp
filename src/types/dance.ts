@@ -7,3 +7,10 @@ export type Dance = {
     lastUpdate: string
     duration: number
 }
+
+export type DanceModal = {
+    name: string
+    description: string
+    duration: number
+    status: number
+}

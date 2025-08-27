@@ -7,3 +7,10 @@ export type Expression = {
     createdDate: string
     lastUpdate: string
 }
+
+export type ExpressionModal = {
+    name: string
+    imageUrl: string
+    description: string
+    status: number
+}
