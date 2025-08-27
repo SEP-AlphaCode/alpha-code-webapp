@@ -398,7 +398,23 @@ export default function QRCodesPage() {
         <CardContent>
           {filteredQRCodes.length === 0 ? (
             <div className="text-center py-12">
-              <QrCode className="mx-auto h-16 w-16 text-gray-400" />
+              {/* Preview của QR Card Design */}
+              <div className="mb-8 max-w-xs mx-auto">
+                <div className="bg-white border-4 border-gray-300 border-dashed rounded-lg p-8 aspect-[3/4] flex flex-col items-center justify-center">
+                  <div className="text-center w-full mb-2 mt-6">
+                    <h3 className="text-xl font-bold text-gray-400 mb-1 leading-tight">
+                      QR Code Name
+                    </h3>
+                    <p className="text-lg font-medium text-gray-400 leading-tight">
+                      Activity Name
+                    </p>
+                  </div>
+                  <div className="flex-1 flex items-center justify-center w-full">
+                    <QrCode className="h-24 w-24 text-gray-300" />
+                  </div>
+                </div>
+              </div>
+              
               <h3 className="mt-4 text-lg font-semibold text-gray-900">No QR code cards found</h3>
               <p className="mt-2 text-sm text-gray-500 max-w-sm mx-auto">
                 {searchTerm || statusFilter !== 'all' 
@@ -417,103 +433,68 @@ export default function QRCodesPage() {
               )}
             </div>
           ) : viewMode === 'grid' ? (
-            // Grid View - Card Layout
+            // Grid View - Simple QR Card Layout (như hình mẫu)
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
               {filteredQRCodes.map((qrCode) => (
-                <div key={qrCode.id} className="group">
-                  <Card className="h-full border-2 border-gray-200 hover:border-blue-300 hover:shadow-lg transition-all duration-200 bg-white">
-                    <CardHeader className="pb-3">
-                      <div className="flex items-center justify-between">
-                        <CardTitle className="text-sm font-medium truncate">{qrCode.name}</CardTitle>
+                <div key={qrCode.id} className="group relative">
+                  {/* QR Code Card - Simple Design như hình mẫu */}
+                  <div className="bg-white border-4 border-black rounded-lg p-8 aspect-[3/4] flex flex-col items-center justify-center hover:shadow-lg transition-shadow">
+                    {/* QR Code Name - Căn giữa */}
+                    <div className="text-center w-full mb-2 mt-6">
+                      <h3 className="text-xl font-bold text-black mb-1 leading-tight">
+                        {qrCode.name}
+                      </h3>
+                      <p className="text-lg font-medium text-black leading-tight">
+                        {qrCode.activityName || qrCode.activityId}
+                      </p>
+                    </div>
+
+                    {/* QR Code - To hơn và căn giữa */}
+                    <div className="flex-1 flex items-center justify-center w-full">
+                      {qrCode.imageUrl ? (
+                        <Image 
+                          src={qrCode.imageUrl} 
+                          alt={`QR Code for ${qrCode.name}`}
+                          width={160}
+                          height={160}
+                          className="max-w-[160px] max-h-[160px] object-contain"
+                        />
+                      ) : (
+                        <div className="w-[160px] h-[160px] border-2 border-gray-300 flex items-center justify-center">
+                          <QrCode className="h-24 w-24 text-gray-400" />
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Actions Overlay - Chỉ hiện khi hover */}
+                  <div className="absolute inset-0 bg-black bg-opacity-50 opacity-0 group-hover:opacity-100 transition-opacity duration-200 rounded-lg flex items-center justify-center">
+                    <div className="flex items-center gap-2">
+                      {/* Status Badge */}
+                      <div className="absolute top-2 right-2">
                         {getStatusBadge(qrCode.status)}
                       </div>
-                    </CardHeader>
-                    <CardContent className="pt-0">
-                      {/* QR Code Display */}
-                      <div className="aspect-square bg-white border-2 border-gray-800 rounded-lg mb-4 p-4 flex flex-col items-center justify-center">
-                        {qrCode.imageUrl ? (
-                          <div className="w-full h-full flex flex-col items-center justify-center">
-                            <div className="text-lg font-bold mb-2 text-center text-gray-800">
-                              {qrCode.name.toUpperCase()}
-                            </div>
-                            <div className="flex-1 w-full flex items-center justify-center">
-                              <Image 
-                                src={qrCode.imageUrl} 
-                                alt={`QR Code for ${qrCode.name}`}
-                                width={120}
-                                height={120}
-                                className="max-w-full max-h-full object-contain"
-                              />
-                            </div>
-                          </div>
-                        ) : (
-                          <div className="text-center">
-                            <div className="text-lg font-bold mb-2 text-gray-800">
-                              {qrCode.name.toUpperCase()}
-                            </div>
-                            <QrCode className="h-16 w-16 text-gray-400 mx-auto" />
-                            <p className="text-xs text-gray-500 mt-2">Image not available</p>
-                          </div>
-                        )}
-                      </div>
 
-                      {/* Card Info */}
-                      <div className="space-y-2 text-sm">
-                        <div>
-                          <span className="font-medium text-gray-700">QR Code:</span>
-                          <p className="font-mono text-xs text-gray-600 truncate" title={qrCode.qrCode}>
-                            {qrCode.qrCode}
-                          </p>
-                        </div>
-                        <div>
-                          <span className="font-medium text-gray-700">Activity ID:</span>
-                          <p className="text-xs text-gray-600 truncate" title={qrCode.activityId}>
-                            {qrCode.activityId}
-                          </p>
-                        </div>
-                        <div>
-                          <span className="font-medium text-gray-700">Created:</span>
-                          <p className="text-xs text-gray-600">
-                            {new Date(qrCode.createdDate).toLocaleDateString('en-US', {
-                              year: 'numeric',
-                              month: 'short',
-                              day: 'numeric'
-                            })}
-                          </p>
-                        </div>
-                        {qrCode.lastEdited && (
-                          <div>
-                            <span className="font-medium text-gray-700">Updated:</span>
-                            <p className="text-xs text-gray-600">
-                              {new Date(qrCode.lastEdited).toLocaleDateString('en-US', {
-                                year: 'numeric',
-                                month: 'short',
-                                day: 'numeric'
-                              })}
-                            </p>
-                          </div>
-                        )}
-                      </div>
-
-                      {/* Actions */}
-                      <div className="flex items-center gap-2 mt-4 pt-3 border-t">
+                      {/* Action Buttons */}
+                      <div className="flex flex-col gap-2">
                         {qrCode.imageUrl && (
                           <Button
-                            variant="outline"
+                            variant="secondary"
                             size="sm"
                             onClick={() => handleDownloadQR(qrCode)}
                             title="Download QR code image"
-                            className="flex-1"
+                            className="bg-white text-black hover:bg-gray-100"
                           >
                             <Download className="h-4 w-4 mr-1" />
                             Download
                           </Button>
                         )}
+                        
                         <Select
                           value={getStatusText(qrCode.status)}
                           onValueChange={(value: string) => handleStatusChange(qrCode.id, value)}
                         >
-                          <SelectTrigger className="flex-1">
+                          <SelectTrigger className="bg-white text-black">
                             <SelectValue />
                           </SelectTrigger>
                           <SelectContent>
@@ -522,19 +503,20 @@ export default function QRCodesPage() {
                             <SelectItem value="inactive">Inactive</SelectItem>
                           </SelectContent>
                         </Select>
+                        
                         <Button
-                          variant="outline"
+                          variant="destructive"
                           size="sm"
                           onClick={() => handleDeleteQRCode(qrCode.id, qrCode.name)}
                           disabled={deleteQRCodeMutation.isPending}
-                          className="text-red-600 hover:text-red-700 hover:bg-red-50"
                           title="Delete QR code card"
                         >
-                          <Trash2 className="h-4 w-4" />
+                          <Trash2 className="h-4 w-4 mr-1" />
+                          Delete
                         </Button>
                       </div>
-                    </CardContent>
-                  </Card>
+                    </div>
+                  </div>
                 </div>
               ))}
             </div>
