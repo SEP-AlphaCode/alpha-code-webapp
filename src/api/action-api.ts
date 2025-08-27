@@ -1,4 +1,4 @@
-import { CreateAction } from "@/types/action";
+import { ActionModal } from "@/types/action";
 import http from "@/utils/http";
 
 export const getPagedActions = async (page: number, size: number, search?: string, signal?: AbortSignal) => {
@@ -26,12 +26,12 @@ export const getPagedActions = async (page: number, size: number, search?: strin
   }
 };
 
-export const createAction = async (actionData: CreateAction) => {
+export const createAction = async (actionData: ActionModal) => {
   const response = await http.post('/actions', actionData);
   return response.data;
 };
 
-export const updateAction = async (id: string, actionData: CreateAction) => {
+export const updateAction = async (id: string, actionData: ActionModal) => {
   const response = await http.put(`/actions/${id}`, actionData);
   return response.data;
 };
