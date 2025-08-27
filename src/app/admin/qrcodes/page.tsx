@@ -1,19 +1,11 @@
 "use client"
 
 import React, { useState } from 'react'
-import { QrCode, Plus, Search, Edit, Trash2, Eye, Download, Filter } from 'lucide-react'
+import { QrCode, Plus, Search, Edit, Trash2, Eye, Download, Filter, Grid, List } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table'
 import {
   Dialog,
   DialogContent,
@@ -33,6 +25,7 @@ import {
 import { Label } from '@/components/ui/label'
 import { useQRCode } from '@/hooks/use-qr-code'
 import { QRCodeRequest } from '@/types/qrcode'
+import Image from 'next/image'
 
 interface CreateQRCodeModalProps {
   isOpen: boolean
@@ -148,6 +141,7 @@ export default function QRCodesPage() {
   const [searchTerm, setSearchTerm] = useState('')
   const [statusFilter, setStatusFilter] = useState<string>('all')
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false)
+  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid')
 
   const qrCodeHooks = useQRCode()
   const { data: qrCodes, isLoading, error } = qrCodeHooks.useGetAllQRCodes()
@@ -180,7 +174,7 @@ export default function QRCodesPage() {
   const filteredQRCodes = qrCodes?.filter(qrCode => {
     const matchesSearch = qrCode.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          qrCode.qrCode.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         qrCode.activityName?.toLowerCase().includes(searchTerm.toLowerCase())
+                         qrCode.activityId.toLowerCase().includes(searchTerm.toLowerCase())
     
     const matchesStatus = statusFilter === 'all' || getStatusText(qrCode.status) === statusFilter
     
@@ -357,27 +351,49 @@ export default function QRCodesPage() {
                 />
               </div>
             </div>
-            <Select value={statusFilter} onValueChange={setStatusFilter}>
-              <SelectTrigger className="w-[200px]">
-                <SelectValue placeholder="Filter by status" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Status</SelectItem>
-                <SelectItem value="active">Active Cards</SelectItem>
-                <SelectItem value="pending">Pending Cards</SelectItem>
-                <SelectItem value="inactive">Inactive Cards</SelectItem>
-              </SelectContent>
-            </Select>
+            <div className="flex gap-2">
+              <Select value={statusFilter} onValueChange={setStatusFilter}>
+                <SelectTrigger className="w-[200px]">
+                  <SelectValue placeholder="Filter by status" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Status</SelectItem>
+                  <SelectItem value="active">Active Cards</SelectItem>
+                  <SelectItem value="pending">Pending Cards</SelectItem>
+                  <SelectItem value="inactive">Inactive Cards</SelectItem>
+                </SelectContent>
+              </Select>
+              <div className="flex border rounded-md">
+                <Button
+                  variant={viewMode === 'grid' ? 'default' : 'ghost'}
+                  size="sm"
+                  onClick={() => setViewMode('grid')}
+                  className="rounded-r-none"
+                >
+                  <Grid className="h-4 w-4" />
+                </Button>
+                <Button
+                  variant={viewMode === 'list' ? 'default' : 'ghost'}
+                  size="sm"
+                  onClick={() => setViewMode('list')}
+                  className="rounded-l-none"
+                >
+                  <List className="h-4 w-4" />
+                </Button>
+              </div>
+            </div>
           </div>
         </CardContent>
       </Card>
 
-      {/* QR Codes Table */}
+      {/* QR Codes Display */}
       <Card>
         <CardHeader>
-          <CardTitle className="text-lg">
-            QR Code Cards ({filteredQRCodes.length} {filteredQRCodes.length === 1 ? 'card' : 'cards'})
-          </CardTitle>
+          <div className="flex items-center justify-between">
+            <CardTitle className="text-lg">
+              QR Code Cards ({filteredQRCodes.length} {filteredQRCodes.length === 1 ? 'card' : 'cards'})
+            </CardTitle>
+          </div>
         </CardHeader>
         <CardContent>
           {filteredQRCodes.length === 0 ? (
@@ -400,91 +416,211 @@ export default function QRCodesPage() {
                 </Button>
               )}
             </div>
-          ) : (
-            <div className="overflow-x-auto">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Card Name</TableHead>
-                    <TableHead>QR Code Content</TableHead>
-                    <TableHead>Activity</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead>Created Date</TableHead>
-                    <TableHead>Last Updated</TableHead>
-                    <TableHead className="text-right">Actions</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {filteredQRCodes.map((qrCode) => (
-                    <TableRow key={qrCode.id} className="hover:bg-gray-50">
-                      <TableCell className="font-medium">{qrCode.name}</TableCell>
-                      <TableCell className="font-mono text-sm max-w-[250px]">
-                        <div className="truncate" title={qrCode.qrCode}>
-                          {qrCode.qrCode}
+          ) : viewMode === 'grid' ? (
+            // Grid View - Card Layout
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+              {filteredQRCodes.map((qrCode) => (
+                <div key={qrCode.id} className="group">
+                  <Card className="h-full border-2 border-gray-200 hover:border-blue-300 hover:shadow-lg transition-all duration-200 bg-white">
+                    <CardHeader className="pb-3">
+                      <div className="flex items-center justify-between">
+                        <CardTitle className="text-sm font-medium truncate">{qrCode.name}</CardTitle>
+                        {getStatusBadge(qrCode.status)}
+                      </div>
+                    </CardHeader>
+                    <CardContent className="pt-0">
+                      {/* QR Code Display */}
+                      <div className="aspect-square bg-white border-2 border-gray-800 rounded-lg mb-4 p-4 flex flex-col items-center justify-center">
+                        {qrCode.imageUrl ? (
+                          <div className="w-full h-full flex flex-col items-center justify-center">
+                            <div className="text-lg font-bold mb-2 text-center text-gray-800">
+                              {qrCode.name.toUpperCase()}
+                            </div>
+                            <div className="flex-1 w-full flex items-center justify-center">
+                              <Image 
+                                src={qrCode.imageUrl} 
+                                alt={`QR Code for ${qrCode.name}`}
+                                width={120}
+                                height={120}
+                                className="max-w-full max-h-full object-contain"
+                              />
+                            </div>
+                          </div>
+                        ) : (
+                          <div className="text-center">
+                            <div className="text-lg font-bold mb-2 text-gray-800">
+                              {qrCode.name.toUpperCase()}
+                            </div>
+                            <QrCode className="h-16 w-16 text-gray-400 mx-auto" />
+                            <p className="text-xs text-gray-500 mt-2">Image not available</p>
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Card Info */}
+                      <div className="space-y-2 text-sm">
+                        <div>
+                          <span className="font-medium text-gray-700">QR Code:</span>
+                          <p className="font-mono text-xs text-gray-600 truncate" title={qrCode.qrCode}>
+                            {qrCode.qrCode}
+                          </p>
                         </div>
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex flex-col">
-                          <span className="font-medium">{qrCode.activityName || 'Unknown Activity'}</span>
-                          <span className="text-xs text-gray-500">ID: {qrCode.activityId}</span>
+                        <div>
+                          <span className="font-medium text-gray-700">Activity ID:</span>
+                          <p className="text-xs text-gray-600 truncate" title={qrCode.activityId}>
+                            {qrCode.activityId}
+                          </p>
                         </div>
-                      </TableCell>
-                      <TableCell>{getStatusBadge(qrCode.status)}</TableCell>
-                      <TableCell className="text-sm text-gray-600">
-                        {new Date(qrCode.createdDate).toLocaleDateString('en-US', {
-                          year: 'numeric',
-                          month: 'short',
-                          day: 'numeric'
-                        })}
-                      </TableCell>
-                      <TableCell className="text-sm text-gray-600">
-                        {new Date(qrCode.lastEdited).toLocaleDateString('en-US', {
-                          year: 'numeric',
-                          month: 'short',
-                          day: 'numeric'
-                        })}
-                      </TableCell>
-                      <TableCell className="text-right">
-                        <div className="flex items-center justify-end gap-2">
-                          {qrCode.imageUrl && (
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => handleDownloadQR(qrCode)}
-                              title="Download QR code image"
-                            >
-                              <Download className="h-4 w-4" />
-                            </Button>
-                          )}
-                          <Select
-                            value={getStatusText(qrCode.status)}
-                            onValueChange={(value: string) => handleStatusChange(qrCode.id, value)}
-                          >
-                            <SelectTrigger className="w-24">
-                              <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="active">Active</SelectItem>
-                              <SelectItem value="pending">Pending</SelectItem>
-                              <SelectItem value="inactive">Inactive</SelectItem>
-                            </SelectContent>
-                          </Select>
+                        <div>
+                          <span className="font-medium text-gray-700">Created:</span>
+                          <p className="text-xs text-gray-600">
+                            {new Date(qrCode.createdDate).toLocaleDateString('en-US', {
+                              year: 'numeric',
+                              month: 'short',
+                              day: 'numeric'
+                            })}
+                          </p>
+                        </div>
+                        {qrCode.lastEdited && (
+                          <div>
+                            <span className="font-medium text-gray-700">Updated:</span>
+                            <p className="text-xs text-gray-600">
+                              {new Date(qrCode.lastEdited).toLocaleDateString('en-US', {
+                                year: 'numeric',
+                                month: 'short',
+                                day: 'numeric'
+                              })}
+                            </p>
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Actions */}
+                      <div className="flex items-center gap-2 mt-4 pt-3 border-t">
+                        {qrCode.imageUrl && (
                           <Button
                             variant="outline"
                             size="sm"
-                            onClick={() => handleDeleteQRCode(qrCode.id, qrCode.name)}
-                            disabled={deleteQRCodeMutation.isPending}
-                            className="text-red-600 hover:text-red-700 hover:bg-red-50"
-                            title="Delete QR code card"
+                            onClick={() => handleDownloadQR(qrCode)}
+                            title="Download QR code image"
+                            className="flex-1"
                           >
-                            <Trash2 className="h-4 w-4" />
+                            <Download className="h-4 w-4 mr-1" />
+                            Download
                           </Button>
+                        )}
+                        <Select
+                          value={getStatusText(qrCode.status)}
+                          onValueChange={(value: string) => handleStatusChange(qrCode.id, value)}
+                        >
+                          <SelectTrigger className="flex-1">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="active">Active</SelectItem>
+                            <SelectItem value="pending">Pending</SelectItem>
+                            <SelectItem value="inactive">Inactive</SelectItem>
+                          </SelectContent>
+                        </Select>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleDeleteQRCode(qrCode.id, qrCode.name)}
+                          disabled={deleteQRCodeMutation.isPending}
+                          className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                          title="Delete QR code card"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </div>
+              ))}
+            </div>
+          ) : (
+            // List View - Compact Layout
+            <div className="space-y-3">
+              {filteredQRCodes.map((qrCode) => (
+                <Card key={qrCode.id} className="hover:shadow-md transition-shadow">
+                  <CardContent className="p-4">
+                    <div className="flex items-center gap-4">
+                      {/* QR Code Thumbnail */}
+                      <div className="w-16 h-16 bg-white border border-gray-300 rounded-lg p-2 flex items-center justify-center flex-shrink-0">
+                        {qrCode.imageUrl ? (
+                          <Image 
+                            src={qrCode.imageUrl} 
+                            alt={`QR Code for ${qrCode.name}`}
+                            width={48}
+                            height={48}
+                            className="max-w-full max-h-full object-contain"
+                          />
+                        ) : (
+                          <QrCode className="h-8 w-8 text-gray-400" />
+                        )}
+                      </div>
+
+                      {/* Card Info */}
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 mb-1">
+                          <h3 className="font-medium text-gray-900 truncate">{qrCode.name}</h3>
+                          {getStatusBadge(qrCode.status)}
                         </div>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
+                        <p className="text-sm text-gray-600 font-mono truncate" title={qrCode.qrCode}>
+                          {qrCode.qrCode}
+                        </p>
+                        <p className="text-xs text-gray-500 truncate">
+                          Activity: {qrCode.activityId}
+                        </p>
+                        <p className="text-xs text-gray-500">
+                          Created: {new Date(qrCode.createdDate).toLocaleDateString('en-US', {
+                            year: 'numeric',
+                            month: 'short',
+                            day: 'numeric'
+                          })}
+                        </p>
+                      </div>
+
+                      {/* Actions */}
+                      <div className="flex items-center gap-2 flex-shrink-0">
+                        {qrCode.imageUrl && (
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handleDownloadQR(qrCode)}
+                            title="Download QR code image"
+                          >
+                            <Download className="h-4 w-4" />
+                          </Button>
+                        )}
+                        <Select
+                          value={getStatusText(qrCode.status)}
+                          onValueChange={(value: string) => handleStatusChange(qrCode.id, value)}
+                        >
+                          <SelectTrigger className="w-24">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="active">Active</SelectItem>
+                            <SelectItem value="pending">Pending</SelectItem>
+                            <SelectItem value="inactive">Inactive</SelectItem>
+                          </SelectContent>
+                        </Select>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleDeleteQRCode(qrCode.id, qrCode.name)}
+                          disabled={deleteQRCodeMutation.isPending}
+                          className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                          title="Delete QR code card"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
             </div>
           )}
         </CardContent>

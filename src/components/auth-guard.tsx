@@ -18,19 +18,27 @@ export const AuthGuard = ({ children, allowedRoles }: AuthGuardProps) => {
   useEffect(() => {
     const checkAuth = () => {
       const accessToken = sessionStorage.getItem('accessToken');
-      const accountData = getTokenPayload(accessToken || '');
 
       // If no token, redirect to login
-
       if (!accessToken) {
         clearAuthData();
         router.push('/login');
         return;
       }
 
+      const accountData = getTokenPayload(accessToken);
+
       // Validate token format and expiry
       if (!isValidToken(accessToken)) {
         console.log('Invalid or expired token, redirecting to login');
+        clearAuthData();
+        router.push('/login');
+        return;
+      }
+
+      // If accountData is null (token decode failed), redirect to login
+      if (!accountData) {
+        console.log('Failed to decode token, redirecting to login');
         clearAuthData();
         router.push('/login');
         return;

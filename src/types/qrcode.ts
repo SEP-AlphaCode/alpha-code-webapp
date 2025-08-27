@@ -11,8 +11,8 @@ export type QRCodeResponse = {
     qrCode: string,
     status: number,
     createdDate: string,
-    lastEdited: string,
+    lastEdited: string | null,
     imageUrl: string,
-    activityName: string,
-    activityId: string
+    activityId: string,
+    accountId: string
 }

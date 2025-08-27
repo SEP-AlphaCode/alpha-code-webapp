@@ -24,6 +24,10 @@ export const isTokenExpired = (token: string): boolean => {
 };
 
 export const getTokenPayload = (token: string): JWTPayload | null => {
+  if (!token || token.trim() === '') {
+    return null;
+  }
+  
   try {
     return jwtDecode<JWTPayload>(token);
   } catch (error) {
@@ -58,7 +62,7 @@ export const getUserIdFromToken = (token: string): string | null => {
 };
 
 export const isValidToken = (token: string): boolean => {
-  if (!token) return false;
+  if (!token || token.trim() === '') return false;
   
   try {
     // Basic JWT format check
