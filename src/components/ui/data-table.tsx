@@ -45,6 +45,11 @@ interface DataTableProps<TData, TValue> {
   onSearchChange?: (search: string) => void
   searchValue?: string
   searchPlaceholder?: string
+  // Server-side pagination support
+  pageCount?: number
+  page?: number
+  onPageChange?: (page: number) => void
+  total?: number
 }
 
 export function DataTable<TData, TValue>({
@@ -54,7 +59,11 @@ export function DataTable<TData, TValue>({
   onSizeChange,
   onSearchChange,
   searchValue = "",
-  searchPlaceholder = "Search..."
+  searchPlaceholder = "Search...",
+  pageCount,
+  page = 1,
+  onPageChange,
+  total
 }: DataTableProps<TData, TValue>) {
   const [sorting, setSorting] = React.useState<SortingState>([])
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
@@ -68,19 +77,30 @@ export function DataTable<TData, TValue>({
     data,
     columns,
     getCoreRowModel: getCoreRowModel(),
-    getPaginationRowModel: getPaginationRowModel(),
+    // Only use client-side pagination if pageCount is not provided (server-side pagination)
+    ...(pageCount ? {} : { getPaginationRowModel: getPaginationRowModel() }),
     onSortingChange: setSorting,
     getSortedRowModel: getSortedRowModel(),
     onColumnFiltersChange: setColumnFilters,
     getFilteredRowModel: getFilteredRowModel(),
     onColumnVisibilityChange: setColumnVisibility,
     onRowSelectionChange: setRowSelection,
-
+    // Server-side pagination configuration
+    ...(pageCount && {
+      manualPagination: true,
+      pageCount: pageCount,
+    }),
     state: {
       sorting,
       columnFilters,
       columnVisibility,
       rowSelection,
+      ...(pageCount && {
+        pagination: {
+          pageIndex: page - 1, // Convert 1-based to 0-based
+          pageSize: size,
+        },
+      }),
     },
   })
 
@@ -171,7 +191,13 @@ export function DataTable<TData, TValue>({
         </Table>
       </div>
       <div className="items-center py-4">
-        <DataTablePagination table={table} size={size} onSizeChange={onSizeChange} />
+        <DataTablePagination 
+          table={table} 
+          size={size} 
+          onSizeChange={onSizeChange}
+          onPageChange={onPageChange}
+          total={total}
+        />
       </div>
     </div>
   )

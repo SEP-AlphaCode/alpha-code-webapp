@@ -2,22 +2,15 @@ import { Account } from '@/types/account';
 import http from '@/utils/http';
 export const getAllAccounts = async () => {
   try {
-    const response = await http.get('/accounts');
-    // Handle different response structures
-    if (response.data?.data && Array.isArray(response.data.data)) {
-      return response.data.data;
-    } else if (Array.isArray(response.data)) {
-      return response.data;
-    } else {
-      return [];
-    }
+    const response = await http.get<Account[]>('/accounts');
+    return response.data;
   } catch (error) {
     throw error;
   }
 };
 
 export const getAccountById = async (id: string) => {
-  const response = await http.get(`/accounts/${id}`);
+  const response = await http.get<Account>(`/accounts/${id}`);
   return response.data;
 };
 

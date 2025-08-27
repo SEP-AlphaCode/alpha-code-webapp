@@ -1,7 +1,7 @@
 import http from '@/utils/http';
-import { LoginRequest, LoginResponse } from '@/types/login';
+import { LoginRequest, TokenResponse} from '@/types/login';
 
-export const login = async (data: LoginRequest): Promise<LoginResponse> => {
+export const login = async (data: LoginRequest): Promise<TokenResponse> => {
   try {
     const response = await http.post('/auth/login', data);
     // Handle different response structures
@@ -75,7 +75,7 @@ export const logout = async (): Promise<void> => {
   }
 };
 
-export const googleLogin = async (idToken: string): Promise<LoginResponse> => {
+export const googleLogin = async (idToken: string): Promise<TokenResponse> => {
   try {
     const response = await http.post('/auth/google-login', idToken, {
       headers: { "Content-Type": "text/plain" }

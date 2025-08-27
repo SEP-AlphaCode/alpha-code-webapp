@@ -103,6 +103,10 @@ export default function ActionsPage() {
     setPage(1) // Reset to first page when changing size
   }
 
+  const handlePageChange = (newPage: number) => {
+    setPage(newPage)
+  }
+
   const handleAddAction = () => {
     setEditAction(null)
     setIsCreateModalOpen(true)
@@ -175,6 +179,10 @@ export default function ActionsPage() {
         searchValue={searchTerm}
         onSearchChange={setSearchTerm}
         searchPlaceholder="Search actions name or description..."
+        pageCount={data?.total_pages || 0}
+        page={page}
+        onPageChange={handlePageChange}
+        total={data?.total_count || 0}
       />
       
       <CreateActionModal

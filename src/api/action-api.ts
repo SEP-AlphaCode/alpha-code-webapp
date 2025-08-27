@@ -1,9 +1,10 @@
-import { ActionModal } from "@/types/action";
+import { Action, ActionModal } from "@/types/action";
+import { PagedResult } from "@/types/page-result";
 import http from "@/utils/http";
 
 export const getPagedActions = async (page: number, size: number, search?: string, signal?: AbortSignal) => {
   try {
-    const response = await http.get('/actions', {
+    const response = await http.get<PagedResult<Action>>('/actions', {
       params: {
         page,
         size,
@@ -11,14 +12,8 @@ export const getPagedActions = async (page: number, size: number, search?: strin
       },
       signal // Add AbortSignal support
     });
-    console.log(response)
     // Handle different response structures
-    return {
-      data: response.data.data,
-      total: response.data.total || response.data.data.length,
-      page: response.data.page || page,
-      size: response.data.size || size
-    };
+    return response.data;
 
   } catch (error) {
     console.error("API Error in getPagedActions:", error);
