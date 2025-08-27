@@ -144,10 +144,13 @@ export default function QRCodesPage() {
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid')
 
   const qrCodeHooks = useQRCode()
-  const { data: qrCodes, isLoading, error } = qrCodeHooks.useGetAllQRCodes()
+  const { data: qrCodesResponse, isLoading, error } = qrCodeHooks.useGetAllQRCodes()
   const createQRCodeMutation = qrCodeHooks.useCreateQRCode()
   const deleteQRCodeMutation = qrCodeHooks.useDeleteQRCode()
   const updateStatusMutation = qrCodeHooks.useUpdateQRCodeStatus()
+
+  // Extract QR codes from PagedResult
+  const qrCodes = qrCodesResponse?.data || []
 
   const getStatusBadge = (status: number) => {
     switch (status) {

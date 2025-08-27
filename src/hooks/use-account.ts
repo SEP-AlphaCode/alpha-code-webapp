@@ -1,13 +1,14 @@
 import { getAllAccounts, getAccountById, createAccount, updateAccount, deleteAccount } from "@/api/account-api";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Account } from "@/types/account";
+import { PagedResult } from "@/types/page-result";
 
 export const useAccount = () => {
     const queryClient = useQueryClient();
 
     // Get all accounts
     const useGetAllAccounts = () => {
-        return useQuery<Account[]>({
+        return useQuery<PagedResult<Account>>({
             queryKey: ['accounts'],
             staleTime: 0,
             queryFn: getAllAccounts,

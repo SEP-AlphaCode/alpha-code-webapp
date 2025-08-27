@@ -18,8 +18,6 @@ export const AuthRedirect = () => {
         const accountData = getTokenPayload(accessToken);
         
         if (accountData && accountData.roleName) {
-          console.log('User already logged in, redirecting based on stored role:', accountData.roleName);
-          
           const roleNameLower = accountData.roleName.toLowerCase();
           if (roleNameLower === 'admin') {
             router.push('/admin');
@@ -31,7 +29,6 @@ export const AuthRedirect = () => {
         } else {
           // Fallback: get role from token
           const roleFromToken = getRoleFromToken(accessToken);
-          console.log('User already logged in, role from token:', roleFromToken);
           
           if (roleFromToken) {
             const roleNameLower = roleFromToken.toLowerCase();
@@ -44,7 +41,6 @@ export const AuthRedirect = () => {
             }
           } else {
             // If no role found, redirect to admin by default
-            console.log('No role found, redirecting to admin dashboard');
             router.push('/admin');
           }
         }

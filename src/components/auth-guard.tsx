@@ -30,7 +30,6 @@ export const AuthGuard = ({ children, allowedRoles }: AuthGuardProps) => {
 
       // Validate token format and expiry
       if (!isValidToken(accessToken)) {
-        console.log('Invalid or expired token, redirecting to login');
         clearAuthData();
         router.push('/login');
         return;
@@ -38,7 +37,6 @@ export const AuthGuard = ({ children, allowedRoles }: AuthGuardProps) => {
 
       // If accountData is null (token decode failed), redirect to login
       if (!accountData) {
-        console.log('Failed to decode token, redirecting to login');
         clearAuthData();
         router.push('/login');
         return;
@@ -67,7 +65,6 @@ export const AuthGuard = ({ children, allowedRoles }: AuthGuardProps) => {
         } else {
           // Fallback: try to get role from token directly
           const roleFromToken = getRoleFromToken(accessToken);
-          console.log('Role from token:', roleFromToken);
           
           if (roleFromToken) {
             const userRole = roleFromToken.toLowerCase();
@@ -86,8 +83,6 @@ export const AuthGuard = ({ children, allowedRoles }: AuthGuardProps) => {
               }
               return;
             }
-          } else {
-            console.log('No role found, allowing access');
           }
         }
       }

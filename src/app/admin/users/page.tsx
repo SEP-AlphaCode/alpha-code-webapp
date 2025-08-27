@@ -19,14 +19,20 @@ export default function UserManagement() {
   const [filterRole, setFilterRole] = useState<string>('all');
 
   const accountHooks = useAccount();
-  const { data: accounts, isLoading, error } = accountHooks.useGetAllAccounts();
+  const { data: accountsResponse, isLoading, error } = accountHooks.useGetAllAccounts();
   const deleteAccountMutation = accountHooks.useDeleteAccount();
   const updateAccountMutation = accountHooks.useUpdateAccount();
 
+  // Extract accounts from PagedResult
+  const accounts = accountsResponse?.data || [];
+
   // Convert Account type to User interface for compatibility
   const users = useMemo(() => {
-    if (!accounts || !Array.isArray(accounts)) return [];
-    return accounts.map((account: Account) => ({
+    if (!accounts || !Array.isArray(accounts)) {
+      return [];
+    }
+    
+    const processedUsers = accounts.map((account: Account) => ({
       id: account.id,
       name: account.fullName || 'Unknown',
       fullName: account.fullName || 'Unknown',
@@ -47,6 +53,8 @@ export default function UserManagement() {
       bannedReason: account.bannedReason || '',
       roleId: account.roleId || ''
     }));
+    
+    return processedUsers;
   }, [accounts]);
 
   // Get unique roles dynamically from data
