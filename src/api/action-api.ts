@@ -1,40 +1,25 @@
 import { CreateAction } from "@/types/action";
 import http from "@/utils/http";
 
-export const getPagedActions = async (page: number, limit: number, search?: string, signal?: AbortSignal) => {
+export const getPagedActions = async (page: number, size: number, search?: string, signal?: AbortSignal) => {
   try {
     const response = await http.get('/actions', {
       params: {
         page,
-        limit,
+        size,
         search
       },
       signal // Add AbortSignal support
     });
-    
+    console.log(response)
     // Handle different response structures
-    if (response.data?.data && Array.isArray(response.data.data)) {
-      return {
-        data: response.data.data,
-        total: response.data.total || response.data.data.length,
-        page: response.data.page || page,
-        limit: response.data.limit || limit
-      };
-    } else if (Array.isArray(response.data)) {
-      return {
-        data: response.data,
-        total: response.data.length,
-        page: page,
-        limit: limit
-      };
-    } else {
-      return {
-        data: [],
-        total: 0,
-        page: page,
-        limit: limit
-      };
-    }
+    return {
+      data: response.data.data,
+      total: response.data.total || response.data.data.length,
+      page: response.data.page || page,
+      size: response.data.size || size
+    };
+
   } catch (error) {
     console.error("API Error in getPagedActions:", error);
     throw error;
@@ -43,5 +28,15 @@ export const getPagedActions = async (page: number, limit: number, search?: stri
 
 export const createAction = async (actionData: CreateAction) => {
   const response = await http.post('/actions', actionData);
+  return response.data;
+};
+
+export const updateAction = async (id: string, actionData: CreateAction) => {
+  const response = await http.put(`/actions/${id}`, actionData);
+  return response.data;
+};
+
+export const deleteAction = async (id: string) => {
+  const response = await http.delete(`/actions/${id}`);
   return response.data;
 };

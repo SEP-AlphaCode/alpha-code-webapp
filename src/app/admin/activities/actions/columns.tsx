@@ -5,7 +5,7 @@ import { ColumnDef } from "@tanstack/react-table"
 import { Checkbox } from "@/components/ui/checkbox"
 
 import { ArrowUpDown } from "lucide-react"
-import { MoreHorizontal } from "lucide-react"
+import { MoreHorizontal, Edit, Trash2, Eye } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
 import {
@@ -19,7 +19,11 @@ import {
 
 // This type is used to define the shape of our data.
 // You can use a Zod schema here if you want.
-export const columns: ColumnDef<Action>[] = [
+export const createColumns = (
+  onEdit?: (action: Action) => void, 
+  onDelete?: (action: Action) => void,
+  onView?: (action: Action) => void
+): ColumnDef<Action>[] => [
     {
         id: "select",
         header: ({ table }) => (
@@ -47,6 +51,11 @@ export const columns: ColumnDef<Action>[] = [
         header: () => (
             <span className="flex items-center gap-1 text-gray-700 font-semibold">
                 ID
+            </span>
+        ),
+        cell: ({ row }) => (
+            <span className="text-gray-700 font-semibold">
+                {row.original.id.substring(0, 8)}...
             </span>
         ),
     },
@@ -142,7 +151,7 @@ export const columns: ColumnDef<Action>[] = [
     {
         id: "actions",
         cell: ({ row }) => {
-            const payment = row.original
+            const action = row.original
 
             return (
                 <DropdownMenu>
@@ -155,13 +164,33 @@ export const columns: ColumnDef<Action>[] = [
                     <DropdownMenuContent align="end">
                         <DropdownMenuLabel>Actions</DropdownMenuLabel>
                         <DropdownMenuItem
-                            onClick={() => navigator.clipboard.writeText(payment.id)}
+                            onClick={() => navigator.clipboard.writeText(action.id)}
+                            className="hover:bg-gray-100 transition-colors duration-200"
                         >
-                            Copy payment ID
+                            Copy Action ID
                         </DropdownMenuItem>
                         <DropdownMenuSeparator />
-                        <DropdownMenuItem>View customer</DropdownMenuItem>
-                        <DropdownMenuItem>View payment details</DropdownMenuItem>
+                        <DropdownMenuItem 
+                            onClick={() => onView?.(action)}
+                            className="hover:bg-green-50 hover:text-green-700 transition-colors duration-200"
+                        >
+                            <Eye className="mr-2 h-4 w-4" />
+                            View Details
+                        </DropdownMenuItem>
+                        <DropdownMenuItem 
+                            onClick={() => onEdit?.(action)}
+                            className="hover:bg-blue-50 hover:text-blue-700 transition-colors duration-200"
+                        >
+                            <Edit className="mr-2 h-4 w-4" />
+                            Edit Action
+                        </DropdownMenuItem>
+                        <DropdownMenuItem 
+                            onClick={() => onDelete?.(action)}
+                            className="text-red-600 hover:bg-red-50 hover:text-red-700 transition-colors duration-200"
+                        >
+                            <Trash2 className="mr-2 h-4 w-4" />
+                            Delete Action
+                        </DropdownMenuItem>
                     </DropdownMenuContent>
                 </DropdownMenu>
             )

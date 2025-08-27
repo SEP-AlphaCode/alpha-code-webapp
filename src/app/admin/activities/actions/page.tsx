@@ -1,19 +1,32 @@
 "use client"
 
-import { columns } from "./columns"
+import { createColumns } from "./columns"
 import { DataTable } from "@/components/ui/data-table"
 import { useQuery } from "@tanstack/react-query"
 import { getPagedActions } from "@/api/action-api"
 import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
-import { CreateActionModal } from "@/app/admin/activities/actions/create-action-modal"
+import { CreateActionModal } from "@/app/admin/activities/actions/action-modal"
+import { DeleteActionModal } from "@/app/admin/activities/actions/delete-action-modal"
+import { ViewActionModal } from "@/app/admin/activities/actions/view-action-modal"
+import { Action } from "@/types/action"
+import { useAction } from "@/hooks/use-action"
+import { toast } from "react-toastify"
 
 export default function ActionsPage() {
   const [page, setPage] = useState(1)
-  const [limit, setLimit] = useState(10)
+  const [size, setSize] = useState(10)
   const [searchTerm, setSearchTerm] = useState("")
   const [debouncedSearchTerm, setDebouncedSearchTerm] = useState("")
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false)
+  const [editAction, setEditAction] = useState<Action | null>(null)
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false)
+  const [deleteAction, setDeleteAction] = useState<Action | null>(null)
+  const [isViewModalOpen, setIsViewModalOpen] = useState(false)
+  const [viewAction, setViewAction] = useState<Action | null>(null)
+
+  const { useDeleteAction } = useAction()
+  const deleteActionMutation = useDeleteAction()
 
   // Debounce search term
   useEffect(() => {
@@ -25,19 +38,19 @@ export default function ActionsPage() {
   }, [searchTerm])
 
   const { data, isLoading, error, refetch } = useQuery({
-    queryKey: ["actions", page, limit, debouncedSearchTerm],
+    queryKey: ["actions", page, size, debouncedSearchTerm],
     queryFn: async ({ queryKey }) => {
       const controller = new AbortController()
       setTimeout(() => {
         controller.abort()
       }, 10000) // 10 second timeout
 
-      const [, currentPage, currentLimit, search] = queryKey
+      const [, currentPage, currentSize, search] = queryKey
 
       try {
         return await getPagedActions(
           currentPage as number,
-          currentLimit as number,
+          currentSize as number,
           search as string,
           controller.signal
         )
@@ -85,14 +98,61 @@ export default function ActionsPage() {
 
   const actions = data?.data || []
 
-  const handleLimitChange = (newLimit: number) => {
-    setLimit(newLimit)
-    setPage(1) // Reset to first page when changing limit
+  const handleSizeChange = (newSize: number) => {
+    setSize(newSize)
+    setPage(1) // Reset to first page when changing size
   }
 
   const handleAddAction = () => {
+    setEditAction(null)
     setIsCreateModalOpen(true)
   }
+
+  const handleEditAction = (action: Action) => {
+    setEditAction(action)
+    setIsCreateModalOpen(true)
+  }
+
+  const handleViewAction = (action: Action) => {
+    setViewAction(action)
+    setIsViewModalOpen(true)
+  }
+
+  const handleDeleteAction = (action: Action) => {
+    setDeleteAction(action)
+    setIsDeleteModalOpen(true)
+  }
+
+  const handleConfirmDelete = async () => {
+    if (!deleteAction) return
+
+    try {
+      await deleteActionMutation.mutateAsync(deleteAction.id)
+      toast.success("Action deleted successfully!")
+      setIsDeleteModalOpen(false)
+      setDeleteAction(null)
+    } catch (error) {
+      console.error("Error deleting action:", error)
+      toast.error("Failed to delete action. Please try again.")
+    }
+  }
+
+  const handleCloseDeleteModal = () => {
+    setIsDeleteModalOpen(false)
+    setDeleteAction(null)
+  }
+
+  const handleCloseViewModal = () => {
+    setIsViewModalOpen(false)
+    setViewAction(null)
+  }
+
+  const handleCloseModal = () => {
+    setIsCreateModalOpen(false)
+    setEditAction(null)
+  }
+
+  const columns = createColumns(handleEditAction, handleDeleteAction, handleViewAction)
 
   return (
     <div className="container mx-auto py-10">
@@ -109,14 +169,33 @@ export default function ActionsPage() {
       </div>
       <DataTable
         columns={columns}
+        size={size}
         data={actions}
-        limit={limit}
-        onLimitChange={handleLimitChange}
+        onSizeChange={handleSizeChange}
+        searchValue={searchTerm}
+        onSearchChange={setSearchTerm}
+        searchPlaceholder="Search actions name or description..."
       />
       
       <CreateActionModal
         isOpen={isCreateModalOpen}
-        onClose={() => setIsCreateModalOpen(false)}
+        onClose={handleCloseModal}
+        editAction={editAction}
+        mode={editAction ? 'edit' : 'create'}
+      />
+      
+      <ViewActionModal
+        isOpen={isViewModalOpen}
+        onClose={handleCloseViewModal}
+        action={viewAction}
+      />
+      
+      <DeleteActionModal
+        isOpen={isDeleteModalOpen}
+        onClose={handleCloseDeleteModal}
+        onConfirm={handleConfirmDelete}
+        action={deleteAction}
+        isDeleting={deleteActionMutation.isPending}
       />
     </div>
   )

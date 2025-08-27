@@ -1,4 +1,4 @@
-import { createAction, getPagedActions } from "@/api/action-api";
+import { createAction, getPagedActions, updateAction, deleteAction } from "@/api/action-api";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 export const useAction = () => {
@@ -22,8 +22,30 @@ export const useAction = () => {
         });
     };
 
+    // Update action mutation
+    const useUpdateAction = () => {
+        return useMutation({
+            mutationFn: ({ id, data }: { id: string, data: any }) => updateAction(id, data),
+            onSuccess: () => {
+                queryClient.invalidateQueries({ queryKey: ['actions'] });
+            },
+        });
+    };
+
+    // Delete action mutation
+    const useDeleteAction = () => {
+        return useMutation({
+            mutationFn: deleteAction,
+            onSuccess: () => {
+                queryClient.invalidateQueries({ queryKey: ['actions'] });
+            },
+        });
+    };
+
     return {
         useGetPagedActions,
-        useCreateAction
+        useCreateAction,
+        useUpdateAction,
+        useDeleteAction
     }
 };
