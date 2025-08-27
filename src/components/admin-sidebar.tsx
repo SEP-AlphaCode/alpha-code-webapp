@@ -59,8 +59,8 @@ const defaultProjects = [
     icon: School,
   },
   {
-    name: "Activity Cards",
-    url: "/admin/activity-cards",
+    name: "QRCode",
+    url: "/admin/qrcodes",
     icon: CreditCard
   }
 ];
