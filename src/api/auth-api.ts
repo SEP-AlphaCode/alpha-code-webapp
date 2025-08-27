@@ -8,17 +8,14 @@ export const login = async (data: LoginRequest): Promise<TokenResponse> => {
     let responseData = response.data;
     // If the data is wrapped in another property, unwrap it
     if (responseData && responseData.data) {
-      console.log('Found data in responseData.data');
       responseData = responseData.data;
     }
     // If the response is wrapped in a result property
     if (responseData && responseData.result) {
-      console.log('Found data in responseData.result');
       responseData = responseData.result;
     }
     // Check for common API response patterns
     if (responseData && responseData.success && responseData.payload) {
-      console.log('Found data in responseData.payload');
       responseData = responseData.payload;
     }
     // Check if response has token and account

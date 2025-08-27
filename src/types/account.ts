@@ -1,18 +1,19 @@
 export type Account = {
   id: string;
   username: string;
-  password: string;
+  password?: string;
   fullName: string;
   phone: string;
   email: string;
   gender: number;
   createdDate: string;
-  lastEdited: string;
+  lastEdited: string | null;
   status: number;
   image: string;
-  bannedReason: string;
+  bannedReason: string | null;
   roleId: string;
   roleName: string;
+  statusText: string;
 };
 
 export type AccountData = {
@@ -22,6 +23,17 @@ export type AccountData = {
   fullName: string;
   roleName: string;
   roleId: string;
+}
+
+// Type for paginated accounts response
+export type AccountsResponse = {
+  data: Account[];
+  total_count: number;
+  page: number;
+  per_page: number;
+  total_pages: number;
+  has_next: boolean;
+  has_previous: boolean;
 }
 
 // Types for query parameters

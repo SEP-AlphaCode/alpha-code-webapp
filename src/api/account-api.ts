@@ -1,8 +1,9 @@
 import { Account } from '@/types/account';
+import { PagedResult } from '@/types/page-result';
 import http from '@/utils/http';
 export const getAllAccounts = async () => {
   try {
-    const response = await http.get<Account[]>('/accounts');
+    const response = await http.get<PagedResult<Account>>('/accounts');
     return response.data;
   } catch (error) {
     throw error;
