@@ -4,6 +4,6 @@ export type Expression = {
     imageUrl: string
     description: string
     status: number
-    createDate: string
+    createdDate: string
     lastUpdate: string
 }

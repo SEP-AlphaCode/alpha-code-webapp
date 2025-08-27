@@ -3,7 +3,7 @@ export type Dance = {
     name: string
     description: string
     status: number
-    createDate: string
+    createdDate: string
     lastUpdate: string
     duration: number
 }
