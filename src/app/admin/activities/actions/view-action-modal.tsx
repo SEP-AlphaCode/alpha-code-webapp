@@ -8,22 +8,25 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
-import { Action } from "@/types/action"
 import { Badge } from "@/components/ui/badge"
 import { Calendar, Clock, FileText, Hash, Settings, ToggleLeft, ToggleRight } from "lucide-react"
+import { useAppSelector, useAppDispatch } from "@/store/hooks"
+import { closeModal } from "@/store/slices/uiSlice"
 
-interface ViewActionModalProps {
-  isOpen: boolean
-  onClose: () => void
-  action: Action | null
-}
-
-export function ViewActionModal({ 
-  isOpen, 
-  onClose, 
-  action
-}: ViewActionModalProps) {
-  if (!action) return null
+export function ViewActionModal() {
+  const dispatch = useAppDispatch()
+  
+  // Get state from Redux using modal system
+  const actionModal = useAppSelector((state) => state.ui.modals['action'] || { isOpen: false, mode: null, data: null })
+  
+  const isOpen = actionModal.isOpen && actionModal.mode === 'view'
+  const currentAction = actionModal.data
+  
+  const onClose = () => {
+    dispatch(closeModal('action'))
+  }
+  
+  if (!currentAction) return null
 
   const formatDate = (dateString: string) => {
     try {
@@ -83,7 +86,7 @@ export function ViewActionModal({
                 <div className="flex-1">
                   <label className="text-sm font-medium text-gray-700">ID</label>
                   <p className="text-sm text-gray-900 font-mono bg-gray-50 p-2 rounded border break-all">
-                    {action.id}
+                    {currentAction.id}
                   </p>
                 </div>
               </div>
@@ -93,7 +96,7 @@ export function ViewActionModal({
                 <div className="flex-1">
                   <label className="text-sm font-medium text-gray-700">Name</label>
                   <p className="text-sm text-gray-900 bg-purple-50 p-2 rounded border">
-                    {action.name}
+                    {currentAction.name}
                   </p>
                 </div>
               </div>
@@ -103,7 +106,7 @@ export function ViewActionModal({
                 <div className="flex-1">
                   <label className="text-sm font-medium text-gray-700">Description</label>
                   <p className="text-sm text-gray-900 bg-yellow-50 p-2 rounded border min-h-[40px]">
-                    {action.description || "No description provided"}
+                    {currentAction.description || "No description provided"}
                   </p>
                 </div>
               </div>
@@ -120,7 +123,7 @@ export function ViewActionModal({
                 <div className="flex-1">
                   <label className="text-sm font-medium text-gray-700">Duration</label>
                   <p className="text-sm text-blue-600 bg-blue-50 p-2 rounded border font-medium">
-                    {action.duration} seconds
+                    {currentAction.duration} seconds
                   </p>
                 </div>
               </div>
@@ -130,13 +133,13 @@ export function ViewActionModal({
                 <div className="flex-1">
                   <label className="text-sm font-medium text-gray-700">Status</label>
                   <div className="mt-1">
-                    {getStatusBadge(action.status)}
+                    {getStatusBadge(currentAction.status)}
                   </div>
                 </div>
               </div>
               
               <div className="flex items-start gap-3">
-                {action.canInterrupt ? (
+                {currentAction.canInterrupt ? (
                   <ToggleRight className="h-4 w-4 text-green-500 mt-1 flex-shrink-0" />
                 ) : (
                   <ToggleLeft className="h-4 w-4 text-red-500 mt-1 flex-shrink-0" />
@@ -144,11 +147,11 @@ export function ViewActionModal({
                 <div className="flex-1">
                   <label className="text-sm font-medium text-gray-700">Can Interrupt</label>
                   <p className={`text-sm p-2 rounded border font-medium ${
-                    action.canInterrupt 
+                    currentAction.canInterrupt 
                       ? 'text-green-700 bg-green-50' 
                       : 'text-red-700 bg-red-50'
                   }`}>
-                    {action.canInterrupt ? "Yes" : "No"}
+                    {currentAction.canInterrupt ? "Yes" : "No"}
                   </p>
                 </div>
               </div>
@@ -165,7 +168,7 @@ export function ViewActionModal({
                 <div className="flex-1">
                   <label className="text-sm font-medium text-gray-700">Created Date</label>
                   <p className="text-sm text-gray-900 bg-blue-50 p-2 rounded border font-mono">
-                    {formatDate(action.createdDate)}
+                    {formatDate(currentAction.createdDate)}
                   </p>
                 </div>
               </div>
@@ -175,7 +178,7 @@ export function ViewActionModal({
                 <div className="flex-1">
                   <label className="text-sm font-medium text-gray-700">Last Updated</label>
                   <p className="text-sm text-gray-900 bg-orange-50 p-2 rounded border font-mono">
-                    {formatDate(action.lastUpdate)}
+                    {formatDate(currentAction.lastUpdate)}
                   </p>
                 </div>
               </div>

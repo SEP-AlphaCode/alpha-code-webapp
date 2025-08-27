@@ -4,29 +4,42 @@ import { createColumns } from "./columns"
 import { DataTable } from "@/components/ui/data-table"
 import { useQuery } from "@tanstack/react-query"
 import { getPagedActions } from "@/api/action-api"
-import { useState, useEffect } from "react"
+import { useEffect, useState } from "react"
 import { Button } from "@/components/ui/button"
 import { CreateActionModal } from "@/app/admin/activities/actions/action-modal"
 import { DeleteActionModal } from "@/app/admin/activities/actions/delete-action-modal"
 import { ViewActionModal } from "@/app/admin/activities/actions/view-action-modal"
 import { Action } from "@/types/action"
-import { useAction } from "@/hooks/use-action"
-import { toast } from "react-toastify"
+import { useAppDispatch, useAppSelector } from "@/store/hooks"
+import {
+  setSearchTerm,
+  setPageSize,
+  openCreateModal,
+  openEditModal,
+  openViewModal,
+  openDeleteModal,
+} from "@/store/slices/uiSlice"
+import {
+  setActions,
+} from "@/store/slices/actionSlice"
 
 export default function ActionsPage() {
-  const [page, setPage] = useState(1)
-  const [size, setSize] = useState(10)
-  const [searchTerm, setSearchTerm] = useState("")
-  const [debouncedSearchTerm, setDebouncedSearchTerm] = useState("")
-  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false)
-  const [editAction, setEditAction] = useState<Action | null>(null)
-  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false)
-  const [deleteAction, setDeleteAction] = useState<Action | null>(null)
-  const [isViewModalOpen, setIsViewModalOpen] = useState(false)
-  const [viewAction, setViewAction] = useState<Action | null>(null)
+  const dispatch = useAppDispatch()
+  
+  // Get state from Redux instead of local state
+  const {
+    searchTerm,
+    currentPage,
+    pageSize,
+  } = useAppSelector((state) => state.ui)
+  
+  const {
+    actions: actionsFromRedux,
+  } = useAppSelector((state) => state.action)
+  
 
-  const { useDeleteAction } = useAction()
-  const deleteActionMutation = useDeleteAction()
+  // Debounced search term (still need local state for debouncing)
+  const [debouncedSearchTerm, setDebouncedSearchTerm] = useState("")
 
   // Debounce search term
   useEffect(() => {
@@ -38,7 +51,7 @@ export default function ActionsPage() {
   }, [searchTerm])
 
   const { data, isLoading, error, refetch } = useQuery({
-    queryKey: ["actions", page, size, debouncedSearchTerm],
+    queryKey: ["actions", currentPage, pageSize, debouncedSearchTerm],
     queryFn: async ({ queryKey }) => {
       const controller = new AbortController()
       setTimeout(() => {
@@ -61,6 +74,16 @@ export default function ActionsPage() {
     retry: 2,
     retryDelay: 1000,
   })
+
+  // Store data in Redux when API response changes
+  useEffect(() => {
+    if (data?.data) {
+      dispatch(setActions({
+        actions: data.data,
+        totalCount: data.total || 0
+      }))
+    }
+  }, [data, dispatch])
 
   if (isLoading) {
     return (
@@ -96,60 +119,28 @@ export default function ActionsPage() {
     )
   }
 
-  const actions = data?.data || []
-
   const handleSizeChange = (newSize: number) => {
-    setSize(newSize)
-    setPage(1) // Reset to first page when changing size
+    dispatch(setPageSize(newSize))
   }
 
   const handleAddAction = () => {
-    setEditAction(null)
-    setIsCreateModalOpen(true)
+    dispatch(openCreateModal('action'))
   }
 
   const handleEditAction = (action: Action) => {
-    setEditAction(action)
-    setIsCreateModalOpen(true)
+    dispatch(openEditModal({ modalName: 'action', data: action }))
   }
 
   const handleViewAction = (action: Action) => {
-    setViewAction(action)
-    setIsViewModalOpen(true)
+    dispatch(openViewModal({ modalName: 'action', data: action }))
   }
 
   const handleDeleteAction = (action: Action) => {
-    setDeleteAction(action)
-    setIsDeleteModalOpen(true)
+    dispatch(openDeleteModal({ modalName: 'action', data: action }))
   }
 
-  const handleConfirmDelete = async () => {
-    if (!deleteAction) return
-
-    try {
-      await deleteActionMutation.mutateAsync(deleteAction.id)
-      toast.success("Action deleted successfully!")
-      setIsDeleteModalOpen(false)
-      setDeleteAction(null)
-    } catch (error) {
-      console.error("Error deleting action:", error)
-      toast.error("Failed to delete action. Please try again.")
-    }
-  }
-
-  const handleCloseDeleteModal = () => {
-    setIsDeleteModalOpen(false)
-    setDeleteAction(null)
-  }
-
-  const handleCloseViewModal = () => {
-    setIsViewModalOpen(false)
-    setViewAction(null)
-  }
-
-  const handleCloseModal = () => {
-    setIsCreateModalOpen(false)
-    setEditAction(null)
+  const handleSearchChange = (value: string) => {
+    dispatch(setSearchTerm(value))
   }
 
   const columns = createColumns(handleEditAction, handleDeleteAction, handleViewAction)
@@ -169,34 +160,19 @@ export default function ActionsPage() {
       </div>
       <DataTable
         columns={columns}
-        size={size}
-        data={actions}
+        size={pageSize}
+        data={actionsFromRedux}
         onSizeChange={handleSizeChange}
         searchValue={searchTerm}
-        onSearchChange={setSearchTerm}
+        onSearchChange={handleSearchChange}
         searchPlaceholder="Search actions name or description..."
       />
       
-      <CreateActionModal
-        isOpen={isCreateModalOpen}
-        onClose={handleCloseModal}
-        editAction={editAction}
-        mode={editAction ? 'edit' : 'create'}
-      />
+      <CreateActionModal />
       
-      <ViewActionModal
-        isOpen={isViewModalOpen}
-        onClose={handleCloseViewModal}
-        action={viewAction}
-      />
+      <ViewActionModal />
       
-      <DeleteActionModal
-        isOpen={isDeleteModalOpen}
-        onClose={handleCloseDeleteModal}
-        onConfirm={handleConfirmDelete}
-        action={deleteAction}
-        isDeleting={deleteActionMutation.isPending}
-      />
+      <DeleteActionModal/>
     </div>
   )
 }

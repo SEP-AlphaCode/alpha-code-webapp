@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
-import Provider from "./provider";
+import Providers from "./provider";
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css'; // import the CSS for the Toastify component
 import { PublicEnvScript } from 'next-runtime-env';
@@ -48,9 +48,9 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
         suppressHydrationWarning
       >
-        <Provider>{children}
+        <Providers>{children}
           <ToastContainer />
-        </Provider>
+        </Providers>
       </body>
     </html>
   );

@@ -15,28 +15,31 @@ import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Switch } from "@/components/ui/switch"
 import { useAction } from "@/hooks/use-action"
-import { ActionModal, Action } from "@/types/action"
+import { ActionModal } from "@/types/action"
 import { toast } from "react-toastify"
 import { useEffect } from "react"
+import { useAppSelector, useAppDispatch } from "@/store/hooks"
+import { closeModal } from "@/store/slices/uiSlice"
 
-interface CreateActionModalProps {
-  isOpen: boolean
-  onClose: () => void
-  editAction?: Action | null
-  mode?: 'create' | 'edit'
-}
-
-export function CreateActionModal({
-  isOpen,
-  onClose,
-  editAction = null,
-  mode = 'create'
-}: CreateActionModalProps) {
+export function CreateActionModal() {
+  const dispatch = useAppDispatch()
+  
+  // Get state from Redux using modal system
+  const actionModal = useAppSelector((state) => state.ui.modals['action'] || { isOpen: false, mode: null, data: null })
+  
+  const isOpen = actionModal.isOpen && (actionModal.mode === 'create' || actionModal.mode === 'edit')
+  const editAction = actionModal.mode === 'edit' ? actionModal.data : null
+  const mode = actionModal.mode
+  
   const { useCreateAction, useUpdateAction } = useAction()
   const createActionMutation = useCreateAction()
   const updateActionMutation = useUpdateAction()
 
   const isEditMode = mode === 'edit' && editAction
+
+  const onClose = () => {
+    dispatch(closeModal('action'))
+  }
 
   const {
     register,
