@@ -1,13 +1,13 @@
-import { apiUrl } from '@/app/constants/constants'
+import { apiSpringUrl } from '@/app/constants/constants'
 import axios, { AxiosInstance } from 'axios'
-import { refreshToken as callRefreshToken } from "@/api/authApi";
+import { refreshToken as callRefreshToken } from "@/api/auth-api";
 
 class Http {
   instance: AxiosInstance
 
   constructor() {
     this.instance = axios.create({
-      baseURL: apiUrl,
+      baseURL: apiSpringUrl,
       timeout: 10000,
       headers: {
         'Content-Type': 'application/json'

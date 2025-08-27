@@ -4,7 +4,15 @@ export type Action = {
     description: string
     duration: number
     status: number
-    createDate: string
+    createdDate: string
     lastUpdate: string
+    canInterrupt: boolean
+}
+
+export type ActionModal = {
+    name: string
+    description: string
+    duration: number
+    status: number
     canInterrupt: boolean
 }

@@ -40,11 +40,21 @@ import { DataTablePagination } from "./data-table-panigation"
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[]
   data: TData[]
+  size: number
+  onSizeChange?: (size: number) => void
+  onSearchChange?: (search: string) => void
+  searchValue?: string
+  searchPlaceholder?: string
 }
 
 export function DataTable<TData, TValue>({
   columns,
   data,
+  size,
+  onSizeChange,
+  onSearchChange,
+  searchValue = "",
+  searchPlaceholder = "Search..."
 }: DataTableProps<TData, TValue>) {
   const [sorting, setSorting] = React.useState<SortingState>([])
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
@@ -78,11 +88,9 @@ export function DataTable<TData, TValue>({
     <div>
       <div className="flex items-center py-4">
         <Input
-          placeholder="Filter name..."
-          value={(table.getColumn("name")?.getFilterValue() as string) ?? ""}
-          onChange={(event) =>
-            table.getColumn("name")?.setFilterValue(event.target.value)
-          }
+          placeholder={searchPlaceholder}
+          value={searchValue}
+          onChange={(event) => onSearchChange?.(event.target.value)}
           className="max-w-sm"
         />
         <DropdownMenu>
@@ -163,7 +171,7 @@ export function DataTable<TData, TValue>({
         </Table>
       </div>
       <div className="items-center py-4">
-        <DataTablePagination table={table} />
+        <DataTablePagination table={table} size={size} onSizeChange={onSizeChange} />
       </div>
     </div>
   )

@@ -1,25 +1,8 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { accountApi, Account, UpdateAccountRequest } from '@/services/accountApi'
 import { toast } from 'react-toastify'
+import { AccountsQueryParams } from '@/types/account';
 
-// Types cho error handling
-interface ApiError {
-  response?: {
-    data?: {
-      message?: string
-    }
-  }
-  message?: string
-}
-
-// Types cho query parameters
-interface AccountsQueryParams {
-  page?: number
-  limit?: number
-  search?: string
-  role?: string
-  status?: string
-}
 
 // Helper functions để convert giữa API format và display format
 export const convertAccountForDisplay = (account: Account) => ({
