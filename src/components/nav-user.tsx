@@ -28,7 +28,6 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from "@/components/ui/sidebar"
-import { useLogout } from "@/hooks/use-logout"
 
 export function NavUser({
   user,
@@ -40,11 +39,6 @@ export function NavUser({
   }
 }) {
   const { isMobile } = useSidebar()
-  const logoutMutation = useLogout()
-
-  const handleLogout = () => {
-    logoutMutation.mutate()
-  }
 
   return (
     <SidebarMenu>
@@ -105,13 +99,9 @@ export function NavUser({
               </DropdownMenuItem>
             </DropdownMenuGroup>
             <DropdownMenuSeparator />
-            <DropdownMenuItem 
-              className="hover:bg-red-100 hover:text-red-900 transition-colors duration-200 cursor-pointer"
-              onClick={handleLogout}
-              disabled={logoutMutation.isPending}
-            >
+            <DropdownMenuItem className="hover:bg-red-100 hover:text-red-900 transition-colors duration-200 cursor-pointer">
               <LogOut />
-              {logoutMutation.isPending ? 'Logging out...' : 'Log out'}
+              Log out
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
