@@ -17,6 +17,20 @@ import {
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 
+// Helper function to format duration from milliseconds
+const formatDuration = (ms: number): string => {
+    if (ms < 1000) return `${ms}ms`;
+    const totalSeconds = Math.floor(ms / 1000);
+    const minutes = Math.floor(totalSeconds / 60);
+    const seconds = totalSeconds % 60;
+    const milliseconds = ms % 1000;
+    let result = "";
+    if (minutes > 0) result += `${minutes}m`;
+    if (seconds > 0) result += `${result ? " " : ""}${seconds}s`;
+    if (milliseconds > 0) result += `${result ? " " : ""}${milliseconds}ms`;
+    return result.trim();
+};
+
 // This type is used to define the shape of our data.
 // You can use a Zod schema here if you want.
 export const createColumns = (
@@ -95,6 +109,13 @@ export const createColumns = (
                 Description
             </span>
         ),
+        cell: ({ row }) => (
+            <div className="max-w-xs">
+                <p className="text-sm text-gray-700 line-clamp-5 break-words">
+                    {row.original.description || "No description"}
+                </p>
+            </div>
+        ),
     },
     {
         accessorKey: "duration",
@@ -106,7 +127,7 @@ export const createColumns = (
         cell: ({ row }) => (
             <span className="flex items-center gap-1 text-blue-600 font-medium">
                 <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-                {row.original.duration}s
+                {formatDuration(row.original.duration)}
             </span>
         ),
     },
