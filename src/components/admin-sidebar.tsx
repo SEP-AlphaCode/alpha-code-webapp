@@ -12,6 +12,8 @@ import {
   Settings2,
   SquareTerminal,
   Users,
+  BookMarkedIcon,
+  QrCode
 } from "lucide-react"
 
 import { NavMain } from "@/components/nav-main"
@@ -59,9 +61,19 @@ const defaultProjects = [
     icon: School,
   },
   {
-    name: "QRCode",
+    name: "QRCode Management",
     url: "/admin/qrcodes",
+    icon: QrCode
+  },
+  {
+    name: "OSMO Card Management",
+    url: "/admin/osmo-cards",
     icon: CreditCard
+  },
+  {
+    name: "Marker Management",
+    url: "/admin/markers",
+    icon: BookMarkedIcon
   }
 ];
 
