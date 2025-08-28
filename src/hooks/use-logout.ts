@@ -9,11 +9,17 @@ export const useLogout = () => {
   return useMutation({
     mutationFn: logout,
     onSuccess: () => {
+      // Clear tokens and navigate
+      sessionStorage.removeItem('accessToken');
+      sessionStorage.removeItem('refreshToken');
       toast.success('Logout successful!');
       router.push('/login');
     },
     onError: () => {
-      toast.success('Logout successful!');
+      // Ensure tokens are removed even if API call fails
+      sessionStorage.removeItem('accessToken');
+      sessionStorage.removeItem('refreshToken');
+      toast.error('Logout failed, but you have been logged out locally.');
       router.push('/login');
     }
   });

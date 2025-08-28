@@ -1,5 +1,6 @@
 import http from '@/utils/http';
-import { LoginRequest, TokenResponse} from '@/types/login';
+import { LoginRequest, TokenResponse } from '@/types/login';
+// Note: avoid UI side-effects (toasts) inside API functions; handle UI in hooks/components
 
 export const login = async (data: LoginRequest): Promise<TokenResponse> => {
   try {
@@ -61,14 +62,13 @@ export const refreshToken = async (): Promise<{ accessToken: string; refreshToke
 
 export const logout = async (): Promise<void> => {
   try {
-    // Since there's no logout API endpoint, we only clear local storage
-    // In a real application, you might want to invalidate the token on the server
+    var token = sessionStorage.getItem('refreshToken');
+    await http.post('/auth/logout', token, {
+      headers: { "Content-Type": "text/plain" }
+    });
+
   } catch (error) {
     throw error;
-  } finally {
-    // Clear all tokens from sessionStorage
-    sessionStorage.removeItem('accessToken');
-    sessionStorage.removeItem('refreshToken');
   }
 };
 

@@ -28,6 +28,7 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from "@/components/ui/sidebar"
+import { useLogout } from "@/hooks/use-logout"
 
 export function NavUser({
   user,
@@ -39,6 +40,13 @@ export function NavUser({
   }
 }) {
   const { isMobile } = useSidebar()
+  // Initialize the logout mutation hook at component top-level
+  const logoutMutation = useLogout()
+
+  const logOut = () => {
+    // Trigger the mutation when user clicks Log out
+    logoutMutation.mutate()
+  }
 
   return (
     <SidebarMenu>
@@ -77,13 +85,7 @@ export function NavUser({
               </div>
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
-            <DropdownMenuGroup>
-              <DropdownMenuItem className="hover:bg-gray-100 hover:text-gray-900 transition-colors duration-200 cursor-pointer">
-                <Sparkles />
-                Upgrade to Pro
-              </DropdownMenuItem>
-            </DropdownMenuGroup>
-            <DropdownMenuSeparator />
+
             <DropdownMenuGroup>
               <DropdownMenuItem className="hover:bg-gray-100 hover:text-gray-900 transition-colors duration-200 cursor-pointer">
                 <BadgeCheck />
@@ -99,7 +101,7 @@ export function NavUser({
               </DropdownMenuItem>
             </DropdownMenuGroup>
             <DropdownMenuSeparator />
-            <DropdownMenuItem className="hover:bg-red-100 hover:text-red-900 transition-colors duration-200 cursor-pointer">
+            <DropdownMenuItem onClick={logOut} className="hover:bg-red-100 hover:text-red-900 transition-colors duration-200 cursor-pointer">
               <LogOut />
               Log out
             </DropdownMenuItem>
