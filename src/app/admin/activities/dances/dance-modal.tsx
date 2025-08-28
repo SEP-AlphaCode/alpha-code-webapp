@@ -45,6 +45,7 @@ export function CreateDanceModal({
     formState: { errors, isSubmitting }
   } = useForm<DanceModal>({
     defaultValues: {
+      code: "",
       name: "",
       description: "",
       duration: 60,
@@ -56,6 +57,7 @@ export function CreateDanceModal({
   useEffect(() => {
     if (isEditMode && editDance) {
       reset({
+        code: editDance.code,
         name: editDance.name,
         description: editDance.description,
         duration: editDance.duration,
@@ -63,6 +65,7 @@ export function CreateDanceModal({
       })
     } else {
       reset({
+        code: "",
         name: "",
         description: "",
         duration: 60,
@@ -111,6 +114,24 @@ export function CreateDanceModal({
         </DialogHeader>
 
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+          <div className="space-y-2">
+            <Label htmlFor="code" className="text-sm font-medium">
+              Dance Code *
+            </Label>
+            <Input
+              id="code"
+              {...register("code", {
+                required: "Dance code is required",
+                minLength: { value: 2, message: "Code must be at least 2 characters" }
+              })}
+              placeholder="Enter dance code"
+              className={errors.code ? "border-red-500" : ""}
+            />
+            {errors.code && (
+              <p className="text-sm text-red-500">{errors.code.message}</p>
+            )}
+          </div>
+
           <div className="space-y-2">
             <Label htmlFor="name" className="text-sm font-medium">
               Dance Name *

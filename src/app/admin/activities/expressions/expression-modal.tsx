@@ -45,6 +45,7 @@ export function CreateExpressionModal({
     formState: { errors, isSubmitting }
   } = useForm<ExpressionModal>({
     defaultValues: {
+      code: "",
       name: "",
       description: "",
       imageUrl: "",
@@ -56,6 +57,7 @@ export function CreateExpressionModal({
   useEffect(() => {
     if (isEditMode && editExpression) {
       reset({
+        code: editExpression.code,
         name: editExpression.name,
         description: editExpression.description,
         imageUrl: editExpression.imageUrl,
@@ -63,6 +65,7 @@ export function CreateExpressionModal({
       })
     } else {
       reset({
+        code: "",
         name: "",
         description: "",
         imageUrl: "",
@@ -111,6 +114,24 @@ export function CreateExpressionModal({
         </DialogHeader>
 
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+          <div className="space-y-2">
+            <Label htmlFor="code" className="text-sm font-medium">
+              Expression Code *
+            </Label>
+            <Input
+              id="code"
+              {...register("code", {
+                required: "Expression code is required",
+                minLength: { value: 2, message: "Code must be at least 2 characters" }
+              })}
+              placeholder="Enter expression code"
+              className={errors.code ? "border-red-500" : ""}
+            />
+            {errors.code && (
+              <p className="text-sm text-red-500">{errors.code.message}</p>
+            )}
+          </div>
+
           <div className="space-y-2">
             <Label htmlFor="name" className="text-sm font-medium">
               Expression Name *

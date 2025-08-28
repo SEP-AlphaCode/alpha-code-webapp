@@ -1,5 +1,6 @@
 export type Expression = {
     id: string
+    code: string
     name: string
     imageUrl: string
     description: string
@@ -9,6 +10,7 @@ export type Expression = {
 }
 
 export type ExpressionModal = {
+    code: string
     name: string
     imageUrl: string
     description: string

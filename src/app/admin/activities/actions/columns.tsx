@@ -60,6 +60,19 @@ export const createColumns = (
         ),
     },
     {
+        accessorKey: "code",
+        header: () => (
+            <span className="flex items-center gap-1 text-blue-700 font-semibold">
+                Code
+            </span>
+        ),
+        cell: ({ row }) => (
+            <span className="text-blue-700 font-mono bg-blue-50 px-2 py-1 rounded text-sm">
+                {row.original.code}
+            </span>
+        ),
+    },
+    {
         accessorKey: "name",
         header: ({ column }) => (
             <span className="flex items-center gap-1 text-purple-700 font-semibold">

@@ -47,6 +47,7 @@ export function CreateActionModal({
     formState: { errors, isSubmitting }
   } = useForm<ActionModal>({
     defaultValues: {
+      code: "",
       name: "",
       description: "",
       duration: 60,
@@ -59,6 +60,7 @@ export function CreateActionModal({
   useEffect(() => {
     if (isEditMode && editAction) {
       reset({
+        code: editAction.code,
         name: editAction.name,
         description: editAction.description,
         duration: editAction.duration,
@@ -67,6 +69,7 @@ export function CreateActionModal({
       })
     } else {
       reset({
+        code: "",
         name: "",
         description: "",
         duration: 60,
@@ -117,6 +120,23 @@ export function CreateActionModal({
         </DialogHeader>
 
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+        <div className="space-y-2">
+            <Label htmlFor="code" className="text-sm font-medium">
+              Action Code *
+            </Label>
+            <Input
+              id="code"
+              {...register("code", {
+                required: "Action code is required",
+                minLength: { value: 2, message: "Code must be at least 2 characters" }
+              })}
+              placeholder="Enter action code"
+              className={errors.code ? "border-red-500" : ""}
+            />
+            {errors.code && (
+              <p className="text-sm text-red-500">{errors.code.message}</p>
+            )}
+          </div>
           <div className="space-y-2">
             <Label htmlFor="name" className="text-sm font-medium">
               Action Name *

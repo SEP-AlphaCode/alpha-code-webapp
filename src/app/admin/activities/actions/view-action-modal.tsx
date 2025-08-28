@@ -89,6 +89,16 @@ export function ViewActionModal({
               </div>
               
               <div className="flex items-start gap-3">
+                <Hash className="h-4 w-4 text-blue-500 mt-1 flex-shrink-0" />
+                <div className="flex-1">
+                  <label className="text-sm font-medium text-gray-700">Code</label>
+                  <p className="text-sm text-blue-900 font-mono bg-blue-50 p-2 rounded border">
+                    {action.code}
+                  </p>
+                </div>
+              </div>
+              
+              <div className="flex items-start gap-3">
                 <FileText className="h-4 w-4 text-purple-500 mt-1 flex-shrink-0" />
                 <div className="flex-1">
                   <label className="text-sm font-medium text-gray-700">Name</label>

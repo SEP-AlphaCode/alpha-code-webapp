@@ -1,5 +1,6 @@
 export type Dance = {
     id: string
+    code: string
     name: string
     description: string
     status: number
@@ -9,6 +10,7 @@ export type Dance = {
 }
 
 export type DanceModal = {
+    code: string
     name: string
     description: string
     duration: number
