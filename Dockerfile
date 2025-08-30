@@ -16,7 +16,10 @@ WORKDIR /app
 ENV NODE_ENV=production
 
 COPY --from=builder /app/next.config.js ./
-COPY --from=builder /app/public ./public
+# Copy public from build context directly to ensure static assets are included even if the builder
+# stage didn't preserve them. This avoids errors when /app/public is missing in the builder image.
+## Copy public assets from the builder stage where they actually exist under /app/src/public
+COPY --from=builder /app/src/public ./public
 COPY --from=builder /app/.next ./.next
 COPY --from=builder /app/node_modules ./node_modules
 COPY --from=builder /app/package.json ./package.json

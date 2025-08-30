@@ -24,7 +24,7 @@ import {
 } from '@/components/ui/select'
 import { Label } from '@/components/ui/label'
 import { useQRCode } from '@/hooks/use-qr-code'
-import { QRCodeRequest } from '@/types/qrcode'
+import { QRCode, QRCodeRequest } from '@/types/qrcode'
 import Image from 'next/image'
 
 interface CreateQRCodeModalProps {
@@ -214,7 +214,7 @@ export default function QRCodesPage() {
     }
   }
 
-  const handleDownloadQR = (qrCode: any) => {
+  const handleDownloadQR = (qrCode: QRCode) => {
     if (qrCode.imageUrl) {
       const link = document.createElement('a')
       link.href = qrCode.imageUrl

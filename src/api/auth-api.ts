@@ -62,7 +62,7 @@ export const refreshToken = async (): Promise<{ accessToken: string; refreshToke
 
 export const logout = async (): Promise<void> => {
   try {
-    var token = sessionStorage.getItem('refreshToken');
+    const token = sessionStorage.getItem('refreshToken');
     await http.post('/auth/logout', token, {
       headers: { "Content-Type": "text/plain" }
     });

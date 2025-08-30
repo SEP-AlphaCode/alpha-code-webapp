@@ -1,4 +1,5 @@
 import { createDance, getPagedDances, updateDance, deleteDance } from "@/api/dance-api";
+import { DanceModal } from "@/types/dance";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 export const useDance = () => {
@@ -24,7 +25,7 @@ export const useDance = () => {
     // Update dance mutation
     const useUpdateDance = () => {
         return useMutation({
-            mutationFn: ({ id, data }: { id: string, data: any }) => updateDance(id, data),
+            mutationFn: ({ id, data }: { id: string, data: DanceModal }) => updateDance(id, data),
             onSuccess: () => {
                 queryClient.invalidateQueries({ queryKey: ['dances'] });
             },
