@@ -5,7 +5,7 @@ import Provider from "./provider";
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css'; // import the CSS for the Toastify component
 import { PublicEnvScript } from 'next-runtime-env';
-import alphaminilogoo from '@/public/logo2.png';
+import alphaminilogoo from '@/app/public/logo2.png';
 
 
 
