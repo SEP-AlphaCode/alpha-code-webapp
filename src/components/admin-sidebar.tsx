@@ -29,8 +29,8 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/ui/sidebar"
-import logo2 from '@/app/public/logo2.png';
-import logo1 from '@/app/public/logo1.png';
+import logo2 from '@/public/logo2.png';
+import logo1 from '@/public/logo1.png';
 import Image from "next/image"
 import { getTokenPayload } from "@/utils/tokenUtils"
 

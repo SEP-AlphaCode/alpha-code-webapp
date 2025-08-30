@@ -10,7 +10,7 @@ import { useGoogleLogin, useLogin } from "@/hooks/use-login"
 import { LoginRequest } from "@/types/login"
 import { auth, GoogleAuthProvider, signInWithPopup } from "@/config/firebase-config"
 import { toast } from "react-toastify"
-import logo2 from '@/app/public/logo2.png'
+import logo2 from '@/public/logo2.png'
 
 export function LoginForm({
   className,
