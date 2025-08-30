@@ -111,7 +111,7 @@ export const createColumns = (
         ),
         cell: ({ row }) => (
             <div className="max-w-xs">
-                <p className="text-sm text-gray-700 line-clamp-5 break-words">
+                <p className="text-sm text-gray-700 line-clamp-5 whitespace-normal break-words">
                     {row.original.description || "No description"}
                 </p>
             </div>

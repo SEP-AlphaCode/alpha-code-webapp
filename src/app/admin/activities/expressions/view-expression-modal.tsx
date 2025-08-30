@@ -107,16 +107,6 @@ export function ViewExpressionModal({
                   </p>
                 </div>
               </div>
-              
-              <div className="flex items-start gap-3">
-                <FileText className="h-4 w-4 text-yellow-500 mt-1 flex-shrink-0" />
-                <div className="flex-1">
-                  <label className="text-sm font-medium text-gray-700">Description</label>
-                  <p className="text-sm text-gray-900 bg-yellow-50 p-2 rounded border min-h-[40px]">
-                    {expression.description || "No description provided"}
-                  </p>
-                </div>
-              </div>
             </div>
           </div>
 

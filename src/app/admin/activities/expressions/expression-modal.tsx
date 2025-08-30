@@ -47,7 +47,6 @@ export function CreateExpressionModal({
     defaultValues: {
       code: "",
       name: "",
-      description: "",
       imageUrl: "",
       status: 1,
     }
@@ -59,7 +58,6 @@ export function CreateExpressionModal({
       reset({
         code: editExpression.code,
         name: editExpression.name,
-        description: editExpression.description,
         imageUrl: editExpression.imageUrl,
         status: editExpression.status,
       })
@@ -67,7 +65,6 @@ export function CreateExpressionModal({
       reset({
         code: "",
         name: "",
-        description: "",
         imageUrl: "",
         status: 1,
       })
@@ -148,18 +145,6 @@ export function CreateExpressionModal({
             {errors.name && (
               <p className="text-sm text-red-500">{errors.name.message}</p>
             )}
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="description" className="text-sm font-medium">
-              Description
-            </Label>
-            <Textarea
-              id="description"
-              {...register("description")}
-              placeholder="Enter expression description"
-              rows={3}
-            />
           </div>
 
           <div className="space-y-2">

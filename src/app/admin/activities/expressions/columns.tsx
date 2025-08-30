@@ -88,22 +88,6 @@ export const createColumns = (
         ),
     },
     {
-        accessorKey: "description",
-        header: () => (
-            <span className="flex items-center gap-1 text-yellow-700 font-semibold">
-                <svg className="h-4 w-4 text-yellow-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 12h8M8 16h8M8 8h8" /></svg>
-                Description
-            </span>
-        ),
-        cell: ({ row }) => (
-            <div className="max-w-xs">
-                <p className="text-sm text-gray-700 line-clamp-5 break-words">
-                    {row.original.description || "No description"}
-                </p>
-            </div>
-        ),
-    },
-    {
         accessorKey: "imageUrl",
         header: () => (
             <span className="flex items-center gap-1 text-blue-600 font-semibold">

@@ -51,10 +51,6 @@ export function DeleteExpressionModal({
                         <span className="font-medium text-gray-700">Expression Name:</span>
                         <span className="ml-2 text-gray-900">{expression.name}</span>
                     </div>
-                    <div className="text-sm">
-                        <span className="font-medium text-gray-700">Description:</span>
-                        <span className="ml-2 text-gray-900">{expression.description || "No description"}</span>
-                    </div>
                 </div>
 
                 <DialogFooter>
