@@ -1,4 +1,5 @@
 import { createExpression, getPagedExpressions, updateExpression, deleteExpression } from "@/api/expression-api";
+import { ExpressionModal } from "@/types/expression";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 export const useExpression = () => {
@@ -24,7 +25,7 @@ export const useExpression = () => {
     // Update expression mutation
     const useUpdateExpression = () => {
         return useMutation({
-            mutationFn: ({ id, data }: { id: string, data: any }) => updateExpression(id, data),
+            mutationFn: ({ id, data }: { id: string, data: ExpressionModal }) => updateExpression(id, data),
             onSuccess: () => {
                 queryClient.invalidateQueries({ queryKey: ['expressions'] });
             },

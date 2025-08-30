@@ -2,13 +2,13 @@ import { useMutation } from '@tanstack/react-query';
 import { login, googleLogin } from '@/api/auth-api';
 import { useRouter } from 'next/navigation';
 import { toast } from 'react-toastify';
-import { LoginRequest, LoginResponse } from '@/types/login';
+import { LoginRequest, TokenResponse } from '@/types/login';
 import { getTokenPayload } from '@/utils/tokenUtils';
 
 export const useLogin = () => {
   const router = useRouter();
 
-  return useMutation<LoginResponse, Error, LoginRequest>({
+  return useMutation<TokenResponse, Error, LoginRequest>({
     mutationFn: login,
     onSuccess: async (data) => {
       // Check for empty response
@@ -87,7 +87,7 @@ export const useLogin = () => {
 export const useGoogleLogin = () => {
   const router = useRouter();
 
-  return useMutation<LoginResponse, Error, string>({
+  return useMutation<TokenResponse, Error, string>({
     mutationFn: googleLogin, // Nhận vào idToken (string)
     onSuccess: (data) => {
       if (!data || Object.keys(data).length === 0) {

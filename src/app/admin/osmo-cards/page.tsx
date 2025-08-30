@@ -11,8 +11,6 @@ import {
   Activity,
   Palette,
   Filter,
-  Play,
-  Hand,
   Zap,
   Music,
   Smile
@@ -20,8 +18,8 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Badge } from '@/components/ui/badge';
 import { useOsmoCard } from '@/hooks/use-osmo-card';
+import { OsmoCard } from '@/types/osmo-card';
 
 export default function OsmoCardManagement() {
   const [searchTerm, setSearchTerm] = useState('');
@@ -63,7 +61,7 @@ export default function OsmoCardManagement() {
 
   // Get color and icon for card display based on type
   const getCardStyle = (type: string) => {
-    const styleMap: { [key: string]: { bg: string, icon: any, border: string } } = {
+    const styleMap: { [key: string]: { bg: string, icon: React.ElementType, border: string } } = {
       'action': { 
         bg: 'bg-red-500', 
         icon: Zap, 
@@ -88,7 +86,7 @@ export default function OsmoCardManagement() {
   };
 
   // Determine card type based on which activity is assigned
-  const getCardType = (card: any) => {
+  const getCardType = (card: OsmoCard) => {
     if (card.actionName && card.actionName !== 'No Action') return 'action';
     if (card.expressionName && card.expressionName !== 'No Expression') return 'expression';
     if (card.danceName && card.danceName !== 'No Dance') return 'dance';

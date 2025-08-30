@@ -1,4 +1,5 @@
 import { createAction, getPagedActions, updateAction, deleteAction } from "@/api/action-api";
+import { ActionModal } from "@/types/action";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 export const useAction = () => {
@@ -25,7 +26,7 @@ export const useAction = () => {
     // Update action mutation
     const useUpdateAction = () => {
         return useMutation({
-            mutationFn: ({ id, data }: { id: string, data: any }) => updateAction(id, data),
+            mutationFn: ({ id, data }: { id: string, data: ActionModal }) => updateAction(id, data),
             onSuccess: () => {
                 queryClient.invalidateQueries({ queryKey: ['actions'] });
             },

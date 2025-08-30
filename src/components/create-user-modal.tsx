@@ -3,10 +3,10 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { useCreateAccount } from '@/hooks/useAccounts';
 import { useRoles } from '@/hooks/use-roles';
 import { CreateAccountRequest } from '@/services/accountApi';
 import { X, Loader2 } from 'lucide-react';
+import { useAccount } from '@/hooks/use-account';
 
 interface CreateUserModalProps {
   isOpen: boolean;
@@ -24,6 +24,7 @@ export default function CreateUserModal({ isOpen, onClose }: CreateUserModalProp
     roleId: '', // sẽ cần mapping role name to roleId
   });
 
+  const { useCreateAccount } = useAccount()
   const createAccountMutation = useCreateAccount();
   const { data: roles, isLoading: rolesLoading } = useRoles();
 
@@ -31,7 +32,14 @@ export default function CreateUserModal({ isOpen, onClose }: CreateUserModalProp
     e.preventDefault();
     
     try {
-      await createAccountMutation.mutateAsync(formData);
+      await createAccountMutation.mutateAsync({
+        ...formData,
+        status: 1, // or appropriate default value
+        image: '', // or appropriate default value
+        bannedReason: '', // or appropriate default value
+        roleName: '', // or map from roles if needed
+        statusText: '', // or appropriate default value
+      });
       setFormData({
         username: '',
         fullName: '',
