@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query'
-import { roleApi } from '@/services/roleApi'
+import { getRoles, getRoleById } from '@/api/role-api'
 
 // Query keys
 export const roleKeys = {
@@ -13,7 +13,16 @@ export const roleKeys = {
 export const useRoles = () => {
   return useQuery({
     queryKey: roleKeys.lists(),
-    queryFn: roleApi.getRoles,
+    queryFn: async () => {
+      try {
+        const data = await getRoles();
+        // Handle both direct array and paged result
+        return Array.isArray(data) ? data : data?.data || [];
+      } catch (error) {
+        console.error('Error fetching roles:', error);
+        throw error;
+      }
+    },
     staleTime: 10 * 60 * 1000, // 10 phút
     retry: 2
   })
@@ -23,7 +32,7 @@ export const useRoles = () => {
 export const useRole = (id: string, enabled = true) => {
   return useQuery({
     queryKey: roleKeys.detail(id),
-    queryFn: () => roleApi.getRoleById(id),
+    queryFn: () => getRoleById(id),
     enabled: enabled && !!id,
     staleTime: 10 * 60 * 1000,
     retry: 2
