@@ -16,11 +16,9 @@ import { jwtDecode } from 'jwt-decode';
     
 //     // Save to session storage
 //     sessionStorage.setItem('account', JSON.stringify(accountData));
-//     console.log('Account data saved to session storage:', accountData);
     
 //     return accountData;
 //   } catch (error) {
-//     console.error('Error extracting account data from token:', error);
 //     return null;
 //   }
 // };
@@ -70,7 +68,6 @@ export const getRoleFromToken = (token: string): string | null => {
                    
 //     return userId ? String(userId) : null;
 //   } catch (error) {
-//     console.error('Error decoding token for user ID:', error);
 //     return null;
 //   }
 // };
@@ -88,7 +85,6 @@ export const getRoleFromToken = (token: string): string | null => {
                      
 //     return username ? String(username) : null;
 //   } catch (error) {
-//     console.error('Error decoding token for username:', error);
 //     return null;
 //   }
 // };
