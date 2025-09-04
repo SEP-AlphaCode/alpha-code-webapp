@@ -71,7 +71,7 @@ export default function CreateUserModal({
     error: rolesError 
   } = useRoles();
 
-  // Fallback roles if API fails (customize these based on your system)
+  // Fallback roles if API fails (customize these based on yo   ur system)
   const fallbackRoles: Role[] = [
     { id: "admin", name: "Admin" },
     { id: "teacher", name: "Teacher" },

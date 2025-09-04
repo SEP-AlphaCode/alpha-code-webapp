@@ -1,5 +1,6 @@
 "use client";
 import React, { useState, useMemo } from 'react';
+import { toast } from 'react-toastify';
 import { useAccount } from '@/hooks/use-account';
 import { Account } from '@/types/account';
 import {
@@ -90,16 +91,93 @@ export default function UserManagement() {
   };
 
   const handleDeleteUser = (userId: string) => {
-    if (window.confirm('Are you sure you want to delete this user?')) {
-      deleteAccountMutation.mutate(userId);
-    }
+    // Find user info for better UX
+    const userToDelete = users.find(user => user.id === userId);
+    const userName = userToDelete?.fullName || 'this user';
+
+    // Custom confirm toast
+    const confirmDelete = () => (
+      <div className="flex flex-col space-y-3">
+        <div className="text-sm text-gray-700">
+          Are you sure you want to delete <strong>{userName}</strong>?
+        </div>
+        <div className="text-xs text-gray-500">
+          This action cannot be undone.
+        </div>
+        <div className="flex space-x-2 justify-end">
+          <button
+            onClick={() => toast.dismiss()}
+            className="px-3 py-1 text-xs bg-gray-200 text-gray-700 rounded hover:bg-gray-300 transition-colors"
+            disabled={deleteAccountMutation.isPending}
+          >
+            Cancel
+          </button>
+          <button
+            onClick={() => {
+              deleteAccountMutation.mutate(userId, {
+                onSuccess: () => {
+                  toast.success(`User "${userName}" deleted successfully!`, {
+                    position: "top-right",
+                    autoClose: 3000,
+                  });
+                },
+                onError: (error) => {
+                  console.error('❌ Error deleting user:', error);
+                  const errorMessage = error instanceof Error 
+                    ? error.message 
+                    : 'Failed to delete user';
+                  toast.error(`Error: ${errorMessage}`, {
+                    position: "top-right",
+                    autoClose: 5000,
+                  });
+                }
+              });
+              toast.dismiss();
+            }}
+            className="px-3 py-1 text-xs bg-red-600 text-white rounded hover:bg-red-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            disabled={deleteAccountMutation.isPending}
+          >
+            {deleteAccountMutation.isPending ? 'Deleting...' : 'Delete'}
+          </button>
+        </div>
+      </div>
+    );
+
+    toast.warning(confirmDelete, {
+      position: "top-center",
+      autoClose: false,
+      closeOnClick: false,
+      closeButton: false,
+      draggable: false,
+    });
   };
 
   const handleToggleStatus = (userId: string, currentStatus: number) => {
+    const userToUpdate = users.find(user => user.id === userId);
+    const userName = userToUpdate?.fullName || 'User';
     const newStatus = currentStatus === 1 ? 0 : 1;
+    const statusText = newStatus === 1 ? 'activated' : 'deactivated';
+    
     updateAccountMutation.mutate({
       id: userId,
       accountData: { status: newStatus }
+    }, {
+      onSuccess: () => {
+        toast.success(`${userName} has been ${statusText} successfully!`, {
+          position: "top-right",
+          autoClose: 3000,
+        });
+      },
+      onError: (error) => {
+        console.error('❌ Error updating user status:', error);
+        const errorMessage = error instanceof Error 
+          ? error.message 
+          : 'Failed to update user status';
+        toast.error(`Error: ${errorMessage}`, {
+          position: "top-right",
+          autoClose: 5000,
+        });
+      }
     });
   };
 
@@ -164,8 +242,14 @@ export default function UserManagement() {
   // Statistics
   const totalUsers = filteredUsers.length;
   const activeUsers = filteredUsers.filter(user => user.statusNumber === 1).length;
-  const teachers = filteredUsers.filter(user => user.roleName === 'teacher').length;
-  const admins = filteredUsers.filter(user => user.roleName === 'admin').length;
+  
+  // Case-insensitive role counting
+  const teachers = filteredUsers.filter(user => 
+    user.roleName?.toLowerCase().includes('teacher')
+  ).length;
+  const admins = filteredUsers.filter(user => 
+    user.roleName?.toLowerCase().includes('admin')
+  ).length;
 
   return (
     <div className="space-y-6">
