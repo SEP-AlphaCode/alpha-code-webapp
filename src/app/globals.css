@@ -125,6 +125,15 @@
   }
 }
 
+/* Logo styles to prevent flash/scale issues */
+.header-logo {
+  width: 160px;
+  height: 40px;
+  object-fit: contain;
+  transform: none !important;
+  transition: none !important;
+}
+
 /* Custom animations for modern interactions */
 @keyframes float {
   0%,

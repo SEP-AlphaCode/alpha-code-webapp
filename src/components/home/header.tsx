@@ -21,9 +21,10 @@ export function Header({ currentSection, onNavigate }: HeaderProps) {
               <Image 
                 src="/logo1.png" 
                 alt="Alpha Mini Logo" 
-                width={150} 
-                height={150} 
-                className="object-contain"
+                width={160} 
+                height={40} 
+                priority
+                className="header-logo"
                 style={{ filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.1))' }}
               />
             </div>
@@ -47,9 +48,10 @@ export function Header({ currentSection, onNavigate }: HeaderProps) {
             <Image 
               src="/logo1.png" 
               alt="Alpha Mini Logo" 
-              width={150} 
-              height={150} 
-              className="object-contain"
+              width={160} 
+              height={40} 
+              priority
+              className="header-logo"
               style={{ filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.1))' }}
             />
           </div>
