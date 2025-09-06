@@ -1,0 +1,113 @@
+{
+  "hero": {
+    "badge": {
+      "tech": "Công nghệ AI thế hệ mới",
+      "techShort": "AI thế hệ mới"
+    },
+    "title": "Khám phá",
+    "titleHighlight": "Robot Alpha Mini",
+    "subtitle": "Tìm hiểu về thế giới AI với robot thông minh nhất. Học tập, giải trí và khám phá không giới hạn cùng công nghệ tiên tiến.",
+    "features": {
+      "security": "AI bảo mật",
+      "interaction": "Tương tác tự nhiên",
+      "learning": "Hỗ trợ học tập"
+    },
+    "buttons": {
+      "start": "Bắt đầu khám phá",
+      "demo": "Xem demo trực tiếp"
+    }
+  },
+  "robot": {
+    "title": "Robot thông minh",
+    "titleHighlight": "Đa năng và hiện đại",
+    "subtitle": "Khám phá Alpha Mini với thiết kế tiên tiến, AI thông minh và khả năng tương tác tự nhiên",
+    "features": {
+      "security": {
+        "title": "Bảo mật thông minh",
+        "description": "Hệ thống bảo mật AI tiên tiến, đảm bảo an toàn tuyệt đối"
+      },
+      "ai": {
+        "title": "AI thông minh",
+        "description": "Học hỏi và thích ứng với thói quen sử dụng của bạn"
+      },
+      "interaction": {
+        "title": "Tương tác tự nhiên",
+        "description": "Giao tiếp bằng giọng nói và cử chỉ như con người"
+      }
+    },
+    "badges": {
+      "security": "Bảo mật AI",
+      "interaction": "Tương tác AI",
+      "main": "Robot AI thông minh"
+    }
+  },
+  "features": {
+    "badge": "Tính năng nổi bật",
+    "title": "Khả năng vượt trội",
+    "titleHighlight": "Của Alpha Mini",
+    "subtitle": "Khám phá những tính năng đặc biệt giúp Alpha Mini trở thành người bạn đồng hành lý tưởng",
+    "list": {
+      "ai": {
+        "title": "AI thông minh",
+        "description": "Hiểu ngữ cảnh, ý định, trả lời chính xác và hỗ trợ đa dạng lĩnh vực một cách thông minh."
+      },
+      "speed": {
+        "title": "Xử lý siêu tốc",
+        "description": "Phản hồi nhanh chóng, tiết kiệm thời gian, tối ưu hiệu suất công việc với công nghệ AI tiên tiến."
+      },
+      "interface": {
+        "title": "Giao diện thân thiện",
+        "description": "Thiết kế tối giản, dễ sử dụng, phù hợp mọi đối tượng người dùng với trải nghiệm tuyệt vời."
+      }
+    },
+    "scrollIndicator": "Cuộn xuống"
+  },
+  "about": {
+    "badge": "Về Alpha Mini",
+    "title": "Giới thiệu về",
+    "titleHighlight": "Alpha Mini",
+    "subtitle": "Alpha Mini là robot AI nhỏ gọn, được phát triển bởi đội ngũ AlphaCode, tích hợp công nghệ trí tuệ nhân tạo hiện đại, giúp bạn giải quyết công việc, học tập và sáng tạo hiệu quả hơn.",
+    "features": {
+      "support": {
+        "title": "Trả lời thông minh",
+        "description": "Hỗ trợ học tập, giải quyết vấn đề nhanh chóng với AI tiên tiến"
+      },
+      "speed": {
+        "title": "Xử lý nhanh chóng",
+        "description": "Phân tích dữ liệu, hỗ trợ viết nội dung, sáng tạo ý tưởng"
+      },
+      "security": {
+        "title": "Kết nối an toàn",
+        "description": "Kết nối dễ dàng với các thiết bị thông minh khác"
+      }
+    },
+    "button": "Khám phá thêm"
+  },
+  "footer": {
+    "brand": {
+      "name": "Alpha Code",
+      "description": "Robot AI thông minh, đồng hành cùng bạn trong học tập, làm việc và sáng tạo. Phát triển bởi đội ngũ SEP-AlphaCode với công nghệ tiên tiến nhất."
+    },
+    "links": {
+      "title": "Liên kết nhanh",
+      "features": "Tính năng",
+      "about": "Giới thiệu",
+      "guide": "Hướng dẫn",
+      "support": "Hỗ trợ"
+    },
+    "contact": {
+      "title": "Liên hệ",
+      "email": "alphacodeedu@gmail.com",
+      "phone": "+84 977 300 916",
+      "address": "Hồ Chí Minh, Việt Nam"
+    },
+    "legal": {
+      "privacy": "Chính sách bảo mật",
+      "terms": "Điều khoản sử dụng",
+      "cookies": "Cookie Policy"
+    },
+    "copyright": "© 2024 Alpha Code. Tất cả quyền được bảo lưu.",
+    "madeWith": "Phát triển với",
+    "madeBy": "bởi SEP-AlphaCode"
+  }
+}

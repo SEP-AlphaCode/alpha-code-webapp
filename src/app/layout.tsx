@@ -6,6 +6,7 @@ import Provider from "./provider"
 import { ToastContainer } from "react-toastify"
 import "react-toastify/dist/ReactToastify.css"
 import { PublicEnvScript } from "next-runtime-env"
+import { I18nProvider } from "@/lib/i18n/provider"
 
 const inter = Inter({
   variable: "--font-inter",
@@ -39,8 +40,10 @@ export default function RootLayout({
       </head>
       <body className={`${inter.variable} font-sans antialiased`} suppressHydrationWarning>
         <Provider>
-          {children}
-          <ToastContainer />
+          <I18nProvider page="homepage">
+            {children}
+            <ToastContainer />
+          </I18nProvider>
         </Provider>
       </body>
     </html>
