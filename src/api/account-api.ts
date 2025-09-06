@@ -44,11 +44,12 @@ export const createAccount = async (accountData: Omit<Account, 'id' | 'createdDa
     });
     
     return response.data;
-  } catch (error: any) {
+  } catch (error: unknown) {
     
-    if (error.response) {
-      const status = error.response.status;
-      const data = error.response.data;
+    if (error && typeof error === 'object' && 'response' in error) {
+      const axiosError = error as { response: { status: number; data?: { message?: string } } };
+      const status = axiosError.response.status;
+      const data = axiosError.response.data;
       
       switch (status) {
         case 409:
@@ -74,7 +75,7 @@ export const createAccount = async (accountData: Omit<Account, 'id' | 'createdDa
         default:
           throw new Error(`Error ${status}: ${data?.message || 'Unknown server error'}`);
       }
-    } else if (error.request) {
+    } else if (error && typeof error === 'object' && 'request' in error) {
       throw new Error('Network error. Please check your internet connection.');
     } else {
       throw new Error('An unexpected error occurred. Please try again.');

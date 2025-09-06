@@ -2,7 +2,7 @@
 import React, { useState, useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useOsmoCard } from '@/hooks/use-osmo-card';
-import { OsmoCard } from '@/types/osmo-card';
+import { CreateCardData, OsmoCard } from '@/types/osmo-card';
 // Import các component đã tách
 import PageHeader from '@/components/osmo-cards/page-header';
 import StatisticsCards from '@/components/osmo-cards/statistics-cards';
@@ -63,14 +63,6 @@ export default function OsmoCardManagement() {
     deleteOsmoCardMutation.mutate(cardId);
   };
 
-  const handleToggleStatus = (cardId: string, currentStatus: number) => {
-    const newStatus = currentStatus === 1 ? 0 : 1;
-    updateOsmoCardMutation.mutate({
-      id: cardId,
-      osmoCardData: { status: newStatus }
-    });
-  };
-
   const handleAddNewCard = () => {
     setCreateModalOpen(true);
   };
@@ -117,7 +109,7 @@ export default function OsmoCardManagement() {
     setCreateModalOpen(true);
   };
 
-  const handleSaveCreate = (cardData: any) => {
+  const handleSaveCreate = (cardData: CreateCardData) => {
     createOsmoCardMutation.mutate(cardData, {
       onSuccess: () => {
         setCreateModalOpen(false);

@@ -60,7 +60,7 @@ export default function CreateUserModal({
   
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const [errors, setErrors] = useState<any>({});
+  const [errors, setErrors] = useState<Record<string, string>>({});
   const [avatarFile, setAvatarFile] = useState<File | null>(null);
   const [avatarPreview, setAvatarPreview] = useState<string>('');
 
@@ -114,7 +114,7 @@ export default function CreateUserModal({
   }, [isOpen]);
 
   const validateForm = () => {
-    const newErrors: any = {};
+    const newErrors: Record<string, string> = {};
     
     if (!formData.username.trim()) {
       newErrors.username = 'Username is required';
@@ -153,13 +153,13 @@ export default function CreateUserModal({
     if (file) {
       // Validate file type
       if (!file.type.startsWith('image/')) {
-        setErrors((prev: any) => ({ ...prev, avatar: 'Please select a valid image file' }));
+        setErrors((prev) => ({ ...prev, avatar: 'Please select a valid image file' }));
         return;
       }
       
       // Validate file size (max 5MB)
       if (file.size > 5 * 1024 * 1024) {
-        setErrors((prev: any) => ({ ...prev, avatar: 'File size must be less than 5MB' }));
+        setErrors((prev) => ({ ...prev, avatar: 'File size must be less than 5MB' }));
         return;
       }
       
@@ -173,14 +173,14 @@ export default function CreateUserModal({
       reader.readAsDataURL(file);
       
       // Clear any previous errors
-      setErrors((prev: any) => ({ ...prev, avatar: '' }));
+      setErrors((prev) => ({ ...prev, avatar: '' }));
     }
   };
 
   const removeAvatar = () => {
     setAvatarFile(null);
     setAvatarPreview('');
-    setErrors((prev: any) => ({ ...prev, avatar: '' }));
+    setErrors((prev) => ({ ...prev, avatar: '' }));
     
     // Clear the file input
     const fileInput = document.getElementById('avatar-upload') as HTMLInputElement;
@@ -220,7 +220,7 @@ export default function CreateUserModal({
     
     // Clear error when user starts typing
     if (errors[field]) {
-      setErrors((prev: any) => ({
+      setErrors((prev) => ({
         ...prev,
         [field]: ''
       }));

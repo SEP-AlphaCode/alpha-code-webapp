@@ -1,4 +1,4 @@
-import { OsmoCard } from '@/types/osmo-card';
+import { CreateCardData, OsmoCard } from '@/types/osmo-card';
 import { PagedResult } from '@/types/page-result';
 import http from '@/utils/http';
 
@@ -16,7 +16,7 @@ export const getOsmoCardById = async (id: string) => {
   return response.data;
 };
 
-export const createOsmoCard = async (osmoCardData: Omit<OsmoCard, 'id' | 'createdDate' | 'lastUpdate'>) => {
+export const createOsmoCard = async (osmoCardData: CreateCardData) => {
   const response = await http.post('/osmo-cards', osmoCardData);
   return response.data;
 };

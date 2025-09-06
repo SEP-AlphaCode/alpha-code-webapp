@@ -3,12 +3,11 @@ import {
   Dialog, 
   DialogContent, 
   DialogHeader, 
-  DialogTitle,
-  DialogTrigger 
+  DialogTitle
 } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
-import { Calendar, Palette, Activity, Music, Zap, Smile } from 'lucide-react';
+import { Calendar, Activity, Music, Zap, Smile } from 'lucide-react';
 import { OsmoCard } from '@/types/osmo-card';
 
 interface ViewOsmoCardModalProps {

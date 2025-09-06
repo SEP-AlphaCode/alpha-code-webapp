@@ -12,25 +12,14 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
 import { Separator } from '@/components/ui/separator';
-import { Plus, X, Palette, Activity, Music, Zap, Smile } from 'lucide-react';
+import { Plus, X, Palette, Music, Zap, Smile } from 'lucide-react';
+import { CreateCardData } from '@/types/osmo-card';
 
 interface CreateOsmoCardModalProps {
   isOpen: boolean;
   onClose: () => void;
   onCreate: (cardData: CreateCardData) => void;
   isLoading?: boolean;
-}
-
-interface CreateCardData {
-  name: string;
-  color: string;
-  status: number;
-  actionId: string;
-  actionName: string;
-  expressionId: string;
-  expressionName: string;
-  danceId: string;
-  danceName: string;
 }
 
 export default function CreateOsmoCardModal({ 

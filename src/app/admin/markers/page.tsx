@@ -23,7 +23,7 @@ import {
 } from '@/components/ui/select'
 import { Label } from '@/components/ui/label'
 import { useMarker } from '@/hooks/use-marker'
-import { Maker, MakerRequest } from '@/types/maker'
+import { MakerRequest } from '@/types/maker'
 
 interface CreateMarkerModalProps {
   isOpen: boolean
@@ -174,7 +174,7 @@ export default function MarkersPage() {
       await createMarkerMutation.mutateAsync(data)
       alert('Marker created successfully!')
       setIsCreateModalOpen(false)
-    } catch (error) {
+    } catch (_error) {
       alert('Failed to create marker. Please try again.')
     }
   }
@@ -184,7 +184,7 @@ export default function MarkersPage() {
       try {
         await deleteMarkerMutation.mutateAsync(id)
         alert('Marker deleted successfully!')
-      } catch (error) {
+      } catch (_error) {
         alert('Failed to delete marker. Please try again.')
       }
     }
@@ -194,7 +194,7 @@ export default function MarkersPage() {
     try {
       await updateStatusMutation.mutateAsync({ id, status: newStatus })
       alert('Marker status updated successfully!')
-    } catch (error) {
+    } catch (_error) {
       alert('Failed to update marker status. Please try again.')
     }
   }
