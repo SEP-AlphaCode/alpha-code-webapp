@@ -10,7 +10,7 @@ import { useGoogleLogin, useLogin } from "@/hooks/use-login"
 import { LoginRequest } from "@/types/login"
 import { auth, GoogleAuthProvider, signInWithPopup } from "@/config/firebase-config"
 import { toast } from "react-toastify"
-import logo2 from '@/public/logo2.png'
+const logo2 = '/logo2.png';
 
 export function LoginForm({
   className,
@@ -199,7 +199,7 @@ export function LoginForm({
           </form>
           <div className="bg-muted relative hidden md:block">
             <Image
-              src="/alpha-mini-2.webp"
+              src="/public/alpha-mini-2.webp"
               alt="Image"
               fill
               className="object-cover"

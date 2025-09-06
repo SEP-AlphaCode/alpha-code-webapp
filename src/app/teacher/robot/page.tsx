@@ -189,7 +189,7 @@ export default function RobotManagement() {
                         <div className="flex items-center space-x-4">
                             <div className="w-16 h-16 bg-primary rounded-lg flex items-center justify-center">
                                 <Image
-                                    src="/alphacodelogo.png"
+                                    src="/public/alphacodelogo.png"
                                     alt="Alpha Logo"
                                     width={64}
                                     height={64}
