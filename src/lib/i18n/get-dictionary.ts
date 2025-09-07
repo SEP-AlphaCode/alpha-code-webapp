@@ -12,14 +12,18 @@ const pageDictionaries = {
         en: () => import('./dictionaries/home_page/homepage.en.json').then((module) => module.default),
         vi: () => import('./dictionaries/home_page/homepage.vi.json').then((module) => module.default),
     },
+    login: {
+        en: () => import('./dictionaries/login/login.en.json').then((module) => module.default),
+        vi: () => import('./dictionaries/login/login.vi.json').then((module) => module.default),
+    },
+    'reset-password': {
+        en: () => import('./dictionaries/reset-password/reset-password.en.json').then((module) => module.default),
+        vi: () => import('./dictionaries/reset-password/reset-password.vi.json').then((module) => module.default),
+    },
     // Add more page dictionaries here as needed
     // admin: {
     //   en: () => import('./dictionaries/pages/admin.en.json').then((module) => module.default),
     //   vi: () => import('./dictionaries/pages/admin.vi.json').then((module) => module.default),
-    // },
-    // auth: {
-    //   en: () => import('./dictionaries/pages/auth.en.json').then((module) => module.default),
-    //   vi: () => import('./dictionaries/pages/auth.vi.json').then((module) => module.default),
     // },
 }
 

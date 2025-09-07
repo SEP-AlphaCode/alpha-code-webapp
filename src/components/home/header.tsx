@@ -1,5 +1,6 @@
 import { Button } from "@/components/ui/button"
 import Image from "next/image"
+import Link from "next/link"
 import { ArrowRight } from "lucide-react"
 import { LanguageSwitcher } from "@/components/language-switcher"
 import { useHomepageTranslation } from "@/lib/i18n/hooks/use-translation"
@@ -59,6 +60,18 @@ export function Header({ currentSection, onNavigate }: HeaderProps) {
 
         <nav className="hidden md:flex items-center gap-8 text-sm font-medium">
           <button
+            onClick={() => onNavigate(0)}
+            className="text-gray-600 hover:text-blue-500 transition-colors duration-300"
+          >
+            {tc('navigation.home')}
+          </button>
+          <button
+            onClick={() => onNavigate(1)}
+            className="text-gray-600 hover:text-blue-500 transition-colors duration-300"
+          >
+            {tc('navigation.robot')}
+          </button>
+          <button
             onClick={() => onNavigate(2)}
             className="text-gray-600 hover:text-blue-500 transition-colors duration-300"
           >
@@ -80,10 +93,12 @@ export function Header({ currentSection, onNavigate }: HeaderProps) {
 
         <div className="flex items-center gap-4">
           <LanguageSwitcher variant="minimal" />
-          <Button className="modern-button bg-blue-500 hover:bg-blue-600 text-white px-6 py-2 rounded-full shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-300 group">
-            {tc('navigation.login')}
-            <ArrowRight className="ml-2 w-4 h-4" />
-          </Button>
+          <Link href="/login">
+            <Button className="modern-button bg-blue-500 hover:bg-blue-600 text-white px-6 py-2 rounded-full shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-300 group">
+              {tc('navigation.login')}
+              <ArrowRight className="ml-2 w-4 h-4" />
+            </Button>
+          </Link>
         </div>
       </div>
     </header>

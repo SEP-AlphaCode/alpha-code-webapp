@@ -10,12 +10,15 @@ import { useGoogleLogin, useLogin } from "@/hooks/use-login"
 import { LoginRequest } from "@/types/login"
 import { auth, GoogleAuthProvider, signInWithPopup } from "@/config/firebase-config"
 import { toast } from "react-toastify"
-const logo2 = '/logo2.png';
+import { useLoginTranslation } from "@/lib/i18n/hooks/use-translation"
+import logo2 from '../../public/logo2.png'
+import alphamini2 from '../../public/alpha-mini-2.webp'
 
 export function LoginForm({
   className,
   ...props
 }: React.ComponentProps<"div">) {
+  const { t, isLoading } = useLoginTranslation()
   const [formData, setFormData] = useState<LoginRequest>({
     username: "",
     password: "",
@@ -44,17 +47,17 @@ export function LoginForm({
       const token = await user.getIdToken();
       loginGoogleMutation.mutate(token, {
         onSuccess: () => {
-          toast.success("Login successful!");
+          toast.success(t('messages.loginSuccess'));
         },
         onError: (error) => {
-          toast.error(error.message || "Google login failed");
+          toast.error(error.message || t('messages.googleLoginFailed'));
         },
       });
     } catch (error: unknown) {
       if (error instanceof Error) {
         toast.error(error.message);
       } else {
-        toast.error("Google login failed");
+        toast.error(t('messages.googleLoginFailed'));
       }
     }
 
@@ -73,16 +76,45 @@ export function LoginForm({
       message?: string;
     };
     if (error.response?.status === 404) {
-      return "Login endpoint not found. Please check your server configuration.";
+      return t('messages.endpointNotFound');
     }
     if (error.response?.status === 401) {
-      return "Invalid username or password.";
+      return t('messages.invalidCredentials');
     }
     if (error.response?.status && error.response.status >= 500) {
-      return "Server error. Please try again later.";
+      return t('messages.serverError');
     }
-    return error.message || "An error occurred during login.";
+    return error.message || t('messages.loginFailed');
   };
+
+  if (isLoading) {
+    return (
+      <div className={cn("flex flex-col gap-6", className)} {...props}>
+        <Card className="overflow-hidden p-0 shadow-[0_0_64px_0_rgba(0,0,0,0.25)]">
+          <CardContent className="grid p-0 md:grid-cols-2">
+            <div className="p-6 md:p-8">
+              <div className="flex flex-col gap-6">
+                <div className="flex flex-col items-center text-center">
+                  <div className="w-16 h-16 rounded-2xl flex items-center justify-center mb-4 overflow-hidden animate-pulse bg-gray-200">
+                  </div>
+                  <div className="h-6 bg-gray-200 rounded animate-pulse w-32 mb-2"></div>
+                  <div className="h-4 bg-gray-200 rounded animate-pulse w-48"></div>
+                </div>
+                <div className="grid gap-4">
+                  <div className="h-10 bg-gray-200 rounded animate-pulse"></div>
+                  <div className="h-10 bg-gray-200 rounded animate-pulse"></div>
+                  <div className="h-10 bg-gray-200 rounded animate-pulse"></div>
+                </div>
+              </div>
+            </div>
+            <div className="relative hidden bg-muted md:block">
+              <div className="absolute inset-0 bg-gradient-to-br from-white via-gray-500 animate-pulse"></div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    )
+  }
 
   return (
     <div className={cn("flex flex-col gap-6", className)} {...props}>
@@ -100,18 +132,18 @@ export function LoginForm({
                     className="object-contain"
                   />
                 </div>
-                <h1 className="text-2xl font-bold">Welcome back</h1>
+                <h1 className="text-2xl font-bold">{t('subtitle')}</h1>
                 <p className="text-muted-foreground text-balance">
-                  Login to your account
+                  {t('description')}
                 </p>
               </div>
               <div className="grid gap-3">
-                <Label htmlFor="username">Username</Label>
+                <Label htmlFor="username">{t('form.username.label')}</Label>
                 <Input
                   id="username"
                   name="username"
                   type="text"
-                  placeholder="Enter your username"
+                  placeholder={t('form.username.placeholder')}
                   value={formData.username}
                   onChange={handleInputChange}
                   required
@@ -120,19 +152,19 @@ export function LoginForm({
               </div>
               <div className="grid gap-3">
                 <div className="flex items-center">
-                  <Label htmlFor="password">Password</Label>
+                  <Label htmlFor="password">{t('form.password.label')}</Label>
                   <a
                     href="/reset-password/request"
                     className="ml-auto text-sm underline-offset-2 hover:underline"
                   >
-                    Forgot your password?
+                    {t('form.forgotPassword')}
                   </a>
                 </div>
                 <Input
                   id="password"
                   name="password"
                   type="password"
-                  placeholder="Enter your password"
+                  placeholder={t('form.password.placeholder')}
                   value={formData.password}
                   onChange={handleInputChange}
                   required
@@ -149,12 +181,12 @@ export function LoginForm({
                 className="w-full bg-black text-white"
                 disabled={loginMutation.isPending}
               >
-                {loginMutation.isPending ? 'Logging in...' : 'Login'}
+                {loginMutation.isPending ? t('form.loginButton') + '...' : t('form.loginButton')}
               </Button>
               <div className="relative flex items-center">
                 <div className="flex-grow border-t border-border"></div>
                 <span className="bg-card text-muted-foreground px-2 z-10 text-center">
-                  Or continue with
+                  {t('form.orContinueWith')}
                 </span>
                 <div className="flex-grow border-t border-border"></div>
               </div>
@@ -190,16 +222,16 @@ export function LoginForm({
                 </Button>
               </div>
               <div className="text-center text-sm">
-                Don&apos;t have an account?{" "}
+                {t('footer.noAccount')}{" "}
                 <a href="#" className="underline underline-offset-4">
-                  Sign up
+                  {t('footer.signUp')}
                 </a>
               </div>
             </div>
           </form>
           <div className="bg-muted relative hidden md:block">
             <Image
-              src="/public/alpha-mini-2.webp"
+              src={alphamini2}
               alt="Image"
               fill
               className="object-cover"
@@ -209,8 +241,8 @@ export function LoginForm({
         </CardContent>
       </Card>
       <div className="text-muted-foreground *:[a]:hover:text-primary text-center text-xs text-balance *:[a]:underline *:[a]:underline-offset-4">
-        By clicking continue, you agree to our <a href="#">Terms of Service</a>{" "}
-        and <a href="#">Privacy Policy</a>.
+        {t('terms.agreement')} <a href="#">{t('terms.termsOfService')}</a>{" "}
+        {t('terms.and')} <a href="#">{t('terms.privacyPolicy')}</a>.
       </div>
     </div>
   )

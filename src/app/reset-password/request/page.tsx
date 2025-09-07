@@ -1,9 +1,18 @@
+"use client";
+
 import { RequestResetPasswordForm } from "@/components/request-reset-password-form"
+import { I18nProvider } from "@/lib/i18n/provider"
+import { LanguageSwitcher } from "@/components/language-switcher"
 
 export default function Page() {
   return (
-    <main className="min-h-screen bg-background flex items-center justify-center p-4">
-      <RequestResetPasswordForm />
-    </main>
+    <I18nProvider page="reset-password">
+      <main className="min-h-screen bg-background flex items-center justify-center p-4 relative">
+        <div className="absolute top-4 right-4">
+          <LanguageSwitcher variant="minimal" />
+        </div>
+        <RequestResetPasswordForm />
+      </main>
+    </I18nProvider>
   )
 }

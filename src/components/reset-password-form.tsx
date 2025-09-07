@@ -10,8 +10,10 @@ import { useQueryString } from "@/utils/utils"
 import { Lock, Eye, EyeOff, ArrowLeft, Shield, CheckCircle, AlertCircle } from "lucide-react"
 import { resetPassword } from "@/api/account-api"
 import { useRouter } from "next/navigation"
+import { useResetPasswordTranslation } from "@/lib/i18n/hooks/use-translation"
 
 export default function ResetPasswordForm() {
+  const { t, isLoading: translationLoading } = useResetPasswordTranslation()
   const router = useRouter()
   const queryString: { token?: string } = useQueryString();
   const [newPassword, setNewPassword] = useState("")
@@ -35,11 +37,11 @@ export default function ResetPasswordForm() {
   // Validate passwords match
   useEffect(() => {
     if (confirmPassword && newPassword !== confirmPassword) {
-      setError("Passwords do not match")
+      setError(t('reset.messages.passwordMismatch'))
     } else {
       setError(null)
     }
-  }, [newPassword, confirmPassword])
+  }, [newPassword, confirmPassword, t])
 
   // Check password strength
   useEffect(() => {
@@ -52,7 +54,7 @@ export default function ResetPasswordForm() {
     const hasUpper = /[A-Z]/.test(newPassword)
     const hasNumber = /\d/.test(newPassword)
     const hasSpecial = /[!@#$%^&*(),.?":{}|<>]/.test(newPassword)
-    const isLongEnough = newPassword.length >= 8
+    const isLongEnough = newPassword.length >= 6
 
     const score = [hasLower, hasUpper, hasNumber, hasSpecial, isLongEnough].filter(Boolean).length
 
@@ -66,22 +68,22 @@ export default function ResetPasswordForm() {
     if (loading) return
 
     if (!newPassword || !confirmPassword) {
-      setError("Please enter both password and confirm password")
+      setError(t('reset.messages.passwordTooShort'))
       return
     }
 
     if (newPassword !== confirmPassword) {
-      setError("Passwords do not match")
+      setError(t('reset.messages.passwordMismatch'))
       return
     }
 
     if (passwordStrength === 'weak') {
-      setError("Password is too weak. Please choose a stronger password.")
+      setError(t('reset.messages.passwordTooShort'))
       return
     }
 
     if (!tokenValid) {
-      setError("Invalid or expired token")
+      setError(t('reset.messages.invalidToken'))
       return
     }
 
@@ -89,12 +91,12 @@ export default function ResetPasswordForm() {
     try {
       setLoading(true)
       const response = await resetPassword(queryString.token as string, newPassword)
-      toast.success(response || "Password reset successfully.")
+      toast.success(response || t('reset.messages.success'))
       setNewPassword("")
       setConfirmPassword("")
       router.push("/login")
     } catch (error) {
-      let message = "An error occurred, please try again";
+      let message = t('reset.messages.error');
       if (typeof error === "object" && error !== null) {
         if ("response" in error && typeof error.response === "object" && error.response !== null && "msg" in error.response) {
           message = (error.response as { msg?: string }).msg || message;
@@ -118,14 +120,14 @@ export default function ResetPasswordForm() {
                 <AlertCircle className="h-12 w-12 text-white" />
               </div>
             </div>
-            <h2 className="text-2xl font-bold text-gray-900">Invalid or Expired Link</h2>
+            <h2 className="text-2xl font-bold text-gray-900">{t('reset.messages.invalidToken')}</h2>
             <p className="text-gray-600">
-              This password reset link is no longer valid. Please request a new one.
+              {t('reset.description')}
             </p>
             <div className="pt-4">
               <Link href="/reset-password/request">
                 <Button className="w-full text-white bg-gradient-to-r from-gray-600 to-gray-700 hover:from-gray-700 hover:to-gray-800">
-                  Request New Reset Link
+                  {t('request.form.submitButton')}
                 </Button>
               </Link>
             </div>
@@ -153,6 +155,33 @@ export default function ResetPasswordForm() {
     }
   }
 
+  if (translationLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center p-4">
+        <div className="max-w-md w-full bg-white border border-gray-200 rounded-xl p-8 shadow-2xl shadow-gray-500/20">
+          <div className="space-y-6">
+            <div className="text-center space-y-4">
+              <div className="flex justify-center">
+                <div className="p-3 bg-gray-200 rounded-full animate-pulse">
+                  <div className="h-12 w-12 bg-gray-300 rounded"></div>
+                </div>
+              </div>
+              <div>
+                <div className="h-6 bg-gray-200 rounded animate-pulse w-48 mx-auto mb-2"></div>
+                <div className="h-4 bg-gray-200 rounded animate-pulse w-64 mx-auto"></div>
+              </div>
+            </div>
+            <div className="space-y-4">
+              <div className="h-10 bg-gray-200 rounded animate-pulse"></div>
+              <div className="h-10 bg-gray-200 rounded animate-pulse"></div>
+              <div className="h-10 bg-gray-200 rounded animate-pulse"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
   return (
     <div className="min-h-screen flex items-center justify-center p-4">
       <div className="max-w-md w-full bg-white border border-gray-200 rounded-xl p-8 shadow-2xl shadow-gray-500/20">
@@ -165,9 +194,9 @@ export default function ResetPasswordForm() {
               </div>
             </div>
             <div>
-              <h1 className="text-2xl font-bold text-gray-900">Set New Password</h1>
+              <h1 className="text-2xl font-bold text-gray-900">{t('reset.subtitle')}</h1>
               <p className="text-gray-600 mt-2">
-                Create a strong password for your account
+                {t('reset.description')}
               </p>
             </div>
           </div>
@@ -177,7 +206,7 @@ export default function ResetPasswordForm() {
             {/* New Password */}
             <div className="space-y-2">
               <Label htmlFor="newPassword" className="text-sm font-medium text-gray-700">
-                New Password
+                {t('reset.form.password.label')}
               </Label>
               <div className="relative">
                 <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
@@ -188,7 +217,7 @@ export default function ResetPasswordForm() {
                   onChange={(e) => setNewPassword(e.target.value)}
                   required
                   disabled={loading}
-                  placeholder="Enter new password"
+                  placeholder={t('reset.form.password.placeholder')}
                   className="pl-10 pr-10 h-11 bg-gray-50 border-gray-200 focus:border-green-500 focus:ring-2 focus:ring-green-500/20 focus:bg-white transition-all duration-200"
                 />
                 <button
@@ -222,7 +251,7 @@ export default function ResetPasswordForm() {
             {/* Confirm Password */}
             <div className="space-y-2">
               <Label htmlFor="confirmPassword" className="text-sm font-medium text-gray-700">
-                Confirm Password
+                {t('reset.form.confirmPassword.label')}
               </Label>
               <div className="relative">
                 <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
@@ -233,7 +262,7 @@ export default function ResetPasswordForm() {
                   onChange={(e) => setConfirmPassword(e.target.value)}
                   required
                   disabled={loading}
-                  placeholder="Confirm new password"
+                  placeholder={t('reset.form.confirmPassword.placeholder')}
                   className="pl-10 pr-10 h-11 bg-gray-50 border-gray-200 focus:border-green-500 focus:ring-2 focus:ring-green-500/20 focus:bg-white transition-all duration-200"
                 />
                 <button
@@ -282,12 +311,12 @@ export default function ResetPasswordForm() {
               {loading ? (
                 <div className="flex items-center justify-center">
                   <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2" />
-                  Updating Password...
+                  {t('reset.form.submitting')}
                 </div>
               ) : (
                 <>
                   <Lock className="mr-2 h-4 w-4" />
-                  Update Password
+                  {t('reset.form.submitButton')}
                 </>
               )}
             </Button>
@@ -300,7 +329,7 @@ export default function ResetPasswordForm() {
               className="inline-flex items-center text-sm text-gray-500 hover:text-gray-700 transition-colors duration-200 font-medium"
             >
               <ArrowLeft className="mr-1 h-4 w-4" />
-              Back to Login
+              {t('reset.backToLogin')}
             </Link>
           </div>
         </div>
