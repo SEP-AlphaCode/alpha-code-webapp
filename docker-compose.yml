@@ -1,6 +1,6 @@
 version: "3.9"
 services:
-  webapp:
+  alpha-webapp:
     image: docker.io/norman1910/alpha-code-webapp:latest
     container_name: alpha-code-webapp
     env_file:
