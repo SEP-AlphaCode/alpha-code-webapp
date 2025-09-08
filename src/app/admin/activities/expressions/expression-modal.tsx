@@ -13,8 +13,8 @@ import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { useExpression } from "@/hooks/use-expression"
 import { ExpressionModal, Expression } from "@/types/expression"
-import { toast } from "react-toastify"
 import { useEffect } from "react"
+import { toast } from "sonner"
 
 interface CreateExpressionModalProps {
   isOpen: boolean

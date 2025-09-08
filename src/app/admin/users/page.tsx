@@ -1,6 +1,5 @@
 "use client";
 import React, { useState, useMemo } from 'react';
-import { toast } from 'react-toastify';
 import { useAccount } from '@/hooks/use-account';
 import { Account } from '@/types/account';
 import {
@@ -11,6 +10,7 @@ import {
   ErrorState,
   CreateUserModal
 } from '@/components/users';
+import { toast } from 'sonner';
 
 export default function UserManagement() {
   const [searchTerm, setSearchTerm] = useState('');
@@ -116,20 +116,14 @@ export default function UserManagement() {
             onClick={() => {
               deleteAccountMutation.mutate(userId, {
                 onSuccess: () => {
-                  toast.success(`User "${userName}" deleted successfully!`, {
-                    position: "top-right",
-                    autoClose: 3000,
-                  });
+                  toast.success(`User "${userName}" deleted successfully!`);
                 },
                 onError: (error) => {
                   console.error('❌ Error deleting user:', error);
                   const errorMessage = error instanceof Error 
                     ? error.message 
                     : 'Failed to delete user';
-                  toast.error(`Error: ${errorMessage}`, {
-                    position: "top-right",
-                    autoClose: 5000,
-                  });
+                  toast.error(`Error: ${errorMessage}`);
                 }
               });
               toast.dismiss();
@@ -143,13 +137,7 @@ export default function UserManagement() {
       </div>
     );
 
-    toast.warning(confirmDelete, {
-      position: "top-center",
-      autoClose: false,
-      closeOnClick: false,
-      closeButton: false,
-      draggable: false,
-    });
+    toast.warning(confirmDelete);
   };
 
   const handleToggleStatus = (userId: string, currentStatus: number) => {
@@ -163,20 +151,14 @@ export default function UserManagement() {
       accountData: { status: newStatus }
     }, {
       onSuccess: () => {
-        toast.success(`${userName} has been ${statusText} successfully!`, {
-          position: "top-right",
-          autoClose: 3000,
-        });
+        toast.success(`${userName} has been ${statusText} successfully!`);
       },
       onError: (error) => {
         console.error('❌ Error updating user status:', error);
         const errorMessage = error instanceof Error 
           ? error.message 
           : 'Failed to update user status';
-        toast.error(`Error: ${errorMessage}`, {
-          position: "top-right",
-          autoClose: 5000,
-        });
+        toast.error(`Error: ${errorMessage}`);
       }
     });
   };

@@ -11,7 +11,7 @@ import { DeleteActionModal } from "@/app/admin/activities/actions/delete-action-
 import { ViewActionModal } from "@/app/admin/activities/actions/view-action-modal"
 import { Action } from "@/types/action"
 import { useAction } from "@/hooks/use-action"
-import { toast } from "react-toastify"
+import { toast } from "sonner"
 
 export default function ActionsPage() {
   const [page, setPage] = useState(1)

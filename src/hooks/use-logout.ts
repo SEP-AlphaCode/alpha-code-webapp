@@ -12,7 +12,7 @@ export const useLogout = () => {
       // Clear tokens and navigate
       sessionStorage.removeItem('accessToken');
       sessionStorage.removeItem('refreshToken');
-      toast.success('Logout successful!');
+      toast('Logout successful!');
       router.push('/login');
     },
     onError: () => {

@@ -9,8 +9,8 @@ import { Label } from "@/components/ui/label"
 import { requestResetPassword } from "../api/account-api"
 import { useState } from "react"
 import { Mail, ArrowLeft, Loader2, Shield } from "lucide-react"
-import { toast } from "react-toastify"
 import { useResetPasswordTranslation } from "@/lib/i18n/hooks/use-translation"
+import { toast } from "sonner"
 
 export function RequestResetPasswordForm({ className, ...props }: React.ComponentPropsWithoutRef<"div">) {
   const { t, isLoading: translationLoading } = useResetPasswordTranslation()
@@ -25,7 +25,7 @@ export function RequestResetPasswordForm({ className, ...props }: React.Componen
     const email = formData.get("email") as string
 
     if (!email) {
-      toast.error(t('request.messages.invalidEmail'))
+      toast.warning(t('request.messages.invalidEmail'))
       return
     }
 

@@ -5,12 +5,12 @@ import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { toast } from "react-toastify"
 import { useQueryString } from "@/utils/utils"
 import { Lock, Eye, EyeOff, ArrowLeft, Shield, CheckCircle, AlertCircle } from "lucide-react"
 import { resetPassword } from "@/api/account-api"
 import { useRouter } from "next/navigation"
 import { useResetPasswordTranslation } from "@/lib/i18n/hooks/use-translation"
+import { toast } from "sonner"
 
 export default function ResetPasswordForm() {
   const { t, isLoading: translationLoading } = useResetPasswordTranslation()

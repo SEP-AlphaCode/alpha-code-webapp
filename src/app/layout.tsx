@@ -3,10 +3,10 @@ import type { Metadata } from "next"
 import { Inter } from "next/font/google"
 import "./globals.css"
 import Provider from "./provider"
-import { ToastContainer } from "react-toastify"
 import "react-toastify/dist/ReactToastify.css"
 import { PublicEnvScript } from "next-runtime-env"
 import { I18nProvider } from "@/lib/i18n/provider"
+import { Toaster } from "sonner"
 
 const inter = Inter({
   variable: "--font-inter",
@@ -42,7 +42,10 @@ export default function RootLayout({
         <Provider>
           <I18nProvider page="homepage">
             {children}
-            <ToastContainer />
+            <Toaster
+              position="top-right" // top-left, top-center, bottom-left...
+              richColors
+            />
           </I18nProvider>
         </Provider>
       </body>

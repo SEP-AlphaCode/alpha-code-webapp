@@ -11,7 +11,7 @@ import { DeleteDanceModal } from "@/app/admin/activities/dances/delete-dance-mod
 import { ViewDanceModal } from "@/app/admin/activities/dances/view-dance-modal"
 import { Dance } from "@/types/dance"
 import { useDance } from "@/hooks/use-dance"
-import { toast } from "react-toastify"
+import { toast } from "sonner"
 
 export default function DancesPage() {
   const [page, setPage] = useState(1)

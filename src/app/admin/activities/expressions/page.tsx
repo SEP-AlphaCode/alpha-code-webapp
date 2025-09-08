@@ -11,7 +11,7 @@ import { DeleteExpressionModal } from "@/app/admin/activities/expressions/delete
 import { ViewExpressionModal } from "@/app/admin/activities/expressions/view-expression-modal"
 import { Expression } from "@/types/expression"
 import { useExpression } from "@/hooks/use-expression"
-import { toast } from "react-toastify"
+import { toast } from "sonner"
 
 export default function ExpressionsPage() {
   const [page, setPage] = useState(1)

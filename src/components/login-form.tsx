@@ -9,10 +9,10 @@ import { useState, useEffect } from "react"
 import { useGoogleLogin, useLogin } from "@/hooks/use-login"
 import { LoginRequest } from "@/types/login"
 import { auth, GoogleAuthProvider, signInWithPopup } from "@/config/firebase-config"
-import { toast } from "react-toastify"
 import { useLoginTranslation } from "@/lib/i18n/hooks/use-translation"
 import logo2 from '../../public/logo2.png'
 import alphamini2 from '../../public/alpha-mini-2.webp'
+import { toast } from "sonner"
 
 export function LoginForm({
   className,
