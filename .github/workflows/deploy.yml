@@ -51,7 +51,7 @@ jobs:
         run: |
           ssh ${{ secrets.SSH_USER }}@${{ secrets.HOST }} << EOF
             set -e
-            cd /home/norman/alpha-code-webapp
+            cd /home/norman/SEP/alpha-code-webapp
             docker compose pull alpha-webapp
             docker compose up -d alpha-webapp
           EOF
