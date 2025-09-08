@@ -18,11 +18,11 @@ export default function Home() {
       <div ref={containerRef} className="min-h-screen bg-white overflow-x-hidden relative scroll-smooth">
         <Header currentSection={currentSection} onNavigate={scrollToSection} />
         
-        <HeroSection 
+        {/* <HeroSection 
           ref={sections[0].ref} 
           currentSection={currentSection} 
           isVisible={isVisible} 
-        />
+        /> */}
         
         <RobotSection 
           ref={sections[1].ref} 
