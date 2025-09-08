@@ -29,8 +29,8 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/ui/sidebar"
-const logo2 = '/public/logo2.png';
-const logo1 = '/public/logo1.png';
+import logo1 from '../../public/logo1.png';
+import logo2 from '../../public/logo2.png';
 import Image from "next/image"
 import { getTokenPayload } from "@/utils/tokenUtils"
 
@@ -92,7 +92,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         setUserData({
           name: accountData.fullName || accountData.username || "User",
           email: accountData.email || "",
-          avatar: logo2 || "/avatars/default.jpg",
+          avatar: logo2.src || "/avatars/default.jpg",
         });
       }
     }

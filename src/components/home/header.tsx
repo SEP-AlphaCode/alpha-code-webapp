@@ -15,7 +15,7 @@ export function Header({ currentSection, onNavigate }: HeaderProps) {
 
   if (isLoading) {
     return (
-      <header className="fixed top-0 left-0 w-full z-50 glass border-b border-gray-200/50 bg-white/80 backdrop-blur-md">
+      <header className="fixed top-0 left-0 w-full z-50 glass border-b border-gray-200/50 bg-white/80 backdrop-blur-md shadow-lg">
         <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="w-40 h-10 flex items-center justify-center">
@@ -37,7 +37,7 @@ export function Header({ currentSection, onNavigate }: HeaderProps) {
   }
   return (
     <header
-      className="fixed top-0 left-0 w-full z-50 glass border-b border-gray-200/50 transition-all duration-700 ease-out"
+      className="fixed top-0 left-0 w-full z-50 glass border-b border-gray-200/50 shadow-lg transition-all duration-700 ease-out"
       style={{
         backdropFilter: `blur(${currentSection > 0 ? 24 : 8}px)`,
         backgroundColor: `rgba(255, 255, 255, ${currentSection > 0 ? 0.95 : 0.8})`,
