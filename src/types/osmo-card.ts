@@ -22,3 +22,15 @@ export interface OsmoCardsQueryParams {
     status?: string;
     color?: string;
 }
+
+export interface CreateCardData {
+  name: string;
+  color: string;
+  status: number;
+  actionId: string;
+  actionName: string;
+  expressionId: string;
+  expressionName: string;
+  danceId: string;
+  danceName: string;
+}

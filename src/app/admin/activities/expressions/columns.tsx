@@ -88,22 +88,6 @@ export const createColumns = (
         ),
     },
     {
-        accessorKey: "description",
-        header: () => (
-            <span className="flex items-center gap-1 text-yellow-700 font-semibold">
-                <svg className="h-4 w-4 text-yellow-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 12h8M8 16h8M8 8h8" /></svg>
-                Description
-            </span>
-        ),
-        cell: ({ row }) => (
-            <div className="max-w-xs">
-                <p className="text-sm text-gray-700 line-clamp-5 break-words">
-                    {row.original.description || "No description"}
-                </p>
-            </div>
-        ),
-    },
-    {
         accessorKey: "imageUrl",
         header: () => (
             <span className="flex items-center gap-1 text-blue-600 font-semibold">
@@ -173,30 +157,30 @@ export const createColumns = (
                         <DropdownMenuLabel>Actions</DropdownMenuLabel>
                         <DropdownMenuItem
                             onClick={() => navigator.clipboard.writeText(expression.id)}
-                            className="hover:bg-gray-100 transition-colors duration-200"
+                            className="hover:bg-gray-100 transition-colors duration-200 cursor-pointer"
                         >
                             Copy Expression ID
                         </DropdownMenuItem>
                         <DropdownMenuSeparator />
                         <DropdownMenuItem 
                             onClick={() => onView?.(expression)}
-                            className="hover:bg-green-50 hover:text-green-700 transition-colors duration-200"
+                            className="hover:bg-green-50 hover:text-green-700 transition-all duration-200 cursor-pointer group"
                         >
-                            <Eye className="mr-2 h-4 w-4" />
+                            <Eye className="mr-2 h-4 w-4 text-gray-600 group-hover:text-green-600 group-hover:scale-110 transition-all duration-200" />
                             View Details
                         </DropdownMenuItem>
                         <DropdownMenuItem 
                             onClick={() => onEdit?.(expression)}
-                            className="hover:bg-blue-50 hover:text-blue-700 transition-colors duration-200"
+                            className="hover:bg-blue-50 hover:text-blue-700 transition-all duration-200 cursor-pointer group"
                         >
-                            <Edit className="mr-2 h-4 w-4" />
+                            <Edit className="mr-2 h-4 w-4 text-gray-600 group-hover:text-blue-600 group-hover:scale-110 transition-all duration-200" />
                             Edit Expression
                         </DropdownMenuItem>
                         <DropdownMenuItem 
                             onClick={() => onDelete?.(expression)}
-                            className="text-red-600 hover:bg-red-50 hover:text-red-700 transition-colors duration-200"
+                            className="text-red-600 hover:bg-red-50 hover:text-red-700 transition-all duration-200 cursor-pointer group"
                         >
-                            <Trash2 className="mr-2 h-4 w-4" />
+                            <Trash2 className="mr-2 h-4 w-4 group-hover:text-red-600 group-hover:scale-110 transition-all duration-200" />
                             Delete Expression
                         </DropdownMenuItem>
                     </DropdownMenuContent>

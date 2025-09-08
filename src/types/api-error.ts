@@ -1,5 +1,5 @@
 // Types cho error handling
-interface ApiError {
+export interface ApiError {
   response?: {
     data?: {
       message?: string

@@ -16,8 +16,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Switch } from "@/components/ui/switch"
 import { useAction } from "@/hooks/use-action"
 import { ActionModal, Action } from "@/types/action"
-import { toast } from "react-toastify"
 import { useEffect } from "react"
+import { toast } from "sonner"
 
 interface CreateActionModalProps {
   isOpen: boolean

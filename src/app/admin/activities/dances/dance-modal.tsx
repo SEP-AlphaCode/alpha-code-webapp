@@ -14,8 +14,8 @@ import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { useDance } from "@/hooks/use-dance"
 import { DanceModal, Dance } from "@/types/dance"
-import { toast } from "react-toastify"
 import { useEffect } from "react"
+import { toast } from "sonner"
 
 interface CreateDanceModalProps {
   isOpen: boolean

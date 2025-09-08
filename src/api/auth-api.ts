@@ -1,5 +1,6 @@
 import http from '@/utils/http';
 import { LoginRequest, TokenResponse } from '@/types/login';
+import axios from 'axios';
 // Note: avoid UI side-effects (toasts) inside API functions; handle UI in hooks/components
 
 export const login = async (data: LoginRequest): Promise<TokenResponse> => {
@@ -82,3 +83,55 @@ export const googleLogin = async (idToken: string): Promise<TokenResponse> => {
     throw error;
   }
 }
+
+export const requestResetPassword = async (email: string) => {
+  try {
+    if (!email || !email.includes("@")) {
+      throw new Error("Please enter a valid email address")
+    }
+    const response = await http.post(`/accounts/reset-password/request`, {
+      email,
+    });
+    return response.data;
+  } catch (error) {
+    let message = "Request failed!";
+    if (axios.isAxiosError(error)) {
+      if (
+        error.response?.data &&
+        typeof error.response.data === "object" &&
+        "message" in error.response.data
+      ) {
+        message = (error.response.data as { message: string }).message;
+      }
+      else if (error.response && error.response.status >= 500) {
+        message = "Server error. Please try again later.";
+      }
+    }
+    throw new Error(message);
+  }
+};
+
+export const resetPassword = async (resetToken: string, newPassword: string) => {
+  try {
+    const response = await http.post(`/accounts/reset-password/reset`, {
+      resetToken,
+      newPassword,
+    });
+    return response.data;
+  } catch (error) {
+    let message = "Request failed!";
+    if (axios.isAxiosError(error)) {
+      if (
+        error.response?.data &&
+        typeof error.response.data === "object" &&
+        "message" in error.response.data
+      ) {
+        message = (error.response.data as { message: string }).message;
+      }
+      else if (error.response && error.response.status >= 500) {
+        message = "Server error. Please try again later.";
+      }
+    }
+    throw new Error(message);
+  }
+};

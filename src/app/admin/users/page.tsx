@@ -1,27 +1,29 @@
 "use client";
 import React, { useState, useMemo } from 'react';
-import { 
-  Search, 
-  Trash2, 
-  UserCheck,
-  UserX,
-  Loader2
-} from 'lucide-react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Badge } from '@/components/ui/badge';
 import { useAccount } from '@/hooks/use-account';
 import { Account } from '@/types/account';
+import {
+  PageHeader,
+  StatisticsCards,
+  UserTable,
+  LoadingState,
+  ErrorState,
+  CreateUserModal
+} from '@/components/users';
+import { toast } from 'sonner';
 
 export default function UserManagement() {
   const [searchTerm, setSearchTerm] = useState('');
   const [filterRole, setFilterRole] = useState<string>('all');
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const [createError, setCreateError] = useState<string>('');
+  const [createSuccess, setCreateSuccess] = useState<string>('');
 
   const accountHooks = useAccount();
   const { data: accountsResponse, isLoading, error } = accountHooks.useGetAllAccounts();
   const deleteAccountMutation = accountHooks.useDeleteAccount();
   const updateAccountMutation = accountHooks.useUpdateAccount();
+  const createAccountMutation = accountHooks.useCreateAccount();
 
   // Extract accounts from PagedResult
   const accounts = accountsResponse?.data || [];
@@ -89,243 +91,195 @@ export default function UserManagement() {
   };
 
   const handleDeleteUser = (userId: string) => {
-    if (window.confirm('Are you sure you want to delete this user?')) {
-      deleteAccountMutation.mutate(userId);
-    }
+    // Find user info for better UX
+    const userToDelete = users.find(user => user.id === userId);
+    const userName = userToDelete?.fullName || 'this user';
+
+    // Custom confirm toast
+    const confirmDelete = () => (
+      <div className="flex flex-col space-y-3">
+        <div className="text-sm text-gray-700">
+          Are you sure you want to delete <strong>{userName}</strong>?
+        </div>
+        <div className="text-xs text-gray-500">
+          This action cannot be undone.
+        </div>
+        <div className="flex space-x-2 justify-end">
+          <button
+            onClick={() => toast.dismiss()}
+            className="px-3 py-1 text-xs bg-gray-200 text-gray-700 rounded hover:bg-gray-300 transition-colors"
+            disabled={deleteAccountMutation.isPending}
+          >
+            Cancel
+          </button>
+          <button
+            onClick={() => {
+              deleteAccountMutation.mutate(userId, {
+                onSuccess: () => {
+                  toast.success(`User "${userName}" deleted successfully!`);
+                },
+                onError: (error) => {
+                  console.error('❌ Error deleting user:', error);
+                  const errorMessage = error instanceof Error 
+                    ? error.message 
+                    : 'Failed to delete user';
+                  toast.error(`Error: ${errorMessage}`);
+                }
+              });
+              toast.dismiss();
+            }}
+            className="px-3 py-1 text-xs bg-red-600 text-white rounded hover:bg-red-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            disabled={deleteAccountMutation.isPending}
+          >
+            {deleteAccountMutation.isPending ? 'Deleting...' : 'Delete'}
+          </button>
+        </div>
+      </div>
+    );
+
+    toast.warning(confirmDelete);
   };
 
   const handleToggleStatus = (userId: string, currentStatus: number) => {
+    const userToUpdate = users.find(user => user.id === userId);
+    const userName = userToUpdate?.fullName || 'User';
     const newStatus = currentStatus === 1 ? 0 : 1;
+    const statusText = newStatus === 1 ? 'activated' : 'deactivated';
+    
     updateAccountMutation.mutate({
       id: userId,
       accountData: { status: newStatus }
+    }, {
+      onSuccess: () => {
+        toast.success(`${userName} has been ${statusText} successfully!`);
+      },
+      onError: (error) => {
+        console.error('❌ Error updating user status:', error);
+        const errorMessage = error instanceof Error 
+          ? error.message 
+          : 'Failed to update user status';
+        toast.error(`Error: ${errorMessage}`);
+      }
+    });
+  };
+
+  const handleAddUser = () => {
+    setIsCreateModalOpen(true);
+  };
+
+  const handleCreateUser = (userData: {
+    username: string;
+    email: string;
+    fullName: string;
+    password: string;
+    phone: string;
+    roleId: string;
+    gender: number;
+    status: number;
+    avatarFile?: File;
+  }) => {
+    // Prepare complete account data for API
+    const accountData = {
+      ...userData,
+      statusText: userData.status === 1 ? 'active' : 'inactive',
+      image: '', // Default empty image
+      bannedReason: null, // Default no ban reason
+      roleName: '', // This will be populated by backend based on roleId
+      avatarFile: userData.avatarFile
+    };
+
+    createAccountMutation.mutate(accountData, {
+      onSuccess: () => {
+        setIsCreateModalOpen(false);
+        setCreateError(''); // Clear any errors
+        setCreateSuccess('User created successfully!');
+        
+        // Clear success message after 3 seconds
+        setTimeout(() => setCreateSuccess(''), 3000);
+      },
+      onError: (error) => {
+        console.error('❌ Error creating user:', error);
+        
+        // Extract meaningful error message
+        const errorMessage = error instanceof Error 
+          ? error.message 
+          : 'Unknown error occurred while creating user';
+        
+        setCreateError(errorMessage);
+        setCreateSuccess(''); // Clear any success messages
+        
+        // Don't close modal so user can fix the issue and try again
+      }
     });
   };
 
   if (isLoading) {
-    return (
-      <div className="space-y-6">
-        <div className="flex items-center justify-center py-8">
-          <Loader2 className="h-8 w-8 animate-spin" />
-          <span className="ml-2">Loading users...</span>
-        </div>
-      </div>
-    );
+    return <LoadingState />;
   }
 
   if (error) {
-    return (
-      <div className="space-y-6">
-        <div className="flex items-center justify-center py-8">
-          <p className="text-red-500">Có lỗi xảy ra: {(error as Error)?.message}</p>
-        </div>
-      </div>
-    );
+    return <ErrorState error={error as Error} />;
   }
 
   // Statistics
   const totalUsers = filteredUsers.length;
   const activeUsers = filteredUsers.filter(user => user.statusNumber === 1).length;
-  const teachers = filteredUsers.filter(user => user.roleName === 'teacher').length;
-  const admins = filteredUsers.filter(user => user.roleName === 'admin').length;
+  
+  // Case-insensitive role counting
+  const teachers = filteredUsers.filter(user => 
+    user.roleName?.toLowerCase().includes('teacher')
+  ).length;
+  const admins = filteredUsers.filter(user => 
+    user.roleName?.toLowerCase().includes('admin')
+  ).length;
 
   return (
     <div className="space-y-6">
-      {/* Page Header */}
-      <div className="flex justify-between items-center">
-        <div>
-          <h1 className="text-3xl font-bold text-gray-900">User Management</h1>
-          <p className="text-gray-600">Manage user accounts and permissions</p>
+      {/* Success Notification */}
+      {createSuccess && (
+        <div className="bg-green-50 border border-green-200 rounded-md p-3">
+          <div className="flex">
+            <div className="text-green-700 text-sm">
+              <strong>Success:</strong> {createSuccess}
+            </div>
+          </div>
         </div>
-      </div>
+      )}
 
-      {/* Statistics Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-        <Card>
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-gray-600">Total Users</p>
-                <p className="text-3xl font-bold text-gray-900">{totalUsers}</p>
-              </div>
-              <div className="bg-blue-100 p-3 rounded-full">
-                <UserCheck className="h-6 w-6 text-blue-600" />
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+      <PageHeader onAddUser={handleAddUser} />
+      
+      <StatisticsCards
+        totalUsers={totalUsers}
+        activeUsers={activeUsers}
+        teachers={teachers}
+        admins={admins}
+      />
 
-        <Card>
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-gray-600">Active Users</p>
-                <p className="text-3xl font-bold text-green-600">{activeUsers}</p>
-              </div>
-              <div className="bg-green-100 p-3 rounded-full">
-                <UserCheck className="h-6 w-6 text-green-600" />
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+      <UserTable
+        searchTerm={searchTerm}
+        onSearchChange={setSearchTerm}
+        filterRole={filterRole}
+        onRoleChange={setFilterRole}
+        availableRoles={availableRoles}
+        filteredUsers={filteredUsers}
+        totalUsers={users.length}
+        isLoading={isLoading}
+        onToggleStatus={handleToggleStatus}
+        onDeleteUser={handleDeleteUser}
+        getRoleColor={getRoleColor}
+        getStatusColor={getStatusColor}
+      />
 
-        <Card>
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-gray-600">Teachers</p>
-                <p className="text-3xl font-bold text-purple-600">{teachers}</p>
-              </div>
-              <div className="bg-purple-100 p-3 rounded-full">
-                <UserCheck className="h-6 w-6 text-purple-600" />
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-gray-600">Admins</p>
-                <p className="text-3xl font-bold text-red-600">{admins}</p>
-              </div>
-              <div className="bg-red-100 p-3 rounded-full">
-                <UserCheck className="h-6 w-6 text-red-600" />
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Search and Filter */}
-      <Card>
-        <CardHeader>
-          <CardTitle>User List</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="flex flex-col md:flex-row gap-4 mb-6">
-            <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
-              <Input
-                placeholder="Search by name, email, or username..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10"
-              />
-            </div>
-            <select
-              value={filterRole}
-              onChange={(e) => setFilterRole(e.target.value)}
-              className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            >
-              <option value="all">All Roles</option>
-              {availableRoles.map(role => (
-                <option key={role} value={role}>
-                  {role.charAt(0).toUpperCase() + role.slice(1)}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          {/* Users Table */}
-          <div className="overflow-x-auto">
-            <table className="w-full border-collapse">
-              <thead>
-                <tr className="bg-gray-50">
-                  <th className="text-left p-4 font-medium text-gray-900">User</th>
-                  <th className="text-left p-4 font-medium text-gray-900">Role</th>
-                  <th className="text-left p-4 font-medium text-gray-900">Status</th>
-                  <th className="text-left p-4 font-medium text-gray-900">Gender</th>
-                  <th className="text-left p-4 font-medium text-gray-900">Created</th>
-                  <th className="text-left p-4 font-medium text-gray-900">Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {filteredUsers.map((user) => (
-                  <tr key={user.id} className="border-b border-gray-200 hover:bg-gray-50">
-                    <td className="p-4">
-                      <div className="flex items-center space-x-3">
-                        <div className="bg-gray-200 rounded-full h-10 w-10 flex items-center justify-center">
-                          <span className="text-sm font-medium text-gray-600">
-                            {user.fullName.charAt(0).toUpperCase()}
-                          </span>
-                        </div>
-                        <div>
-                          <div className="font-medium text-gray-900">{user.fullName}</div>
-                          <div className="text-sm text-gray-500">{user.email}</div>
-                          <div className="text-sm text-gray-500">@{user.username}</div>
-                        </div>
-                      </div>
-                    </td>
-                    <td className="p-4">
-                      <Badge className={getRoleColor(user.roleName)}>
-                        {user.roleName.charAt(0).toUpperCase() + user.roleName.slice(1)}
-                      </Badge>
-                    </td>
-                    <td className="p-4">
-                      <Badge className={getStatusColor(user.statusNumber)}>
-                        {user.statusText.charAt(0).toUpperCase() + user.statusText.slice(1)}
-                      </Badge>
-                    </td>
-                    <td className="p-4">
-                      <span className="text-sm text-gray-900">
-                        {user.genderText === 'male' ? 'Nam' : user.genderText === 'female' ? 'Nữ' : 'Khác'}
-                      </span>
-                    </td>
-                    <td className="p-4">
-                      <span className="text-sm text-gray-900">
-                        {new Date(user.createdDate).toLocaleDateString('vi-VN')}
-                      </span>
-                    </td>
-                    <td className="p-4">
-                      <div className="flex items-center space-x-2">
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => handleToggleStatus(user.id, user.statusNumber)}
-                          className="flex items-center space-x-1"
-                        >
-                          {user.statusNumber === 1 ? (
-                            <>
-                              <UserX className="h-4 w-4" />
-                              <span>Deactivate</span>
-                            </>
-                          ) : (
-                            <>
-                              <UserCheck className="h-4 w-4" />
-                              <span>Activate</span>
-                            </>
-                          )}
-                        </Button>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => handleDeleteUser(user.id)}
-                          className="text-red-600 hover:text-red-700 flex items-center space-x-1"
-                        >
-                          <Trash2 className="h-4 w-4" />
-                          <span>Delete</span>
-                        </Button>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-
-          {filteredUsers.length === 0 && !isLoading && (
-            <div className="text-center py-8">
-              {users.length === 0 ? (
-                <p className="text-gray-500">No users found in the system.</p>
-              ) : (
-                <p className="text-gray-500">No users found matching your criteria.</p>
-              )}
-            </div>
-          )}
-        </CardContent>
-      </Card>
+      <CreateUserModal
+        isOpen={isCreateModalOpen}
+        onClose={() => {
+          setIsCreateModalOpen(false);
+          setCreateError(''); // Clear error when closing
+        }}
+        onSubmit={handleCreateUser}
+        isLoading={createAccountMutation.isPending}
+        error={createError}
+      />
     </div>
   );
 }

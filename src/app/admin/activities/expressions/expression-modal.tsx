@@ -10,12 +10,11 @@ import {
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { useExpression } from "@/hooks/use-expression"
 import { ExpressionModal, Expression } from "@/types/expression"
-import { toast } from "react-toastify"
 import { useEffect } from "react"
+import { toast } from "sonner"
 
 interface CreateExpressionModalProps {
   isOpen: boolean
@@ -47,7 +46,6 @@ export function CreateExpressionModal({
     defaultValues: {
       code: "",
       name: "",
-      description: "",
       imageUrl: "",
       status: 1,
     }
@@ -59,7 +57,6 @@ export function CreateExpressionModal({
       reset({
         code: editExpression.code,
         name: editExpression.name,
-        description: editExpression.description,
         imageUrl: editExpression.imageUrl,
         status: editExpression.status,
       })
@@ -67,7 +64,6 @@ export function CreateExpressionModal({
       reset({
         code: "",
         name: "",
-        description: "",
         imageUrl: "",
         status: 1,
       })
@@ -148,18 +144,6 @@ export function CreateExpressionModal({
             {errors.name && (
               <p className="text-sm text-red-500">{errors.name.message}</p>
             )}
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="description" className="text-sm font-medium">
-              Description
-            </Label>
-            <Textarea
-              id="description"
-              {...register("description")}
-              placeholder="Enter expression description"
-              rows={3}
-            />
           </div>
 
           <div className="space-y-2">

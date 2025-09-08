@@ -1,7 +1,7 @@
 "use client"
 
 import React, { useState } from 'react'
-import { QrCode, Plus, Search, Edit, Trash2, Eye, Download, Filter, Grid, List } from 'lucide-react'
+import { QrCode, Plus, Search, Trash2, Download, Filter, Grid, List } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -12,7 +12,6 @@ import {
   DialogDescription,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
   DialogFooter,
 } from '@/components/ui/dialog'
 import {
@@ -189,7 +188,7 @@ export default function QRCodesPage() {
       await createQRCodeMutation.mutateAsync(data)
       alert('QR Code card created successfully!')
       setIsCreateModalOpen(false)
-    } catch (error) {
+    } catch (_error) {
       alert('Failed to create QR code card. Please try again.')
     }
   }
@@ -199,7 +198,7 @@ export default function QRCodesPage() {
       try {
         await deleteQRCodeMutation.mutateAsync(id)
         alert('QR Code card deleted successfully!')
-      } catch (error) {
+      } catch (_error) {
         alert('Failed to delete QR code card. Please try again.')
       }
     }
@@ -209,7 +208,7 @@ export default function QRCodesPage() {
     try {
       await updateStatusMutation.mutateAsync({ id, status: newStatus })
       alert('QR Code card status updated successfully!')
-    } catch (error) {
+    } catch (_error) {
       alert('Failed to update QR code card status. Please try again.')
     }
   }

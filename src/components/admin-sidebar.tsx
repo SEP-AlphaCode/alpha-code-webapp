@@ -29,8 +29,8 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/ui/sidebar"
-import logo2 from '@/public/logo2.png';
-import logo1 from '@/public/logo1.png';
+import logo1 from '../../public/logo1.png';
+import logo2 from '../../public/logo2.png';
 import Image from "next/image"
 import { getTokenPayload } from "@/utils/tokenUtils"
 
@@ -167,7 +167,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
           <SidebarMenuItem>
             <SidebarMenuButton size="lg" asChild>
               <a href="#">
-                <div className="bg-sidebar-primary text-sidebar-primary-foreground flex aspect-square size-30 items-center justify-center rounded-lg">
+                <div className="text-sidebar-primary-foreground flex aspect-square size-30 items-center justify-center rounded-lg">
                   <Image src={logo1} alt="Logo" className="object-contain w-30 h-30"/>
                 </div>
               </a>

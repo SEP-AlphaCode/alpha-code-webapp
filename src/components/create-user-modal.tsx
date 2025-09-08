@@ -7,6 +7,7 @@ import { useRoles } from '@/hooks/use-roles';
 import { CreateAccountRequest } from '@/services/accountApi';
 import { X, Loader2 } from 'lucide-react';
 import { useAccount } from '@/hooks/use-account';
+import { Role } from '@/types/role';
 
 interface CreateUserModalProps {
   isOpen: boolean;
@@ -187,7 +188,7 @@ export default function CreateUserModal({ isOpen, onClose }: CreateUserModalProp
                 {rolesLoading ? (
                   <option disabled>Đang tải...</option>
                 ) : (
-                  roles?.map(role => (
+                  roles?.map((role: Role) => (
                     <option key={role.id} value={role.id}>
                       {role.name}
                     </option>

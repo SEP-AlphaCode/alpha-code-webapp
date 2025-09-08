@@ -11,7 +11,7 @@ import { DeleteDanceModal } from "@/app/admin/activities/dances/delete-dance-mod
 import { ViewDanceModal } from "@/app/admin/activities/dances/view-dance-modal"
 import { Dance } from "@/types/dance"
 import { useDance } from "@/hooks/use-dance"
-import { toast } from "react-toastify"
+import { toast } from "sonner"
 
 export default function DancesPage() {
   const [page, setPage] = useState(1)
@@ -64,15 +64,10 @@ export default function DancesPage() {
 
   if (isLoading) {
     return (
-      <div className="container mx-auto py-10">
-        <div className="mb-6">
-          <h1 className="text-2xl font-bold mb-4">Dances Management</h1>
-        </div>
-        <div className="flex items-center justify-center h-64">
-          <div className="flex flex-col items-center gap-4">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
-            <div className="text-lg text-gray-600">Loading dances...</div>
-          </div>
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="flex flex-col items-center gap-4">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
+          <div className="text-lg text-gray-600">Loading dances...</div>
         </div>
       </div>
     )
@@ -80,17 +75,15 @@ export default function DancesPage() {
 
   if (error) {
     return (
-      <div className="container mx-auto py-10">
-        <div className="flex items-center justify-center h-64">
-          <div className="text-center">
-            <div className="text-lg text-red-600 mb-4">Error loading dances</div>
-            <button
-              onClick={() => refetch()}
-              className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
-            >
-              Retry
-            </button>
-          </div>
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-center">
+          <div className="text-lg text-red-600 mb-4">Error loading dances</div>
+          <button
+            onClick={() => refetch()}
+            className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors"
+          >
+            Retry
+          </button>
         </div>
       </div>
     )

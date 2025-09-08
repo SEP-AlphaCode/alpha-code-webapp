@@ -1,23 +1,17 @@
-import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
-import "./globals.css";
-import Provider from "./provider";
-import { ToastContainer } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css'; // import the CSS for the Toastify component
-import { PublicEnvScript } from 'next-runtime-env';
-import alphaminilogoo from '@/public/logo2.png';
+import type React from "react"
+import type { Metadata } from "next"
+import { Inter } from "next/font/google"
+import "./globals.css"
+import Provider from "./provider"
+import { PublicEnvScript } from "next-runtime-env"
+import { I18nProvider } from "@/lib/i18n/provider"
+import { Toaster } from "sonner"
 
-
-
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-});
+const inter = Inter({
+  variable: "--font-inter",
+  subsets: ["latin", "vietnamese"],
+  display: "swap",
+})
 
 export const metadata: Metadata = {
   title: "AlphaCode",
@@ -27,31 +21,33 @@ export const metadata: Metadata = {
     description: "Platform manage robot learning assistant",
     url: "https://alpha-code.site",
     siteName: "AlphaCode",
-    images: [{ url: alphaminilogoo.src }],
+    images: [{ url: "/logo2.png" }],
     locale: "vi_VN",
     type: "website",
   },
-};
-
+}
 
 export default function RootLayout({
   children,
 }: Readonly<{
-  children: React.ReactNode;
+  children: React.ReactNode
 }>) {
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang="vi" suppressHydrationWarning>
       <head>
         <PublicEnvScript />
       </head>
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
-        suppressHydrationWarning
-      >
-        <Provider>{children}
-          <ToastContainer />
+      <body className={`${inter.variable} font-sans antialiased`} suppressHydrationWarning>
+        <Provider>
+          <I18nProvider page="homepage">
+            {children}
+            <Toaster
+              position="top-right" // top-left, top-center, bottom-left...
+              richColors
+            />
+          </I18nProvider>
         </Provider>
       </body>
     </html>
-  );
+  )
 }
