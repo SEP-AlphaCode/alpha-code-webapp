@@ -40,7 +40,7 @@ export const useLogin = () => {
         toast.error('Error: Unable to get account information from token');
         return;
       }
-      toast(`Welcome ${accountData.fullName}!`);
+      toast.success(`Welcome ${accountData.fullName}!`);
       
       // Redirect based on role from account data
       const roleNameLower = accountData.roleName.toLowerCase();
@@ -113,7 +113,7 @@ export const useGoogleLogin = () => {
         toast.error('Error: Unable to get account information from token');
         return;
       }
-      toast(`Welcome ${accountData.fullName}! Login successful.`);
+      toast.success(`Welcome ${accountData.fullName}! Login successful.`);
       const roleNameLower = accountData.roleName.toLowerCase();
       if (roleNameLower === 'admin') {
         router.push('/admin');

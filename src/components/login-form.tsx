@@ -45,14 +45,7 @@ export function LoginForm({
       const result = await signInWithPopup(auth, provider);
       const user = result.user;
       const token = await user.getIdToken();
-      loginGoogleMutation.mutate(token, {
-        onSuccess: () => {
-          toast.success(t('messages.loginSuccess'));
-        },
-        onError: (error) => {
-          toast.error(error.message || t('messages.googleLoginFailed'));
-        },
-      });
+      loginGoogleMutation.mutate(token);
     } catch (error: unknown) {
       if (error instanceof Error) {
         toast.error(error.message);
