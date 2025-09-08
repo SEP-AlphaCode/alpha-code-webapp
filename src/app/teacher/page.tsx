@@ -126,8 +126,8 @@ export default function TeacherDashboard() {
                                     <div className="flex items-center justify-between mb-2" suppressHydrationWarning>
                                         <span className="text-sm font-medium" suppressHydrationWarning>{robot.id}</span>
                                         <span className={`text-xs px-2 py-1 rounded ${robot.status === 'Online'
-                                                ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300'
-                                                : 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-300'
+                                                ? 'bg-green-100 text-green-800'
+                                                : 'bg-gray-100 text-gray-800'
                                             }`} suppressHydrationWarning>
                                             {robot.status}
                                         </span>
