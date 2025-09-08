@@ -1,4 +1,4 @@
-name: Build, Push Docker Image and Deploy Webapp with Podman
+name: Build, Push Docker Image and Deploy Webapp with Docker
 
 on:
   push:
@@ -24,7 +24,7 @@ jobs:
       - name: Build and push Docker image
         uses: docker/build-push-action@v6
         with:
-          context: .
+          context: ./alpha-code-webapp
           push: true
           tags: norman1910/alpha-code-webapp:latest
           cache-from: type=registry,ref=norman1910/alpha-code-webapp:latest
@@ -47,12 +47,11 @@ jobs:
           mkdir -p ~/.ssh
           ssh-keyscan -H ${{ secrets.HOST }} >> ~/.ssh/known_hosts
 
-      - name: Deploy container with podman-compose via SSH
+      - name: Deploy container via Docker Compose over SSH
         run: |
           ssh ${{ secrets.SSH_USER }}@${{ secrets.HOST }} << EOF
             set -e
-            cd /home/norman/alpha-code-webapp
-            echo "${{ secrets.SSH_PASS }}" | sudo -S podman-compose down
-            echo "${{ secrets.SSH_PASS }}" | sudo -S podman-compose pull
-            echo "${{ secrets.SSH_PASS }}" | sudo -S podman-compose up -d
+            cd /home/norman/SEP
+            docker compose pull alpha-webapp
+            docker compose up -d alpha-webapp
           EOF
