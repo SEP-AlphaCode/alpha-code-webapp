@@ -89,7 +89,7 @@ export function CreateActionModal({
         toast.success("Action updated successfully!")
       } else {
         await createActionMutation.mutateAsync(data)
-        toast("Action created successfully!")
+        toast.success("Action created successfully!")
       }
       reset()
       onClose()

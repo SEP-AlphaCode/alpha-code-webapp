@@ -190,39 +190,39 @@ export const createColumns = (
             return (
                 <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" className="h-8 w-8 p-0">
+                        <Button variant="ghost" className="h-8 w-8 p-0 hover:bg-gray-100 hover:scale-110 transition-all duration-200">
                             <span className="sr-only">Open menu</span>
-                            <MoreHorizontal className="h-4 w-4" />
+                            <MoreHorizontal className="h-4 w-4 hover:text-blue-600 transition-colors duration-200" />
                         </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
                         <DropdownMenuLabel>Actions</DropdownMenuLabel>
                         <DropdownMenuItem
                             onClick={() => navigator.clipboard.writeText(action.id)}
-                            className="hover:bg-gray-100 transition-colors duration-200"
+                            className="hover:bg-gray-100 transition-colors duration-200 cursor-pointer"
                         >
                             Copy Action ID
                         </DropdownMenuItem>
                         <DropdownMenuSeparator />
                         <DropdownMenuItem 
                             onClick={() => onView?.(action)}
-                            className="hover:bg-green-50 hover:text-green-700 transition-colors duration-200"
+                            className="hover:bg-green-50 hover:text-green-700 transition-all duration-200 cursor-pointer group"
                         >
-                            <Eye className="mr-2 h-4 w-4" />
+                            <Eye className="mr-2 h-4 w-4 text-gray-600 group-hover:text-green-600 group-hover:scale-110 transition-all duration-200" />
                             View Details
                         </DropdownMenuItem>
                         <DropdownMenuItem 
                             onClick={() => onEdit?.(action)}
-                            className="hover:bg-blue-50 hover:text-blue-700 transition-colors duration-200"
+                            className="hover:bg-blue-50 hover:text-blue-700 transition-all duration-200 cursor-pointer group"
                         >
-                            <Edit className="mr-2 h-4 w-4" />
+                            <Edit className="mr-2 h-4 w-4 text-gray-600 group-hover:text-blue-600 group-hover:scale-110 transition-all duration-200" />
                             Edit Action
                         </DropdownMenuItem>
                         <DropdownMenuItem 
                             onClick={() => onDelete?.(action)}
-                            className="text-red-600 hover:bg-red-50 hover:text-red-700 transition-colors duration-200"
+                            className="text-red-600 hover:bg-red-50 hover:text-red-700 transition-all duration-200 cursor-pointer group"
                         >
-                            <Trash2 className="mr-2 h-4 w-4" />
+                            <Trash2 className="mr-2 h-4 w-4 group-hover:text-red-600 group-hover:scale-110 transition-all duration-200" />
                             Delete Action
                         </DropdownMenuItem>
                     </DropdownMenuContent>
