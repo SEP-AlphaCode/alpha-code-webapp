@@ -1,9 +1,9 @@
 import { useMutation } from '@tanstack/react-query';
 import { login, googleLogin } from '@/api/auth-api';
 import { useRouter } from 'next/navigation';
-import { toast } from 'react-toastify';
 import { LoginRequest, TokenResponse } from '@/types/login';
 import { getTokenPayload } from '@/utils/tokenUtils';
+import { toast } from 'sonner';
 
 export const useLogin = () => {
   const router = useRouter();

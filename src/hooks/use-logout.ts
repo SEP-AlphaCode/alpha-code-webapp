@@ -1,7 +1,7 @@
 import { useMutation } from '@tanstack/react-query';
 import { logout } from '@/api/auth-api';
 import { useRouter } from 'next/navigation';
-import { toast } from 'react-toastify';
+import { toast } from 'sonner';
 
 export const useLogout = () => {
   const router = useRouter();
@@ -12,7 +12,7 @@ export const useLogout = () => {
       // Clear tokens and navigate
       sessionStorage.removeItem('accessToken');
       sessionStorage.removeItem('refreshToken');
-      toast('Logout successful!');
+      toast.success('Logout successful!');
       router.push('/login');
     },
     onError: () => {
