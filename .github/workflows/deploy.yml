@@ -47,7 +47,13 @@ jobs:
           mkdir -p ~/.ssh
           ssh-keyscan -H ${{ secrets.HOST }} >> ~/.ssh/known_hosts
 
-      - name: Deploy container via Docker Compose over SSH
+      - name: Ensure Traefik network exists
+        run: |
+          ssh ${{ secrets.SSH_USER }}@${{ secrets.HOST }} << EOF
+            docker network inspect traefik-network || docker network create traefik-network
+          EOF
+
+      - name: Deploy webapp via Docker Compose over SSH
         run: |
           ssh ${{ secrets.SSH_USER }}@${{ secrets.HOST }} << EOF
             set -e
