@@ -24,7 +24,7 @@ jobs:
       - name: Build and push Docker image
         uses: docker/build-push-action@v6
         with:
-          context: ./alpha-code-webapp
+          context: .
           push: true
           tags: norman1910/alpha-code-webapp:latest
           cache-from: type=registry,ref=norman1910/alpha-code-webapp:latest
@@ -51,7 +51,7 @@ jobs:
         run: |
           ssh ${{ secrets.SSH_USER }}@${{ secrets.HOST }} << EOF
             set -e
-            cd /home/norman/SEP
+            cd /home/norman/alpha-code-webapp
             docker compose pull alpha-webapp
             docker compose up -d alpha-webapp
           EOF
