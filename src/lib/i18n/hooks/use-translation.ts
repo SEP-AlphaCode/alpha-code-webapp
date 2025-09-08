@@ -1,5 +1,8 @@
 import { useI18n } from '../provider'
 
+// Type for translation objects
+type TranslationObject = Record<string, unknown>
+
 // Type-safe translation helper for homepage
 export function useHomepageTranslation() {
   const { dict, commonDict, locale, isLoading } = useI18n()
@@ -11,11 +14,11 @@ export function useHomepageTranslation() {
   // Helper function to get nested translation safely
   const t = (key: string, defaultValue = '') => {
     const keys = key.split('.')
-    let value: any = homepage
+    let value: unknown = homepage
     
     for (const k of keys) {
-      if (value && typeof value === 'object' && k in value) {
-        value = value[k]
+      if (value && typeof value === 'object' && value !== null && k in value) {
+        value = (value as TranslationObject)[k]
       } else {
         return defaultValue
       }
@@ -27,11 +30,11 @@ export function useHomepageTranslation() {
   // Helper function to get common translations
   const tc = (key: string, defaultValue = '') => {
     const keys = key.split('.')
-    let value: any = common
+    let value: unknown = common
     
     for (const k of keys) {
-      if (value && typeof value === 'object' && k in value) {
-        value = value[k]
+      if (value && typeof value === 'object' && value !== null && k in value) {
+        value = (value as TranslationObject)[k]
       } else {
         return defaultValue
       }
@@ -60,11 +63,11 @@ export function useTranslation(page?: string) {
   // Helper function to get nested translation safely
   const t = (key: string, defaultValue = '') => {
     const keys = key.split('.')
-    let value: any = pageDict
+    let value: unknown = pageDict
     
     for (const k of keys) {
-      if (value && typeof value === 'object' && k in value) {
-        value = value[k]
+      if (value && typeof value === 'object' && value !== null && k in value) {
+        value = (value as TranslationObject)[k]
       } else {
         return defaultValue
       }
@@ -76,11 +79,11 @@ export function useTranslation(page?: string) {
   // Helper function to get common translations
   const tc = (key: string, defaultValue = '') => {
     const keys = key.split('.')
-    let value: any = common
+    let value: unknown = common
     
     for (const k of keys) {
-      if (value && typeof value === 'object' && k in value) {
-        value = value[k]
+      if (value && typeof value === 'object' && value !== null && k in value) {
+        value = (value as TranslationObject)[k]
       } else {
         return defaultValue
       }
@@ -121,11 +124,11 @@ export function useLoginTranslation() {
   // Helper function to get nested translation safely
   const t = (key: string, defaultValue = '') => {
     const keys = key.split('.')
-    let value: any = login
+    let value: unknown = login
     
     for (const k of keys) {
-      if (value && typeof value === 'object' && k in value) {
-        value = value[k]
+      if (value && typeof value === 'object' && value !== null && k in value) {
+        value = (value as TranslationObject)[k]
       } else {
         return defaultValue
       }
@@ -137,11 +140,11 @@ export function useLoginTranslation() {
   // Helper function to get common translations
   const tc = (key: string, defaultValue = '') => {
     const keys = key.split('.')
-    let value: any = common
+    let value: unknown = common
     
     for (const k of keys) {
-      if (value && typeof value === 'object' && k in value) {
-        value = value[k]
+      if (value && typeof value === 'object' && value !== null && k in value) {
+        value = (value as TranslationObject)[k]
       } else {
         return defaultValue
       }
@@ -171,11 +174,11 @@ export function useResetPasswordTranslation() {
   // Helper function to get nested translation safely
   const t = (key: string, defaultValue = '') => {
     const keys = key.split('.')
-    let value: any = resetPassword
+    let value: unknown = resetPassword
     
     for (const k of keys) {
-      if (value && typeof value === 'object' && k in value) {
-        value = value[k]
+      if (value && typeof value === 'object' && value !== null && k in value) {
+        value = (value as TranslationObject)[k]
       } else {
         return defaultValue
       }
@@ -187,11 +190,11 @@ export function useResetPasswordTranslation() {
   // Helper function to get common translations
   const tc = (key: string, defaultValue = '') => {
     const keys = key.split('.')
-    let value: any = common
+    let value: unknown = common
     
     for (const k of keys) {
-      if (value && typeof value === 'object' && k in value) {
-        value = value[k]
+      if (value && typeof value === 'object' && value !== null && k in value) {
+        value = (value as TranslationObject)[k]
       } else {
         return defaultValue
       }

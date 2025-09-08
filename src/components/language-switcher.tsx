@@ -30,9 +30,25 @@ export function LanguageSwitcher({ variant = 'default', className }: LanguageSwi
 
   // Get language text from common dictionary or fallback
   const getLanguageText = () => {
-    return commonDict?.navigation?.language || 
-           dict?.common?.navigation?.language || 
-           dict?.navigation?.language || 
+    // Type guard function to check if value is an object with language property
+    const getNestedLanguage = (obj: unknown): string | undefined => {
+      if (obj && typeof obj === 'object' && 'language' in obj) {
+        const lang = (obj as { language: unknown }).language
+        return typeof lang === 'string' ? lang : undefined
+      }
+      return undefined
+    }
+
+    const getNavigationLanguage = (dict: unknown): string | undefined => {
+      if (dict && typeof dict === 'object' && 'navigation' in dict) {
+        return getNestedLanguage((dict as { navigation: unknown }).navigation)
+      }
+      return undefined
+    }
+
+    return getNavigationLanguage(commonDict) ||
+           getNavigationLanguage((dict as { common?: unknown })?.common) ||
+           getNavigationLanguage(dict) ||
            'Language'
   }
 

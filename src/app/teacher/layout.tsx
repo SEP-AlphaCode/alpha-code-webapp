@@ -9,7 +9,7 @@ import { AuthGuard } from '@/components/auth-guard';
 import { useLogout } from '@/hooks/use-logout';
 import { LogOut, Bell, Menu } from 'lucide-react';
 import { AccountData } from '@/types/account';
-import Logo2 from '@/public/logo2.png'
+import Logo2 from '../../../public/logo2.png'
 
 interface TeacherLayoutProps {
   children: React.ReactNode;

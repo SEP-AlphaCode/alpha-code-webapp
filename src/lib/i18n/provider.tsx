@@ -3,10 +3,10 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react'
 import type { Locale } from './config'
 import { i18n } from './config'
-import { getDictionary, getCommonDictionary, getPageDictionary, getLegacyDictionary } from './get-dictionary'
+import { getCommonDictionary, getPageDictionary, getLegacyDictionary } from './get-dictionary'
 
-// More flexible type for dictionaries
-type Dictionary = Record<string, any>
+// More flexible type for dictionaries - using index signature for dynamic access
+type Dictionary = { [key: string]: string | number | boolean | Dictionary | Dictionary[] }
 
 interface I18nContextType {
   locale: Locale
