@@ -1,4 +1,5 @@
 version: "3.9"
+
 services:
   alpha-webapp:
     image: docker.io/norman1910/alpha-code-webapp:latest
@@ -8,3 +9,9 @@ services:
     ports:
       - "3000:3000"
     restart: unless-stopped
+    networks:
+      - traefik-network   # <-- kết nối với network chung
+
+networks:
+  traefik-network:
+    external: true        # <-- network đã tồn tại trên server
