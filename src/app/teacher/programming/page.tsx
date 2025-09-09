@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 
@@ -20,8 +21,9 @@ interface SequenceBlock extends Omit<ProgramBlock, 'id'> {
 
 type CategoryType = 'Movement' | 'Sound' | 'Emotion' | 'Control';
 
-// Nhận `selectedRobotName` qua props
-export default function ProgrammingPage({ selectedRobotName }: { selectedRobotName: string }) {
+export default function ProgrammingPage() {
+    const searchParams = useSearchParams();
+    const selectedRobotName = searchParams.get('robot') || 'No Robot Selected';
     const [selectedCategory, setSelectedCategory] = useState<CategoryType>('Movement');
     const [programSequence, setProgramSequence] = useState<SequenceBlock[]>([]);
 
