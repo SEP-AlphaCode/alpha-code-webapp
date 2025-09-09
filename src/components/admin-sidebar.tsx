@@ -52,7 +52,7 @@ const defaultProjects = [
   },
   {
     name: "Robot Management",
-    url: "admin/robots",
+    url: "/admin/robots",
     icon: Bot,
   },
   {
