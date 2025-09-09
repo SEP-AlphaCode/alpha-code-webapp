@@ -1,0 +1,54 @@
+{
+  "header": {
+    "title": "Khám Phá Cùng Alpha Mini",
+    "search_placeholder": "Tìm kiếm robot..."
+  },
+  "robot_selection": {
+    "title": "Chọn Robot",
+    "details_title": "Chi tiết Robot",
+    "status_online": "Trực tuyến",
+    "status_offline": "Ngoại tuyến",
+    "battery": "Pin",
+    "charging": "Đang Sạc",
+    "system_info": {
+      "title": "Thông tin Hệ thống",
+      "firmware": "Phiên bản Firmware",
+      "temperature": "Nhiệt độ"
+    },
+    "current_status": {
+      "title": "Trạng thái Hiện tại",
+      "status": "Trạng thái",
+      "task": "Nhiệm vụ Hiện tại",
+      "battery": "Pin",
+      "location": "Vị trí"
+    },
+    "quick_actions": {
+      "title": "Hành động Nhanh",
+      "restart": "Khởi động lại Robot",
+      "settings": "Cài đặt Robot",
+      "update_firmware": "Cập nhật Firmware"
+    }
+  },
+  "programming": {
+    "title": "Lập Trình",
+    "create_actions": "Tạo Hành Động",
+    "workspace": "Không Gian Làm Việc",
+    "my_works": "Tác Phẩm Của Tôi"
+  },
+  "entertainment": {
+    "title": "Giải Trí",
+    "action": "Hành Động",
+    "album": "Album",
+    "friends": "Bạn Bè"
+  },
+  "things_to_try": {
+    "title": "Những Điều Có Thể Thử",
+    "refresh": "Làm mới",
+    "prompts": [
+      "Hey Mini, biểu diễn 'Khoảnh khắc vui vẻ'",
+      "Hey Mini, thời tiết có thích hợp để trượt ván không?",
+      "Hey Mini, biểu diễn 'Hành trình mùa hè sôi động'",
+      "Hey Mini, chỉ cho tôi cách bay!"
+    ]
+  }
+}

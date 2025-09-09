@@ -1,0 +1,54 @@
+{
+  "header": {
+    "title": "Explore with Alpha Mini",
+    "search_placeholder": "Search robots..."
+  },
+  "robot_selection": {
+    "title": "Select Robot",
+    "details_title": "Robot Details",
+    "status_online": "Online",
+    "status_offline": "Offline",
+    "battery": "Battery",
+    "charging": "Charging",
+    "system_info": {
+      "title": "System Information",
+      "firmware": "Firmware Version",
+      "temperature": "Temperature"
+    },
+    "current_status": {
+      "title": "Current Status",
+      "status": "Status",
+      "task": "Current Task",
+      "battery": "Battery",
+      "location": "Location"
+    },
+    "quick_actions": {
+      "title": "Quick Actions",
+      "restart": "Restart Robot",
+      "settings": "Robot Settings",
+      "update_firmware": "Update Firmware"
+    }
+  },
+  "programming": {
+    "title": "Programming",
+    "create_actions": "Create Actions",
+    "workspace": "Workspace",
+    "my_works": "My Works"
+  },
+  "entertainment": {
+    "title": "Entertainment",
+    "action": "Action",
+    "album": "Album",
+    "friends": "Friends"
+  },
+  "things_to_try": {
+    "title": "Things to Try",
+    "refresh": "Refresh",
+    "prompts": [
+      "Hey Mini, perform 'Moments of Joy'",
+      "Hey Mini, is the weather suitable for skating?",
+      "Hey Mini, perform 'Summer Upbeat Travel'",
+      "Hey Mini, show me how to fly!"
+    ]
+  }
+}
