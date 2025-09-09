@@ -20,7 +20,8 @@ interface SequenceBlock extends Omit<ProgramBlock, 'id'> {
 
 type CategoryType = 'Movement' | 'Sound' | 'Emotion' | 'Control';
 
-export default function ProgrammingPage() {
+// Nhận `selectedRobotName` qua props
+export default function ProgrammingPage({ selectedRobotName }: { selectedRobotName: string }) {
     const [selectedCategory, setSelectedCategory] = useState<CategoryType>('Movement');
     const [programSequence, setProgramSequence] = useState<SequenceBlock[]>([]);
 
@@ -75,8 +76,8 @@ export default function ProgrammingPage() {
     };
 
     const runProgram = () => {
-        console.log('Running program:', programSequence);
-        // Here you would send the program to the robot
+        console.log('Running program for robot', selectedRobotName, ':', programSequence);
+        // Gửi chương trình đến robot
     };
 
     const clearProgram = () => {
@@ -84,14 +85,14 @@ export default function ProgrammingPage() {
     };
 
     return (
-        <div className="p-6 space-y-6" suppressHydrationWarning>
+        <div className="p-6 space-y-6">
             <div className="flex items-center justify-between">
                 <h1 className="text-2xl font-bold">Robot Programming</h1>
                 <div className="flex space-x-2">
-                    <Button onClick={runProgram} className="bg-green-600 hover:bg-green-700" suppressHydrationWarning>
+                    <Button onClick={runProgram} className="bg-green-600 hover:bg-green-700">
                         ▶ Run
                     </Button>
-                    <Button onClick={clearProgram} variant="outline" suppressHydrationWarning>
+                    <Button onClick={clearProgram} variant="outline">
                         Clear
                     </Button>
                 </div>
@@ -100,16 +101,16 @@ export default function ProgrammingPage() {
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 {/* Programming Blocks */}
                 <div className="lg:col-span-2">
-                    <Card suppressHydrationWarning>
-                        <CardHeader suppressHydrationWarning>
-                            <CardTitle suppressHydrationWarning>Programming Blocks</CardTitle>
-                            <p className="text-sm text-muted-foreground" suppressHydrationWarning>
+                    <Card>
+                        <CardHeader>
+                            <CardTitle>Programming Blocks</CardTitle>
+                            <p className="text-sm text-muted-foreground">
                                 Drag and drop blocks to create robot programs
                             </p>
                         </CardHeader>
-                        <CardContent suppressHydrationWarning>
+                        <CardContent>
                             {/* Category Tabs */}
-                            <div className="flex space-x-2 mb-6" suppressHydrationWarning>
+                            <div className="flex space-x-2 mb-6">
                                 {categories.map((category) => (
                                     <button
                                         key={category.name}
@@ -119,25 +120,23 @@ export default function ProgrammingPage() {
                                                 ? 'bg-primary text-primary-foreground'
                                                 : 'bg-muted hover:bg-muted/80'
                                         }`}
-                                        suppressHydrationWarning
                                     >
-                                        <span className="mr-2" suppressHydrationWarning>{category.icon}</span>
+                                        <span className="mr-2">{category.icon}</span>
                                         {category.name}
                                     </button>
                                 ))}
                             </div>
 
                             {/* Programming Blocks Grid */}
-                            <div className="grid grid-cols-2 md:grid-cols-3 gap-4" suppressHydrationWarning>
+                            <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
                                 {programmingBlocks[selectedCategory].map((block) => (
                                     <div
                                         key={block.id}
                                         onClick={() => addToSequence(block)}
                                         className={`${block.color} text-white p-4 rounded-lg cursor-pointer hover:opacity-80 transition-opacity`}
-                                        suppressHydrationWarning
                                     >
-                                        <div className="text-center" suppressHydrationWarning>
-                                            <div className="text-2xl mb-2" suppressHydrationWarning>
+                                        <div className="text-center">
+                                            <div className="text-2xl mb-2">
                                                 {block.id === 'move_forward' && '⬆️'}
                                                 {block.id === 'move_backward' && '⬇️'}
                                                 {block.id === 'turn_left' && '⬅️'}
@@ -157,8 +156,8 @@ export default function ProgrammingPage() {
                                                 {block.id === 'if_condition' && '❓'}
                                                 {block.id === 'stop' && '⏹️'}
                                             </div>
-                                            <h3 className="font-medium mb-1" suppressHydrationWarning>{block.name}</h3>
-                                            <p className="text-xs opacity-90" suppressHydrationWarning>{block.description}</p>
+                                            <h3 className="font-medium mb-1">{block.name}</h3>
+                                            <p className="text-xs opacity-90">{block.description}</p>
                                         </div>
                                     </div>
                                 ))}
@@ -170,34 +169,32 @@ export default function ProgrammingPage() {
                 {/* Right Panel */}
                 <div className="space-y-6">
                     {/* Program Sequence */}
-                    <Card suppressHydrationWarning>
-                        <CardHeader suppressHydrationWarning>
-                            <CardTitle suppressHydrationWarning>Program Sequence</CardTitle>
-                            <p className="text-sm text-muted-foreground" suppressHydrationWarning>
+                    <Card>
+                        <CardHeader>
+                            <CardTitle>Program Sequence</CardTitle>
+                            <p className="text-sm text-muted-foreground">
                                 Click blocks to add them to your program
                             </p>
                         </CardHeader>
-                        <CardContent suppressHydrationWarning>
-                            <div className="min-h-[200px] border-2 border-dashed border-muted rounded-lg p-4" suppressHydrationWarning>
+                        <CardContent>
+                            <div className="min-h-[200px] border-2 border-dashed border-muted rounded-lg p-4">
                                 {programSequence.length === 0 ? (
-                                    <div className="text-center text-muted-foreground py-8" suppressHydrationWarning>
-                                        <p suppressHydrationWarning>Click blocks to add them here</p>
+                                    <div className="text-center text-muted-foreground py-8">
+                                        <p>Click blocks to add them here</p>
                                     </div>
                                 ) : (
-                                    <div className="space-y-2" suppressHydrationWarning>
+                                    <div className="space-y-2">
                                         {programSequence.map((block, index) => (
                                             <div
                                                 key={block.id}
                                                 className="flex items-center justify-between p-2 bg-muted rounded"
-                                                suppressHydrationWarning
                                             >
-                                                <span className="text-sm" suppressHydrationWarning>
+                                                <span className="text-sm">
                                                     {index + 1}. {block.name}
                                                 </span>
                                                 <button
                                                     onClick={() => removeFromSequence(index)}
                                                     className="text-red-500 hover:text-red-700"
-                                                    suppressHydrationWarning
                                                 >
                                                     ✕
                                                 </button>
@@ -210,15 +207,15 @@ export default function ProgrammingPage() {
                     </Card>
 
                     {/* Quick Programs */}
-                    <Card suppressHydrationWarning>
-                        <CardHeader suppressHydrationWarning>
-                            <CardTitle suppressHydrationWarning>Quick Programs</CardTitle>
-                            <p className="text-sm text-muted-foreground" suppressHydrationWarning>
+                    <Card>
+                        <CardHeader>
+                            <CardTitle>Quick Programs</CardTitle>
+                            <p className="text-sm text-muted-foreground">
                                 Load pre-made programs
                             </p>
                         </CardHeader>
-                        <CardContent suppressHydrationWarning>
-                            <div className="space-y-3" suppressHydrationWarning>
+                        <CardContent>
+                            <div className="space-y-3">
                                 {quickPrograms.map((program, index) => (
                                     <div
                                         key={index}
@@ -233,10 +230,9 @@ export default function ProgrammingPage() {
                                             }).filter((block): block is SequenceBlock => block !== null);
                                             setProgramSequence(blocks);
                                         }}
-                                        suppressHydrationWarning
                                     >
-                                        <h4 className="font-medium" suppressHydrationWarning>{program.name}</h4>
-                                        <p className="text-xs text-muted-foreground" suppressHydrationWarning>
+                                        <h4 className="font-medium">{program.name}</h4>
+                                        <p className="text-xs text-muted-foreground">
                                             {program.description}
                                         </p>
                                     </div>
@@ -246,29 +242,31 @@ export default function ProgrammingPage() {
                     </Card>
 
                     {/* Robot Status */}
-                    <Card suppressHydrationWarning>
-                        <CardHeader suppressHydrationWarning>
-                            <CardTitle suppressHydrationWarning>Robot Status</CardTitle>
+                    <Card>
+                        <CardHeader>
+                            <CardTitle>Robot Status</CardTitle>
                         </CardHeader>
-                        <CardContent suppressHydrationWarning>
-                            <div className="space-y-3" suppressHydrationWarning>
-                                <div className="flex justify-between" suppressHydrationWarning>
-                                    <span className="text-sm" suppressHydrationWarning>Selected Robot:</span>
-                                    <span className="text-sm font-medium" suppressHydrationWarning>Alpha-01</span>
+                        <CardContent>
+                            <div className="space-y-3">
+                                <div className="flex justify-between">
+                                    <span className="text-sm">Selected Robot:</span>
+                                    <span className="text-sm font-medium">
+                                        {selectedRobotName}
+                                    </span>
                                 </div>
-                                <div className="flex justify-between" suppressHydrationWarning>
-                                    <span className="text-sm" suppressHydrationWarning>Status:</span>
-                                    <span className="text-sm bg-green-100 text-green-800 px-2 py-1 rounded" suppressHydrationWarning>
+                                <div className="flex justify-between">
+                                    <span className="text-sm">Status:</span>
+                                    <span className="text-sm bg-green-100 text-green-800 px-2 py-1 rounded">
                                         Ready
                                     </span>
                                 </div>
-                                <div className="flex justify-between" suppressHydrationWarning>
-                                    <span className="text-sm" suppressHydrationWarning>Battery:</span>
-                                    <span className="text-sm" suppressHydrationWarning>85%</span>
+                                <div className="flex justify-between">
+                                    <span className="text-sm">Battery:</span>
+                                    <span className="text-sm">85%</span>
                                 </div>
-                                <div className="flex justify-between" suppressHydrationWarning>
-                                    <span className="text-sm" suppressHydrationWarning>Location:</span>
-                                    <span className="text-sm" suppressHydrationWarning>Classroom A</span>
+                                <div className="flex justify-between">
+                                    <span className="text-sm">Location:</span>
+                                    <span className="text-sm">Classroom A</span>
                                 </div>
                             </div>
                         </CardContent>
