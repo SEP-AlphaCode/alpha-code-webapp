@@ -3,6 +3,7 @@
 import { Expression } from "@/types/expression"
 import { ColumnDef } from "@tanstack/react-table"
 import { Checkbox } from "@/components/ui/checkbox"
+import Image from "next/image"
 
 import { ArrowUpDown } from "lucide-react"
 import { MoreHorizontal, Edit, Trash2, Eye } from "lucide-react"
@@ -97,9 +98,11 @@ export const createColumns = (
         cell: ({ row }) => (
             <div className="flex items-center gap-1 text-blue-600 font-medium">
                 {row.original.imageUrl ? (
-                    <img 
+                    <Image 
                         src={row.original.imageUrl} 
                         alt="Expression" 
+                        width={60}
+                        height={60}
                         className="w-15 h-15 object-cover rounded"
                         onError={(e) => {
                             e.currentTarget.style.display = 'none';

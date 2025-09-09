@@ -1,5 +1,5 @@
 import Image from "next/image"
-import { Star, Zap, Shield, Sparkles, ChevronDown } from "lucide-react"
+import { Star, Zap, Shield, Sparkles } from "lucide-react"
 import { forwardRef } from "react"
 import { useHomepageTranslation } from "@/lib/i18n/hooks/use-translation"
 
