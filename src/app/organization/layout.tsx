@@ -1,0 +1,116 @@
+"use client"
+
+import React from "react"
+import {
+  Breadcrumb,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbList,
+  BreadcrumbPage,
+  BreadcrumbSeparator,
+} from "@/components/ui/breadcrumb"
+import { Separator } from "@/components/ui/separator"
+import {
+  SidebarInset,
+  SidebarProvider,
+  SidebarTrigger,
+} from "@/components/ui/sidebar"
+import { usePathname } from "next/navigation"
+import { AuthGuard } from "@/components/auth-guard"
+import { OrganizationSidebar } from "./organization-sidebar"
+
+// Function to format path segments into a display name
+function formatPathToDisplayName(path: string): string {
+  return path
+    .split('-')
+    .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(' ')
+}
+
+function AdminBreadcrumb() {
+  const pathname = usePathname()
+
+  // Create breadcrumb items from pathname
+  const pathSegments = pathname.split('/').filter(Boolean)
+  const breadcrumbItems = []
+
+  // If it's the admin main page, show Admin -> Dashboard
+  if (pathname === '/organization') {
+    breadcrumbItems.push({
+      href: '/organization',
+      label: 'Organization',
+      isLast: false
+    })
+    breadcrumbItems.push({
+      href: '/organization',
+      label: 'Dashboard',
+      isLast: true
+    })
+  } else {
+    // If it's a subpage, show Admin -> Current Page
+    breadcrumbItems.push({
+      href: '/organization',
+      label: 'Organization',
+      isLast: false
+    })
+    
+    // Extract the name of the page from the last path segment and format it
+    const lastSegment = pathSegments[pathSegments.length - 1]
+    const currentPageName = formatPathToDisplayName(lastSegment)
+    breadcrumbItems.push({
+      href: pathname,
+      label: currentPageName,
+      isLast: true
+    })
+  }
+  
+  return (
+    <Breadcrumb>
+      <BreadcrumbList>
+        {breadcrumbItems.map((item, index) => (
+          <React.Fragment key={`${item.href}-${item.label}-${index}`}>
+            <BreadcrumbItem className={index === 0 ? "hidden md:block" : ""}>
+              {item.isLast ? (
+                <BreadcrumbPage>{item.label}</BreadcrumbPage>
+              ) : (
+                <BreadcrumbLink href={item.href}>
+                  {item.label}
+                </BreadcrumbLink>
+              )}
+            </BreadcrumbItem>
+            {!item.isLast && <BreadcrumbSeparator className="hidden md:block" />}
+          </React.Fragment>
+        ))}
+      </BreadcrumbList>
+    </Breadcrumb>
+  )
+}
+
+export default function AdminLayout({
+  children,
+}: {
+  children: React.ReactNode
+}) {
+  return (
+    <AuthGuard allowedRoles={['organization']}>
+      <SidebarProvider>
+        <OrganizationSidebar />
+        <SidebarInset>
+          <header className="flex h-16 shrink-0 items-center gap-2">
+            <div className="flex items-center gap-2 px-4">
+              <SidebarTrigger className="-ml-1" />
+              <Separator
+                orientation="vertical"
+                className="mr-2 data-[orientation=vertical]:h-4"
+              />
+              <AdminBreadcrumb />
+            </div>
+          </header>
+          <div className="flex flex-1 flex-col gap-4 p-4 pt-0">
+            {children}
+          </div>
+        </SidebarInset>
+      </SidebarProvider>
+    </AuthGuard>
+  )
+}

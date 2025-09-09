@@ -48,6 +48,8 @@ export const useLogin = () => {
         router.push('/admin');
       } else if (roleNameLower === 'teacher') {
         router.push('/teacher');
+      } else if (roleNameLower === 'organization') {
+        router.push('/organization');
       } else {
         router.push('/student');
       }
