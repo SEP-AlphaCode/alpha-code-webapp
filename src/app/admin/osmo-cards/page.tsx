@@ -31,8 +31,10 @@ export default function OsmoCardManagement() {
   const updateOsmoCardMutation = osmoCardHooks.useUpdateOsmoCard();
   const createOsmoCardMutation = osmoCardHooks.useCreateOsmoCard();
 
-  // Extract osmo cards from PagedResult
-  const osmoCards = osmoCardsResponse?.data || [];
+  // Extract osmo cards from PagedResult with stable reference
+  const osmoCards = useMemo(() => {
+    return osmoCardsResponse?.data || [];
+  }, [osmoCardsResponse?.data]);
 
   // Get unique colors and statuses for filters
   const availableColors = useMemo(() => {

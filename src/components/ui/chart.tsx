@@ -7,6 +7,19 @@ import { cn } from "@/lib/utils"
 
 const THEMES = { light: "", dark: ".dark" } as const
 
+// Chart data types
+type ChartDataValue = string | number
+type ChartDataItem = Record<string, ChartDataValue>
+type TooltipPayloadItem = {
+  name?: string
+  value?: ChartDataValue
+  dataKey?: string
+  color?: string
+  payload?: ChartDataItem
+  fill?: string
+  id?: string
+}
+
 export type ChartConfig = {
   [k in string]: {
     label?: React.ReactNode
@@ -70,7 +83,7 @@ ChartContainer.displayName = "Chart"
 
 const ChartStyle = ({ id, config }: { id: string; config: ChartConfig }) => {
   const colorConfig = Object.entries(config).filter(
-    ([_, config]) => config.theme || config.color
+    ([, itemConfig]) => itemConfig.theme || itemConfig.color
   )
 
   if (!colorConfig.length) {
@@ -121,11 +134,11 @@ const ChartTooltipContent = React.forwardRef<
   HTMLDivElement,
   React.ComponentProps<"div"> & {
     active?: boolean
-    payload?: any[]
+    payload?: TooltipPayloadItem[]
     label?: string
-    labelFormatter?: (value: any, payload: any[]) => string
+    labelFormatter?: (value: React.ReactNode, payload: TooltipPayloadItem[]) => string
     labelClassName?: string
-    formatter?: (value: any, name: string, item: any, index: number, payload: any) => React.ReactNode
+    formatter?: (value: ChartDataValue, name: string, item: TooltipPayloadItem, index: number, payload: TooltipPayloadItem[]) => React.ReactNode
     color?: string
     hideLabel?: boolean
     hideIndicator?: boolean
@@ -201,10 +214,10 @@ const ChartTooltipContent = React.forwardRef<
           </div>
         ) : null}
         <div className="grid gap-1.5">
-          {payload.map((item: any, index: number) => {
+          {payload.map((item: TooltipPayloadItem, index: number) => {
             const key = `${nameKey || item.name || item.dataKey || "value"}`
             const itemConfig = getPayloadConfigFromPayload(config, item, key)
-            const indicatorColor = color || item.payload.fill || item.color
+            const indicatorColor = color || item.payload?.fill || item.color
 
             return (
               <div
@@ -215,7 +228,7 @@ const ChartTooltipContent = React.forwardRef<
                 )}
               >
                 {formatter && item?.value !== undefined && item.name ? (
-                  formatter(item.value, item.name, item, index, item.payload)
+                  formatter(item.value, item.name, item, index, payload)
                 ) : (
                   <>
                     {itemConfig?.icon ? (
@@ -280,7 +293,7 @@ const ChartLegend = React.forwardRef<
   HTMLDivElement,
   React.ComponentProps<"div"> & {
     hideIcon?: boolean
-    payload?: any[]
+    payload?: TooltipPayloadItem[]
     verticalAlign?: "top" | "bottom"
   }
 >(({ className, hideIcon = false, payload, verticalAlign = "bottom" }, ref) => {
@@ -346,7 +359,7 @@ function getPayloadConfigFromPayload(
       ? payload.payload
       : undefined
 
-  let configLabelKey: string = key
+  const configLabelKey: string = key
 
   if (
     key in config ||

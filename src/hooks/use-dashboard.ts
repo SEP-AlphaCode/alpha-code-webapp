@@ -1,5 +1,6 @@
 import { getDashboardStats, getOnlineUsersCount } from "@/api/dashboard-api";
 import { DashboardStats } from "@/types/dashboard";
+import { ApiError } from "@/types/api-error";
 import { useQuery } from "@tanstack/react-query";
 
 export const useDashboard = (roleName: string) => {
@@ -12,16 +13,18 @@ export const useDashboard = (roleName: string) => {
             gcTime: 10 * 60 * 1000, // Keep in cache for 10 minutes
             queryFn: () => getDashboardStats(roleName),
             enabled: !!roleName,
-            retry: (failureCount, error: any) => {
+            retry: (failureCount, error: unknown) => {
                 // Don't retry for 429 errors after 2 attempts
-                if (error?.response?.status === 429 && failureCount >= 2) {
+                const apiError = error as ApiError;
+                if (apiError?.response?.status === 429 && failureCount >= 2) {
                     return false;
                 }
                 return failureCount < 3;
             },
-            retryDelay: (attemptIndex, error: any) => {
+            retryDelay: (attemptIndex, error: unknown) => {
                 // Longer delays for 429 errors
-                if (error?.response?.status === 429) {
+                const apiError = error as ApiError;
+                if (apiError?.response?.status === 429) {
                     return Math.min(5000 * 2 ** attemptIndex, 60000); // 5s, 10s, 20s...
                 }
                 return Math.min(1000 * 2 ** attemptIndex, 30000);
@@ -37,14 +40,16 @@ export const useDashboard = (roleName: string) => {
             staleTime: 1 * 60 * 1000, // Cache for 1 minute (online count changes more frequently)
             gcTime: 5 * 60 * 1000, // Keep in cache for 5 minutes
             queryFn: getOnlineUsersCount,
-            retry: (failureCount, error: any) => {
-                if (error?.response?.status === 429 && failureCount >= 2) {
+            retry: (failureCount, error: unknown) => {
+                const apiError = error as ApiError;
+                if (apiError?.response?.status === 429 && failureCount >= 2) {
                     return false;
                 }
                 return failureCount < 3;
             },
-            retryDelay: (attemptIndex, error: any) => {
-                if (error?.response?.status === 429) {
+            retryDelay: (attemptIndex, error: unknown) => {
+                const apiError = error as ApiError;
+                if (apiError?.response?.status === 429) {
                     return Math.min(5000 * 2 ** attemptIndex, 60000);
                 }
                 return Math.min(1000 * 2 ** attemptIndex, 30000);

@@ -7,7 +7,6 @@ import {
   CartesianGrid,
   XAxis,
   YAxis,
-  ResponsiveContainer,
   Tooltip,
   Legend,
 } from "recharts"
@@ -17,8 +16,11 @@ import {
   type ChartConfig,
 } from "@/components/ui/chart"
 
+// Chart data type - each object can have dynamic properties
+type ChartData = Record<string, string | number>
+
 interface LineChartComponentProps {
-  data: any[]
+  data: ChartData[]
   config: ChartConfig
   className?: string
   xAxisKey?: string

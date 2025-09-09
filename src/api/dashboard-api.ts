@@ -1,4 +1,5 @@
 import { DashboardStats } from "@/types/dashboard";
+import { ApiError } from "@/types/api-error";
 import http from "@/utils/http";
 
 export const getDashboardStats = async (roleName: string): Promise<DashboardStats> => {
@@ -12,9 +13,10 @@ export const getDashboardStats = async (roleName: string): Promise<DashboardStat
       growthRate: data?.growthRate || 0,
       newThisMonth: data?.newThisMonth || 0,
     };
-  } catch (error: any) {
+  } catch (error: unknown) {
     // Handle specific error cases
-    if (error?.response?.status === 429) {
+    const apiError = error as ApiError;
+    if (apiError?.response?.status === 429) {
       console.warn('Rate limit exceeded for dashboard stats. Using cached/default data.');
       // Return some reasonable default data for rate limit cases
       return {
@@ -25,7 +27,7 @@ export const getDashboardStats = async (roleName: string): Promise<DashboardStat
       };
     }
     
-    console.error('Error fetching dashboard stats:', error);
+    console.error('Error fetching dashboard stats:', apiError);
     // Return default values on other errors
     return {
       total: 0,
@@ -48,15 +50,16 @@ export const getOnlineUsersCount = async (): Promise<number> => {
     }
     // Fallback to 0 if no valid data
     return 0;
-  } catch (error: any) {
+  } catch (error: unknown) {
     // Handle rate limiting specifically
-    if (error?.response?.status === 429) {
+    const apiError = error as ApiError;
+    if (apiError?.response?.status === 429) {
       console.warn('Rate limit exceeded for online users count. Using fallback data.');
       // Return a reasonable default for rate limited requests
       return 3; // Some default online count
     }
     
-    console.error('Error fetching online users count:', error);
+    console.error('Error fetching online users count:', apiError);
     return 0;
   }
 };

@@ -1,7 +1,6 @@
 import { Account } from '@/types/account';
 import { PagedResult } from '@/types/page-result';
 import http from '@/utils/http';
-import axios from 'axios';
 export const getAllAccounts = async () => {
   try {
     const response = await http.get<PagedResult<Account>>('/accounts');

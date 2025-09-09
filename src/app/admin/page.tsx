@@ -5,6 +5,7 @@ import { UserStatsChart } from "@/components/ui/user-stats-chart"
 import { GrowthTrendChart } from "@/components/ui/growth-trend-chart"
 import { UserDistributionChart } from "@/components/ui/user-distribution-chart"
 import { RateLimitWarning } from "@/components/ui/rate-limit-warning"
+import { ApiError } from "@/types/api-error"
 import { Users, TrendingUp, PieChart, Activity } from "lucide-react"
 
 export default function AdminDashboard() {
@@ -36,7 +37,7 @@ export default function AdminDashboard() {
   }
 
   // Check if any error is a rate limit error
-  const isRateLimited = (statsError as any)?.response?.status === 429 || (onlineUsersError as any)?.response?.status === 429
+  const isRateLimited = (statsError as ApiError)?.response?.status === 429 || (onlineUsersError as ApiError)?.response?.status === 429
   
   // Handle manual retry
   const handleRetry = () => {

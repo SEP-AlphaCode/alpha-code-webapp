@@ -7,21 +7,21 @@ import {
   CartesianGrid,
   XAxis,
   YAxis,
-  ResponsiveContainer,
   Tooltip,
   Legend,
 } from "recharts"
 
 import {
   ChartContainer,
-  ChartTooltip,
   ChartTooltipContent,
-  ChartLegend,
   type ChartConfig,
 } from "@/components/ui/chart"
 
+// Chart data type - each object can have dynamic properties
+type ChartData = Record<string, string | number>
+
 interface BarChartComponentProps {
-  data: any[]
+  data: ChartData[]
   config: ChartConfig
   className?: string
   xAxisKey?: string
@@ -36,7 +36,7 @@ export function BarChartComponent({
   config,
   className,
   xAxisKey = "name",
-  yAxisKey = "value",
+//   yAxisKey = "value",
   showGrid = true,
   showTooltip = true,
   showLegend = false,

@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import Image from 'next/image';
 import { X, Eye, EyeOff, Upload, Trash2 } from 'lucide-react';
 import {
   Dialog,
@@ -339,9 +340,11 @@ export default function CreateUserModal({
               {avatarPreview && (
                 <div className="flex items-center gap-3">
                   <div className="w-16 h-16 rounded-full overflow-hidden border-2 border-gray-200">
-                    <img
+                    <Image
                       src={avatarPreview}
                       alt="Avatar preview"
+                      width={64}
+                      height={64}
                       className="w-full h-full object-cover"
                     />
                   </div>

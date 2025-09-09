@@ -50,31 +50,6 @@ export function UserDistributionChart({ stats, onlineCount, isLoading }: UserDis
     }
   ]
 
-  const RADIAN = Math.PI / 180
-  const renderCustomizedLabel = ({
-    cx, cy, midAngle, innerRadius, outerRadius, percent
-  }: any) => {
-    if (percent < 0.05) return null // Don't show label for very small slices
-    
-    const radius = innerRadius + (outerRadius - innerRadius) * 0.5
-    const x = cx + radius * Math.cos(-midAngle * RADIAN)
-    const y = cy + radius * Math.sin(-midAngle * RADIAN)
-
-    return (
-      <text 
-        x={x} 
-        y={y} 
-        fill="white" 
-        textAnchor={x > cx ? 'start' : 'end'} 
-        dominantBaseline="central"
-        fontSize={12}
-        fontWeight="bold"
-      >
-        {`${(percent * 100).toFixed(0)}%`}
-      </text>
-    )
-  }
-
   return (
     <div className="rounded-lg border bg-card p-6 shadow-sm">
       <div className="flex items-center justify-between mb-6">
@@ -92,7 +67,6 @@ export function UserDistributionChart({ stats, onlineCount, isLoading }: UserDis
               cx="50%"
               cy="50%"
               labelLine={false}
-              label={renderCustomizedLabel}
               outerRadius={80}
               fill="#8884d8"
               dataKey="value"
@@ -108,12 +82,13 @@ export function UserDistributionChart({ stats, onlineCount, isLoading }: UserDis
                 borderRadius: '8px',
                 boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)'
               }}
-              formatter={(value: any, name: string) => [value, name]}
+              formatter={(value: string | number, name: string) => [value, name]}
             />
             <Legend 
               verticalAlign="bottom" 
               height={36}
-              formatter={(value, entry: any) => (
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
+              formatter={(value: string, entry: any) => (
                 <span style={{ color: entry.color, fontWeight: 'medium' }}>
                   {value}
                 </span>

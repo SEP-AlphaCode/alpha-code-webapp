@@ -89,7 +89,7 @@ export function GrowthTrendChart({ stats, isLoading }: GrowthTrendChartProps) {
                 borderRadius: '8px',
                 boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)'
               }}
-              formatter={(value: any, name: string) => {
+              formatter={(value: string | number, name: string) => {
                 if (name === "growth") {
                   return [`${Number(value).toFixed(1)}%`, "Growth Rate"]
                 }
