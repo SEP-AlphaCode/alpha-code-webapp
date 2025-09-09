@@ -44,3 +44,14 @@ export interface AccountsQueryParams {
   role?: string
   status?: string
 }
+
+// Type for creating new account
+export interface CreateAccountRequest {
+  username: string
+  fullName: string
+  email: string
+  password: string
+  phone: string
+  gender: number
+  roleId: string
+}

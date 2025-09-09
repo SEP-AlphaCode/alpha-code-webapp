@@ -3,7 +3,6 @@
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import {
     Select,
     SelectContent,
@@ -23,21 +22,22 @@ import {
     Zap,
     CheckCircle,
     RefreshCw,
-    Plus
 } from 'lucide-react';
 
 // Import tĩnh cả hai file ngôn ngữ
 import viTranslations from '@/lib/i18n/dictionaries/teacher/teacher.vi.json';
 import enTranslations from '@/lib/i18n/dictionaries/teacher/teacher.en.json';
 
-const translations = {
+type Locale = 'vi' | 'en';
+
+const translations: Record<Locale, typeof viTranslations> = {
     vi: viTranslations,
     en: enTranslations
 };
 
 // Hàm để xáo trộn mảng ngẫu nhiên
 function shuffleArray(array: string[]) {
-    let newArray = [...array];
+    const newArray = [...array];
     for (let i = newArray.length - 1; i > 0; i--) {
         const j = Math.floor(Math.random() * (i + 1));
         [newArray[i], newArray[j]] = [newArray[j], newArray[i]];
@@ -46,8 +46,8 @@ function shuffleArray(array: string[]) {
 }
 
 export default function TeacherDashboard() {
-    const [locale, setLocale] = useState('vi');
-    const t = translations[locale]; 
+    const [locale, setLocale] = useState<Locale>('vi');
+    const t = translations[locale];
     const [selectedRobot, setSelectedRobot] = useState<string | null>(null);
     const [shuffledPrompts, setShuffledPrompts] = useState<string[]>([]);
 
