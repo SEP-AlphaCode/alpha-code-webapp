@@ -188,7 +188,7 @@ export default function QRCodesPage() {
       await createQRCodeMutation.mutateAsync(data)
       alert('QR Code card created successfully!')
       setIsCreateModalOpen(false)
-    } catch (_error) {
+    } catch {
       alert('Failed to create QR code card. Please try again.')
     }
   }
@@ -198,7 +198,7 @@ export default function QRCodesPage() {
       try {
         await deleteQRCodeMutation.mutateAsync(id)
         alert('QR Code card deleted successfully!')
-      } catch (_error) {
+      } catch {
         alert('Failed to delete QR code card. Please try again.')
       }
     }
@@ -208,7 +208,7 @@ export default function QRCodesPage() {
     try {
       await updateStatusMutation.mutateAsync({ id, status: newStatus })
       alert('QR Code card status updated successfully!')
-    } catch (_error) {
+    } catch {
       alert('Failed to update QR code card status. Please try again.')
     }
   }

@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef } from "react"
+import { useEffect, useState, useRef, useCallback, useMemo } from "react"
 
 interface ScrollSection {
   id: string
@@ -10,15 +10,22 @@ export function useScrollNavigation() {
   const [isScrolling, setIsScrolling] = useState(false)
   const [isVisible, setIsVisible] = useState(false)
 
-  const sections: ScrollSection[] = [
-    { id: "hero", ref: useRef<HTMLElement>(null) },
-    { id: "robot", ref: useRef<HTMLElement>(null) },
-    { id: "features", ref: useRef<HTMLElement>(null) },
-    { id: "about", ref: useRef<HTMLElement>(null) },
-    { id: "contact", ref: useRef<HTMLElement>(null) },
-  ]
+  // Create refs at the top level
+  const heroRef = useRef<HTMLElement>(null)
+  const robotRef = useRef<HTMLElement>(null)
+  const featuresRef = useRef<HTMLElement>(null)
+  const aboutRef = useRef<HTMLElement>(null)
+  const contactRef = useRef<HTMLElement>(null)
 
-  const scrollToSection = (sectionIndex: number) => {
+  const sections: ScrollSection[] = useMemo(() => [
+    { id: "hero", ref: heroRef },
+    { id: "robot", ref: robotRef },
+    { id: "features", ref: featuresRef },
+    { id: "about", ref: aboutRef },
+    { id: "contact", ref: contactRef },
+  ], []) // Refs are stable, no dependencies needed
+
+  const scrollToSection = useCallback((sectionIndex: number) => {
     if (sectionIndex >= 0 && sectionIndex < sections.length) {
       setCurrentSection(sectionIndex)
       const targetSection = sections[sectionIndex].ref.current
@@ -29,7 +36,7 @@ export function useScrollNavigation() {
         })
       }
     }
-  }
+  }, [sections])
 
   useEffect(() => {
     const handleWheel = (e: WheelEvent) => {
@@ -73,7 +80,7 @@ export function useScrollNavigation() {
       window.removeEventListener("wheel", handleWheel)
       window.removeEventListener("keydown", handleKeyDown)
     }
-  }, [currentSection, isScrolling])
+  }, [currentSection, isScrolling, scrollToSection, sections.length])
 
   return {
     currentSection,

@@ -41,7 +41,7 @@ const defaultProjects = [
     icon: Home,
   },
   {
-    name: "User Management",
+    name: "Users",
     url: "/admin/users",
     icon: Users,
   },
@@ -51,27 +51,27 @@ const defaultProjects = [
     icon: BarChart3,
   },
   {
-    name: "Robot Management",
-    url: "admin/robots",
+    name: "Robots",
+    url: "/admin/robots",
     icon: Bot,
   },
   {
-    name: "Classroom Management",
+    name: "Classrooms",
     url: "/admin/classrooms",
     icon: School,
   },
   {
-    name: "QRCode Management",
+    name: "QRCodes",
     url: "/admin/qrcodes",
     icon: QrCode
   },
   {
-    name: "OSMO Card Management",
+    name: "OSMO Cards",
     url: "/admin/osmo-cards",
     icon: CreditCard
   },
   {
-    name: "Marker Management",
+    name: "Markers",
     url: "/admin/markers",
     icon: BookMarkedIcon
   }

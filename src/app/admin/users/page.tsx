@@ -25,8 +25,10 @@ export default function UserManagement() {
   const updateAccountMutation = accountHooks.useUpdateAccount();
   const createAccountMutation = accountHooks.useCreateAccount();
 
-  // Extract accounts from PagedResult
-  const accounts = accountsResponse?.data || [];
+  // Extract accounts from PagedResult with stable reference
+  const accounts = useMemo(() => {
+    return accountsResponse?.data || [];
+  }, [accountsResponse?.data]);
 
   // Convert Account type to User interface for compatibility
   const users = useMemo(() => {

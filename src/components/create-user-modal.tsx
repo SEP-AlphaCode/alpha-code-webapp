@@ -4,7 +4,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useRoles } from '@/hooks/use-roles';
-import { CreateAccountRequest } from '@/services/accountApi';
+import { CreateAccountRequest } from '@/types/account';
 import { X, Loader2 } from 'lucide-react';
 import { useAccount } from '@/hooks/use-account';
 import { Role } from '@/types/role';

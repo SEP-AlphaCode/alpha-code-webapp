@@ -10,7 +10,8 @@ import {
 import { Button } from "@/components/ui/button"
 import { Expression } from "@/types/expression"
 import { Badge } from "@/components/ui/badge"
-import { Calendar, FileText, Hash, Settings, Image } from "lucide-react"
+import { Calendar, FileText, Hash, Settings, Image as ImageIcon } from "lucide-react"
+import Image from "next/image"
 
 interface ViewExpressionModalProps {
   isOpen: boolean
@@ -116,15 +117,17 @@ export function ViewExpressionModal({
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="flex items-start gap-3">
-                <Image className="h-4 w-4 text-blue-500 mt-1 flex-shrink-0" />
+                <ImageIcon className="h-4 w-4 text-blue-500 mt-1 flex-shrink-0" />
                 <div className="flex-1">
                   <label className="text-sm font-medium text-gray-700">Image</label>
                   <div className="mt-1">
                     {expression.imageUrl ? (
                       <div className="space-y-2">
-                        <img 
+                        <Image 
                           src={expression.imageUrl} 
                           alt="Expression" 
+                          width={96}
+                          height={96}
                           className="w-24 h-24 object-cover rounded border"
                           onError={(e) => {
                             e.currentTarget.style.display = 'none';

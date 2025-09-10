@@ -3,7 +3,6 @@
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import {
     Select,
     SelectContent,
@@ -23,21 +22,22 @@ import {
     Zap,
     CheckCircle,
     RefreshCw,
-    Plus
 } from 'lucide-react';
 
 // Import tĩnh cả hai file ngôn ngữ
 import viTranslations from '@/lib/i18n/dictionaries/teacher/teacher.vi.json';
 import enTranslations from '@/lib/i18n/dictionaries/teacher/teacher.en.json';
 
-const translations = {
+type Locale = 'vi' | 'en';
+
+const translations: Record<Locale, typeof viTranslations> = {
     vi: viTranslations,
     en: enTranslations
 };
 
 // Hàm để xáo trộn mảng ngẫu nhiên
 function shuffleArray(array: string[]) {
-    let newArray = [...array];
+    const newArray = [...array];
     for (let i = newArray.length - 1; i > 0; i--) {
         const j = Math.floor(Math.random() * (i + 1));
         [newArray[i], newArray[j]] = [newArray[j], newArray[i]];
@@ -46,9 +46,8 @@ function shuffleArray(array: string[]) {
 }
 
 export default function TeacherDashboard() {
-    const [locale, setLocale] = useState('vi');
-    // Lấy bản dịch trực tiếp từ locale, không cần useState hay useEffect riêng
-    const t = translations[locale]; 
+    const [locale, setLocale] = useState<Locale>('vi');
+    const t = translations[locale];
     const [selectedRobot, setSelectedRobot] = useState<string | null>(null);
     const [shuffledPrompts, setShuffledPrompts] = useState<string[]>([]);
 
@@ -343,7 +342,7 @@ export default function TeacherDashboard() {
             <div className="space-y-4">
                 <h2 className="text-2xl font-semibold text-[var(--foreground)]">{t.programming.title}</h2>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6" suppressHydrationWarning>
-                    <Card className="p-6 text-center cursor-pointer bg-[var(--card)] text-[var(--card-foreground)] hover:bg-[var(--primary)] transition-colors border border-[var(--border)]" suppressHydrationWarning>
+                    <Card className="p-6 text-center cursor-pointer bg-gradient-to-br from-pink-300 via-purple-200 to-blue-200 text-[var(--card-foreground)] shadow-lg hover:scale-105 transition-transform border border-[var(--border)]" suppressHydrationWarning>
                         <CardHeader className="flex items-center justify-center">
                             <div className="text-4xl">✍️</div>
                         </CardHeader>
@@ -351,7 +350,7 @@ export default function TeacherDashboard() {
                             <p className="font-medium text-lg">{t.programming.create_actions}</p>
                         </CardContent>
                     </Card>
-                    <Card className="p-6 text-center cursor-pointer bg-[var(--card)] text-[var(--card-foreground)] hover:bg-[var(--secondary)] transition-colors border border-[var(--border)]" suppressHydrationWarning>
+                    <Card className="p-6 text-center cursor-pointer bg-gradient-to-br from-blue-300 via-cyan-200 to-green-200 text-[var(--card-foreground)] shadow-lg hover:scale-105 transition-transform border border-[var(--border)]" suppressHydrationWarning>
                         <CardHeader className="flex items-center justify-center">
                             <div className="text-4xl">📂</div>
                         </CardHeader>
@@ -359,7 +358,7 @@ export default function TeacherDashboard() {
                             <p className="font-medium text-lg">{t.programming.workspace}</p>
                         </CardContent>
                     </Card>
-                    <Card className="p-6 text-center cursor-pointer bg-[var(--card)] text-[var(--card-foreground)] hover:bg-[var(--muted)] transition-colors border border-[var(--border)]" suppressHydrationWarning>
+                    <Card className="p-6 text-center cursor-pointer bg-gradient-to-br from-yellow-200 via-orange-200 to-pink-200 text-[var(--card-foreground)] shadow-lg hover:scale-105 transition-transform border border-[var(--border)]" suppressHydrationWarning>
                         <CardHeader className="flex items-center justify-center">
                             <div className="text-4xl">🎨</div>
                         </CardHeader>
@@ -376,7 +375,7 @@ export default function TeacherDashboard() {
             <div className="space-y-4">
                 <h2 className="text-2xl font-semibold text-[var(--foreground)]">{t.entertainment.title}</h2>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6" suppressHydrationWarning>
-                    <Card className="p-6 text-center cursor-pointer bg-[var(--card)] text-[var(--card-foreground)] hover:bg-[var(--accent)] transition-colors border border-[var(--border)]" suppressHydrationWarning>
+                    <Card className="p-6 text-center cursor-pointer bg-gradient-to-br from-pink-200 via-red-200 to-orange-200 text-[var(--card-foreground)] shadow-lg hover:scale-105 transition-transform border border-[var(--border)]" suppressHydrationWarning>
                         <CardHeader className="flex items-center justify-center">
                             <div className="text-4xl">🕺</div>
                         </CardHeader>
@@ -384,7 +383,7 @@ export default function TeacherDashboard() {
                             <p className="font-medium text-lg">{t.entertainment.action}</p>
                         </CardContent>
                     </Card>
-                    <Card className="p-6 text-center cursor-pointer bg-[var(--card)] text-[var(--card-foreground)] hover:bg-[var(--chart-4)] transition-colors border border-[var(--border)]" suppressHydrationWarning>
+                    <Card className="p-6 text-center cursor-pointer bg-gradient-to-br from-orange-200 via-yellow-200 to-green-200 text-[var(--card-foreground)] shadow-lg hover:scale-105 transition-transform border border-[var(--border)]" suppressHydrationWarning>
                         <CardHeader className="flex items-center justify-center">
                             <div className="text-4xl">🖼️</div>
                         </CardHeader>
@@ -392,7 +391,7 @@ export default function TeacherDashboard() {
                             <p className="font-medium text-lg">{t.entertainment.album}</p>
                         </CardContent>
                     </Card>
-                    <Card className="p-6 text-center cursor-pointer bg-[var(--card)] text-[var(--card-foreground)] hover:bg-[var(--chart-5)] transition-colors border border-[var(--border)]" suppressHydrationWarning>
+                    <Card className="p-6 text-center cursor-pointer bg-gradient-to-br from-green-200 via-cyan-200 to-blue-200 text-[var(--card-foreground)] shadow-lg hover:scale-105 transition-transform border border-[var(--border)]" suppressHydrationWarning>
                         <CardHeader className="flex items-center justify-center">
                             <div className="text-4xl">🤝</div>
                         </CardHeader>
@@ -414,12 +413,41 @@ export default function TeacherDashboard() {
                         {t.things_to_try.refresh}
                     </Button>
                 </div>
-                <div className="flex overflow-x-auto gap-4 py-2 scrollbar-thin scrollbar-thumb-rounded-full scrollbar-track-transparent scrollbar-thumb-gray-400">
-                    {shuffledPrompts.map((prompt, index) => (
-                        <div key={index} className="flex-shrink-0 p-4 bg-[var(--card)] rounded-lg shadow-sm hover:bg-[var(--muted)] transition-colors cursor-pointer text-[var(--foreground)] border border-[var(--border)] min-w-[300px]">
-                            {prompt}
+                <style jsx>{`
+                    @keyframes moveRandomly {
+                        0% { transform: translateX(0); }
+                        100% { transform: translateX(-100%); }
+                    }
+                `}</style>
+                <div className="overflow-hidden space-y-4">
+                    <div className="flex flex-col gap-4">
+                        {/* Hàng 1 */}
+                        <div className="flex space-x-4 animate-moveRandomly" style={{ animationDuration: '60s', animationIterationCount: 'infinite', animationTimingFunction: 'linear', animationDirection: 'reverse' }}>
+                            {shuffledPrompts.slice(0, 5).map((prompt, index) => (
+                                <div key={`row1-${index}`} className="flex-shrink-0 p-4 bg-[var(--card)] rounded-lg shadow-sm hover:bg-[var(--muted)] transition-colors cursor-pointer text-[var(--foreground)] border border-[var(--border)] min-w-[300px]">
+                                    {prompt}
+                                </div>
+                            ))}
+                            {shuffledPrompts.slice(0, 5).map((prompt, index) => (
+                                <div key={`row1-clone-${index}`} className="flex-shrink-0 p-4 bg-[var(--card)] rounded-lg shadow-sm hover:bg-[var(--muted)] transition-colors cursor-pointer text-[var(--foreground)] border border-[var(--border)] min-w-[300px]">
+                                    {prompt}
+                                </div>
+                            ))}
                         </div>
-                    ))}
+                        {/* Hàng 2 */}
+                        <div className="flex space-x-4 animate-moveRandomly" style={{ animationDuration: '70s', animationIterationCount: 'infinite', animationTimingFunction: 'linear', animationDirection: 'reverse' }}>
+                            {shuffledPrompts.slice(5, 10).map((prompt, index) => (
+                                <div key={`row2-${index}`} className="flex-shrink-0 p-4 bg-[var(--card)] rounded-lg shadow-sm hover:bg-[var(--muted)] transition-colors cursor-pointer text-[var(--foreground)] border border-[var(--border)] min-w-[300px]">
+                                    {prompt}
+                                </div>
+                            ))}
+                            {shuffledPrompts.slice(5, 10).map((prompt, index) => (
+                                <div key={`row2-clone-${index}`} className="flex-shrink-0 p-4 bg-[var(--card)] rounded-lg shadow-sm hover:bg-[var(--muted)] transition-colors cursor-pointer text-[var(--foreground)] border border-[var(--border)] min-w-[300px]">
+                                    {prompt}
+                                </div>
+                            ))}
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
