@@ -1,143 +1,102 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState } from "react"
 import { School, Edit, Trash2, Users, Calendar, BookOpen, User, GraduationCap, Plus } from "lucide-react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { ClassDto, ClassStatus, getStatusColor } from "@/types/classEntity"
-import { PagedResult } from "@/types/page-result"
-//import { type ClassDto, type ClassPagedResult, getStatusColor, ClassStatus } from 
+import { toast } from "sonner"
+import { useClass } from "@/hooks/organization/use-class"
+import { ClassStatus, getStatusColor } from "@/types/class-entity"
 
 export default function ClassroomManagement() {
-  const [classes, setClasses] = useState<ClassDto[]>([])
-  const [loading, setLoading] = useState(true)
-  const [pagination, setPagination] = useState({
-    page: 1,
-    per_page: 10,
-    total_count: 0,
-    total_pages: 0,
-    has_next: false,
-    has_previous: false,
-  })
+  const [currentPage, setCurrentPage] = useState(1)
+  const [perPage] = useState(12)
 
-  useEffect(() => {
-    // Simulate API call with the provided data structure
-    const mockApiResponse: PagedResult<ClassDto> = {
-      data: [
-        {
-          id: "3fa85f64-5717-4562-b3fc-2c963f66afa6",
-          name: "Mathematics Grade 10",
-          createdDate: "2025-09-09T10:05:54.302Z",
-          lastUpdate: "2025-09-09T10:05:54.302Z",
-          status: 1,
-          statusText: "Active",
-          teachers: [
-            {
-              classId: "3fa85f64-5717-4562-b3fc-2c963f66afa6",
-              className: "Mathematics Grade 10",
-              createdDate: "2025-09-09T10:05:54.302Z",
-              lastUpdate: "2025-09-09T10:05:54.302Z",
-              status: 1,
-              statusText: "Active",
-              teacherId: "teacher-1",
-              teacherName: "Sarah Johnson",
-            },
-          ],
-        },
-        {
-          id: "4fa85f64-5717-4562-b3fc-2c963f66afa7",
-          name: "English Literature Grade 11",
-          createdDate: "2025-09-08T14:30:22.150Z",
-          lastUpdate: "2025-09-09T09:15:33.420Z",
-          status: 1,
-          statusText: "Active",
-          teachers: [
-            {
-              classId: "4fa85f64-5717-4562-b3fc-2c963f66afa7",
-              className: "English Literature Grade 11",
-              createdDate: "2025-09-08T14:30:22.150Z",
-              lastUpdate: "2025-09-09T09:15:33.420Z",
-              status: 1,
-              statusText: "Active",
-              teacherId: "teacher-2",
-              teacherName: "Mike Chen",
-            },
-            {
-              classId: "4fa85f64-5717-4562-b3fc-2c963f66afa7",
-              className: "English Literature Grade 11",
-              createdDate: "2025-09-08T14:30:22.150Z",
-              lastUpdate: "2025-09-09T09:15:33.420Z",
-              status: 1,
-              statusText: "Active",
-              teacherId: "teacher-3",
-              teacherName: "Emily Davis",
-            },
-          ],
-        },
-        {
-          id: "5fa85f64-5717-4562-b3fc-2c963f66afa8",
-          name: "Physics Grade 12",
-          createdDate: "2025-09-07T11:20:15.890Z",
-          lastUpdate: "2025-09-07T11:20:15.890Z",
-          status: 0,
-          statusText: "Inactive",
-          teachers: [],
-        },
-        {
-          id: "6fa85f64-5717-4562-b3fc-2c963f66afa9",
-          name: "Chemistry Lab",
-          createdDate: "2025-09-06T16:45:30.200Z",
-          lastUpdate: "2025-09-09T08:30:45.100Z",
-          status: 2,
-          statusText: "Suspended",
-          teachers: [
-            {
-              classId: "6fa85f64-5717-4562-b3fc-2c963f66afa9",
-              className: "Chemistry Lab",
-              createdDate: "2025-09-06T16:45:30.200Z",
-              lastUpdate: "2025-09-09T08:30:45.100Z",
-              status: 2,
-              statusText: "Suspended",
-              teacherId: "teacher-4",
-              teacherName: "Dr. Robert Wilson",
-            },
-          ],
-        },
-      ],
-      total_count: 4,
-      page: 1,
-      per_page: 10,
-      total_pages: 1,
-      has_next: false,
-      has_previous: false,
-    }
+  const classHooks = useClass()
+  const { data: classesResponse, isLoading, error } = classHooks.useGetAllClasses(currentPage, perPage)
+  const deleteClassMutation = classHooks.useDeleteClass()
+  const updateClassMutation = classHooks.useUpdateClass()
 
-    // Simulate loading delay
-    setTimeout(() => {
-      setClasses(mockApiResponse.data)
-      setPagination({
-        page: mockApiResponse.page,
-        per_page: mockApiResponse.per_page,
-        total_count: mockApiResponse.total_count,
-        total_pages: mockApiResponse.total_pages,
-        has_next: mockApiResponse.has_next,
-        has_previous: mockApiResponse.has_previous,
-      })
-      setLoading(false)
-    }, 1000)
-  }, [])
+  // Extract classes and pagination from response
+  const classes = classesResponse?.data || []
+  const pagination = classesResponse
+    ? {
+        page: classesResponse.page,
+        per_page: classesResponse.per_page,
+        total_count: classesResponse.total_count,
+        total_pages: classesResponse.total_pages,
+        has_next: classesResponse.has_next,
+        has_previous: classesResponse.has_previous,
+      }
+    : {
+        page: 1,
+        per_page: 10,
+        total_count: 0,
+        total_pages: 0,
+        has_next: false,
+        has_previous: false,
+      }
 
   const handleDeleteClass = (classId: string) => {
-    if (confirm("Are you sure you want to delete this class?")) {
-      console.log("Deleting class:", classId)
-      // TODO: Implement API call to delete class
-    }
+    const classToDelete = classes.find((c) => c.id === classId)
+    const className = classToDelete?.name || "this class"
+
+    const confirmDelete = () => (
+      <div className="flex flex-col space-y-3">
+        <div className="text-sm text-gray-700">
+          Are you sure you want to delete <strong>{className}</strong>?
+        </div>
+        <div className="text-xs text-gray-500">This action cannot be undone.</div>
+        <div className="flex space-x-2 justify-end">
+          <button
+            onClick={() => toast.dismiss()}
+            className="px-3 py-1 text-xs bg-gray-200 text-gray-700 rounded hover:bg-gray-300 transition-colors"
+            disabled={deleteClassMutation.isPending}
+          >
+            Cancel
+          </button>
+          <button
+            onClick={() => {
+              deleteClassMutation.mutate(classId, {
+                onSuccess: () => {
+                  toast.success(`Class "${className}" deleted successfully!`)
+                },
+                onError: (error) => {
+                  console.error("❌ Error deleting class:", error)
+                  const errorMessage = error instanceof Error ? error.message : "Failed to delete class"
+                  toast.error(`Error: ${errorMessage}`)
+                },
+              })
+              toast.dismiss()
+            }}
+            className="px-3 py-1 text-xs bg-red-600 text-white rounded hover:bg-red-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            disabled={deleteClassMutation.isPending}
+          >
+            {deleteClassMutation.isPending ? "Deleting..." : "Delete"}
+          </button>
+        </div>
+      </div>
+    )
+
+    toast.warning(confirmDelete)
   }
 
   const handleEditClass = (classId: string) => {
     console.log("Editing class:", classId)
     // TODO: Implement edit functionality
+  }
+
+  const handlePreviousPage = () => {
+    if (pagination.has_previous) {
+      setCurrentPage(currentPage - 1)
+    }
+  }
+
+  const handleNextPage = () => {
+    if (pagination.has_next) {
+      setCurrentPage(currentPage + 1)
+    }
   }
 
   const formatDate = (dateString: string) => {
@@ -155,10 +114,18 @@ export default function ClassroomManagement() {
     totalTeachers: classes.reduce((sum, c) => sum + c.teachers.length, 0),
   }
 
-  if (loading) {
+  if (isLoading) {
     return (
       <div className="flex items-center justify-center h-64">
         <div className="text-lg">Loading classes...</div>
+      </div>
+    )
+  }
+
+  if (error) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="text-lg text-red-600">Error loading classes: {error.message}</div>
       </div>
     )
   }
@@ -258,7 +225,7 @@ export default function ClassroomManagement() {
                     <div className="space-y-1">
                       {classItem.teachers.map((teacher) => (
                         <div key={teacher.teacherId} className="flex items-center justify-between">
-                          <span className="text-sm">{teacher.teacherName}</span>
+                          <span className="text-sm">{teacher.teacherName || "Unknown Teacher"}</span>
                           <Badge variant="outline" className={getStatusColor(teacher.status)}>
                             {teacher.statusText}
                           </Badge>
@@ -292,7 +259,12 @@ export default function ClassroomManagement() {
                     <Users className="h-3 w-3 mr-1" />
                     Teachers
                   </Button>
-                  <Button size="sm" variant="outline" onClick={() => handleDeleteClass(classItem.id)}>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => handleDeleteClass(classItem.id)}
+                    disabled={deleteClassMutation.isPending}
+                  >
                     <Trash2 className="h-3 w-3" />
                   </Button>
                 </div>
@@ -311,10 +283,10 @@ export default function ClassroomManagement() {
             classes
           </div>
           <div className="flex space-x-2">
-            <Button variant="outline" size="sm" disabled={!pagination.has_previous}>
+            <Button variant="outline" size="sm" disabled={!pagination.has_previous} onClick={handlePreviousPage}>
               Previous
             </Button>
-            <Button variant="outline" size="sm" disabled={!pagination.has_next}>
+            <Button variant="outline" size="sm" disabled={!pagination.has_next} onClick={handleNextPage}>
               Next
             </Button>
           </div>
