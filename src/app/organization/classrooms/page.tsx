@@ -6,8 +6,9 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { toast } from "sonner"
+import dayjs from "dayjs"
 import { useClass } from "@/hooks/organization/use-class"
-import { ClassStatus, getStatusColor } from "@/types/class-entity"
+import { ClassDto, ClassStatus, getStatusColor } from "@/types/class-entity"
 
 export default function ClassroomManagement() {
   const [currentPage, setCurrentPage] = useState(1)
@@ -82,9 +83,9 @@ export default function ClassroomManagement() {
     toast.warning(confirmDelete)
   }
 
-  const handleEditClass = (classId: string) => {
-    console.log("Editing class:", classId)
-    // TODO: Implement edit functionality
+  const handleEditClass = (classData: ClassDto) => {
+    console.log("Editing class:", classData)
+    // TODO: Implement edit functionality with full class data
   }
 
   const handlePreviousPage = () => {
@@ -99,12 +100,9 @@ export default function ClassroomManagement() {
     }
   }
 
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString("en-US", {
-      year: "numeric",
-      month: "short",
-      day: "numeric",
-    })
+  const formatDate = (dateString?: string) => {
+    if (!dateString) return "N/A"
+    return dayjs(dateString).format("DD/MM/YYYY")
   }
 
   const stats = {
@@ -243,15 +241,17 @@ export default function ClassroomManagement() {
                     <p className="text-xs text-gray-500">Created</p>
                     <p className="text-sm font-medium">{formatDate(classItem.createdDate)}</p>
                   </div>
-                  <div>
-                    <p className="text-xs text-gray-500">Last Updated</p>
-                    <p className="text-sm font-medium">{formatDate(classItem.lastUpdate)}</p>
-                  </div>
+                  {classItem.lastUpdate && (
+                    <div>
+                      <p className="text-xs text-gray-500">Last Updated</p>
+                      <p className="text-sm font-medium">{formatDate(classItem.lastUpdate)}</p>
+                    </div>
+                  )}
                 </div>
 
                 {/* Action Buttons */}
                 <div className="flex space-x-2 pt-2">
-                  <Button size="sm" variant="outline" onClick={() => handleEditClass(classItem.id)} className="flex-1">
+                  <Button size="sm" variant="outline" onClick={() => handleEditClass(classItem)} className="flex-1">
                     <Edit className="h-3 w-3 mr-1" />
                     Edit
                   </Button>

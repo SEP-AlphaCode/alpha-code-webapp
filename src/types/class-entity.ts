@@ -4,7 +4,7 @@ export interface ClassDto {
   id: string
   name: string
   createdDate: string
-  lastUpdate: string
+  lastUpdate?: string
   status: number
   statusText: string
   teachers: TeacherClassDto[]
