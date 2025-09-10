@@ -20,11 +20,15 @@ const pageDictionaries = {
         en: () => import('./dictionaries/reset-password/reset-password.en.json').then((module) => module.default),
         vi: () => import('./dictionaries/reset-password/reset-password.vi.json').then((module) => module.default),
     },
+    admin: {
+        en: () => import('./dictionaries/admin/admin.en.json').then((module) => module.default),
+        vi: () => import('./dictionaries/admin/admin.vi.json').then((module) => module.default),
+    },
+    teacher: {
+        en: () => import('./dictionaries/teacher/teacher.en.json').then((module) => module.default),
+        vi: () => import('./dictionaries/teacher/teacher.vi.json').then((module) => module.default),
+    },
     // Add more page dictionaries here as needed
-    // admin: {
-    //   en: () => import('./dictionaries/pages/admin.en.json').then((module) => module.default),
-    //   vi: () => import('./dictionaries/pages/admin.vi.json').then((module) => module.default),
-    // },
 }
 
 // Get common translations (navigation, buttons, etc.)

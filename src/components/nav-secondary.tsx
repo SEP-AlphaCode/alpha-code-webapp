@@ -23,8 +23,8 @@ export function NavSecondary({
     <SidebarGroup {...props}>
       <SidebarGroupContent>
         <SidebarMenu>
-          {items.map((item) => (
-            <SidebarMenuItem key={item.title}>
+          {items.map((item, index) => (
+            <SidebarMenuItem key={`${item.url}-${index}`}>
               <SidebarMenuButton asChild size="sm">
                 <a href={item.url}>
                   <item.icon />

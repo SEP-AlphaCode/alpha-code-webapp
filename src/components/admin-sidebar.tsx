@@ -13,7 +13,8 @@ import {
   SquareTerminal,
   Users,
   BookMarkedIcon,
-  QrCode
+  QrCode,
+  Languages
 } from "lucide-react"
 
 import { NavMain } from "@/components/nav-main"
@@ -33,56 +34,60 @@ import logo1 from '../../public/logo1.png';
 import logo2 from '../../public/logo2.png';
 import Image from "next/image"
 import { getTokenPayload } from "@/utils/tokenUtils"
-
-const defaultProjects = [
-  {
-    name: "Dashboard",
-    url: "/admin",
-    icon: Home,
-  },
-  {
-    name: "Users",
-    url: "/admin/users",
-    icon: Users,
-  },
-  {
-    name: "System Analytics",
-    url: "/admin/analytics",
-    icon: BarChart3,
-  },
-  {
-    name: "Robots",
-    url: "/admin/robots",
-    icon: Bot,
-  },
-  {
-    name: "Classrooms",
-    url: "/admin/classrooms",
-    icon: School,
-  },
-  {
-    name: "QRCodes",
-    url: "/admin/qrcodes",
-    icon: QrCode
-  },
-  {
-    name: "OSMO Cards",
-    url: "/admin/osmo-cards",
-    icon: CreditCard
-  },
-  {
-    name: "Markers",
-    url: "/admin/markers",
-    icon: BookMarkedIcon
-  }
-];
+import { useAdminTranslation } from "@/lib/i18n/hooks/use-translation"
+import { LanguageSwitcher } from "@/components/language-switcher"
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
+  const { t, isLoading } = useAdminTranslation()
   const [userData, setUserData] = React.useState({
     name: "Admin",
     email: "",
     avatar: "/avatars/default.jpg",
   });
+
+  // Create projects array with translations - must be called before any early returns
+  const projects = React.useMemo(() => [
+    {
+      name: t('navigation.dashboard'),
+      url: "/admin",
+      icon: Home,
+    },
+    {
+      name: t('navigation.users'),
+      url: "/admin/users",
+      icon: Users,
+    },
+    {
+      name: t('navigation.systemAnalytics'),
+      url: "/admin/analytics",
+      icon: BarChart3,
+    },
+    {
+      name: t('navigation.robots'),
+      url: "/admin/robots",
+      icon: Bot,
+    },
+    {
+      name: t('navigation.classrooms'),
+      url: "/admin/classrooms",
+      icon: School,
+    },
+    {
+      name: t('navigation.qrcodes'),
+      url: "/admin/qrcodes",
+      icon: QrCode
+    },
+    {
+      name: t('navigation.osmoCards'),
+      url: "/admin/osmo-cards",
+      icon: CreditCard
+    },
+    {
+      name: t('navigation.markers'),
+      url: "/admin/markers",
+      icon: BookMarkedIcon
+    }
+  ], [t]);
 
   React.useEffect(() => {
     const accessToken = sessionStorage.getItem('accessToken');
@@ -98,48 +103,78 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
     }
   }, []);
 
+  // Don't render sidebar while translations are loading to prevent flickering
+  if (isLoading) {
+    return (
+      <Sidebar variant="inset" {...props}>
+        <SidebarHeader>
+          <SidebarMenu>
+            <SidebarMenuItem>
+              <SidebarMenuButton size="lg" asChild>
+                <a href="#">
+                  <div className="text-sidebar-primary-foreground flex aspect-square size-30 items-center justify-center rounded-lg">
+                    <Image src={logo1} alt="Logo" className="object-contain w-30 h-30"/>
+                  </div>
+                </a>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+          </SidebarMenu>
+        </SidebarHeader>
+        <SidebarContent>
+          <div className="p-4 space-y-2">
+            <div className="animate-pulse space-y-2">
+              <div className="h-4 bg-gray-200 rounded w-3/4"></div>
+              <div className="h-4 bg-gray-200 rounded w-1/2"></div>
+              <div className="h-4 bg-gray-200 rounded w-5/6"></div>
+            </div>
+          </div>
+        </SidebarContent>
+      </Sidebar>
+    )
+  }
+
   const data = {
     user: userData,
     navMain: [
       {
-        title: "Activities",
+        title: t('navigation.activities'),
         url: "/admin",
         icon: SquareTerminal,
         isActive: true,
         items: [
           {
-            title: "Action",
+            title: t('activities.action'),
             url: "/admin/activities/actions",
           },
           {
-            title: "Dance",
+            title: t('activities.dance'),
             url: "/admin/activities/dances",
           },
           {
-            title: "Expression",
+            title: t('activities.expression'),
             url: "/admin/activities/expressions",
           },
         ],
       },
       {
-        title: "Settings",
+        title: t('navigation.settings'),
         url: "#",
         icon: Settings2,
         items: [
           {
-            title: "Robots",
+            title: t('settings.robots'),
             url: "/admin/settings",
           },
           {
-            title: "Team",
+            title: t('settings.team'),
             url: "#",
           },
           {
-            title: "Billing",
+            title: t('settings.billing'),
             url: "#",
           },
           {
-            title: "Limits",
+            title: t('settings.limits'),
             url: "#",
           },
         ],
@@ -147,17 +182,17 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
     ],
     navSecondary: [
       {
-        title: "Support",
+        title: t('navigation.support'),
         url: "#",
         icon: LifeBuoy,
       },
       {
-        title: "Feedback",
+        title: t('navigation.feedback'),
         url: "#",
         icon: Send,
       },
     ],
-    projects: defaultProjects,
+    projects: projects,
   };
 
   return (
@@ -168,13 +203,16 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
             <SidebarMenuButton size="lg" asChild>
               <a href="#">
                 <div className="text-sidebar-primary-foreground flex aspect-square size-30 items-center justify-center rounded-lg">
-                  <Image src={logo1} alt="Logo" className="object-contain w-30 h-30"/>
+                  <Image src={logo1} alt="Logo" className="object-contain w-30 h-30" />
                 </div>
               </a>
             </SidebarMenuButton>
           </SidebarMenuItem>
         </SidebarMenu>
       </SidebarHeader>
+      <div className="p-2">
+        <LanguageSwitcher variant="minimal" />
+      </div>
       <SidebarContent>
         <NavProjects projects={data.projects} />
         <NavMain items={data.navMain} />
