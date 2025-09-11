@@ -11,6 +11,7 @@ import {
 import { Button } from "@/components/ui/button"
 import { Action } from "@/types/action"
 import { AlertTriangle } from "lucide-react"
+import { useAdminTranslation } from "@/lib/i18n/hooks/use-translation"
 
 interface DeleteActionModalProps {
     isOpen: boolean
@@ -27,6 +28,9 @@ export function DeleteActionModal({
     action,
     isDeleting = false
 }: DeleteActionModalProps) {
+    const { t, isLoading } = useAdminTranslation()
+    
+    if (isLoading) return null
     if (!action) return null
 
     return (
@@ -35,10 +39,10 @@ export function DeleteActionModal({
                 <DialogHeader>
                     <DialogTitle className="flex items-center gap-2 text-red-600">
                         <AlertTriangle className="h-5 w-5" />
-                        Delete Action
+                        {t('actionManagement.deleteTitle')}
                     </DialogTitle>
                     <DialogDescription className="text-left">
-                        Are you sure you want to delete this action? This action cannot be undone.
+                        {t('actionManagement.deleteConfirm')}
                     </DialogDescription>
                 </DialogHeader>
 
@@ -48,12 +52,12 @@ export function DeleteActionModal({
                         <span className="ml-2 text-gray-900">{action.id}</span>
                     </div>
                     <div className="text-sm">
-                        <span className="font-medium text-gray-700">Action Name:</span>
+                        <span className="font-medium text-gray-700">{t('actionManagement.fields.name')}:</span>
                         <span className="ml-2 text-gray-900">{action.name}</span>
                     </div>
                     <div className="text-sm">
-                        <span className="font-medium text-gray-700">Description:</span>
-                        <span className="ml-2 text-gray-900">{action.description || "No description"}</span>
+                        <span className="font-medium text-gray-700">{t('actionManagement.fields.description')}:</span>
+                        <span className="ml-2 text-gray-900">{action.description || t('common.noProvided')}</span>
                     </div>
                 </div>
 
@@ -64,7 +68,7 @@ export function DeleteActionModal({
                         onClick={onClose}
                         disabled={isDeleting}
                     >
-                        Cancel
+                        {t('common.cancel')}
                     </Button>
                     <Button
                         type="button"
@@ -73,7 +77,7 @@ export function DeleteActionModal({
                         disabled={isDeleting}
                         className="bg-red-600 hover:bg-red-700"
                     >
-                        {isDeleting ? "Deleting..." : "Delete Action"}
+                        {isDeleting ? t('common.deleting') : t('actionManagement.deleteTitle')}
                     </Button>
                 </DialogFooter>
             </DialogContent>
