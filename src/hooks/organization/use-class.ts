@@ -1,66 +1,59 @@
+import { Classroom } from "@/types/class-entity"
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
-import type { PagedResult } from "@/types/page-result"
-import { ClassDto } from "@/types/class-entity"
-import { createClass, deleteClass, getAllClasses, getClassById, updateClass } from "./class"
+import { getAllClassrooms, getClassroomById, createClassroom, updateClassroom, deleteClassroom } from "./class"
 
-export const useClass = () => {
+
+export const useClassroom = () => {
   const queryClient = useQueryClient()
 
-  // Get all classes with pagination
-  const useGetAllClasses = (page = 1, perPage = 10) => {
-    return useQuery<PagedResult<ClassDto>>({
-      queryKey: ["classes", page, perPage],
-      staleTime: 0,
-      queryFn: () => getAllClasses(page, perPage),
+  const useGetAllClassrooms = (page: number, perPage: number) => {
+    return useQuery({
+      queryKey: ["classrooms", page, perPage],
+      queryFn: () => getAllClassrooms(page, perPage),
     })
   }
 
-  // Get class by ID
-  const useGetClassById = (id: string) => {
-    return useQuery<ClassDto>({
-      queryKey: ["class", id],
-      staleTime: 0,
-      queryFn: () => getClassById(id),
+  const useGetClassroomById = (id: string) => {
+    return useQuery({
+      queryKey: ["classroom", id],
+      queryFn: () => getClassroomById(id),
       enabled: !!id,
     })
   }
 
-  // Create class mutation
-  const useCreateClass = () => {
+  const useCreateClassroom = () => {
     return useMutation({
-      mutationFn: createClass,
+      mutationFn: createClassroom,
       onSuccess: () => {
-        queryClient.invalidateQueries({ queryKey: ["classes"] })
+        queryClient.invalidateQueries({ queryKey: ["classrooms"] })
       },
     })
   }
 
-  // Update class mutation
-  const useUpdateClass = () => {
+  const useUpdateClassroom = () => {
     return useMutation({
-      mutationFn: ({ id, classData }: { id: string; classData: Partial<Omit<ClassDto, "id" | "createdDate">> }) =>
-        updateClass(id, classData),
+      mutationFn: ({ id, data }: { id: string; data: Partial<Omit<Classroom, "id" | "createdAt">> }) =>
+        updateClassroom(id, data),
       onSuccess: () => {
-        queryClient.invalidateQueries({ queryKey: ["classes"] })
+        queryClient.invalidateQueries({ queryKey: ["classrooms"] })
       },
     })
   }
 
-  // Delete class mutation
-  const useDeleteClass = () => {
+  const useDeleteClassroom = () => {
     return useMutation({
-      mutationFn: deleteClass,
+      mutationFn: deleteClassroom,
       onSuccess: () => {
-        queryClient.invalidateQueries({ queryKey: ["classes"] })
+        queryClient.invalidateQueries({ queryKey: ["classrooms"] })
       },
     })
   }
 
   return {
-    useGetAllClasses,
-    useGetClassById,
-    useCreateClass,
-    useUpdateClass,
-    useDeleteClass,
+    useGetAllClassrooms,
+    useGetClassroomById,
+    useCreateClassroom,
+    useUpdateClassroom,
+    useDeleteClassroom,
   }
 }

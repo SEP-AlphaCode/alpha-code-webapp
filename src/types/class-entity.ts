@@ -1,5 +1,34 @@
 import { TeacherClassDto } from "./teacher"
 
+export interface Classroom {
+  id: string;
+  name: string;
+  building: string;
+  room: string;
+  capacity: number;
+  currentStudents: number;
+  teacher: {
+    id: string;
+    name: string;
+    email: string;
+  };
+  assignedRobots: {
+    id: string;
+    name: string;
+    status: 'online' | 'offline' | 'maintenance';
+  }[];
+  schedule: {
+    day: string;
+    startTime: string;
+    endTime: string;
+    subject: string;
+  }[];
+  activities: number;
+  status: 'active' | 'inactive' | 'maintenance';
+  createdAt: string;
+  lastActivity?: string
+}
+
 export interface ClassDto {
   id: string
   name: string
