@@ -29,23 +29,25 @@ class Http {
       async (error) => {
         const originalRequest = error.config;
 
-        // ❗️Block retry for the refresh-token API itself
+        // Check if it's a 401 error and we have a refresh token
         if (
           error.response?.status === 401 &&
           !originalRequest._retry &&
           sessionStorage.getItem('refreshToken') &&
-          !originalRequest.url?.includes('/refresh-token') // 🔥 avoid infinite loop
+          !originalRequest.url?.includes('refresh-new-token') // Avoid infinite loop for refresh token endpoint
         ) {
           originalRequest._retry = true;
+
           try {
             const res = await callRefreshToken();
             sessionStorage.setItem('accessToken', res.accessToken);
             sessionStorage.setItem('refreshToken', res.refreshToken);
 
+            // Retry the original request with new token
             originalRequest.headers.Authorization = `Bearer ${res.accessToken}`;
             return this.instance(originalRequest);
           } catch (refreshError) {
-            // If refresh token fails, redirect to login
+            // If refresh token fails, clear storage and redirect to login
             sessionStorage.clear();
             console.error("Refresh token failed:", refreshError);
             

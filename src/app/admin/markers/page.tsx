@@ -174,7 +174,7 @@ export default function MarkersPage() {
       await createMarkerMutation.mutateAsync(data)
       alert('Marker created successfully!')
       setIsCreateModalOpen(false)
-    } catch (_error) {
+    } catch {
       alert('Failed to create marker. Please try again.')
     }
   }
@@ -184,7 +184,7 @@ export default function MarkersPage() {
       try {
         await deleteMarkerMutation.mutateAsync(id)
         alert('Marker deleted successfully!')
-      } catch (_error) {
+      } catch {
         alert('Failed to delete marker. Please try again.')
       }
     }
@@ -194,7 +194,7 @@ export default function MarkersPage() {
     try {
       await updateStatusMutation.mutateAsync({ id, status: newStatus })
       alert('Marker status updated successfully!')
-    } catch (_error) {
+    } catch {
       alert('Failed to update marker status. Please try again.')
     }
   }

@@ -6,6 +6,7 @@
     "about": "About",
     "contact": "Contact",
     "login": "Login",
+    "logout": "Logout",
     "language": "Language"
   },
   "common": {

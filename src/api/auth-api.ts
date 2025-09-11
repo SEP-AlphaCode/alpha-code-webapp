@@ -1,6 +1,7 @@
 import http from '@/utils/http';
 import { LoginRequest, TokenResponse } from '@/types/login';
 import axios from 'axios';
+
 // Note: avoid UI side-effects (toasts) inside API functions; handle UI in hooks/components
 
 export const login = async (data: LoginRequest): Promise<TokenResponse> => {
@@ -37,8 +38,9 @@ export const refreshToken = async (): Promise<{ accessToken: string; refreshToke
       throw new Error('No refresh token available');
     }
 
-    const response = await http.post('/auth/refresh-token', {
-      refreshToken: refreshTokenValue
+    // Use http instance (be careful about interceptor loops)
+    const response = await http.post('/auth/refresh-new-token', refreshTokenValue, {
+    headers: { 'Content-Type': 'text/plain' }
     });
 
     // Handle different response structures

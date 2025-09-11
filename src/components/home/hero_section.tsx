@@ -10,7 +10,7 @@ interface HeroSectionProps {
 
 export const HeroSection = forwardRef<HTMLElement, HeroSectionProps>(
   ({ currentSection, isVisible }, ref) => {
-    const { t, tc, isLoading } = useHomepageTranslation()
+    const { t, isLoading } = useHomepageTranslation()
 
     if (isLoading) {
       return (

@@ -1,0 +1,330 @@
+{
+  "navigation": {
+    "dashboard": "Bảng điều khiển",
+    "users": "Người dùng",
+    "systemAnalytics": "Phân tích hệ thống",
+    "analytics": "Phân tích",
+    "robots": "Robot",
+    "classrooms": "Lớp học",
+    "qrcodes": "Mã QR",
+    "osmoCards": "Thẻ OSMO",
+    "osmocards": "Thẻ OSMO",
+    "markers": "Điểm đánh dấu",
+    "activities": "Hoạt động",
+    "activityCards": "Thẻ hoạt động",
+    "activitycards": "Thẻ hoạt động",
+    "settings": "Cài đặt",
+    "admin": "Quản trị",
+    "support": "Hỗ trợ",
+    "feedback": "Phản hồi",
+    "language": "Ngôn ngữ"
+  },
+  "activities": {
+    "title": "Hoạt động",
+    "action": "Hành động",
+    "dance": "Nhảy múa", 
+    "expression": "Biểu cảm"
+  },
+  "settings": {
+    "title": "Cài đặt",
+    "robots": "Robot",
+    "team": "Đội nhóm",
+    "billing": "Thanh toán",
+    "limits": "Giới hạn"
+  },
+  "dashboard": {
+    "title": "Bảng điều khiển quản trị",
+    "totalUsers": "Tổng người dùng",
+    "usersOnline": "Người dùng trực tuyến",
+    "growthRate": "Tỷ lệ tăng trưởng",
+    "newUsersThisMonth": "Người dùng mới tháng này",
+    "cached": "Đã lưu cache",
+    "live": "Trực tiếp",
+    "quickActions": "Thao tác nhanh quản trị",
+    "userManagement": {
+      "title": "Quản lý người dùng",
+      "description": "Quản lý {{count}} tổng người dùng"
+    },
+    "growthAnalysis": {
+      "title": "Phân tích tăng trưởng",
+      "description": "Tỷ lệ hiện tại: {{rate}}%"
+    },
+    "activityMonitor": {
+      "title": "Giám sát hoạt động",
+      "description": "{{count}} người dùng đang hoạt động"
+    },
+    "loading": "Đang tải dữ liệu bảng điều khiển...",
+    "error": "Không thể tải dữ liệu bảng điều khiển",
+    "retry": "Thử lại",
+    "rateLimitWarning": "Đã đạt giới hạn API. Hiển thị dữ liệu đã lưu cache."
+  },
+  "users": {
+    "title": "Quản lý người dùng",
+    "addUser": "Thêm người dùng",
+    "editUser": "Chỉnh sửa người dùng",
+    "deleteUser": "Xóa người dùng",
+    "totalUsers": "Tổng người dùng",
+    "activeUsers": "Người dùng hoạt động",
+    "searchPlaceholder": "Tìm kiếm người dùng...",
+    "filters": {
+      "all": "Tất cả người dùng",
+      "admin": "Quản trị viên",
+      "teacher": "Giáo viên",
+      "student": "Học sinh"
+    },
+    "table": {
+      "name": "Tên",
+      "email": "Email",
+      "role": "Vai trò",
+      "status": "Trạng thái",
+      "createdDate": "Ngày tạo",
+      "actions": "Thao tác"
+    },
+    "status": {
+      "active": "Hoạt động",
+      "inactive": "Không hoạt động"
+    }
+  },
+  "robots": {
+    "title": "Quản lý Robot",
+    "addRobot": "Thêm Robot",
+    "editRobot": "Chỉnh sửa Robot",
+    "deleteRobot": "Xóa Robot",
+    "totalRobots": "Tổng Robot",
+    "onlineRobots": "Robot trực tuyến",
+    "table": {
+      "name": "Tên Robot",
+      "model": "Mô hình",
+      "status": "Trạng thái",
+      "lastSeen": "Lần cuối thấy",
+      "actions": "Thao tác"
+    },
+    "status": {
+      "online": "Trực tuyến",
+      "offline": "Ngoại tuyến",
+      "maintenance": "Bảo trì"
+    }
+  },
+  "classrooms": {
+    "title": "Quản lý lớp học",
+    "addClassroom": "Thêm lớp học",
+    "editClassroom": "Chỉnh sửa lớp học",
+    "deleteClassroom": "Xóa lớp học",
+    "totalClassrooms": "Tổng lớp học",
+    "activeClassrooms": "Lớp học hoạt động",
+    "table": {
+      "name": "Tên lớp học",
+      "teacher": "Giáo viên",
+      "students": "Học sinh",
+      "status": "Trạng thái",
+      "createdDate": "Ngày tạo",
+      "actions": "Thao tác"
+    }
+  },
+  "analytics": {
+    "title": "Phân tích hệ thống",
+    "userGrowth": "Tăng trưởng người dùng",
+    "activeUsers": "Người dùng hoạt động",
+    "systemPerformance": "Hiệu suất hệ thống",
+    "robotUsage": "Sử dụng Robot",
+    "dateRange": {
+      "last7Days": "7 ngày qua",
+      "last30Days": "30 ngày qua",
+      "last90Days": "90 ngày qua",
+      "custom": "Tùy chỉnh"
+    }
+  },
+  "qrcodes": {
+    "title": "Quản lý mã QR",
+    "addQRCode": "Thêm mã QR",
+    "editQRCode": "Chỉnh sửa mã QR",
+    "deleteQRCode": "Xóa mã QR",
+    "generateQRCode": "Tạo mã QR",
+    "table": {
+      "code": "Mã QR",
+      "type": "Loại",
+      "data": "Dữ liệu",
+      "createdDate": "Ngày tạo",
+      "actions": "Thao tác"
+    }
+  },
+  "osmoCards": {
+    "title": "Quản lý thẻ OSMO",
+    "addCard": "Thêm thẻ",
+    "editCard": "Chỉnh sửa thẻ",
+    "deleteCard": "Xóa thẻ",
+    "totalCards": "Tổng thẻ",
+    "activeCards": "Thẻ hoạt động",
+    "table": {
+      "name": "Tên thẻ",
+      "type": "Loại",
+      "description": "Mô tả",
+      "status": "Trạng thái",
+      "createdDate": "Ngày tạo",
+      "actions": "Thao tác"
+    }
+  },
+  "markers": {
+    "title": "Quản lý điểm đánh dấu",
+    "addMarker": "Thêm điểm đánh dấu",
+    "editMarker": "Chỉnh sửa điểm đánh dấu",
+    "deleteMarker": "Xóa điểm đánh dấu",
+    "totalMarkers": "Tổng điểm đánh dấu",
+    "activeMarkers": "Điểm đánh dấu hoạt động",
+    "table": {
+      "name": "Tên điểm đánh dấu",
+      "type": "Loại",
+      "description": "Mô tả",
+      "status": "Trạng thái",
+      "createdDate": "Ngày tạo",
+      "actions": "Thao tác"
+    }
+  },
+  "danceManagement": {
+    "title": "Quản lý điệu nhảy",
+    "addDance": "Thêm điệu nhảy",
+    "searchPlaceholder": "Tìm kiếm tên hoặc mô tả điệu nhảy...",
+    "createTitle": "Tạo điệu nhảy",
+    "editTitle": "Chỉnh sửa điệu nhảy",
+    "viewTitle": "Xem điệu nhảy",
+    "deleteTitle": "Xóa điệu nhảy",
+    "deleteConfirm": "Bạn có chắc chắn muốn xóa điệu nhảy này?",
+    "createDescription": "Tạo điệu nhảy mới cho hệ thống robot. Điền thông tin chi tiết bên dưới.",
+    "editDescription": "Cập nhật thông tin chi tiết điệu nhảy bên dưới.",
+    "fields": {
+      "code": "Mã",
+      "name": "Tên",
+      "description": "Mô tả",
+      "duration": "Thời lượng",
+      "difficulty": "Độ khó",
+      "category": "Danh mục",
+      "status": "Trạng thái"
+    },
+    "placeholders": {
+      "code": "Nhập mã điệu nhảy",
+      "name": "Nhập tên điệu nhảy",
+      "description": "Nhập mô tả điệu nhảy",
+      "status": "Chọn trạng thái"
+    }
+  },
+  "actionManagement": {
+    "title": "Quản lý hành động",
+    "addAction": "Thêm hành động",
+    "searchPlaceholder": "Tìm kiếm tên hoặc mô tả hành động...",
+    "createTitle": "Tạo hành động",
+    "editTitle": "Chỉnh sửa hành động",
+    "viewTitle": "Xem hành động",
+    "deleteTitle": "Xóa hành động",
+    "deleteConfirm": "Bạn có chắc chắn muốn xóa hành động này?",
+    "createDescription": "Tạo hành động mới cho hệ thống robot. Điền thông tin chi tiết bên dưới.",
+    "editDescription": "Cập nhật thông tin chi tiết hành động bên dưới.",
+    "fields": {
+      "name": "Tên",
+      "description": "Mô tả",
+      "type": "Loại",
+      "parameters": "Tham số",
+      "status": "Trạng thái",
+      "code": "Mã",
+      "duration": "Thời lượng",
+      "canInterrupt": "Có thể ngắt"
+    },
+    "placeholders": {
+      "code": "Nhập mã hành động",
+      "name": "Nhập tên hành động",
+      "description": "Nhập mô tả hành động",
+      "status": "Chọn trạng thái"
+    }
+  },
+  "expressionManagement": {
+    "title": "Quản lý biểu cảm",
+    "addExpression": "Thêm biểu cảm",
+    "searchPlaceholder": "Tìm kiếm tên hoặc mô tả biểu cảm...",
+    "createTitle": "Tạo biểu cảm mới",
+    "editTitle": "Chỉnh sửa biểu cảm",
+    "viewTitle": "Chi tiết biểu cảm",
+    "viewDescription": "Xem tất cả thông tin về biểu cảm này.",
+    "createDescription": "Tạo biểu cảm mới cho hệ thống robot. Điền thông tin chi tiết bên dưới.",
+    "editDescription": "Cập nhật thông tin chi tiết biểu cảm bên dưới.",
+    "deleteTitle": "Xóa biểu cảm",
+    "deleteConfirm": "Bạn có chắc chắn muốn xóa biểu cảm này?",
+    "fields": {
+      "name": "Tên",
+      "description": "Mô tả",
+      "emotion": "Cảm xúc",
+      "intensity": "Cường độ",
+      "status": "Trạng thái",
+      "code": "Mã"
+    },
+    "placeholders": {
+      "code": "Nhập mã biểu cảm",
+      "name": "Nhập tên biểu cảm",
+      "imageUrl": "https://example.com/image.jpg",
+      "status": "Chọn trạng thái"
+    }
+  },
+  "common": {
+    "save": "Lưu",
+    "cancel": "Hủy",
+    "delete": "Xóa",
+    "edit": "Chỉnh sửa",
+    "view": "Xem",
+    "add": "Thêm",
+    "search": "Tìm kiếm",
+    "filter": "Lọc",
+    "export": "Xuất",
+    "import": "Nhập",
+    "refresh": "Làm mới",
+    "loading": "Đang tải...",
+    "noData": "Không có dữ liệu",
+    "error": "Đã xảy ra lỗi",
+    "success": "Hoàn thành thành công",
+    "confirm": "Bạn có chắc chắn?",
+    "confirmDelete": "Bạn có chắc chắn muốn xóa mục này?",
+    "yes": "Có",
+    "no": "Không",
+    "close": "Đóng",
+    "active": "Hoạt động",
+    "inactive": "Không hoạt động",
+    "basicInformation": "Thông tin cơ bản",
+    "configuration": "Cấu hình",
+    "timeline": "Thời gian",
+    "createdDate": "Ngày tạo",
+    "lastUpdated": "Cập nhật lần cuối",
+    "image": "Hình ảnh",
+    "noImageProvided": "Không có hình ảnh",
+    "actions": "Thao tác",
+    "copyId": "Sao chép ID",
+    "viewDetails": "Xem chi tiết",
+    "editItem": "Chỉnh sửa",
+    "deleteItem": "Xóa",
+    "unknown": "Không xác định",
+    "noImage": "Không có hình ảnh",
+    "deleting": "Đang xóa...",
+    "updating": "Đang cập nhật...",
+    "creating": "Đang tạo...",
+    "update": "Cập nhật",
+    "create": "Tạo",
+    "columns": "Cột",
+    "noResults": "Không có kết quả.",
+    "rowsSelected": "hàng được chọn",
+    "rowsPerPage": "Số hàng mỗi trang",
+    "page": "Trang",
+    "of": "trên",
+    "goToFirstPage": "Đi đến trang đầu",
+    "goToPreviousPage": "Đi đến trang trước",
+    "goToNextPage": "Đi đến trang tiếp theo", 
+    "goToLastPage": "Đi đến trang cuối",
+    "seconds": "giây",
+    "selectStatus": "Chọn trạng thái",
+    "noProvided": "Không có"
+  },
+  "validation": {
+    "codeRequired": "Mã là bắt buộc",
+    "nameRequired": "Tên là bắt buộc",
+    "codeMinLength": "Mã phải có ít nhất 2 ký tự",
+    "nameMinLength": "Tên phải có ít nhất 2 ký tự",
+    "invalidUrl": "Vui lòng nhập URL hợp lệ bắt đầu bằng http:// hoặc https://",
+    "durationRequired": "Thời lượng là bắt buộc",
+    "durationMinValue": "Thời lượng phải ít nhất 1 giây"
+  }
+}
