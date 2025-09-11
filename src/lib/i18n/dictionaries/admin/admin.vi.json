@@ -180,6 +180,88 @@
       "actions": "Thao tác"
     }
   },
+  "danceManagement": {
+    "title": "Quản lý điệu nhảy",
+    "addDance": "Thêm điệu nhảy",
+    "searchPlaceholder": "Tìm kiếm tên hoặc mô tả điệu nhảy...",
+    "createTitle": "Tạo điệu nhảy",
+    "editTitle": "Chỉnh sửa điệu nhảy",
+    "viewTitle": "Xem điệu nhảy",
+    "deleteTitle": "Xóa điệu nhảy",
+    "deleteConfirm": "Bạn có chắc chắn muốn xóa điệu nhảy này?",
+    "createDescription": "Tạo điệu nhảy mới cho hệ thống robot. Điền thông tin chi tiết bên dưới.",
+    "editDescription": "Cập nhật thông tin chi tiết điệu nhảy bên dưới.",
+    "fields": {
+      "code": "Mã",
+      "name": "Tên",
+      "description": "Mô tả",
+      "duration": "Thời lượng",
+      "difficulty": "Độ khó",
+      "category": "Danh mục",
+      "status": "Trạng thái"
+    },
+    "placeholders": {
+      "code": "Nhập mã điệu nhảy",
+      "name": "Nhập tên điệu nhảy",
+      "description": "Nhập mô tả điệu nhảy",
+      "status": "Chọn trạng thái"
+    }
+  },
+  "actionManagement": {
+    "title": "Quản lý hành động",
+    "addAction": "Thêm hành động",
+    "searchPlaceholder": "Tìm kiếm tên hoặc mô tả hành động...",
+    "createTitle": "Tạo hành động",
+    "editTitle": "Chỉnh sửa hành động",
+    "viewTitle": "Xem hành động",
+    "deleteTitle": "Xóa hành động",
+    "deleteConfirm": "Bạn có chắc chắn muốn xóa hành động này?",
+    "createDescription": "Tạo hành động mới cho hệ thống robot. Điền thông tin chi tiết bên dưới.",
+    "editDescription": "Cập nhật thông tin chi tiết hành động bên dưới.",
+    "fields": {
+      "name": "Tên",
+      "description": "Mô tả",
+      "type": "Loại",
+      "parameters": "Tham số",
+      "status": "Trạng thái",
+      "code": "Mã",
+      "duration": "Thời lượng",
+      "canInterrupt": "Có thể ngắt"
+    },
+    "placeholders": {
+      "code": "Nhập mã hành động",
+      "name": "Nhập tên hành động",
+      "description": "Nhập mô tả hành động",
+      "status": "Chọn trạng thái"
+    }
+  },
+  "expressionManagement": {
+    "title": "Quản lý biểu cảm",
+    "addExpression": "Thêm biểu cảm",
+    "searchPlaceholder": "Tìm kiếm tên hoặc mô tả biểu cảm...",
+    "createTitle": "Tạo biểu cảm mới",
+    "editTitle": "Chỉnh sửa biểu cảm",
+    "viewTitle": "Chi tiết biểu cảm",
+    "viewDescription": "Xem tất cả thông tin về biểu cảm này.",
+    "createDescription": "Tạo biểu cảm mới cho hệ thống robot. Điền thông tin chi tiết bên dưới.",
+    "editDescription": "Cập nhật thông tin chi tiết biểu cảm bên dưới.",
+    "deleteTitle": "Xóa biểu cảm",
+    "deleteConfirm": "Bạn có chắc chắn muốn xóa biểu cảm này?",
+    "fields": {
+      "name": "Tên",
+      "description": "Mô tả",
+      "emotion": "Cảm xúc",
+      "intensity": "Cường độ",
+      "status": "Trạng thái",
+      "code": "Mã"
+    },
+    "placeholders": {
+      "code": "Nhập mã biểu cảm",
+      "name": "Nhập tên biểu cảm",
+      "imageUrl": "https://example.com/image.jpg",
+      "status": "Chọn trạng thái"
+    }
+  },
   "common": {
     "save": "Lưu",
     "cancel": "Hủy",
@@ -199,6 +281,50 @@
     "confirm": "Bạn có chắc chắn?",
     "confirmDelete": "Bạn có chắc chắn muốn xóa mục này?",
     "yes": "Có",
-    "no": "Không"
+    "no": "Không",
+    "close": "Đóng",
+    "active": "Hoạt động",
+    "inactive": "Không hoạt động",
+    "basicInformation": "Thông tin cơ bản",
+    "configuration": "Cấu hình",
+    "timeline": "Thời gian",
+    "createdDate": "Ngày tạo",
+    "lastUpdated": "Cập nhật lần cuối",
+    "image": "Hình ảnh",
+    "noImageProvided": "Không có hình ảnh",
+    "actions": "Thao tác",
+    "copyId": "Sao chép ID",
+    "viewDetails": "Xem chi tiết",
+    "editItem": "Chỉnh sửa",
+    "deleteItem": "Xóa",
+    "unknown": "Không xác định",
+    "noImage": "Không có hình ảnh",
+    "deleting": "Đang xóa...",
+    "updating": "Đang cập nhật...",
+    "creating": "Đang tạo...",
+    "update": "Cập nhật",
+    "create": "Tạo",
+    "columns": "Cột",
+    "noResults": "Không có kết quả.",
+    "rowsSelected": "hàng được chọn",
+    "rowsPerPage": "Số hàng mỗi trang",
+    "page": "Trang",
+    "of": "trên",
+    "goToFirstPage": "Đi đến trang đầu",
+    "goToPreviousPage": "Đi đến trang trước",
+    "goToNextPage": "Đi đến trang tiếp theo", 
+    "goToLastPage": "Đi đến trang cuối",
+    "seconds": "giây",
+    "selectStatus": "Chọn trạng thái",
+    "noProvided": "Không có"
+  },
+  "validation": {
+    "codeRequired": "Mã là bắt buộc",
+    "nameRequired": "Tên là bắt buộc",
+    "codeMinLength": "Mã phải có ít nhất 2 ký tự",
+    "nameMinLength": "Tên phải có ít nhất 2 ký tự",
+    "invalidUrl": "Vui lòng nhập URL hợp lệ bắt đầu bằng http:// hoặc https://",
+    "durationRequired": "Thời lượng là bắt buộc",
+    "durationMinValue": "Thời lượng phải ít nhất 1 giây"
   }
 }

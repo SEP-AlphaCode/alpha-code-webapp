@@ -11,6 +11,7 @@ import {
 import { Button } from "@/components/ui/button"
 import { Dance } from "@/types/dance"
 import { AlertTriangle } from "lucide-react"
+import { useAdminTranslation } from "@/lib/i18n/hooks/use-translation"
 
 interface DeleteDanceModalProps {
     isOpen: boolean
@@ -27,6 +28,8 @@ export function DeleteDanceModal({
     dance,
     isDeleting = false
 }: DeleteDanceModalProps) {
+    const { t, isLoading } = useAdminTranslation()
+    if (isLoading) return null
     if (!dance) return null
 
     return (
@@ -35,10 +38,10 @@ export function DeleteDanceModal({
                 <DialogHeader>
                     <DialogTitle className="flex items-center gap-2 text-red-600">
                         <AlertTriangle className="h-5 w-5" />
-                        Delete Dance
+                        {t('danceManagement.deleteTitle')}
                     </DialogTitle>
                     <DialogDescription className="text-left">
-                        Are you sure you want to delete this dance? This action cannot be undone.
+                        {t('danceManagement.deleteConfirm')}
                     </DialogDescription>
                 </DialogHeader>
 
@@ -48,12 +51,12 @@ export function DeleteDanceModal({
                         <span className="ml-2 text-gray-900">{dance.id}</span>
                     </div>
                     <div className="text-sm">
-                        <span className="font-medium text-gray-700">Dance Name:</span>
+                        <span className="font-medium text-gray-700">{t('danceManagement.fields.name')}:</span>
                         <span className="ml-2 text-gray-900">{dance.name}</span>
                     </div>
                     <div className="text-sm">
-                        <span className="font-medium text-gray-700">Description:</span>
-                        <span className="ml-2 text-gray-900">{dance.description || "No description"}</span>
+                        <span className="font-medium text-gray-700">{t('danceManagement.fields.description')}:</span>
+                        <span className="ml-2 text-gray-900">{dance.description || t('common.noProvided')}</span>
                     </div>
                 </div>
 
@@ -64,7 +67,7 @@ export function DeleteDanceModal({
                         onClick={onClose}
                         disabled={isDeleting}
                     >
-                        Cancel
+                        {t('common.cancel')}
                     </Button>
                     <Button
                         type="button"
@@ -73,7 +76,7 @@ export function DeleteDanceModal({
                         disabled={isDeleting}
                         className="bg-red-600 hover:bg-red-700"
                     >
-                        {isDeleting ? "Deleting..." : "Delete Dance"}
+                        {isDeleting ? t('common.deleting') : t('danceManagement.deleteTitle')}
                     </Button>
                 </DialogFooter>
             </DialogContent>

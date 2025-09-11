@@ -11,6 +11,7 @@ import {
 import { Button } from "@/components/ui/button"
 import { Expression } from "@/types/expression"
 import { AlertTriangle } from "lucide-react"
+import { useAdminTranslation } from "@/lib/i18n/hooks/use-translation"
 
 interface DeleteExpressionModalProps {
     isOpen: boolean
@@ -27,6 +28,8 @@ export function DeleteExpressionModal({
     expression,
     isDeleting = false
 }: DeleteExpressionModalProps) {
+    const { t } = useAdminTranslation()
+    
     if (!expression) return null
 
     return (
@@ -35,10 +38,10 @@ export function DeleteExpressionModal({
                 <DialogHeader>
                     <DialogTitle className="flex items-center gap-2 text-red-600">
                         <AlertTriangle className="h-5 w-5" />
-                        Delete Expression
+                        {t('expressionManagement.deleteTitle')}
                     </DialogTitle>
                     <DialogDescription className="text-left">
-                        Are you sure you want to delete this expression? This action cannot be undone.
+                        {t('expressionManagement.deleteConfirm')}
                     </DialogDescription>
                 </DialogHeader>
 
@@ -48,7 +51,7 @@ export function DeleteExpressionModal({
                         <span className="ml-2 text-gray-900">{expression.id}</span>
                     </div>
                     <div className="text-sm">
-                        <span className="font-medium text-gray-700">Expression Name:</span>
+                        <span className="font-medium text-gray-700">{t('expressionManagement.fields.name')}:</span>
                         <span className="ml-2 text-gray-900">{expression.name}</span>
                     </div>
                 </div>
@@ -60,7 +63,7 @@ export function DeleteExpressionModal({
                         onClick={onClose}
                         disabled={isDeleting}
                     >
-                        Cancel
+                        {t('common.cancel')}
                     </Button>
                     <Button
                         type="button"
@@ -69,7 +72,7 @@ export function DeleteExpressionModal({
                         disabled={isDeleting}
                         className="bg-red-600 hover:bg-red-700"
                     >
-                        {isDeleting ? "Deleting..." : "Delete Expression"}
+                        {isDeleting ? t('common.deleting') : t('common.delete')}
                     </Button>
                 </DialogFooter>
             </DialogContent>
