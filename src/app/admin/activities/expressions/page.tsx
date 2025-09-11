@@ -171,7 +171,7 @@ export default function ExpressionsPage() {
         onSizeChange={handleSizeChange}
         searchValue={searchTerm}
         onSearchChange={setSearchTerm}
-        searchPlaceholder="Search expressions name or description..."
+        searchPlaceholder="Search expressions code or name..."
         pageCount={data?.total_pages || 0}
         page={page}
         onPageChange={handlePageChange}
