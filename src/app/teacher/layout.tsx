@@ -83,7 +83,7 @@ export default function TeacherLayout({ children }: TeacherLayoutProps) {
   const Sidebar = () => (
     <aside
       className={`fixed top-16 left-0 h-[calc(100vh-4rem)] bg-white border-r border-gray-200 transition-all duration-300 ease-in-out z-30 ${
-        isSidebarOpen ? 'w-64' : 'w-16'
+        isSidebarOpen ? 'w-64' : 'w-24'
       }`}
     >
       <nav className="p-4 mt-3">

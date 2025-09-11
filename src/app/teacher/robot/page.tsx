@@ -67,6 +67,17 @@ export default function TeacherDashboard() {
         }
     };
 
+    const getRowItems = (start: number, count: number) => {
+        if (!shuffledPrompts || shuffledPrompts.length === 0) {
+            return Array.from({ length: count }, () => '');
+        }
+        const items: string[] = [];
+        for (let i = 0; i < count; i++) {
+            items.push(shuffledPrompts[(start + i) % shuffledPrompts.length]);
+        }
+        return items;
+        };
+
     if (!t) {
         return <div>Loading translations...</div>;
     }
@@ -404,52 +415,81 @@ export default function TeacherDashboard() {
 
             {/* --- */}
 
-            {/* Things to Try Section */}
-            <div className="space-y-4">
-                <div className="flex items-center justify-between">
-                    <h2 className="text-2xl font-semibold">{t.things_to_try.title}</h2>
-                    <Button variant="ghost" className="text-blue-600 hover:text-blue-800" onClick={handleRefreshPrompts}>
-                        <RefreshCw className="h-4 w-4 mr-2" />
-                        {t.things_to_try.refresh}
-                    </Button>
-                </div>
-                <style jsx>{`
-                    @keyframes moveRandomly {
-                        0% { transform: translateX(0); }
-                        100% { transform: translateX(-100%); }
-                    }
-                `}</style>
-                <div className="overflow-hidden space-y-4">
-                    <div className="flex flex-col gap-4">
-                        {/* Hàng 1 */}
-                        <div className="flex space-x-4 animate-moveRandomly" style={{ animationDuration: '60s', animationIterationCount: 'infinite', animationTimingFunction: 'linear', animationDirection: 'reverse' }}>
-                            {shuffledPrompts.slice(0, 5).map((prompt, index) => (
-                                <div key={`row1-${index}`} className="flex-shrink-0 p-4 bg-[var(--card)] rounded-lg shadow-sm hover:bg-[var(--muted)] transition-colors cursor-pointer text-[var(--foreground)] border border-[var(--border)] min-w-[300px]">
-                                    {prompt}
-                                </div>
-                            ))}
-                            {shuffledPrompts.slice(0, 5).map((prompt, index) => (
-                                <div key={`row1-clone-${index}`} className="flex-shrink-0 p-4 bg-[var(--card)] rounded-lg shadow-sm hover:bg-[var(--muted)] transition-colors cursor-pointer text-[var(--foreground)] border border-[var(--border)] min-w-[300px]">
-                                    {prompt}
-                                </div>
-                            ))}
-                        </div>
-                        {/* Hàng 2 */}
-                        <div className="flex space-x-4 animate-moveRandomly" style={{ animationDuration: '70s', animationIterationCount: 'infinite', animationTimingFunction: 'linear', animationDirection: 'reverse' }}>
-                            {shuffledPrompts.slice(5, 10).map((prompt, index) => (
-                                <div key={`row2-${index}`} className="flex-shrink-0 p-4 bg-[var(--card)] rounded-lg shadow-sm hover:bg-[var(--muted)] transition-colors cursor-pointer text-[var(--foreground)] border border-[var(--border)] min-w-[300px]">
-                                    {prompt}
-                                </div>
-                            ))}
-                            {shuffledPrompts.slice(5, 10).map((prompt, index) => (
-                                <div key={`row2-clone-${index}`} className="flex-shrink-0 p-4 bg-[var(--card)] rounded-lg shadow-sm hover:bg-[var(--muted)] transition-colors cursor-pointer text-[var(--foreground)] border border-[var(--border)] min-w-[300px]">
-                                    {prompt}
-                                </div>
-                            ))}
-                        </div>
-                    </div>
-                </div>
-            </div>
+            {/* --- Things to Try Section --- */}
+      <div className="space-y-4">
+        <div className="flex items-center justify-between">
+          <h2 className="text-2xl font-semibold">{t.things_to_try.title}</h2>
+          <Button
+            variant="ghost"
+            className="text-blue-600 hover:text-blue-800"
+            onClick={handleRefreshPrompts}
+          >
+            <RefreshCw className="h-4 w-4 mr-2" />
+            {t.things_to_try.refresh}
+          </Button>
         </div>
+
+        <style jsx>{`
+          @keyframes marquee {
+            0% {
+              transform: translateX(0);
+            }
+            100% {
+              transform: translateX(-100%);
+            }
+          }
+          .marquee-row {
+            animation-name: marquee;
+            animation-timing-function: linear;
+            animation-iteration-count: infinite;
+          }
+          .marquee-row:hover {
+            animation-play-state: paused;
+          }
+        `}</style>
+
+        <div className="overflow-hidden space-y-4">
+          <div className="flex flex-col gap-4">
+            {[
+              { start: 0, count: 100, duration: "20s", direction: "normal" },
+              { start: 55, count: 130, duration: "25s", direction: "reverse" },
+              { start: 0, count: 109, duration: "22s", direction: "normal" },
+            ].map((row, rowIndex) => {
+              const items = getRowItems(row.start, row.count);
+              return (
+                <div
+                  key={rowIndex}
+                  className="marquee-row flex space-x-4"
+                  style={{
+                    animationDuration: row.duration,
+                    animationDirection: row.direction,
+                  }}
+                >
+                  {/* chính */}
+                  {items.map((prompt, i) => (
+                    <div
+                      key={`r${rowIndex}-${i}`}
+                      className="flex-shrink-0 p-4 bg-[var(--card)] rounded-lg shadow-sm hover:bg-[var(--muted)] transition-colors cursor-pointer text-[var(--foreground)] border border-[var(--border)] min-w-[260px]"
+                    >
+                      {prompt}
+                    </div>
+                  ))}
+
+                  {/* bản sao để loop mượt */}
+                  {items.map((prompt, i) => (
+                    <div
+                      key={`r${rowIndex}-clone-${i}`}
+                      className="flex-shrink-0 p-4 bg-[var(--card)] rounded-lg shadow-sm hover:bg-[var(--muted)] transition-colors cursor-pointer text-[var(--foreground)] border border-[var(--border)] min-w-[260px]"
+                    >
+                      {prompt}
+                    </div>
+                  ))}
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      </div>
+    </div>
     );
 }
