@@ -16,6 +16,7 @@ import { useDance } from "@/hooks/use-dance"
 import { DanceModal, Dance } from "@/types/dance"
 import { useEffect } from "react"
 import { toast } from "sonner"
+import { useAdminTranslation } from "@/lib/i18n/hooks/use-translation"
 
 interface CreateDanceModalProps {
   isOpen: boolean
@@ -30,9 +31,12 @@ export function CreateDanceModal({
   editDance = null,
   mode = 'create'
 }: CreateDanceModalProps) {
+  const { t, isLoading } = useAdminTranslation()
   const { useCreateDance, useUpdateDance } = useDance()
   const createDanceMutation = useCreateDance()
   const updateDanceMutation = useUpdateDance()
+
+  if (isLoading) return null
 
   const isEditMode = mode === 'edit' && editDance
 
@@ -80,16 +84,16 @@ export function CreateDanceModal({
     try {
       if (isEditMode && editDance) {
         await updateDanceMutation.mutateAsync({ id: editDance.id, data })
-        toast.success("Dance updated successfully!")
+        toast.success(t('common.success'))
       } else {
         await createDanceMutation.mutateAsync(data)
-        toast.success("Dance created successfully!")
+        toast.success(t('common.success'))
       }
       reset()
       onClose()
     } catch (error) {
       console.error("Error saving dance:", error)
-      toast.error(`Failed to ${isEditMode ? 'update' : 'create'} dance. Please try again.`)
+      toast.error(t('common.error'))
     }
   }
 
@@ -103,12 +107,12 @@ export function CreateDanceModal({
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            {isEditMode ? 'Edit Dance' : 'Create New Dance'}
+            {isEditMode ? t('danceManagement.editTitle') : t('danceManagement.createTitle')}
           </DialogTitle>
           <DialogDescription>
             {isEditMode
-              ? 'Update the dance details below.'
-              : 'Create a new dance for the robot system. Fill in the details below.'
+              ? t('danceManagement.editDescription')
+              : t('danceManagement.createDescription')
             }
           </DialogDescription>
         </DialogHeader>
@@ -116,15 +120,15 @@ export function CreateDanceModal({
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="code" className="text-sm font-medium">
-              Dance Code *
+              {t('danceManagement.fields.code')} *
             </Label>
             <Input
               id="code"
               {...register("code", {
-                required: "Dance code is required",
-                minLength: { value: 2, message: "Code must be at least 2 characters" }
+                required: t('validation.codeRequired'),
+                minLength: { value: 2, message: t('validation.codeMinLength') }
               })}
-              placeholder="Enter dance code"
+              placeholder={t('danceManagement.placeholders.code')}
               className={errors.code ? "border-red-500" : ""}
             />
             {errors.code && (
@@ -134,15 +138,15 @@ export function CreateDanceModal({
 
           <div className="space-y-2">
             <Label htmlFor="name" className="text-sm font-medium">
-              Dance Name *
+              {t('danceManagement.fields.name')} *
             </Label>
             <Input
               id="name"
               {...register("name", {
-                required: "Dance name is required",
-                minLength: { value: 2, message: "Name must be at least 2 characters" }
+                required: t('validation.nameRequired'),
+                minLength: { value: 2, message: t('validation.nameMinLength') }
               })}
-              placeholder="Enter dance name"
+              placeholder={t('danceManagement.placeholders.name')}
               className={errors.name ? "border-red-500" : ""}
             />
             {errors.name && (
@@ -152,26 +156,26 @@ export function CreateDanceModal({
 
           <div className="space-y-2">
             <Label htmlFor="description" className="text-sm font-medium">
-              Description
+              {t('danceManagement.fields.description')}
             </Label>
             <Textarea
               id="description"
               {...register("description")}
-              placeholder="Enter dance description"
+              placeholder={t('danceManagement.placeholders.description')}
               rows={3}
             />
           </div>
 
           <div className="space-y-2">
             <Label htmlFor="duration" className="text-sm font-medium">
-              Duration (seconds) *
+              {t('danceManagement.fields.duration')} ({t('common.seconds')}) *
             </Label>
             <Input
               id="duration"
               type="number"
               {...register("duration", {
-                required: "Duration is required",
-                min: { value: 1, message: "Duration must be at least 1 second" },
+                required: t('validation.durationRequired'),
+                min: { value: 1, message: t('validation.durationMinValue') },
                 valueAsNumber: true
               })}
               placeholder="60"
@@ -184,26 +188,26 @@ export function CreateDanceModal({
 
           <div className="space-y-2">
             <Label htmlFor="status" className="text-sm font-medium">
-              Status
+              {t('danceManagement.fields.status')}
             </Label>
             <Select
               value={status.toString()}
               onValueChange={(value) => setValue("status", parseInt(value))}
             >
               <SelectTrigger>
-                <SelectValue placeholder="Select status" />
+                <SelectValue placeholder={t('common.selectStatus')} />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="1">
                   <span className="flex items-center gap-2">
                     <span className="w-2 h-2 bg-green-500 rounded-full"></span>
-                    Active
+                    {t('common.active')}
                   </span>
                 </SelectItem>
                 <SelectItem value="0">
                   <span className="flex items-center gap-2">
                     <span className="w-2 h-2 bg-red-500 rounded-full"></span>
-                    Inactive
+                    {t('common.inactive')}
                   </span>
                 </SelectItem>
               </SelectContent>
@@ -217,7 +221,7 @@ export function CreateDanceModal({
               onClick={handleClose}
               disabled={isSubmitting}
             >
-              Cancel
+              {t('common.cancel')}
             </Button>
             <Button
               type="submit"
@@ -225,8 +229,8 @@ export function CreateDanceModal({
               className="bg-green-600 hover:bg-green-700 text-white"
             >
               {isSubmitting
-                ? (isEditMode ? "Updating..." : "Creating...")
-                : (isEditMode ? "Update Dance" : "Create Dance")
+                ? (isEditMode ? t('common.updating') : t('common.creating'))
+                : (isEditMode ? t('common.update') : t('common.create'))
               }
             </Button>
           </DialogFooter>

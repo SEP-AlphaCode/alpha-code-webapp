@@ -18,6 +18,7 @@ import { useAction } from "@/hooks/use-action"
 import { ActionModal, Action } from "@/types/action"
 import { useEffect } from "react"
 import { toast } from "sonner"
+import { useAdminTranslation } from "@/lib/i18n/hooks/use-translation"
 
 interface CreateActionModalProps {
   isOpen: boolean
@@ -32,11 +33,16 @@ export function CreateActionModal({
   editAction = null,
   mode = 'create'
 }: CreateActionModalProps) {
+  const { t, isLoading: translationsLoading } = useAdminTranslation()
   const { useCreateAction, useUpdateAction } = useAction()
   const createActionMutation = useCreateAction()
   const updateActionMutation = useUpdateAction()
 
   const isEditMode = mode === 'edit' && editAction
+
+  if (translationsLoading) {
+    return null
+  }
 
   const {
     register,
@@ -109,12 +115,12 @@ export function CreateActionModal({
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            {isEditMode ? 'Edit Action' : 'Create New Action'}
+            {isEditMode ? t('actionManagement.editTitle') : t('actionManagement.createTitle')}
           </DialogTitle>
           <DialogDescription>
             {isEditMode
-              ? 'Update the action details below.'
-              : 'Create a new action for the robot system. Fill in the details below.'
+              ? t('actionManagement.editDescription')
+              : t('actionManagement.createDescription')
             }
           </DialogDescription>
         </DialogHeader>
@@ -122,15 +128,15 @@ export function CreateActionModal({
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
         <div className="space-y-2">
             <Label htmlFor="code" className="text-sm font-medium">
-              Action Code *
+              {t('actionManagement.fields.code')} *
             </Label>
             <Input
               id="code"
               {...register("code", {
-                required: "Action code is required",
-                minLength: { value: 2, message: "Code must be at least 2 characters" }
+                required: t('validation.codeRequired'),
+                minLength: { value: 2, message: t('validation.codeMinLength') }
               })}
-              placeholder="Enter action code"
+              placeholder={t('actionManagement.placeholders.code')}
               className={errors.code ? "border-red-500" : ""}
             />
             {errors.code && (
@@ -139,15 +145,15 @@ export function CreateActionModal({
           </div>
           <div className="space-y-2">
             <Label htmlFor="name" className="text-sm font-medium">
-              Action Name *
+              {t('actionManagement.fields.name')} *
             </Label>
             <Input
               id="name"
               {...register("name", {
-                required: "Action name is required",
-                minLength: { value: 2, message: "Name must be at least 2 characters" }
+                required: t('validation.nameRequired'),
+                minLength: { value: 2, message: t('validation.nameMinLength') }
               })}
-              placeholder="Enter action name"
+              placeholder={t('actionManagement.placeholders.name')}
               className={errors.name ? "border-red-500" : ""}
             />
             {errors.name && (
@@ -157,12 +163,12 @@ export function CreateActionModal({
 
           <div className="space-y-2">
             <Label htmlFor="description" className="text-sm font-medium">
-              Description
+              {t('actionManagement.fields.description')}
             </Label>
             <Textarea
               id="description"
               {...register("description")}
-              placeholder="Enter action description"
+              placeholder={t('actionManagement.placeholders.description')}
               rows={3}
             />
           </div>
@@ -196,19 +202,19 @@ export function CreateActionModal({
               onValueChange={(value) => setValue("status", parseInt(value))}
             >
               <SelectTrigger>
-                <SelectValue placeholder="Select status" />
+                <SelectValue placeholder={t('common.selectStatus')} />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="1">
                   <span className="flex items-center gap-2">
                     <span className="w-2 h-2 bg-green-500 rounded-full"></span>
-                    Active
+                    {t('common.active')}
                   </span>
                 </SelectItem>
                 <SelectItem value="0">
                   <span className="flex items-center gap-2">
                     <span className="w-2 h-2 bg-red-500 rounded-full"></span>
-                    Inactive
+                    {t('common.inactive')}
                   </span>
                 </SelectItem>
               </SelectContent>
@@ -226,7 +232,7 @@ export function CreateActionModal({
               htmlFor="canInterrupt"
               className="text-sm font-medium cursor-pointer select-none"
             >
-              Can be interrupted
+              {t('actionManagement.fields.canInterrupt')}
             </Label>
           </div>
 
@@ -237,7 +243,7 @@ export function CreateActionModal({
               onClick={handleClose}
               disabled={isSubmitting}
             >
-              Cancel
+              {t('common.close')}
             </Button>
             <Button
               type="submit"
@@ -245,8 +251,8 @@ export function CreateActionModal({
               className="bg-green-600 hover:bg-green-700 text-white"
             >
               {isSubmitting
-                ? (isEditMode ? "Updating..." : "Creating...")
-                : (isEditMode ? "Update Action" : "Create Action")
+                ? (isEditMode ? t('common.updating') : t('common.creating'))
+                : (isEditMode ? t('common.update') : t('common.create'))
               }
             </Button>
           </DialogFooter>
