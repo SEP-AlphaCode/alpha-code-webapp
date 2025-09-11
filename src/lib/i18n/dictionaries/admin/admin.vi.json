@@ -49,6 +49,51 @@
       "title": "Phân tích tăng trưởng",
       "description": "Tỷ lệ hiện tại: {{rate}}%"
     },
+    "userStatsOverview": {
+      "title": "Tổng quan thống kê người dùng",
+      "subtitle": "Phân tích người dùng",
+      "totalAccounts": "Tổng tài khoản",
+      "totalAccountsDescription": "Tất cả tài khoản đã đăng ký",
+      "newLastMonth": "Mới tháng trước",
+      "newLastMonthDescription": "Đăng ký tháng trước",
+      "newThisMonth": "Mới tháng này",
+      "newThisMonthDescription": "Đăng ký tháng hiện tại",
+      "lastMonth": "Tháng trước",
+      "thisMonth": "Tháng này"
+    },
+    "growthTrendChart": {
+      "title": "Phân tích xu hướng tăng trưởng",
+      "growing": "Đang tăng trưởng",
+      "declining": "Đang giảm",
+      "growthRate": "Tỷ lệ tăng trưởng",
+      "users": "Người dùng",
+      "currentTrend": "Xu hướng hiện tại",
+      "positive": "📈 Tích cực",
+      "negative": "📉 Tiêu cực",
+      "rateOfChange": "Tỷ lệ thay đổi",
+      "months": {
+        "jan": "T1",
+        "feb": "T2",
+        "mar": "T3",
+        "apr": "T4",
+        "may": "T5",
+        "jun": "T6",
+        "jul": "T7",
+        "aug": "T8",
+        "sep": "T9",
+        "oct": "T10",
+        "nov": "T11",
+        "dec": "T12"
+      }
+    },
+    "userDistributionChart": {
+      "title": "Phân bố người dùng",
+      "total": "Tổng cộng",
+      "onlineUsers": "Người dùng trực tuyến",
+      "offlineUsers": "Người dùng ngoại tuyến",
+      "newThisMonth": "Mới tháng này",
+      "ofTotal": "của tổng số"
+    },
     "activityMonitor": {
       "title": "Giám sát hoạt động",
       "description": "{{count}} người dùng đang hoạt động"

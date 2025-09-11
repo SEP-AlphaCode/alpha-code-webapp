@@ -12,6 +12,7 @@ import {
   Cell
 } from "recharts"
 import { DashboardUserStats } from "@/types/dashboard"
+import { useAdminTranslation } from "@/lib/i18n/hooks/use-translation"
 
 interface UserStatsOverviewProps {
   userStats: DashboardUserStats
@@ -19,6 +20,8 @@ interface UserStatsOverviewProps {
 }
 
 export function UserStatsOverview({ userStats, isLoading }: UserStatsOverviewProps) {
+  const { t } = useAdminTranslation()
+
   if (isLoading) {
     return (
       <div className="rounded-lg border bg-card p-6 shadow-sm">
@@ -32,31 +35,31 @@ export function UserStatsOverview({ userStats, isLoading }: UserStatsOverviewPro
 
   const chartData = [
     {
-      name: "Total Accounts",
+      name: t('dashboard.userStatsOverview.totalAccounts', 'Total Accounts'),
       value: userStats.totalAccounts,
       color: "#3b82f6",
-      description: "All registered accounts"
+      description: t('dashboard.userStatsOverview.totalAccountsDescription', 'All registered accounts')
     },
     {
-      name: "New Last Month",
+      name: t('dashboard.userStatsOverview.newLastMonth', 'New Last Month'),
       value: userStats.newUsersLastMonth,
       color: "#8b5cf6",
-      description: "Previous month signups"
+      description: t('dashboard.userStatsOverview.newLastMonthDescription', 'Previous month signups')
     },
     {
-      name: "New This Month",
+      name: t('dashboard.userStatsOverview.newThisMonth', 'New This Month'),
       value: userStats.newUsersThisMonth,
       color: "#10b981",
-      description: "Current month signups"
+      description: t('dashboard.userStatsOverview.newThisMonthDescription', 'Current month signups')
     }
   ]
 
   return (
     <div className="rounded-lg border bg-card p-6 shadow-sm">
       <div className="flex items-center justify-between mb-6">
-        <h3 className="text-xl font-semibold">User Statistics Overview</h3>
+        <h3 className="text-xl font-semibold">{t('dashboard.userStatsOverview.title', 'User Statistics Overview')}</h3>
         <div className="text-sm text-muted-foreground">
-          <span className="font-medium capitalize text-purple-600">User Analytics</span>
+          <span className="font-medium capitalize text-purple-600">{t('dashboard.userStatsOverview.subtitle', 'User Analytics')}</span>
         </div>
       </div>
       
@@ -95,15 +98,15 @@ export function UserStatsOverview({ userStats, isLoading }: UserStatsOverviewPro
       <div className="grid grid-cols-3 gap-4">
         <div className="p-4 bg-blue-50 rounded-lg border border-blue-200">
           <div className="text-2xl font-bold text-blue-600">{userStats.totalAccounts}</div>
-          <div className="text-sm text-blue-700">Total Accounts</div>
+          <div className="text-sm text-blue-700">{t('dashboard.userStatsOverview.totalAccounts', 'Total Accounts')}</div>
         </div>
         <div className="p-4 bg-purple-50 rounded-lg border border-purple-200">
           <div className="text-2xl font-bold text-purple-600">{userStats.newUsersLastMonth}</div>
-          <div className="text-sm text-purple-700">Last Month</div>
+          <div className="text-sm text-purple-700">{t('dashboard.userStatsOverview.lastMonth', 'Last Month')}</div>
         </div>
         <div className="p-4 bg-green-50 rounded-lg border border-green-200">
           <div className="text-2xl font-bold text-green-600">+{userStats.newUsersThisMonth}</div>
-          <div className="text-sm text-green-700">This Month</div>
+          <div className="text-sm text-green-700">{t('dashboard.userStatsOverview.thisMonth', 'This Month')}</div>
         </div>
       </div>
     </div>
