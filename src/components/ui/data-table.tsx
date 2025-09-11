@@ -23,6 +23,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { Input } from "@/components/ui/input"
+import { useAdminTranslation } from "@/lib/i18n/hooks/use-translation"
 
 
 
@@ -72,6 +73,7 @@ export function DataTable<TData, TValue>({
   const [columnVisibility, setColumnVisibility] =
     React.useState<VisibilityState>({})
   const [rowSelection, setRowSelection] = React.useState({})
+  const { t, isLoading } = useAdminTranslation()
 
   const table = useReactTable({
     data,
@@ -104,7 +106,7 @@ export function DataTable<TData, TValue>({
     },
   })
 
-  return (
+    return (
     <div>
       <div className="flex items-center py-4">
         <Input
@@ -115,8 +117,8 @@ export function DataTable<TData, TValue>({
         />
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="outline" className="ml-auto">
-              Columns
+            <Button variant="outline" className="ml-auto" disabled={isLoading}>
+              {isLoading ? "" : t('common.columns')}
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
@@ -183,7 +185,7 @@ export function DataTable<TData, TValue>({
             ) : (
               <TableRow>
                 <TableCell colSpan={columns.length} className="h-24 text-center">
-                  No results.
+                  {isLoading ? "" : t('common.noResults')}
                 </TableCell>
               </TableRow>
             )}
