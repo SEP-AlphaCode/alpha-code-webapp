@@ -5,8 +5,9 @@ import type { Locale } from './config'
 import { i18n } from './config'
 import { getCommonDictionary, getPageDictionary, getLegacyDictionary } from './get-dictionary'
 
-// More flexible type for dictionaries - using index signature for dynamic access
-type Dictionary = { [key: string]: string | number | boolean | Dictionary | Dictionary[] }
+// More flexible type for dictionaries - recursive structure allowing arrays and nested objects
+type DictionaryValue = string | number | boolean | string[] | Dictionary
+type Dictionary = { [key: string]: DictionaryValue }
 
 interface I18nContextType {
   locale: Locale

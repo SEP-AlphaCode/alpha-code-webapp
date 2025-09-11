@@ -13,8 +13,7 @@ import {
   SquareTerminal,
   Users,
   BookMarkedIcon,
-  QrCode,
-  Languages
+  QrCode
 } from "lucide-react"
 
 import { NavMain } from "@/components/nav-main"

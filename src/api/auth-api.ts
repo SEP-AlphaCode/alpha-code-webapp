@@ -1,6 +1,5 @@
 import http from '@/utils/http';
 import { LoginRequest, TokenResponse } from '@/types/login';
-import { apiSpringUrl } from '@/app/constants/constants';
 import axios from 'axios';
 
 // Note: avoid UI side-effects (toasts) inside API functions; handle UI in hooks/components

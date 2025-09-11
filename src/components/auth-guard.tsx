@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { isValidToken, clearAuthData, getTokenPayload } from '@/utils/tokenUtils';
+import { clearAuthData, getTokenPayload } from '@/utils/tokenUtils';
 import { getRoleFromToken } from '@/utils/roleUtils';
 
 interface AuthGuardProps {
