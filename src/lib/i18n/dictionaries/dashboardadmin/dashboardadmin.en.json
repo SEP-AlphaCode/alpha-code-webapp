@@ -1,0 +1,141 @@
+{
+  "dashboard": {
+    "title": "Admin Dashboard",
+    "welcome": "Welcome to Admin Dashboard",
+    "overview": "System Overview",
+    "statistics": "Statistics",
+    "quickActions": "Quick Actions",
+    "recentActivity": "Recent Activity",
+    "systemHealth": "System Health",
+    "performance": "Performance Metrics",
+    "alerts": "System Alerts",
+    "notifications": "Notifications",
+    "metrics": {
+      "totalUsers": "Total Users",
+      "activeUsers": "Active Users",
+      "usersOnline": "Users Online",
+      "newUsersToday": "New Users Today",
+      "newUsersThisWeek": "New Users This Week",
+      "newUsersThisMonth": "New Users This Month",
+      "totalRobots": "Total Robots",
+      "onlineRobots": "Online Robots",
+      "totalClassrooms": "Total Classrooms",
+      "activeClassrooms": "Active Classrooms",
+      "totalActivities": "Total Activities",
+      "completedActivities": "Completed Activities",
+      "systemUptime": "System Uptime",
+      "responseTime": "Average Response Time",
+      "serverLoad": "Server Load",
+      "databaseConnections": "Database Connections",
+      "apiCalls": "API Calls Today",
+      "errorRate": "Error Rate",
+      "growthRate": "Growth Rate",
+      "conversionRate": "Conversion Rate"
+    },
+    "cards": {
+      "userManagement": {
+        "title": "User Management",
+        "description": "Manage all system users",
+        "viewAll": "View All Users",
+        "addNew": "Add New User"
+      },
+      "robotManagement": {
+        "title": "Robot Management", 
+        "description": "Monitor and control robots",
+        "viewAll": "View All Robots",
+        "addNew": "Add New Robot"
+      },
+      "classroomManagement": {
+        "title": "Classroom Management",
+        "description": "Manage virtual classrooms",
+        "viewAll": "View All Classrooms",
+        "addNew": "Create New Classroom"
+      },
+      "analytics": {
+        "title": "Analytics & Reports",
+        "description": "View detailed system analytics",
+        "viewReports": "View Reports",
+        "generateReport": "Generate Report"
+      },
+      "systemSettings": {
+        "title": "System Settings",
+        "description": "Configure system parameters",
+        "viewSettings": "View Settings",
+        "configure": "Configure"
+      },
+      "activityMonitor": {
+        "title": "Activity Monitor",
+        "description": "Real-time activity monitoring",
+        "viewLogs": "View Logs",
+        "monitor": "Monitor Now"
+      }
+    },
+    "charts": {
+      "userGrowth": "User Growth Over Time",
+      "robotUsage": "Robot Usage Statistics",
+      "activityCompletion": "Activity Completion Rate",
+      "systemPerformance": "System Performance",
+      "errorAnalysis": "Error Analysis",
+      "userEngagement": "User Engagement"
+    },
+    "timeFilters": {
+      "today": "Today",
+      "yesterday": "Yesterday", 
+      "last7Days": "Last 7 Days",
+      "last30Days": "Last 30 Days",
+      "last90Days": "Last 90 Days",
+      "thisMonth": "This Month",
+      "lastMonth": "Last Month",
+      "thisYear": "This Year",
+      "custom": "Custom Range"
+    },
+    "status": {
+      "online": "Online",
+      "offline": "Offline",
+      "active": "Active",
+      "inactive": "Inactive",
+      "healthy": "Healthy",
+      "warning": "Warning",
+      "critical": "Critical",
+      "maintenance": "Under Maintenance"
+    },
+    "actions": {
+      "refresh": "Refresh Data",
+      "export": "Export Data",
+      "configure": "Configure",
+      "viewDetails": "View Details",
+      "manageUsers": "Manage Users",
+      "manageRobots": "Manage Robots",
+      "manageClassrooms": "Manage Classrooms",
+      "viewAnalytics": "View Analytics",
+      "systemSettings": "System Settings",
+      "backupData": "Backup Data",
+      "restoreData": "Restore Data",
+      "clearCache": "Clear Cache",
+      "restartServices": "Restart Services"
+    },
+    "messages": {
+      "loading": "Loading dashboard data...",
+      "loadingComplete": "Dashboard loaded successfully",
+      "error": "Failed to load dashboard data",
+      "noData": "No data available",
+      "dataUpdated": "Data updated successfully",
+      "systemHealthy": "All systems are running normally",
+      "systemWarning": "Some systems require attention",
+      "systemCritical": "Critical system issues detected",
+      "connectionLost": "Connection to server lost",
+      "connectionRestored": "Connection to server restored",
+      "refreshing": "Refreshing data...",
+      "exportSuccess": "Data exported successfully",
+      "exportFailed": "Failed to export data"
+    },
+    "navigation": {
+      "backToMain": "Back to Main",
+      "adminPanel": "Admin Panel",
+      "dashboard": "Dashboard",
+      "reports": "Reports",
+      "settings": "Settings",
+      "logout": "Logout"
+    }
+  }
+}

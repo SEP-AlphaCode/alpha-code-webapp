@@ -1,5 +1,5 @@
-import { getDashboardStats, getOnlineUsersCount } from "@/api/dashboard-api";
-import { DashboardStats } from "@/types/dashboard";
+import { getDashboardStats, getOnlineUsersCount, getUserStats } from "@/api/dashboard-api";
+import { DashboardStats, DashboardUserStats } from "@/types/dashboard";
 import { ApiError } from "@/types/api-error";
 import { useQuery } from "@tanstack/react-query";
 
@@ -58,6 +58,32 @@ export const useDashboard = (roleName: string) => {
             refetchIntervalInBackground: false,
         });
     };
-    return { useGetDashboardStats, useGetOnlineUsersCount };
+
+    const useGetUserStats = () => {
+        return useQuery<DashboardUserStats>({
+            queryKey: ['user-stats'],
+            staleTime: 5 * 60 * 1000, // Cache for 5 minutes
+            gcTime: 10 * 60 * 1000, // Keep in cache for 10 minutes
+            queryFn: getUserStats,
+            retry: (failureCount, error: unknown) => {
+                const apiError = error as ApiError;
+                if (apiError?.response?.status === 429 && failureCount >= 2) {
+                    return false;
+                }
+                return failureCount < 3;
+            },
+            retryDelay: (attemptIndex, error: unknown) => {
+                const apiError = error as ApiError;
+                if (apiError?.response?.status === 429) {
+                    return Math.min(5000 * 2 ** attemptIndex, 60000);
+                }
+                return Math.min(1000 * 2 ** attemptIndex, 30000);
+            },
+            refetchInterval: 2 * 60 * 1000, // Refetch every 2 minutes
+            refetchIntervalInBackground: false,
+        });
+    };
+
+    return { useGetDashboardStats, useGetOnlineUsersCount, useGetUserStats };
 }
   

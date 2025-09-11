@@ -1,0 +1,141 @@
+{
+  "dashboard": {
+    "title": "Bảng điều khiển quản trị",
+    "welcome": "Chào mừng đến với bảng điều khiển quản trị",
+    "overview": "Tổng quan hệ thống",
+    "statistics": "Thống kê",
+    "quickActions": "Thao tác nhanh",
+    "recentActivity": "Hoạt động gần đây",
+    "systemHealth": "Tình trạng hệ thống",
+    "performance": "Chỉ số hiệu suất",
+    "alerts": "Cảnh báo hệ thống",
+    "notifications": "Thông báo",
+    "metrics": {
+      "totalUsers": "Tổng người dùng",
+      "activeUsers": "Người dùng hoạt động",
+      "usersOnline": "Người dùng trực tuyến",
+      "newUsersToday": "Người dùng mới hôm nay",
+      "newUsersThisWeek": "Người dùng mới tuần này",
+      "newUsersThisMonth": "Người dùng mới tháng này",
+      "totalRobots": "Tổng robot",
+      "onlineRobots": "Robot trực tuyến",
+      "totalClassrooms": "Tổng lớp học",
+      "activeClassrooms": "Lớp học hoạt động",
+      "totalActivities": "Tổng hoạt động",
+      "completedActivities": "Hoạt động đã hoàn thành",
+      "systemUptime": "Thời gian hoạt động hệ thống",
+      "responseTime": "Thời gian phản hồi trung bình",
+      "serverLoad": "Tải máy chủ",
+      "databaseConnections": "Kết nối cơ sở dữ liệu",
+      "apiCalls": "Lượt gọi API hôm nay",
+      "errorRate": "Tỷ lệ lỗi",
+      "growthRate": "Tỷ lệ tăng trưởng",
+      "conversionRate": "Tỷ lệ chuyển đổi"
+    },
+    "cards": {
+      "userManagement": {
+        "title": "Quản lý người dùng",
+        "description": "Quản lý tất cả người dùng hệ thống",
+        "viewAll": "Xem tất cả người dùng",
+        "addNew": "Thêm người dùng mới"
+      },
+      "robotManagement": {
+        "title": "Quản lý robot", 
+        "description": "Giám sát và điều khiển robot",
+        "viewAll": "Xem tất cả robot",
+        "addNew": "Thêm robot mới"
+      },
+      "classroomManagement": {
+        "title": "Quản lý lớp học",
+        "description": "Quản lý lớp học ảo",
+        "viewAll": "Xem tất cả lớp học",
+        "addNew": "Tạo lớp học mới"
+      },
+      "analytics": {
+        "title": "Phân tích & Báo cáo",
+        "description": "Xem phân tích chi tiết hệ thống",
+        "viewReports": "Xem báo cáo",
+        "generateReport": "Tạo báo cáo"
+      },
+      "systemSettings": {
+        "title": "Cài đặt hệ thống",
+        "description": "Cấu hình tham số hệ thống",
+        "viewSettings": "Xem cài đặt",
+        "configure": "Cấu hình"
+      },
+      "activityMonitor": {
+        "title": "Giám sát hoạt động",
+        "description": "Giám sát hoạt động theo thời gian thực",
+        "viewLogs": "Xem nhật ký",
+        "monitor": "Giám sát ngay"
+      }
+    },
+    "charts": {
+      "userGrowth": "Tăng trưởng người dùng theo thời gian",
+      "robotUsage": "Thống kê sử dụng robot",
+      "activityCompletion": "Tỷ lệ hoàn thành hoạt động",
+      "systemPerformance": "Hiệu suất hệ thống",
+      "errorAnalysis": "Phân tích lỗi",
+      "userEngagement": "Sự tương tác của người dùng"
+    },
+    "timeFilters": {
+      "today": "Hôm nay",
+      "yesterday": "Hôm qua", 
+      "last7Days": "7 ngày qua",
+      "last30Days": "30 ngày qua",
+      "last90Days": "90 ngày qua",
+      "thisMonth": "Tháng này",
+      "lastMonth": "Tháng trước",
+      "thisYear": "Năm nay",
+      "custom": "Tùy chỉnh"
+    },
+    "status": {
+      "online": "Trực tuyến",
+      "offline": "Ngoại tuyến",
+      "active": "Hoạt động",
+      "inactive": "Không hoạt động",
+      "healthy": "Tốt",
+      "warning": "Cảnh báo",
+      "critical": "Nghiêm trọng",
+      "maintenance": "Đang bảo trì"
+    },
+    "actions": {
+      "refresh": "Làm mới dữ liệu",
+      "export": "Xuất dữ liệu",
+      "configure": "Cấu hình",
+      "viewDetails": "Xem chi tiết",
+      "manageUsers": "Quản lý người dùng",
+      "manageRobots": "Quản lý robot",
+      "manageClassrooms": "Quản lý lớp học",
+      "viewAnalytics": "Xem phân tích",
+      "systemSettings": "Cài đặt hệ thống",
+      "backupData": "Sao lưu dữ liệu",
+      "restoreData": "Khôi phục dữ liệu",
+      "clearCache": "Xóa bộ nhớ cache",
+      "restartServices": "Khởi động lại dịch vụ"
+    },
+    "messages": {
+      "loading": "Đang tải dữ liệu bảng điều khiển...",
+      "loadingComplete": "Tải bảng điều khiển thành công",
+      "error": "Không thể tải dữ liệu bảng điều khiển",
+      "noData": "Không có dữ liệu",
+      "dataUpdated": "Cập nhật dữ liệu thành công",
+      "systemHealthy": "Tất cả hệ thống đang hoạt động bình thường",
+      "systemWarning": "Một số hệ thống cần được chú ý",
+      "systemCritical": "Phát hiện sự cố nghiêm trọng của hệ thống",
+      "connectionLost": "Mất kết nối đến máy chủ",
+      "connectionRestored": "Khôi phục kết nối đến máy chủ",
+      "refreshing": "Đang làm mới dữ liệu...",
+      "exportSuccess": "Xuất dữ liệu thành công",
+      "exportFailed": "Không thể xuất dữ liệu"
+    },
+    "navigation": {
+      "backToMain": "Quay về trang chính",
+      "adminPanel": "Bảng quản trị",
+      "dashboard": "Bảng điều khiển",
+      "reports": "Báo cáo",
+      "settings": "Cài đặt",
+      "logout": "Đăng xuất"
+    }
+  }
+}

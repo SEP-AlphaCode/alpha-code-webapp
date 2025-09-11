@@ -53,6 +53,51 @@
       "title": "Growth Analysis",
       "description": "Current rate: {{rate}}%"
     },
+    "userStatsOverview": {
+      "title": "User Statistics Overview",
+      "subtitle": "User Analytics",
+      "totalAccounts": "Total Accounts",
+      "totalAccountsDescription": "All registered accounts",
+      "newLastMonth": "New Last Month",
+      "newLastMonthDescription": "Previous month signups",
+      "newThisMonth": "New This Month",
+      "newThisMonthDescription": "Current month signups",
+      "lastMonth": "Last Month",
+      "thisMonth": "This Month"
+    },
+    "growthTrendChart": {
+      "title": "Growth Trend Analysis",
+      "growing": "Growing",
+      "declining": "Declining",
+      "growthRate": "Growth Rate",
+      "users": "Users",
+      "currentTrend": "Current Trend",
+      "positive": "📈 Positive",
+      "negative": "📉 Negative",
+      "rateOfChange": "Rate of Change",
+      "months": {
+        "jan": "Jan",
+        "feb": "Feb",
+        "mar": "Mar",
+        "apr": "Apr",
+        "may": "May",
+        "jun": "Jun",
+        "jul": "Jul",
+        "aug": "Aug",
+        "sep": "Sep",
+        "oct": "Oct",
+        "nov": "Nov",
+        "dec": "Dec"
+      }
+    },
+    "userDistributionChart": {
+      "title": "User Distribution",
+      "total": "Total",
+      "onlineUsers": "Online Users",
+      "offlineUsers": "Offline Users",
+      "newThisMonth": "New This Month",
+      "ofTotal": "of total"
+    },
     "activityMonitor": {
       "title": "Activity Monitor",
       "description": "{{count}} users currently active"
