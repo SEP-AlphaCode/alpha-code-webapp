@@ -47,14 +47,7 @@ export function LoginForm({
       const result = await signInWithPopup(auth, provider);
       const user = result.user;
       const token = await user.getIdToken();
-      loginGoogleMutation.mutate(token, {
-        onSuccess: () => {
-          toast.success(t('messages.loginSuccess'));
-        },
-        onError: (error) => {
-          toast.error(error.message || t('messages.googleLoginFailed'));
-        },
-      });
+      loginGoogleMutation.mutate(token);
     } catch (error: unknown) {
       if (error instanceof Error) {
         toast.error(error.message);
@@ -183,7 +176,8 @@ export function LoginForm({
               )}
               <Button
                 type="submit"
-                className="w-full bg-black text-white"
+                variant="outline"
+                className="w-full bg-black text-white hover:text-black"
                 disabled={loginMutation.isPending}
               >
                 {loginMutation.isPending ? t('form.loginButton') + '...' : t('form.loginButton')}

@@ -1,0 +1,204 @@
+{
+  "navigation": {
+    "dashboard": "Bảng điều khiển",
+    "users": "Người dùng",
+    "systemAnalytics": "Phân tích hệ thống",
+    "analytics": "Phân tích",
+    "robots": "Robot",
+    "classrooms": "Lớp học",
+    "qrcodes": "Mã QR",
+    "osmoCards": "Thẻ OSMO",
+    "osmocards": "Thẻ OSMO",
+    "markers": "Điểm đánh dấu",
+    "activities": "Hoạt động",
+    "activityCards": "Thẻ hoạt động",
+    "activitycards": "Thẻ hoạt động",
+    "settings": "Cài đặt",
+    "admin": "Quản trị",
+    "support": "Hỗ trợ",
+    "feedback": "Phản hồi",
+    "language": "Ngôn ngữ"
+  },
+  "activities": {
+    "title": "Hoạt động",
+    "action": "Hành động",
+    "dance": "Nhảy múa", 
+    "expression": "Biểu cảm"
+  },
+  "settings": {
+    "title": "Cài đặt",
+    "robots": "Robot",
+    "team": "Đội nhóm",
+    "billing": "Thanh toán",
+    "limits": "Giới hạn"
+  },
+  "dashboard": {
+    "title": "Bảng điều khiển quản trị",
+    "totalUsers": "Tổng người dùng",
+    "usersOnline": "Người dùng trực tuyến",
+    "growthRate": "Tỷ lệ tăng trưởng",
+    "newUsersThisMonth": "Người dùng mới tháng này",
+    "cached": "Đã lưu cache",
+    "live": "Trực tiếp",
+    "quickActions": "Thao tác nhanh quản trị",
+    "userManagement": {
+      "title": "Quản lý người dùng",
+      "description": "Quản lý {{count}} tổng người dùng"
+    },
+    "growthAnalysis": {
+      "title": "Phân tích tăng trưởng",
+      "description": "Tỷ lệ hiện tại: {{rate}}%"
+    },
+    "activityMonitor": {
+      "title": "Giám sát hoạt động",
+      "description": "{{count}} người dùng đang hoạt động"
+    },
+    "loading": "Đang tải dữ liệu bảng điều khiển...",
+    "error": "Không thể tải dữ liệu bảng điều khiển",
+    "retry": "Thử lại",
+    "rateLimitWarning": "Đã đạt giới hạn API. Hiển thị dữ liệu đã lưu cache."
+  },
+  "users": {
+    "title": "Quản lý người dùng",
+    "addUser": "Thêm người dùng",
+    "editUser": "Chỉnh sửa người dùng",
+    "deleteUser": "Xóa người dùng",
+    "totalUsers": "Tổng người dùng",
+    "activeUsers": "Người dùng hoạt động",
+    "searchPlaceholder": "Tìm kiếm người dùng...",
+    "filters": {
+      "all": "Tất cả người dùng",
+      "admin": "Quản trị viên",
+      "teacher": "Giáo viên",
+      "student": "Học sinh"
+    },
+    "table": {
+      "name": "Tên",
+      "email": "Email",
+      "role": "Vai trò",
+      "status": "Trạng thái",
+      "createdDate": "Ngày tạo",
+      "actions": "Thao tác"
+    },
+    "status": {
+      "active": "Hoạt động",
+      "inactive": "Không hoạt động"
+    }
+  },
+  "robots": {
+    "title": "Quản lý Robot",
+    "addRobot": "Thêm Robot",
+    "editRobot": "Chỉnh sửa Robot",
+    "deleteRobot": "Xóa Robot",
+    "totalRobots": "Tổng Robot",
+    "onlineRobots": "Robot trực tuyến",
+    "table": {
+      "name": "Tên Robot",
+      "model": "Mô hình",
+      "status": "Trạng thái",
+      "lastSeen": "Lần cuối thấy",
+      "actions": "Thao tác"
+    },
+    "status": {
+      "online": "Trực tuyến",
+      "offline": "Ngoại tuyến",
+      "maintenance": "Bảo trì"
+    }
+  },
+  "classrooms": {
+    "title": "Quản lý lớp học",
+    "addClassroom": "Thêm lớp học",
+    "editClassroom": "Chỉnh sửa lớp học",
+    "deleteClassroom": "Xóa lớp học",
+    "totalClassrooms": "Tổng lớp học",
+    "activeClassrooms": "Lớp học hoạt động",
+    "table": {
+      "name": "Tên lớp học",
+      "teacher": "Giáo viên",
+      "students": "Học sinh",
+      "status": "Trạng thái",
+      "createdDate": "Ngày tạo",
+      "actions": "Thao tác"
+    }
+  },
+  "analytics": {
+    "title": "Phân tích hệ thống",
+    "userGrowth": "Tăng trưởng người dùng",
+    "activeUsers": "Người dùng hoạt động",
+    "systemPerformance": "Hiệu suất hệ thống",
+    "robotUsage": "Sử dụng Robot",
+    "dateRange": {
+      "last7Days": "7 ngày qua",
+      "last30Days": "30 ngày qua",
+      "last90Days": "90 ngày qua",
+      "custom": "Tùy chỉnh"
+    }
+  },
+  "qrcodes": {
+    "title": "Quản lý mã QR",
+    "addQRCode": "Thêm mã QR",
+    "editQRCode": "Chỉnh sửa mã QR",
+    "deleteQRCode": "Xóa mã QR",
+    "generateQRCode": "Tạo mã QR",
+    "table": {
+      "code": "Mã QR",
+      "type": "Loại",
+      "data": "Dữ liệu",
+      "createdDate": "Ngày tạo",
+      "actions": "Thao tác"
+    }
+  },
+  "osmoCards": {
+    "title": "Quản lý thẻ OSMO",
+    "addCard": "Thêm thẻ",
+    "editCard": "Chỉnh sửa thẻ",
+    "deleteCard": "Xóa thẻ",
+    "totalCards": "Tổng thẻ",
+    "activeCards": "Thẻ hoạt động",
+    "table": {
+      "name": "Tên thẻ",
+      "type": "Loại",
+      "description": "Mô tả",
+      "status": "Trạng thái",
+      "createdDate": "Ngày tạo",
+      "actions": "Thao tác"
+    }
+  },
+  "markers": {
+    "title": "Quản lý điểm đánh dấu",
+    "addMarker": "Thêm điểm đánh dấu",
+    "editMarker": "Chỉnh sửa điểm đánh dấu",
+    "deleteMarker": "Xóa điểm đánh dấu",
+    "totalMarkers": "Tổng điểm đánh dấu",
+    "activeMarkers": "Điểm đánh dấu hoạt động",
+    "table": {
+      "name": "Tên điểm đánh dấu",
+      "type": "Loại",
+      "description": "Mô tả",
+      "status": "Trạng thái",
+      "createdDate": "Ngày tạo",
+      "actions": "Thao tác"
+    }
+  },
+  "common": {
+    "save": "Lưu",
+    "cancel": "Hủy",
+    "delete": "Xóa",
+    "edit": "Chỉnh sửa",
+    "view": "Xem",
+    "add": "Thêm",
+    "search": "Tìm kiếm",
+    "filter": "Lọc",
+    "export": "Xuất",
+    "import": "Nhập",
+    "refresh": "Làm mới",
+    "loading": "Đang tải...",
+    "noData": "Không có dữ liệu",
+    "error": "Đã xảy ra lỗi",
+    "success": "Hoàn thành thành công",
+    "confirm": "Bạn có chắc chắn?",
+    "confirmDelete": "Bạn có chắc chắn muốn xóa mục này?",
+    "yes": "Có",
+    "no": "Không"
+  }
+}
