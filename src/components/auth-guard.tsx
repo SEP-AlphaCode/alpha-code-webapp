@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { clearAuthData, getTokenPayload } from '@/utils/tokenUtils';
+import { clearAuthData, getTokenPayload, isValidToken } from '@/utils/tokenUtils';
 import { getRoleFromToken } from '@/utils/roleUtils';
 
 interface AuthGuardProps {
@@ -29,11 +29,11 @@ export const AuthGuard = ({ children, allowedRoles }: AuthGuardProps) => {
       const accountData = getTokenPayload(accessToken || '');
 
       // Validate token format and expiry
-      // if (!isValidToken(accessToken)) {
-      //   clearAuthData();
-      //   router.push('/login');
-      //   return;
-      // }
+      if (!isValidToken(accessToken)) {
+        clearAuthData();
+        router.push('/login');
+        return;
+      }
 
       // If accountData is null (token decode failed), redirect to login
       if (!accountData) {
