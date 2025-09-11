@@ -14,6 +14,9 @@ import { Switch } from '@/components/ui/switch';
 import { Separator } from '@/components/ui/separator';
 import { Plus, X, Palette, Music, Zap, Smile } from 'lucide-react';
 import { CreateCardData } from '@/types/osmo-card';
+import { useAction } from '@/hooks/use-action';
+import { useExpression } from '@/hooks/use-expression';
+import { useDance } from '@/hooks/use-dance';
 
 interface CreateOsmoCardModalProps {
   isOpen: boolean;
@@ -42,7 +45,26 @@ export default function CreateOsmoCardModal({
 
   const [errors, setErrors] = useState<Partial<CreateCardData>>({});
 
-  // Available options (trong thực tế, có thể fetch từ API)
+  // Fetch data from APIs
+  const actionHooks = useAction();
+  const expressionHooks = useExpression();
+  const danceHooks = useDance();
+
+  // Fetch actions, expressions, and dances
+  const { data: actionsResponse, isLoading: actionsLoading, error: actionsError } = actionHooks.useGetPagedActions(1, 100); // Get all actions
+  const { data: expressionsResponse, isLoading: expressionsLoading, error: expressionsError } = expressionHooks.useGetPagedExpressions(1, 100); // Get all expressions  
+  const { data: dancesResponse, isLoading: dancesLoading, error: dancesError } = danceHooks.useGetPagedDances(1, 100); // Get all dances
+
+  // Extract data from API responses
+  const actions = actionsResponse?.data || [];
+  const expressions = expressionsResponse?.data || [];
+  const dances = dancesResponse?.data || [];
+
+  // Check if any API is loading
+  const isDataLoading = actionsLoading || expressionsLoading || dancesLoading;
+  const hasApiError = actionsError || expressionsError || dancesError;
+
+  // Available options
   const colorOptions = [
     { value: 'red', label: 'Red' },
     { value: 'blue', label: 'Blue' },
@@ -52,28 +74,6 @@ export default function CreateOsmoCardModal({
     { value: 'pink', label: 'Pink' },
     { value: 'orange', label: 'Orange' },
     { value: 'gray', label: 'Gray' }
-  ];
-
-  // Mock data - trong thực tế sẽ fetch từ API
-  const actionOptions = [
-    { id: '1', name: 'Move Forward' },
-    { id: '2', name: 'Turn Left' },
-    { id: '3', name: 'Turn Right' },
-    { id: '4', name: 'Stop' }
-  ];
-
-  const expressionOptions = [
-    { id: '1', name: 'Happy' },
-    { id: '2', name: 'Sad' },
-    { id: '3', name: 'Angry' },
-    { id: '4', name: 'Surprised' }
-  ];
-
-  const danceOptions = [
-    { id: '1', name: 'Robot Dance' },
-    { id: '2', name: 'Wave Dance' },
-    { id: '3', name: 'Spin Dance' },
-    { id: '4', name: 'Happy Dance' }
   ];
 
   const handleInputChange = (field: keyof CreateCardData, value: string | number) => {
@@ -92,7 +92,7 @@ export default function CreateOsmoCardModal({
   };
 
   const handleActionChange = (actionId: string) => {
-    const selectedAction = actionOptions.find(action => action.id === actionId);
+    const selectedAction = actions.find(action => action.id === actionId);
     setFormData(prev => ({
       ...prev,
       actionId: actionId === 'none' ? '' : actionId,
@@ -101,7 +101,7 @@ export default function CreateOsmoCardModal({
   };
 
   const handleExpressionChange = (expressionId: string) => {
-    const selectedExpression = expressionOptions.find(expr => expr.id === expressionId);
+    const selectedExpression = expressions.find(expr => expr.id === expressionId);
     setFormData(prev => ({
       ...prev,
       expressionId: expressionId === 'none' ? '' : expressionId,
@@ -110,7 +110,7 @@ export default function CreateOsmoCardModal({
   };
 
   const handleDanceChange = (danceId: string) => {
-    const selectedDance = danceOptions.find(dance => dance.id === danceId);
+    const selectedDance = dances.find(dance => dance.id === danceId);
     setFormData(prev => ({
       ...prev,
       danceId: danceId === 'none' ? '' : danceId,
@@ -187,6 +187,26 @@ export default function CreateOsmoCardModal({
         </DialogHeader>
 
         <div className="space-y-6">
+          {/* Loading State */}
+          {isDataLoading && (
+            <div className="flex items-center justify-center py-8">
+              <div className="flex items-center space-x-2">
+                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-500"></div>
+                <span className="text-sm text-gray-500">Loading activities data...</span>
+              </div>
+            </div>
+          )}
+
+          {/* Error State */}
+          {hasApiError && (
+            <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+              <div className="flex items-center space-x-2">
+                <X className="h-4 w-4 text-red-500" />
+                <span className="text-sm text-red-700">Failed to load activities data. Some options may not be available.</span>
+              </div>
+            </div>
+          )}
+
           {/* Basic Information */}
           <div className="space-y-4">
             <h3 className="text-lg font-medium text-gray-900 flex items-center space-x-2">
@@ -277,11 +297,15 @@ export default function CreateOsmoCardModal({
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="none">No Action</SelectItem>
-                    {actionOptions.map((action) => (
-                      <SelectItem key={action.id} value={action.id}>
-                        {action.name}
-                      </SelectItem>
-                    ))}
+                    {actions.length === 0 && !actionsLoading ? (
+                      <SelectItem value="no-data" disabled>No actions available</SelectItem>
+                    ) : (
+                      actions.map((action) => (
+                        <SelectItem key={action.id} value={action.id}>
+                          {action.name}
+                        </SelectItem>
+                      ))
+                    )}
                   </SelectContent>
                 </Select>
               </div>
@@ -298,11 +322,15 @@ export default function CreateOsmoCardModal({
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="none">No Expression</SelectItem>
-                    {expressionOptions.map((expression) => (
-                      <SelectItem key={expression.id} value={expression.id}>
-                        {expression.name}
-                      </SelectItem>
-                    ))}
+                    {expressions.length === 0 && !expressionsLoading ? (
+                      <SelectItem value="no-data" disabled>No expressions available</SelectItem>
+                    ) : (
+                      expressions.map((expression) => (
+                        <SelectItem key={expression.id} value={expression.id}>
+                          {expression.name}
+                        </SelectItem>
+                      ))
+                    )}
                   </SelectContent>
                 </Select>
               </div>
@@ -319,11 +347,15 @@ export default function CreateOsmoCardModal({
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="none">No Dance</SelectItem>
-                    {danceOptions.map((dance) => (
-                      <SelectItem key={dance.id} value={dance.id}>
-                        {dance.name}
-                      </SelectItem>
-                    ))}
+                    {dances.length === 0 && !dancesLoading ? (
+                      <SelectItem value="no-data" disabled>No dances available</SelectItem>
+                    ) : (
+                      dances.map((dance) => (
+                        <SelectItem key={dance.id} value={dance.id}>
+                          {dance.name}
+                        </SelectItem>
+                      ))
+                    )}
                   </SelectContent>
                 </Select>
               </div>
@@ -335,17 +367,17 @@ export default function CreateOsmoCardModal({
           <Button 
             variant="outline" 
             onClick={handleClose}
-            disabled={isLoading}
+            disabled={isLoading || isDataLoading}
           >
             <X className="h-4 w-4 mr-2" />
             Cancel
           </Button>
           <Button 
             onClick={handleCreate}
-            disabled={isLoading}
+            disabled={isLoading || isDataLoading}
           >
             <Plus className="h-4 w-4 mr-2" />
-            {isLoading ? 'Creating...' : 'Create Card'}
+            {isLoading ? 'Creating...' : isDataLoading ? 'Loading...' : 'Create Card'}
           </Button>
         </DialogFooter>
       </DialogContent>

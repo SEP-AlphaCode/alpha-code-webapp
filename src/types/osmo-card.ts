@@ -12,6 +12,7 @@ export type OsmoCard = {
     danceId: string;
     danceName: string;
     statusText: string;
+    actionCode: number;
 };
 
 // Types for query parameters
