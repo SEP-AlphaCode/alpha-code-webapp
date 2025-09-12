@@ -13,6 +13,7 @@ import { Expression } from "@/types/expression"
 import { useExpression } from "@/hooks/use-expression"
 import { toast } from "sonner"
 import { useAdminTranslation } from "@/lib/i18n/hooks/use-translation"
+import LoadingGif from "@/components/ui/loading-gif"
 
 export default function ExpressionsPage() {
   const { t, isLoading: translationsLoading } = useAdminTranslation()
@@ -67,10 +68,7 @@ export default function ExpressionsPage() {
   if (isLoading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
-        <div className="flex flex-col items-center gap-4">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
-          <div className="text-lg text-gray-600">Loading expressions...</div>
-        </div>
+        <LoadingGif size="lg" message="Loading expressions..." />
       </div>
     )
   }

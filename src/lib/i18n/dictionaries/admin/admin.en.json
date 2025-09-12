@@ -331,4 +331,12 @@
     "durationRequired": "Duration is required",
     "durationMinValue": "Duration must be at least 1 second"
   }
+  ,
+  "errors": {
+    "title": "An error occurred",
+    "suggestion": "Please try again or check your network connection.",
+    "details": "Error details",
+    "retry": "Retry",
+    "unknown": "Unknown error"
+  }
 }

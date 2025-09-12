@@ -327,4 +327,12 @@
     "durationRequired": "Thời lượng là bắt buộc",
     "durationMinValue": "Thời lượng phải ít nhất 1 giây"
   }
+  ,
+  "errors": {
+    "title": "Đã xảy ra lỗi",
+    "suggestion": "Vui lòng thử lại hoặc kiểm tra kết nối mạng của bạn.",
+    "details": "Chi tiết lỗi",
+    "retry": "Thử lại",
+    "unknown": "Lỗi không xác định"
+  }
 }
