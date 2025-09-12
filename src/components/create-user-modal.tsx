@@ -5,9 +5,10 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useRoles } from '@/hooks/use-roles';
 import { CreateAccountRequest } from '@/types/account';
-import { X, Loader2 } from 'lucide-react';
+import { X } from 'lucide-react';
 import { useAccount } from '@/hooks/use-account';
 import { Role } from '@/types/role';
+import LoadingGif from '@/components/ui/loading-gif';
 
 interface CreateUserModalProps {
   isOpen: boolean;
@@ -197,7 +198,7 @@ export default function CreateUserModal({ isOpen, onClose }: CreateUserModalProp
               </select>
               {rolesLoading && (
                 <div className="flex items-center mt-1">
-                  <Loader2 className="h-3 w-3 animate-spin mr-1" />
+                  <LoadingGif size="sm" showMessage={false} className="mr-1" />
                   <span className="text-xs text-gray-500">Đang tải danh sách vai trò...</span>
                 </div>
               )}
