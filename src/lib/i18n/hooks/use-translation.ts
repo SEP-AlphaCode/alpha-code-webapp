@@ -212,3 +212,62 @@ export function useResetPasswordTranslation() {
     common
   }
 }
+
+// Type-safe translation helper for admin
+export function useAdminTranslation() {
+  const { dict, commonDict, locale, isLoading } = useI18n()
+  
+  // Get admin translations
+  const admin = dict?.admin || {}
+  const common = commonDict || dict?.common || {}
+  
+  // Helper function to get nested translation safely
+  const t = (key: string, defaultValue = '', params?: Record<string, string | number>) => {
+    const keys = key.split('.')
+    let value: unknown = admin
+    
+    for (const k of keys) {
+      if (value && typeof value === 'object' && value !== null && k in value) {
+        value = (value as TranslationObject)[k]
+      } else {
+        return defaultValue
+      }
+    }
+    
+    let result = typeof value === 'string' ? value : defaultValue
+    
+    // Replace parameters in the string
+    if (params && result) {
+      Object.entries(params).forEach(([key, val]) => {
+        result = result.replace(new RegExp(`{{${key}}}`, 'g'), String(val))
+      })
+    }
+    
+    return result
+  }
+  
+  // Helper function to get common translations
+  const tc = (key: string, defaultValue = '') => {
+    const keys = key.split('.')
+    let value: unknown = common
+    
+    for (const k of keys) {
+      if (value && typeof value === 'object' && value !== null && k in value) {
+        value = (value as TranslationObject)[k]
+      } else {
+        return defaultValue
+      }
+    }
+    
+    return typeof value === 'string' ? value : defaultValue
+  }
+  
+  return {
+    t,       // Admin translations
+    tc,      // Common translations  
+    locale,
+    isLoading,
+    admin,
+    common
+  }
+}

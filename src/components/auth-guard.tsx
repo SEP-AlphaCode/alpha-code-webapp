@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { isValidToken, clearAuthData, getTokenPayload } from '@/utils/tokenUtils';
+import { clearAuthData, getTokenPayload, isValidToken } from '@/utils/tokenUtils';
 import { getRoleFromToken } from '@/utils/roleUtils';
 
 interface AuthGuardProps {
@@ -26,7 +26,7 @@ export const AuthGuard = ({ children, allowedRoles }: AuthGuardProps) => {
         return;
       }
 
-      const accountData = getTokenPayload(accessToken);
+      const accountData = getTokenPayload(accessToken || '');
 
       // Validate token format and expiry
       if (!isValidToken(accessToken)) {
@@ -64,7 +64,7 @@ export const AuthGuard = ({ children, allowedRoles }: AuthGuardProps) => {
           }
         } else {
           // Fallback: try to get role from token directly
-          const roleFromToken = getRoleFromToken(accessToken);
+          const roleFromToken = getRoleFromToken(accessToken || '');
           
           if (roleFromToken) {
             const userRole = roleFromToken.toLowerCase();

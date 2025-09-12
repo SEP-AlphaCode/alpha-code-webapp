@@ -7,6 +7,7 @@ import {
 } from "lucide-react"
 import { Button } from "./button"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./select"
+import { useAdminTranslation } from "@/lib/i18n/hooks/use-translation"
 
 interface DataTablePaginationProps<TData> {
     table: Table<TData>
@@ -23,6 +24,7 @@ export function DataTablePagination<TData>({
     onPageChange,
     total
 }: DataTablePaginationProps<TData>) {
+    const { t, isLoading } = useAdminTranslation()
     const isServerSidePagination = onPageChange && total !== undefined
     
     // For server-side pagination, use provided total and current page
@@ -38,12 +40,11 @@ export function DataTablePagination<TData>({
     return (
         <div className="flex items-center justify-between px-2">
             <div className="text-muted-foreground flex-1 text-sm">
-                {selectedRows} of{" "}
-                {totalRows} row(s) selected.
+                {isLoading ? "" : `${selectedRows} ${t('common.of')} ${totalRows} ${t('common.rowsSelected')}`}
             </div>
             <div className="flex items-center space-x-6 lg:space-x-8">
                 <div className="flex items-center space-x-2">
-                    <p className="text-sm font-medium">Rows per page</p>
+                    <p className="text-sm font-medium">{isLoading ? "" : t('common.rowsPerPage')}</p>
                     <Select
                         value={`${size}`}
                         onValueChange={(value) => {
@@ -79,7 +80,7 @@ export function DataTablePagination<TData>({
                         }}
                         disabled={currentPage <= 1}
                     >
-                        <span className="sr-only">Go to first page</span>
+                        <span className="sr-only">{isLoading ? "" : t('common.goToFirstPage')}</span>
                         <ChevronsLeft />
                     </Button>
                     <Button
@@ -95,12 +96,11 @@ export function DataTablePagination<TData>({
                         }}
                         disabled={currentPage <= 1}
                     >
-                        <span className="sr-only">Go to previous page</span>
+                        <span className="sr-only">{isLoading ? "" : t('common.goToPreviousPage')}</span>
                         <ChevronLeft />
                     </Button>
                     <div className="flex w-[100px] items-center justify-center text-sm font-medium">
-                        Page {currentPage} of{" "}
-                        {pageCount}
+                        {isLoading ? "" : `${t('common.page')} ${currentPage} ${t('common.of')} ${pageCount}`}
                     </div>
                     <Button
                         variant="outline"
@@ -115,7 +115,7 @@ export function DataTablePagination<TData>({
                         }}
                         disabled={currentPage >= pageCount}
                     >
-                        <span className="sr-only">Go to next page</span>
+                        <span className="sr-only">{isLoading ? "" : t('common.goToNextPage')}</span>
                         <ChevronRight />
                     </Button>
                     <Button
@@ -131,7 +131,7 @@ export function DataTablePagination<TData>({
                         }}
                         disabled={currentPage >= pageCount}
                     >
-                        <span className="sr-only">Go to last page</span>
+                        <span className="sr-only">{isLoading ? "" : t('common.goToLastPage')}</span>
                         <ChevronsRight />
                     </Button>
                 </div>

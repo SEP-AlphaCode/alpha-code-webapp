@@ -12,6 +12,7 @@ import {
   ReferenceLine
 } from "recharts"
 import { DashboardStats } from "@/types/dashboard"
+import { useAdminTranslation } from "@/lib/i18n/hooks/use-translation"
 
 interface GrowthTrendChartProps {
   stats: DashboardStats
@@ -19,6 +20,8 @@ interface GrowthTrendChartProps {
 }
 
 export function GrowthTrendChart({ stats, isLoading }: GrowthTrendChartProps) {
+  const { t } = useAdminTranslation()
+
   if (isLoading) {
     return (
       <div className="rounded-lg border bg-card p-6 shadow-sm">
@@ -32,7 +35,20 @@ export function GrowthTrendChart({ stats, isLoading }: GrowthTrendChartProps) {
 
   // Generate trend data based on current stats
   const generateTrendData = () => {
-    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+    const months = [
+      t('dashboard.growthTrendChart.months.jan', 'Jan'),
+      t('dashboard.growthTrendChart.months.feb', 'Feb'),
+      t('dashboard.growthTrendChart.months.mar', 'Mar'),
+      t('dashboard.growthTrendChart.months.apr', 'Apr'),
+      t('dashboard.growthTrendChart.months.may', 'May'),
+      t('dashboard.growthTrendChart.months.jun', 'Jun'),
+      t('dashboard.growthTrendChart.months.jul', 'Jul'),
+      t('dashboard.growthTrendChart.months.aug', 'Aug'),
+      t('dashboard.growthTrendChart.months.sep', 'Sep'),
+      t('dashboard.growthTrendChart.months.oct', 'Oct'),
+      t('dashboard.growthTrendChart.months.nov', 'Nov'),
+      t('dashboard.growthTrendChart.months.dec', 'Dec')
+    ]
     const currentMonth = new Date().getMonth()
     const data = []
 
@@ -59,13 +75,16 @@ export function GrowthTrendChart({ stats, isLoading }: GrowthTrendChartProps) {
   return (
     <div className="rounded-lg border bg-card p-6 shadow-sm">
       <div className="flex items-center justify-between mb-6">
-        <h3 className="text-xl font-semibold">Growth Trend Analysis</h3>
+        <h3 className="text-xl font-semibold">{t('dashboard.growthTrendChart.title', 'Growth Trend Analysis')}</h3>
         <div className="flex items-center space-x-2">
           <div className={`w-3 h-3 rounded-full ${
             stats.growthRate >= 0 ? 'bg-green-500' : 'bg-red-500'
           }`}></div>
           <span className="text-sm font-medium">
-            {stats.growthRate >= 0 ? 'Growing' : 'Declining'}
+            {stats.growthRate >= 0 
+              ? t('dashboard.growthTrendChart.growing', 'Growing')
+              : t('dashboard.growthTrendChart.declining', 'Declining')
+            }
           </span>
         </div>
       </div>
@@ -91,9 +110,9 @@ export function GrowthTrendChart({ stats, isLoading }: GrowthTrendChartProps) {
               }}
               formatter={(value: string | number, name: string) => {
                 if (name === "growth") {
-                  return [`${Number(value).toFixed(1)}%`, "Growth Rate"]
+                  return [`${Number(value).toFixed(1)}%`, t('dashboard.growthTrendChart.growthRate', 'Growth Rate')]
                 }
-                return [value, "Users"]
+                return [value, t('dashboard.growthTrendChart.users', 'Users')]
               }}
             />
             <ReferenceLine y={0} stroke="#6b7280" strokeDasharray="5 5" />
@@ -112,15 +131,18 @@ export function GrowthTrendChart({ stats, isLoading }: GrowthTrendChartProps) {
       {/* Trend Summary */}
       <div className="grid grid-cols-2 gap-4">
         <div className="p-4 bg-gray-50 rounded-lg">
-          <div className="text-sm text-gray-600">Current Trend</div>
+          <div className="text-sm text-gray-600">{t('dashboard.growthTrendChart.currentTrend', 'Current Trend')}</div>
           <div className={`text-lg font-semibold ${
             stats.growthRate >= 0 ? 'text-green-600' : 'text-red-600'
           }`}>
-            {stats.growthRate >= 0 ? '📈 Positive' : '📉 Negative'}
+            {stats.growthRate >= 0 
+              ? t('dashboard.growthTrendChart.positive', '📈 Positive')
+              : t('dashboard.growthTrendChart.negative', '📉 Negative')
+            }
           </div>
         </div>
         <div className="p-4 bg-gray-50 rounded-lg">
-          <div className="text-sm text-gray-600">Rate of Change</div>
+          <div className="text-sm text-gray-600">{t('dashboard.growthTrendChart.rateOfChange', 'Rate of Change')}</div>
           <div className={`text-lg font-semibold ${
             stats.growthRate >= 0 ? 'text-green-600' : 'text-red-600'
           }`}>

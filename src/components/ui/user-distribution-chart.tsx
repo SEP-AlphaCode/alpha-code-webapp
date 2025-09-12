@@ -10,6 +10,7 @@ import {
   Legend
 } from "recharts"
 import { DashboardStats } from "@/types/dashboard"
+import { useAdminTranslation } from "@/lib/i18n/hooks/use-translation"
 
 interface UserDistributionChartProps {
   stats: DashboardStats
@@ -18,6 +19,8 @@ interface UserDistributionChartProps {
 }
 
 export function UserDistributionChart({ stats, onlineCount, isLoading }: UserDistributionChartProps) {
+  const { t } = useAdminTranslation()
+
   if (isLoading) {
     return (
       <div className="rounded-lg border bg-card p-6 shadow-sm">
@@ -31,19 +34,19 @@ export function UserDistributionChart({ stats, onlineCount, isLoading }: UserDis
 
   const data = [
     {
-      name: 'Online Users',
+      name: t('dashboard.userDistributionChart.onlineUsers', 'Online Users'),
       value: onlineCount,
       color: '#10b981',
       percentage: stats.total > 0 ? ((onlineCount / stats.total) * 100).toFixed(1) : '0'
     },
     {
-      name: 'Offline Users',
+      name: t('dashboard.userDistributionChart.offlineUsers', 'Offline Users'),
       value: Math.max(0, stats.total - onlineCount),
       color: '#6b7280',
       percentage: stats.total > 0 ? (((stats.total - onlineCount) / stats.total) * 100).toFixed(1) : '0'
     },
     {
-      name: 'New This Month',
+      name: t('dashboard.userDistributionChart.newThisMonth', 'New This Month'),
       value: stats.newThisMonth,
       color: '#3b82f6',
       percentage: stats.total > 0 ? ((stats.newThisMonth / stats.total) * 100).toFixed(1) : '0'
@@ -53,9 +56,9 @@ export function UserDistributionChart({ stats, onlineCount, isLoading }: UserDis
   return (
     <div className="rounded-lg border bg-card p-6 shadow-sm">
       <div className="flex items-center justify-between mb-6">
-        <h3 className="text-xl font-semibold">User Distribution</h3>
+        <h3 className="text-xl font-semibold">{t('dashboard.userDistributionChart.title', 'User Distribution')}</h3>
         <div className="text-sm text-muted-foreground">
-          Total: <span className="font-bold text-blue-600">{stats.total}</span>
+          {t('dashboard.userDistributionChart.total', 'Total')}: <span className="font-bold text-blue-600">{stats.total}</span>
         </div>
       </div>
       
@@ -113,7 +116,7 @@ export function UserDistributionChart({ stats, onlineCount, isLoading }: UserDis
               {item.value}
             </div>
             <div className="text-xs text-gray-500">
-              {item.percentage}% of total
+              {item.percentage}% {t('dashboard.userDistributionChart.ofTotal', 'of total')}
             </div>
           </div>
         ))}

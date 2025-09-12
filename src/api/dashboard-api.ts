@@ -1,4 +1,4 @@
-import { DashboardStats } from "@/types/dashboard";
+import { DashboardStats, DashboardSummary, DashboardUserStats } from "@/types/dashboard";
 import { ApiError } from "@/types/api-error";
 import http from "@/utils/http";
 
@@ -63,3 +63,64 @@ export const getOnlineUsersCount = async (): Promise<number> => {
     return 0;
   }
 };
+
+// Get summary stats
+export const getDashboardSummary = async (): Promise<DashboardSummary> => {
+  try {
+    const response = await http.get('/dashboard/summary');
+    return response.data;
+  } catch (error: unknown) {
+    const apiError = error as ApiError;
+    console.error('Error fetching dashboard summary:', apiError);
+    throw apiError;
+  }
+};
+
+// Get top activities this month
+// export const getTopActivityMonth = async (): Promise<any> => {
+//   try {
+//     const response = await http.get('/api/v1/dashboard/top-activity/month');
+//     return response.data;
+//   } catch (error: unknown) {
+//     const apiError = error as ApiError;
+//     console.error('Error fetching top activities this month:', apiError);
+//     throw apiError;
+//   }
+// };
+
+// // Get top activities today
+// export const getTopActivityToday = async (): Promise<any> => {
+//   try {
+//     const response = await http.get('/api/v1/dashboard/top-activity/today');
+//     return response.data;
+//   } catch (error: unknown) {
+//     const apiError = error as ApiError;
+//     console.error('Error fetching top activities today:', apiError);
+//     throw apiError;
+//   }
+// };
+
+// // Get top activities this week
+// export const getTopActivityWeek = async (): Promise<any> => {
+//   try {
+//     const response = await http.get('/api/v1/dashboard/top-activity/week');
+//     return response.data;
+//   } catch (error: unknown) {
+//     const apiError = error as ApiError;
+//     console.error('Error fetching top activities this week:', apiError);
+//     throw apiError;
+//   }
+// };
+
+  // Get user stats
+export const getUserStats = async (): Promise<DashboardUserStats> => {
+  try {
+    const response = await http.get('/dashboard/user-stats');
+    return response.data;
+  } catch (error: unknown) {
+    const apiError = error as ApiError;
+    console.error('Error fetching user stats:', apiError);
+    throw apiError;
+  }
+};
+

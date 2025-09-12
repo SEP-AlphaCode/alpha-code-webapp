@@ -12,8 +12,10 @@ import { ViewActionModal } from "@/app/admin/activities/actions/view-action-moda
 import { Action } from "@/types/action"
 import { useAction } from "@/hooks/use-action"
 import { toast } from "sonner"
+import { useAdminTranslation } from "@/lib/i18n/hooks/use-translation"
 
 export default function ActionsPage() {
+  const { t, isLoading: translationsLoading } = useAdminTranslation()
   const [page, setPage] = useState(1)
   const [size, setSize] = useState(10)
   const [searchTerm, setSearchTerm] = useState("")
@@ -151,16 +153,28 @@ export default function ActionsPage() {
 
   const columns = createColumns(handleEditAction, handleDeleteAction, handleViewAction)
 
+  if (translationsLoading) {
+    return (
+      <div className="container mx-auto py-10">
+        <div className="animate-pulse space-y-4">
+          <div className="h-8 bg-gray-200 rounded w-1/4"></div>
+          <div className="h-10 bg-gray-200 rounded w-full"></div>
+          <div className="h-64 bg-gray-200 rounded w-full"></div>
+        </div>
+      </div>
+    )
+  }
+
   return (
     <div className="container mx-auto py-10">
       <div className="mb-6">
         <div className="flex items-center justify-between mb-4">
-          <h1 className="text-2xl font-bold">Actions Management</h1>
+          <h1 className="text-2xl font-bold">{t('actionManagement.title')}</h1>
           <Button
             onClick={handleAddAction}
             variant="outline"
           >
-            Add Action
+            {t('actionManagement.addAction')}
           </Button>
         </div>
       </div>
@@ -171,7 +185,7 @@ export default function ActionsPage() {
         onSizeChange={handleSizeChange}
         searchValue={searchTerm}
         onSearchChange={setSearchTerm}
-        searchPlaceholder="Search actions name or description..."
+        searchPlaceholder={t('actionManagement.searchPlaceholder')}
         pageCount={data?.total_pages || 0}
         page={page}
         onPageChange={handlePageChange}
