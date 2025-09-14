@@ -8,8 +8,8 @@ import PageHeader from '@/components/osmo-cards/page-header';
 import StatisticsCards from '@/components/osmo-cards/statistics-cards';
 import SearchAndFilter from '@/components/osmo-cards/search-and-filter';
 import OsmoCardGrid from '@/components/osmo-cards/osmo-card-grid';
-import LoadingState from '@/components/osmo-cards/loading-state';
-import ErrorState from '@/components/osmo-cards/error-state';
+import LoadingState from '@/components/loading-state';
+import ErrorState from '@/components/error-state';
 import ViewOsmoCardModal from '@/components/osmo-cards/view-osmo-card-modal';
 import EditOsmoCardModal from '@/components/osmo-cards/edit-osmo-card-modal';
 import CreateOsmoCardModal from '@/components/osmo-cards/create-osmo-card-modal';
@@ -18,7 +18,7 @@ export default function OsmoCardManagement() {
   const [searchTerm, setSearchTerm] = useState('');
   const [filterStatus, setFilterStatus] = useState<string>('all');
   const [filterColor, setFilterColor] = useState<string>('all');
-  
+
   // Modal states
   const [viewModalOpen, setViewModalOpen] = useState(false);
   const [editModalOpen, setEditModalOpen] = useState(false);
@@ -26,7 +26,9 @@ export default function OsmoCardManagement() {
   const [selectedCard, setSelectedCard] = useState<OsmoCard | null>(null);
 
   const osmoCardHooks = useOsmoCard();
-  const { data: osmoCardsResponse, isLoading, error } = osmoCardHooks.useGetAllOsmoCards();
+  // Keep full query object to enable retry (refetch)
+  const osmoCardsQuery = osmoCardHooks.useGetAllOsmoCards();
+  const { data: osmoCardsResponse, isLoading, error, refetch, isFetching } = osmoCardsQuery;
   const deleteOsmoCardMutation = osmoCardHooks.useDeleteOsmoCard();
   const updateOsmoCardMutation = osmoCardHooks.useUpdateOsmoCard();
   const createOsmoCardMutation = osmoCardHooks.useCreateOsmoCard();
@@ -50,10 +52,10 @@ export default function OsmoCardManagement() {
   const filteredOsmoCards = useMemo(() => {
     return osmoCards.filter(card => {
       const matchesSearch = (card.name || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
-                           (card.expressionName || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
-                           (card.actionName || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
-                           (card.danceName || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
-                           (card.color || '').toLowerCase().includes(searchTerm.toLowerCase());
+        (card.expressionName || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (card.actionName || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (card.danceName || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (card.color || '').toLowerCase().includes(searchTerm.toLowerCase());
       const matchesStatus = filterStatus === 'all' || card.status?.toString() === filterStatus;
       const matchesColor = filterColor === 'all' || card.color === filterColor;
       return matchesSearch && matchesStatus && matchesColor;
@@ -125,11 +127,23 @@ export default function OsmoCardManagement() {
 
   // Loading and error states
   if (isLoading) {
-    return <LoadingState />;
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <LoadingState />
+      </div>
+    );
   }
 
   if (error) {
-    return <ErrorState error={error} />;
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <ErrorState
+          error={error}
+          onRetry={() => refetch()}
+          className={isFetching ? 'opacity-70 pointer-events-none' : ''}
+        />
+      </div>
+    );
   }
 
   return (

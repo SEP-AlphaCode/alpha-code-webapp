@@ -62,7 +62,7 @@ export default function UserTable({
         <div className="overflow-x-auto">
           <table className="w-full border-collapse">
             <thead>
-              <tr className="bg-gray-50">
+              <tr className="bg-gray-50 border-b border-gray-200">
                 <th className="text-left p-4 font-medium text-gray-900">User</th>
                 <th className="text-left p-4 font-medium text-gray-900">Role</th>
                 <th className="text-left p-4 font-medium text-gray-900">Status</th>
@@ -71,7 +71,7 @@ export default function UserTable({
                 <th className="text-left p-4 font-medium text-gray-900">Actions</th>
               </tr>
             </thead>
-            <tbody>
+            <tbody className="divide-y divide-gray-200">
               {filteredUsers.map((user) => (
                 <UserTableRow
                   key={user.id}

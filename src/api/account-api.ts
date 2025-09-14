@@ -59,8 +59,12 @@ export const createAccount = async (accountData: Omit<Account, 'id' | 'createdDa
             throw new Error('Username or email already exists. Please choose different values.');
           }
         case 400:
-          // Bad Request - validation errors
-          if (data?.message) {
+        case 422:
+          // Bad Request / Unprocessable Entity - validation errors
+          if (data?.message && typeof data.message === 'object') {
+            // For validation errors, throw the entire response as JSON string
+            throw new Error(JSON.stringify(data));
+          } else if (data?.message) {
             throw new Error(`Validation Error: ${data.message}`);
           } else {
             throw new Error('Invalid data provided. Please check all fields.');
@@ -72,7 +76,13 @@ export const createAccount = async (accountData: Omit<Account, 'id' | 'createdDa
         case 500:
           throw new Error('Server error. Please try again later.');
         default:
-          throw new Error(`Error ${status}: ${data?.message || 'Unknown server error'}`);
+          // Handle validation errors with detailed messages
+          if (data?.message && typeof data.message === 'object') {
+            // For validation errors, throw the entire response as JSON string
+            throw new Error(JSON.stringify(data));
+          } else {
+            throw new Error(`Error ${status}: ${data?.message || 'Unknown server error'}`);
+          }
       }
     } else if (error && typeof error === 'object' && 'request' in error) {
       throw new Error('Network error. Please check your internet connection.');
@@ -83,7 +93,7 @@ export const createAccount = async (accountData: Omit<Account, 'id' | 'createdDa
 };
 
 export const updateAccount = async (id: string, accountData: Partial<Omit<Account, 'id' | 'createdDate'>>) => {
-  const response = await http.put(`/accounts/${id}`, accountData);
+  const response = await http.patch(`/accounts/${id}`, accountData);
   return response.data;
 };
 

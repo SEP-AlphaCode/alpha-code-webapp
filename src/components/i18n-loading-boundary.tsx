@@ -1,6 +1,7 @@
 'use client'
 
 import { useI18n } from '@/lib/i18n/provider'
+import LoadingGif from './ui/loading-gif'
 
 export function I18nLoadingBoundary({ children }: { children: React.ReactNode }) {
   const { isLoading } = useI18n()
@@ -8,10 +9,7 @@ export function I18nLoadingBoundary({ children }: { children: React.ReactNode })
   if (isLoading) {
     return (
       <div className="min-h-screen bg-white flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">Loading translations...</p>
-        </div>
+        <LoadingGif size="lg" />
       </div>
     )
   }

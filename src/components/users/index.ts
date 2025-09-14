@@ -4,6 +4,6 @@ export { default as StatisticsCards } from './statistics-cards';
 export { default as SearchAndFilter } from './search-and-filter';
 export { default as UserTable } from './user-table';
 export { default as UserTableRow } from './user-table-row';
-export { default as LoadingState } from './loading-state';
-export { default as ErrorState } from './error-state';
+export { default as LoadingState } from '../loading-state';
+export { default as ErrorState } from '../error-state';
 export { default as CreateUserModal } from './create-user-modal';
