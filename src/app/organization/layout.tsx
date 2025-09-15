@@ -10,78 +10,25 @@ import Link from "next/link"
 import { navigationItems } from "./navigation-items"
 import { useState } from "react"
 
-function HorizontalNavigation() {
-  const pathname = usePathname()
 
+import { useRouter } from "next/navigation"
+
+function NavigationDropdown() {
+  const router = useRouter();
+  const pathname = usePathname();
   return (
-    <nav className="flex items-center justify-around w-full">
-      {navigationItems.map((item) => {
-        const isActive = pathname === item.url
-        const Icon = item.icon
-
-        return (
-          <Link
-            key={item.name}
-            href={item.url}
-            className={`
-                flex items-center gap-2 px-3 md:px-4 py-2 rounded-lg text-xs md:text-sm font-medium transition-all duration-200 whitespace-nowrap
-                ${isActive
-                ? "bg-primary text-primary-foreground shadow-sm"
-                : "text-muted-foreground hover:text-primary-foreground hover:bg-accent/80"
-              }
-              `}
-          >
-            <Icon className="h-4 w-4 flex-shrink-0" />
-            <span className="hidden sm:inline">{item.name}</span>
-          </Link>
-        )
-      })}
-    </nav>
-  )
-}
-
-function MobileNavigation() {
-  const pathname = usePathname()
-  const [isOpen, setIsOpen] = useState(false)
-
-  return (
-    <div className="lg:hidden">
-      <Button variant="ghost" size="sm" onClick={() => setIsOpen(!isOpen)} className="p-2">
-        <Menu className="h-4 w-4" />
-      </Button>
-
-      {isOpen && (
-        <div className="absolute top-full left-0 right-0 bg-background border-b shadow-lg z-50">
-          <div className="px-6 py-4">
-            <div className="grid grid-cols-2 gap-2">
-              {navigationItems.map((item) => {
-                const isActive = pathname === item.url
-                const Icon = item.icon
-
-                return (
-                  <Link
-                    key={item.name}
-                    href={item.url}
-                    onClick={() => setIsOpen(false)}
-                    className={`
-                      flex items-center gap-2 p-3 rounded-lg text-sm font-medium transition-all duration-200
-                      ${isActive
-                        ? "bg-primary text-primary-foreground"
-                        : "text-muted-foreground hover:text-foreground hover:bg-accent"
-                      }
-                    `}
-                  >
-                    <Icon className="h-4 w-4" />
-                    {item.name}
-                  </Link>
-                )
-              })}
-            </div>
-          </div>
-        </div>
-      )}
+    <div className="relative">
+      <select
+        className="px-2 py-1 rounded border bg-background text-sm font-medium"
+        value={pathname}
+        onChange={e => router.push(e.target.value)}
+      >
+        {navigationItems.map(item => (
+          <option key={item.url} value={item.url}>{item.name}</option>
+        ))}
+      </select>
     </div>
-  )
+  );
 }
 
 export default function OrganizationLayout({
@@ -104,9 +51,7 @@ export default function OrganizationLayout({
                 </div>
                 <div className="flex items-center gap-2">
                   <span className="font-semibold text-base md:text-lg">AlphaCode</span>
-                  <Badge variant="secondary" className="text-xs hidden sm:inline-flex">
-                    Organization Dashboard
-                  </Badge>
+                  <NavigationDropdown />
                 </div>
               </div>
 
@@ -124,13 +69,11 @@ export default function OrganizationLayout({
                     Online
                   </Badge>
                 </div>
-                <MobileNavigation />
+                {/* MobileNavigation removed, navigation handled by dropdown */}
               </div>
             </div>
 
-            <div className="hidden lg:flex h-12 items-center border-t w-full px-4 lg:px-6">
-              <HorizontalNavigation />
-            </div>
+            {/* Navigation bar removed, replaced by dropdown above */}
           </div>
         </header>
 
