@@ -6,7 +6,12 @@ import { Badge } from "@/components/ui/badge";
 
 export default function ClassroomDetail({ classroom }: { classroom: Classroom }) {
   if (!classroom) return <div className="p-6">Classroom not found.</div>;
-
+  const quickActions: { label: string, action?: () => void }[] = [
+    { label: 'Start New Lesson', action: undefined },
+    { label: 'Schedule Activity', action: undefined },
+    { label: 'Classroom Settings', action: undefined },
+    { label: 'Take Photo', action: undefined },
+  ]
   return (
     <div className="grid grid-cols-1 lg:grid-cols-10 gap-6">
       {/* Left: class content (7/10) */}
@@ -54,7 +59,7 @@ export default function ClassroomDetail({ classroom }: { classroom: Classroom })
           <table className="w-full min-w-[600px] text-xs">
             <thead>
               <tr className="bg-blue-100">
-                {["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday"].map(day => (
+                {["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"].map(day => (
                   <th key={day} className="px-6 py-3 font-medium text-blue-900 border border-blue-200">
                     {day}
                   </th>
@@ -63,7 +68,7 @@ export default function ClassroomDetail({ classroom }: { classroom: Classroom })
             </thead>
             <tbody>
               <tr>
-                {["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday"].map(day => {
+                {["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"].map(day => {
                   const sessions = classroom.schedule.filter(s => s.day === day)
                   return (
                     <td key={day} className="text-center align-top px-3 py-3 border border-blue-100 w-40">
@@ -92,18 +97,15 @@ export default function ClassroomDetail({ classroom }: { classroom: Classroom })
       <div className="lg:col-span-3">
         <div className="bg-white shadow rounded-lg p-4 space-y-3">
           <h4 className="font-semibold text-sm text-gray-700 mb-2">Quick Actions</h4>
-          <button className="w-full px-4 py-2 text-sm rounded-lg bg-blue-600 text-white hover:bg-blue-700">
-            Start New Lesson
-          </button>
-          <button className="w-full px-4 py-2 text-sm rounded-lg bg-gray-100 hover:bg-gray-200">
-            Schedule Activity
-          </button>
-          <button className="w-full px-4 py-2 text-sm rounded-lg bg-gray-100 hover:bg-gray-200">
-            Classroom Settings
-          </button>
-          <button className="w-full px-4 py-2 text-sm rounded-lg bg-gray-100 hover:bg-gray-200">
-            Take Photo
-          </button>
+          {
+            quickActions.map((v, i) => (
+              <button key={'quickActions ' + i} className="w-full px-4 py-2 text-sm rounded-lg border hover:text-white hover:bg-blue-700"
+                onClick={v.action}
+              >
+                {v.label}
+              </button>
+            ))
+          }
         </div>
       </div>
     </div>
