@@ -1,10 +1,10 @@
 import { ApiResponse } from "@/types/api-error";
 import { DashboardStats, DashboardSummary, DashboardUserStats } from "@/types/dashboard";
-import http from "@/utils/http";
+import { springHttp } from "@/utils/http";
 
 export const getDashboardStats = async (roleName: string): Promise<DashboardStats> => {
   try {
-    const response = await http.get(`/dashboard/stats/${roleName}`);
+    const response = await springHttp.get(`/dashboard/stats/${roleName}`);
     // Ensure we return valid data structure
     const data = response.data;
     return {
@@ -40,7 +40,7 @@ export const getDashboardStats = async (roleName: string): Promise<DashboardStat
 
 export const getOnlineUsersCount = async (): Promise<number> => {
   try {
-    const response = await http.get('/dashboard/online-users');
+    const response = await springHttp.get('/dashboard/online-users');
     // Handle different response structures
     if (typeof response.data === 'number') {
       return response.data;
@@ -67,7 +67,7 @@ export const getOnlineUsersCount = async (): Promise<number> => {
 // Get summary stats
 export const getDashboardSummary = async (): Promise<DashboardSummary> => {
   try {
-    const response = await http.get('/dashboard/summary');
+    const response = await springHttp.get('/dashboard/summary');
     return response.data;
   } catch (error: unknown) {
     const apiError = error as ApiResponse;
@@ -115,7 +115,7 @@ export const getDashboardSummary = async (): Promise<DashboardSummary> => {
   // Get user stats
 export const getUserStats = async (): Promise<DashboardUserStats> => {
   try {
-    const response = await http.get('/dashboard/user-stats');
+    const response = await springHttp.get('/dashboard/user-stats');
     return response.data;
   } catch (error: unknown) {
     const apiError = error as ApiResponse;

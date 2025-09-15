@@ -1,13 +1,13 @@
-import { apiSpringUrl } from '@/app/constants/constants'
+import { apiPythonUrl, apiSpringUrl } from '@/app/constants/constants'
 import axios, { AxiosInstance } from 'axios'
 import { refreshToken as callRefreshToken } from "@/api/auth-api";
 
 class Http {
   instance: AxiosInstance
 
-  constructor() {
+  constructor(apiUrl: string) {
     this.instance = axios.create({
-      baseURL: apiSpringUrl,
+      baseURL: apiUrl,
       timeout: 10000,
       headers: {
         'Content-Type': 'application/json'
@@ -74,5 +74,5 @@ class Http {
   }
 }
 
-const http = new Http().instance
-export default http
+export const springHttp = new Http(apiSpringUrl).instance
+export const pythonHttp = new Http(apiPythonUrl).instance
