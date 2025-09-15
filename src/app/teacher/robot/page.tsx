@@ -170,7 +170,7 @@ export default function TeacherDashboard() {
     return "bg-red-500";
   };
 
-  const selectedRobotDetails = robots.find((robot) => robot.id === selectedRobot);
+  const   selectedRobotDetails = robots.find((robot) => robot.id === selectedRobot);
 
   return (
     <div className="space-y-10 p-8 bg-gradient-to-br from-blue-50 to-white min-h-screen">
@@ -183,7 +183,7 @@ export default function TeacherDashboard() {
       {/* Robot Selector - horizontal cards */}
       <section>
         <h2 className="text-2xl font-semibold text-blue-800 mb-4">{t.robot_selection.title}</h2>
-        <div className="flex gap-6 overflow-x-auto pb-2 hide-scrollbar">
+        <div className="flex gap-6 overflow-x-auto p-5 hide-scrollbar">
           {robots.map((robot) => (
             <div
               key={robot.id}
