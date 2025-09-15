@@ -9,11 +9,11 @@ export const AuthRedirect = () => {
   const router = useRouter();
 
   useEffect(() => {
-    const checkAuthAndRedirect = () => {
+    const checkAuthAndRedirect = async () => {
       const accessToken = sessionStorage.getItem('accessToken');
 
       // If user is already logged in, redirect to appropriate dashboard
-      if (accessToken && isValidToken(accessToken)) {
+      if (accessToken && await isValidToken(accessToken)) {
         // First try to get account data from session storage
         const accountData = getTokenPayload(accessToken);
         
