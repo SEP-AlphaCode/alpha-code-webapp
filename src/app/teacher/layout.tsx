@@ -31,10 +31,7 @@ interface TeacherLayoutProps {
 
 export default function TeacherLayout({ children }: TeacherLayoutProps) {
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
-  const [accountData, setAccountData] = useState<AccountData | null>({
-    fullName: "Teacher",
-    email: "teacher@example.com",
-  }); // Dữ liệu giả định
+  const [accountData, setAccountData] = useState<AccountData | null>(null); // Dữ liệu giả định
   const pathname = usePathname();
   const logoutMutation = useLogout();
 

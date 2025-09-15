@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import { useI18n } from "@/lib/i18n/provider";
+import { useRouter } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import {
@@ -49,6 +50,7 @@ export default function TeacherDashboard() {
   const t = translations[locale];
   const [selectedRobot, setSelectedRobot] = useState<string | null>(null);
   const [shuffledPrompts, setShuffledPrompts] = useState<string[]>([]);
+  const router = useRouter();
 
   useEffect(() => {
     if (t?.things_to_try?.prompts) {
@@ -372,7 +374,8 @@ export default function TeacherDashboard() {
             <div className="space-y-4">
                 <h2 className="text-2xl font-semibold text-[var(--foreground)]">{t.entertainment.title}</h2>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6" suppressHydrationWarning>
-                    <Card className="p-6 text-center cursor-pointer bg-red-400 text-[var(--card-foreground)] shadow-lg hover:scale-105 transition-transform border border-[var(--border)]" suppressHydrationWarning>
+                    <Card className="p-6 text-center cursor-pointer bg-red-400 text-[var(--card-foreground)] shadow-lg hover:scale-105 transition-transform border border-[var(--border)]" suppressHydrationWarning
+                    onClick={() => router.push("/teacher/robot/action")}>
                         <CardHeader className="flex items-center justify-center">
                             <div className="text-4xl">🕺</div>
                         </CardHeader>
