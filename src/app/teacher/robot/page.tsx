@@ -173,7 +173,7 @@ export default function TeacherDashboard() {
   const selectedRobotDetails = robots.find((robot) => robot.id === selectedRobot);
 
   return (
-    <div className="space-y-8 p-6 bg-[var(--background)] min-h-screen" suppressHydrationWarning>
+    <div className="space-y-8 p-10 bg-[var(--background)] min-h-screen" suppressHydrationWarning>
       {/* Header */}
       <div className="flex items-center justify-between">
         <h1 className="text-3xl font-bold text-[var(--foreground)]">{t.header.title}</h1>
