@@ -172,7 +172,7 @@ export default function TeacherDashboard() {
     return "bg-red-500";
   };
 
-  const   selectedRobotDetails = robots.find((robot) => robot.id === selectedRobot);
+  const selectedRobotDetails = robots.find((robot) => robot.id === selectedRobot);
 
   return (
     <div className="space-y-10 p-8 bg-gradient-to-br from-blue-50 to-white min-h-screen">
@@ -278,7 +278,8 @@ export default function TeacherDashboard() {
       <section className="mt-10">
         <h2 className="text-2xl font-semibold text-blue-800 mb-4">{t.entertainment.title}</h2>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-          <Card className="p-8 text-center cursor-pointer bg-red-400 text-white shadow-lg hover:scale-105 transition-transform border border-gray-200">
+          <Card className="p-6 text-center cursor-pointer bg-red-400 text-[var(--card-foreground)] shadow-lg hover:scale-105 transition-transform border border-[var(--border)]" suppressHydrationWarning
+            onClick={() => router.push("/teacher/robot/action")}>            
             <CardHeader className="flex items-center justify-center"><div className="text-4xl">🕺</div></CardHeader>
             <CardContent><p className="font-medium text-lg">{t.entertainment.action}</p></CardContent>
           </Card>
