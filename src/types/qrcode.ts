@@ -1,9 +1,10 @@
 export type QRCodeRequest = {
     name: string;
     qrCode: string;
-    status: 'active' | 'inactive' | 'pending';
+    status: number; // 1 for enabled, 0 for disabled
     activityId: string;
-    color?: string;
+    accountId: string;
+    color: string;
 }
 
 export type QRCode = {
