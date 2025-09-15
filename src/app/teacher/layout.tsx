@@ -296,22 +296,32 @@ export default function TeacherLayout({ children }: TeacherLayoutProps) {
                         <span className="font-semibold text-base text-gray-900 leading-tight">{currentRobot.name}</span>
                         <span className="text-xs text-gray-500 font-mono tracking-wide mt-0.5">{currentRobot.id}</span>
                       </div>
-                      <div className="flex flex-col justify-center items-start gap-2">
-                        {/* Battery status with color levels */}
+                      <div className="flex flex-col justify-center items-start gap-2 mt-1 px-1 py-0.5">
+                        {/* Battery status with true battery icon, always colored bg */}
                         {(() => {
                           const battery = currentRobot.battery ?? 40;
-                          let batteryColor = "bg-green-100 text-green-600";
-                          if (battery <= 20) batteryColor = "bg-red-100 text-red-600";
-                          else if (battery <= 50) batteryColor = "bg-yellow-100 text-yellow-700";
+                          let batteryBg = "bg-green-100";
+                          let batteryText = "text-green-600";
+                          if (battery <= 20) { batteryBg = "bg-red-100"; batteryText = "text-red-600"; }
+                          else if (battery <= 50) { batteryBg = "bg-yellow-100"; batteryText = "text-yellow-700"; }
                           return (
-                            <span className={`flex items-center gap-1 text-xs px-2 py-0.5 rounded font-medium ${batteryColor}`}> 
-                              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-4 h-4"><rect x="2" y="6" width="20" height="12" rx="2" ry="2"></rect></svg>
+                            <span className={`flex items-center gap-1 text-xs font-medium rounded ${batteryText} ${batteryBg}`}> 
+                              {/* Battery icon */}
+                              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-4 h-4">
+                                <rect x="2" y="7" width="18" height="10" rx="2" ry="2" />
+                                <rect x="20" y="10" width="2" height="4" rx="1" />
+                                <rect x="4" y="9" width={Math.max(1, Math.floor((battery/100)*14))} height="6" rx="1" fill="currentColor" />
+                              </svg>
                               {battery}%
                             </span>
                           );
                         })()}
-                        <span className="flex items-center gap-1 text-xs px-2 py-0.5 rounded bg-gray-100 text-gray-600 font-medium">
-                          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-4 h-4"><rect x="7" y="7" width="10" height="10" rx="2" ry="2"></rect></svg>
+                        {/* SIM card icon, always gray bg */}
+                        <span className="flex items-center gap-1 text-xs font-medium rounded text-gray-600 bg-gray-100">
+                          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-4 h-4">
+                            <rect x="4" y="4" width="16" height="16" rx="3" />
+                            <rect x="8" y="12" width="8" height="4" rx="1" />
+                          </svg>
                           No SIM card
                         </span>
                       </div>
