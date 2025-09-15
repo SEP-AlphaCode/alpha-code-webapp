@@ -40,10 +40,6 @@ export function CreateActionModal({
 
   const isEditMode = mode === 'edit' && editAction
 
-  if (translationsLoading) {
-    return null
-  }
-
   const {
     register,
     handleSubmit,
@@ -113,19 +109,21 @@ export function CreateActionModal({
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
       <DialogContent className="sm:max-w-[425px]">
-        <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
-            {isEditMode ? t('actionManagement.editTitle') : t('actionManagement.createTitle')}
-          </DialogTitle>
-          <DialogDescription>
-            {isEditMode
-              ? t('actionManagement.editDescription')
-              : t('actionManagement.createDescription')
-            }
-          </DialogDescription>
-        </DialogHeader>
+        {!translationsLoading && (
+          <>
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2">
+                {isEditMode ? t('actionManagement.editTitle') : t('actionManagement.createTitle')}
+              </DialogTitle>
+              <DialogDescription>
+                {isEditMode
+                  ? t('actionManagement.editDescription')
+                  : t('actionManagement.createDescription')
+                }
+              </DialogDescription>
+            </DialogHeader>
 
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+            <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
         <div className="space-y-2">
             <Label htmlFor="code" className="text-sm font-medium">
               {t('actionManagement.fields.code')} *
@@ -236,27 +234,29 @@ export function CreateActionModal({
             </Label>
           </div>
 
-          <DialogFooter>
-            <Button
-              type="button"
-              variant="red"
-              onClick={handleClose}
-              disabled={isSubmitting}
-            >
-              {t('common.close')}
-            </Button>
-            <Button
-              type="submit"
-              disabled={isSubmitting}
-              className="bg-green-600 hover:bg-green-700 text-white"
-            >
-              {isSubmitting
-                ? (isEditMode ? t('common.updating') : t('common.creating'))
-                : (isEditMode ? t('common.update') : t('common.create'))
-              }
-            </Button>
-          </DialogFooter>
-        </form>
+              <DialogFooter>
+                <Button
+                  type="button"
+                  variant="red"
+                  onClick={handleClose}
+                  disabled={isSubmitting}
+                >
+                  {t('common.close')}
+                </Button>
+                <Button
+                  type="submit"
+                  disabled={isSubmitting}
+                  className="bg-green-600 hover:bg-green-700 text-white"
+                >
+                  {isSubmitting
+                    ? (isEditMode ? t('common.updating') : t('common.creating'))
+                    : (isEditMode ? t('common.update') : t('common.create'))
+                  }
+                </Button>
+              </DialogFooter>
+            </form>
+          </>
+        )}
       </DialogContent>
     </Dialog>
   )

@@ -7,7 +7,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { AuthGuard } from "@/components/auth-guard";
 import { useLogout } from "@/hooks/use-logout";
-import { LogOut, Bell, Menu, UserCircle, Settings } from "lucide-react";
+import { LogOut, /* Bell, */ Menu, UserCircle, Settings } from "lucide-react";
 import { AccountData } from "@/types/account";
 import Logo2 from "../../../public/logo2.png";
 import {
@@ -31,7 +31,7 @@ interface TeacherLayoutProps {
 
 export default function TeacherLayout({ children }: TeacherLayoutProps) {
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
-  const [accountData, setAccountData] = useState<AccountData | null>({
+  const [accountData/*, setAccountData*/] = useState<AccountData | null>({
     id: "1",
     username: "teacher",
     fullName: "Teacher",

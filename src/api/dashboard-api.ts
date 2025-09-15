@@ -1,5 +1,5 @@
+import { ApiResponse } from "@/types/api-error";
 import { DashboardStats, DashboardSummary, DashboardUserStats } from "@/types/dashboard";
-import { ApiError } from "@/types/api-error";
 import http from "@/utils/http";
 
 export const getDashboardStats = async (roleName: string): Promise<DashboardStats> => {
@@ -15,8 +15,8 @@ export const getDashboardStats = async (roleName: string): Promise<DashboardStat
     };
   } catch (error: unknown) {
     // Handle specific error cases
-    const apiError = error as ApiError;
-    if (apiError?.response?.status === 429) {
+    const apiError = error as ApiResponse;
+    if (apiError?.status === 429) {
       console.warn('Rate limit exceeded for dashboard stats. Using cached/default data.');
       // Return some reasonable default data for rate limit cases
       return {
@@ -52,8 +52,8 @@ export const getOnlineUsersCount = async (): Promise<number> => {
     return 0;
   } catch (error: unknown) {
     // Handle rate limiting specifically
-    const apiError = error as ApiError;
-    if (apiError?.response?.status === 429) {
+    const apiError = error as ApiResponse;
+    if (apiError?.status === 429) {
       console.warn('Rate limit exceeded for online users count. Using fallback data.');
       // Return a reasonable default for rate limited requests
       return 3; // Some default online count
@@ -70,7 +70,7 @@ export const getDashboardSummary = async (): Promise<DashboardSummary> => {
     const response = await http.get('/dashboard/summary');
     return response.data;
   } catch (error: unknown) {
-    const apiError = error as ApiError;
+    const apiError = error as ApiResponse;
     console.error('Error fetching dashboard summary:', apiError);
     throw apiError;
   }
@@ -118,7 +118,7 @@ export const getUserStats = async (): Promise<DashboardUserStats> => {
     const response = await http.get('/dashboard/user-stats');
     return response.data;
   } catch (error: unknown) {
-    const apiError = error as ApiError;
+    const apiError = error as ApiResponse;
     console.error('Error fetching user stats:', apiError);
     throw apiError;
   }

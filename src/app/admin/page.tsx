@@ -1,14 +1,14 @@
 "use client"
 
 import { useDashboard } from "@/hooks/use-dashboard"
-import { UserStatsChart } from "@/components/ui/user-stats-chart"
+// import { UserStatsChart } from "@/components/ui/user-stats-chart"
 import { UserStatsOverview } from "@/components/ui/user-stats-overview"
 import { GrowthTrendChart } from "@/components/ui/growth-trend-chart"
 import { UserDistributionChart } from "@/components/ui/user-distribution-chart"
 import { RateLimitWarning } from "@/components/ui/rate-limit-warning"
-import { ApiError } from "@/types/api-error"
 import { Users, TrendingUp, PieChart, Activity } from "lucide-react"
 import { useAdminTranslation } from "@/lib/i18n/hooks/use-translation"
+import { ApiResponse } from "@/types/api-error"
 
 export default function AdminDashboard() {
   const { useGetDashboardStats, useGetOnlineUsersCount, useGetUserStats } = useDashboard("admin")
@@ -35,7 +35,7 @@ export default function AdminDashboard() {
     isLoading: userStatsLoading,
     error: userStatsError,
     refetch: refetchUserStats,
-    isRefetching: isRefetchingUserStats
+    // isRefetching: isRefetchingUserStats
   } = useGetUserStats()
 
   // Provide fallback values
@@ -53,11 +53,16 @@ export default function AdminDashboard() {
     totalAccounts: 0
   }
 
+  // Type guard to check if an unknown error matches ApiResponse shape
+  const isApiResponse = (err: unknown): err is ApiResponse => {
+    return !!err && typeof err === 'object' && 'status' in err && typeof (err).status === 'number'
+  }
+
   // Check if any error is a rate limit error
-  const isRateLimited = (statsError as ApiError)?.response?.status === 429 || 
-                       (onlineUsersError as ApiError)?.response?.status === 429 ||
-                       (userStatsError as ApiError)?.response?.status === 429
-  
+  const isRateLimited = [statsError, onlineUsersError, userStatsError].some(
+    (err) => isApiResponse(err) && err.status === 429
+  )
+
   // Handle manual retry
   const handleRetry = () => {
     refetchStats()

@@ -36,8 +36,6 @@ export function CreateDanceModal({
   const createDanceMutation = useCreateDance()
   const updateDanceMutation = useUpdateDance()
 
-  if (isLoading) return null
-
   const isEditMode = mode === 'edit' && editDance
 
   const {
@@ -105,19 +103,21 @@ export function CreateDanceModal({
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
       <DialogContent className="sm:max-w-[425px]">
-        <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
-            {isEditMode ? t('danceManagement.editTitle') : t('danceManagement.createTitle')}
-          </DialogTitle>
-          <DialogDescription>
-            {isEditMode
-              ? t('danceManagement.editDescription')
-              : t('danceManagement.createDescription')
-            }
-          </DialogDescription>
-        </DialogHeader>
+        {!isLoading && (
+          <>
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2">
+                {isEditMode ? t('danceManagement.editTitle') : t('danceManagement.createTitle')}
+              </DialogTitle>
+              <DialogDescription>
+                {isEditMode
+                  ? t('danceManagement.editDescription')
+                  : t('danceManagement.createDescription')
+                }
+              </DialogDescription>
+            </DialogHeader>
 
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+            <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="code" className="text-sm font-medium">
               {t('danceManagement.fields.code')} *
@@ -214,27 +214,28 @@ export function CreateDanceModal({
             </Select>
           </div>
 
-          <DialogFooter>
-            <Button
-              type="button"
-              variant="outline"
-              onClick={handleClose}
-              disabled={isSubmitting}
-            >
-              {t('common.cancel')}
-            </Button>
-            <Button
-              type="submit"
-              disabled={isSubmitting}
-              className="bg-green-600 hover:bg-green-700 text-white"
-            >
-              {isSubmitting
-                ? (isEditMode ? t('common.updating') : t('common.creating'))
-                : (isEditMode ? t('common.update') : t('common.create'))
-              }
-            </Button>
-          </DialogFooter>
-        </form>
+            <DialogFooter>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={handleClose}
+                disabled={isSubmitting}
+              >
+                {t('common.cancel')}
+              </Button>
+              <Button
+                type="submit"
+                disabled={isSubmitting}
+                className="bg-green-600 hover:bg-green-700 text-white"
+              >
+                {isSubmitting
+                  ? (isEditMode ? t('common.updating') : t('common.creating'))
+                  : (isEditMode ? t('common.update') : t('common.create'))
+                }
+              </Button>
+            </DialogFooter>
+          </form>
+        </>)}
       </DialogContent>
     </Dialog>
   )

@@ -3,16 +3,8 @@
 import React, { useState, useEffect } from "react";
 import { useI18n } from "@/lib/i18n/provider";
 import { useRouter } from "next/navigation";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { Badge } from "@/components/ui/badge";
 import Image from "next/image";
 import {
   Battery,
@@ -30,7 +22,8 @@ import {
 import viTranslations from "@/lib/i18n/dictionaries/teacher/teacher.vi.json";
 import enTranslations from "@/lib/i18n/dictionaries/teacher/teacher.en.json";
 
-const translations: Record<string, any> = {
+type TeacherTranslations = typeof viTranslations;
+const translations: Record<string, TeacherTranslations> = {
   vi: viTranslations,
   en: enTranslations,
 };
