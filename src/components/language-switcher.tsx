@@ -17,9 +17,11 @@ import { US } from 'country-flag-icons/react/3x2'
 interface LanguageSwitcherProps {
   variant?: 'default' | 'minimal'
   className?: string
+  side?: 'top' | 'bottom' | 'left' | 'right'
+  align?: 'start' | 'center' | 'end'
 }
 
-export function LanguageSwitcher({ variant = 'default', className }: LanguageSwitcherProps) {
+export function LanguageSwitcher({ variant = 'default', className, side = 'top', align = 'start' }: LanguageSwitcherProps) {
   const { locale, setLocale, dict, commonDict } = useI18n()
   const [isOpen, setIsOpen] = useState(false)
 
@@ -81,7 +83,7 @@ export function LanguageSwitcher({ variant = 'default', className }: LanguageSwi
             {renderFlag(locale)}
           </Button>
         </DropdownMenuTrigger>
-        <DropdownMenuContent align="end" className="min-w-[140px]">
+        <DropdownMenuContent side={side} align={align} className="min-w-[140px]">
           {i18n.locales.map((loc) => (
             <DropdownMenuItem
               key={loc}
