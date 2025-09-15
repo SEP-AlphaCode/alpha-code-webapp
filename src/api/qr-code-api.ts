@@ -1,28 +1,28 @@
-import http from '../utils/http';
 import {QRCodeRequest, QRCodesResponse} from '@/types/qrcode';
+import { springHttp } from '@/utils/http';
 
 export const createQRCode = async (data: QRCodeRequest): Promise<QRCodesResponse> => {
-  const response = await http.post('/qrcode', data);
+  const response = await springHttp.post('/qrcode', data);
   return response.data;
 };
 
 export const getQRCodeById = async (id: string): Promise<QRCodesResponse> => {
-  const response = await http.get(`/qr-codes/${id}`);
+  const response = await springHttp.get(`/qr-codes/${id}`);
   return response.data;
 };
 
 export const updateQRCode = async (id: string, data: Partial<QRCodeRequest>): Promise<QRCodesResponse> => {
-  const response = await http.put(`/qr-codes/${id}`, data);
+  const response = await springHttp.put(`/qr-codes/${id}`, data);
   return response.data;
 };
 
 export const deleteQRCode = async (id: string): Promise<void> => {
-  await http.delete(`/qr-codes/${id}`);
+  await springHttp.delete(`/qr-codes/${id}`);
 };
 
 export const getAllQRCodes = async (): Promise<QRCodesResponse> => {
   try {
-    const response = await http.get<QRCodesResponse>('/qr-codes');
+    const response = await springHttp.get<QRCodesResponse>('/qr-codes');
     return response.data;
   } catch (error) {
     throw error;
@@ -30,6 +30,6 @@ export const getAllQRCodes = async (): Promise<QRCodesResponse> => {
 };
 
 export const updateQRCodeStatus = async (id: string, status: string): Promise<QRCodesResponse> => {
-  const response = await http.patch(`/qr-codes/${id}/status`, { status });
+  const response = await springHttp.patch(`/qr-codes/${id}/status`, { status });
   return response.data;
 };
