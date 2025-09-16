@@ -29,7 +29,7 @@ export const createColumns = (
   // Note: We can't use hooks directly in this function since it's not a component
   // Instead, we'll create a wrapper component for the action column
   
-  const ActionCell = ({ row }: { row: any }) => {
+  const ActionCell = ({ row }: { row: { original: Expression } }) => {
     const { t } = useAdminTranslation()
     const expression = row.original
 
@@ -94,7 +94,7 @@ export const createColumns = (
     )
   }
 
-  const NameHeaderCell = ({ column }: { column: any }) => {
+  const NameHeaderCell = ({ column }: { column: { toggleSorting: (isAsc: boolean) => void, getIsSorted: () => string | false } }) => {
     const { t } = useAdminTranslation()
     return (
       <span className="flex items-center gap-1 text-purple-700 font-semibold">
@@ -128,7 +128,7 @@ export const createColumns = (
     )
   }
 
-  const ImageCell = ({ row }: { row: any }) => {
+  const ImageCell = ({ row }: { row: { original: Expression } }) => {
     const { t } = useAdminTranslation()
     return (
       <div className="flex items-center gap-1 text-blue-600 font-medium">
@@ -150,7 +150,7 @@ export const createColumns = (
     )
   }
 
-  const StatusCell = ({ row }: { row: any }) => {
+  const StatusCell = ({ row }: { row: { original: Expression } }) => {
     const { t } = useAdminTranslation()
     const status = row.original.status
     let color = "bg-gray-200 text-gray-700"

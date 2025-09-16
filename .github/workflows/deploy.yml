@@ -55,9 +55,21 @@ jobs:
 
       - name: Deploy webapp via Docker Compose over SSH
         run: |
-          ssh ${{ secrets.SSH_USER }}@${{ secrets.HOST }} << EOF
+          ssh ${{ secrets.SSH_USER }}@${{ secrets.HOST }} << 'EOF'
             set -e
             cd /home/norman/SEP
+
+            echo "🛑 Dừng alpha-webapp..."
+            docker compose down alpha-webapp || true
+
+            echo "🧹 Xóa image cũ của webapp..."
+            docker images "norman1910/alpha-code-webapp" -q | xargs -r docker rmi -f
+
+            echo "⬇️ Pull image mới..."
             docker compose pull alpha-webapp
+
+            echo "🚀 Khởi động lại alpha-webapp..."
             docker compose up -d alpha-webapp
+
+            echo "✅ Triển khai webapp hoàn tất!"
           EOF

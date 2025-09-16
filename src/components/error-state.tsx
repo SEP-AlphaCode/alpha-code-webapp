@@ -22,7 +22,7 @@ export default function ErrorState({ error, onRetry, className = '' }: ErrorStat
   const title = t('errors.title', 'Đã xảy ra lỗi')
   const suggestion = t('errors.suggestion', 'Vui lòng thử lại hoặc kiểm tra kết nối mạng của bạn.')
   const retryLabel = t('errors.retry', 'Thử lại')
-  const unknownLabel = t('errors.unknown', 'Lỗi không xác định')
+    // const unknownLabel = t('errors.unknown', 'Lỗi không xác định')
 
   return (
     <div className={`w-full max-w-md mx-auto text-center flex flex-col items-center justify-center gap-6 ${className}`}>
