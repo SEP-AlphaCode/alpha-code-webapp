@@ -168,7 +168,7 @@ export default function TeacherDashboard() {
   const selectedRobotDetails = robots.find((robot) => robot.id === selectedRobot);
 
   return (
-    <div className="space-y-10 p-8 bg-gradient-to-br from-blue-50 to-white min-h-screen">
+    <div className="space-y-10">
       {/* Header */}
       <header className="sticky top-0 z-10 bg-white/80 backdrop-blur border-b border-gray-200 mb-6 py-4 px-6 rounded-xl shadow flex items-center justify-between">
         <h1 className="text-3xl font-bold text-blue-900 tracking-tight">{t.header.title}</h1>

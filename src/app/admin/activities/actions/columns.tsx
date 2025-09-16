@@ -34,7 +34,7 @@ const formatDuration = (ms: number): string => {
 
 // Header cell components
 const HeaderCell = ({ children }: { children: React.ReactNode }) => {
-    const { t, isLoading } = useAdminTranslation()
+    // const { t, isLoading } = useAdminTranslation()
     // if (isLoading) return <span></span>
     return (
         <span className="flex items-center gap-1 text-gray-700 font-semibold">
