@@ -272,16 +272,45 @@ export default function TeacherDashboard() {
         <h2 className="text-2xl font-semibold text-blue-800 mb-4">{t.entertainment.title}</h2>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           <Card className="p-6 text-center cursor-pointer bg-red-400 text-[var(--card-foreground)] shadow-lg hover:scale-105 transition-transform border border-[var(--border)]" suppressHydrationWarning
-            onClick={() => router.push("/teacher/robot/action")}>            
-            <CardHeader className="flex items-center justify-center"><div className="text-4xl">🕺</div></CardHeader>
+  onClick={() => router.push("/teacher/robot/action")}>          
+            <CardHeader className="flex items-center justify-center">
+              {/* Thay thế div icon bằng component Image */}
+              <Image
+                src="/ic_home_actionsquare.webp" // Đường dẫn đến hình ảnh của bạn
+                alt="Action"
+                width={80} // Điều chỉnh kích thước phù hợp
+                height={100} // Điều chỉnh kích thước phù hợp
+                className="object-contain"
+              />
+            </CardHeader>
             <CardContent><p className="font-medium text-lg">{t.entertainment.action}</p></CardContent>
           </Card>
-          <Card className="p-8 text-center cursor-pointer bg-blue-400 text-white shadow-lg hover:scale-105 transition-transform border border-gray-200">
-            <CardHeader className="flex items-center justify-center"><div className="text-4xl">🖼️</div></CardHeader>
+          <Card className="p-6 text-center cursor-pointer bg-orange-400 text-[var(--card-foreground)] shadow-lg hover:scale-105 transition-transform border border-[var(--border)]" suppressHydrationWarning
+  onClick={() => router.push("/teacher/robot/action")}>          
+            <CardHeader className="flex items-center justify-center">
+              {/* Thay thế div icon bằng component Image */}
+              <Image
+                src="/ic_home_album.webp" // Đường dẫn đến hình ảnh của bạn
+                alt="Action"
+                width={80} // Điều chỉnh kích thước phù hợp
+                height={100} // Điều chỉnh kích thước phù hợp
+                className="object-contain"
+              />
+            </CardHeader>
             <CardContent><p className="font-medium text-lg">{t.entertainment.album}</p></CardContent>
           </Card>
-          <Card className="p-8 text-center cursor-pointer bg-yellow-400 text-white shadow-lg hover:scale-105 transition-transform border border-gray-200">
-            <CardHeader className="flex items-center justify-center"><div className="text-4xl">🤝</div></CardHeader>
+          <Card className="p-6 text-center cursor-pointer bg-green-400 text-[var(--card-foreground)] shadow-lg hover:scale-105 transition-transform border border-[var(--border)]" suppressHydrationWarning
+  onClick={() => router.push("/teacher/robot/action")}>          
+            <CardHeader className="flex items-center justify-center">
+              {/* Thay thế div icon bằng component Image */}
+              <Image
+                src="/ic_home_friend.webp" // Đường dẫn đến hình ảnh của bạn
+                alt="Action"
+                width={80} // Điều chỉnh kích thước phù hợp
+                height={100} // Điều chỉnh kích thước phù hợp
+                className="object-contain"
+              />
+            </CardHeader>
             <CardContent><p className="font-medium text-lg">{t.entertainment.friends}</p></CardContent>
           </Card>
         </div>
