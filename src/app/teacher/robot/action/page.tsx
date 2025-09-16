@@ -1,6 +1,37 @@
 "use client";
 
 import { useState } from "react";
+import { pythonHttp } from '@/utils/http';
+// Hàm gửi request POST đến backend
+async function sendCommandToBackend(setNotify: (msg: string, type: 'success' | 'error') => void) {
+  const body = {
+    type: "string",
+    data: {
+      activities: [
+        {
+          color: { a: 0, b: 0, g: 0, r: 255 },
+          duration: 48752,
+          action_id: "dance_0001en",
+          start_time: 0,
+          action_type: "dance"
+        }
+      ],
+      total_duration: 48752
+    }
+  };
+  try {
+    await pythonHttp.post('/websocket/command/1', body, {
+      headers: {
+        'accept': 'application/json',
+        'Content-Type': 'application/json',
+      }
+    });
+    setNotify('Gửi lệnh thành công!', 'success');
+  } catch (err) {
+    setNotify('Gửi lệnh thất bại!', 'error');
+    console.error(err);
+  }
+}
 import { ChevronLeft, ChevronRight, Play, Zap } from "lucide-react";
 
 const actions = [
@@ -109,6 +140,11 @@ const actions = [
 
 export default function RobotActionPage() {
   const [currentAction, setCurrentAction] = useState<number|null>(null);
+  const [notify, setNotifyState] = useState<{msg: string, type: 'success'|'error'}|null>(null);
+  const setNotify = (msg: string, type: 'success'|'error') => {
+    setNotifyState({msg, type});
+    setTimeout(() => setNotifyState(null), 2500);
+  };
   const [currentPage, setCurrentPage] = useState(0);
   const [isExecuting, setIsExecuting] = useState(false);
   const [hasInteracted, setHasInteracted] = useState(false);
@@ -264,7 +300,10 @@ export default function RobotActionPage() {
                   className="flex flex-col items-center"
                 >
                   <button
-                    onClick={() => setCurrentAction(currentPage * actionsPerPage + index)}
+                    onClick={() => {
+                      setCurrentAction(currentPage * actionsPerPage + index);
+                      if (index === 0) sendCommandToBackend(setNotify);
+                    }}
                     className={`w-24 h-24 rounded-full flex items-center justify-center shadow-md transition-all duration-200 hover:scale-110 ${
                       currentAction === currentPage * actionsPerPage + index 
                         ? `ring-4 ring-offset-2 ring-blue-400 ${actionItem.bgColor}`
@@ -304,6 +343,12 @@ export default function RobotActionPage() {
           </div>
         </div>
       </div>
+      {/* Notification */}
+      {notify && (
+        <div className={`fixed top-6 left-1/2 -translate-x-1/2 z-50 px-6 py-3 rounded-xl shadow-lg text-white font-semibold transition-all duration-300 ${notify.type === 'success' ? 'bg-green-500' : 'bg-red-500'}`}>
+          {notify.msg}
+        </div>
+      )}
     </div>
   );
 }
