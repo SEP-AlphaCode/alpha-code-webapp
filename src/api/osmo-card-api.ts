@@ -21,8 +21,9 @@ export const createOsmoCard = async (osmoCardData: CreateCardData) => {
   return response.data;
 };
 
+// PATCH update - only updates provided fields
 export const updateOsmoCard = async (id: string, osmoCardData: Partial<Omit<OsmoCard, 'id' | 'createdDate'>>) => {
-  const response = await springHttp.put(`/osmo-cards/${id}`, osmoCardData);
+  const response = await springHttp.patch(`/osmo-cards/${id}`, osmoCardData);
   return response.data;
 };
 

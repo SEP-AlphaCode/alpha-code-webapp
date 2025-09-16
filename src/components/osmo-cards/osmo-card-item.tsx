@@ -9,6 +9,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Badge } from '@/components/ui/badge';
 import { OsmoCard } from '@/types/osmo-card';
+import { toast } from 'sonner';
 
 interface OsmoCardItemProps {
   card: OsmoCard;
@@ -95,9 +96,49 @@ export default function OsmoCardItem({
   };
 
   const handleDelete = () => {
-    if (window.confirm('Are you sure you want to delete this Osmo Card?')) {
-      onDelete(card.id);
-    }
+    toast.custom(
+      (t) => (
+        <div className="bg-white border border-gray-200 rounded-lg shadow-lg p-4 min-w-80">
+          <div className="flex items-start space-x-3">
+            <div className="flex-shrink-0">
+              <Trash2 className="h-5 w-5 text-red-500" />
+            </div>
+            <div className="flex-1">
+              <h3 className="text-sm font-medium text-gray-900">
+                Delete Osmo Card
+              </h3>
+              <p className="text-sm text-gray-500 mt-1">
+                Are you sure you want to delete "{card.name}"? This action cannot be undone.
+              </p>
+              <div className="flex space-x-2 mt-3">
+                <Button
+                  size="sm"
+                  variant="destructive"
+                  onClick={() => {
+                    toast.dismiss(t);
+                    onDelete(card.id);
+                    toast.success('Osmo Card deleted successfully');
+                  }}
+                >
+                  Delete
+                </Button>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => toast.dismiss(t)}
+                >
+                  Cancel
+                </Button>
+              </div>
+            </div>
+          </div>
+        </div>
+      ),
+      {
+        duration: Infinity, // Keep it open until user interacts
+        position: 'top-center',
+      }
+    );
   };
 
   const handleView = () => {

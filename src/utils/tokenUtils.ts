@@ -78,13 +78,11 @@ export const isValidToken = async (token: string): Promise<boolean> => {
 
     if (isExpired) {
       const res = await callRefreshToken();
-
       if (res?.accessToken && res?.refreshToken) {
         sessionStorage.setItem('accessToken', res.accessToken);
         sessionStorage.setItem('refreshToken', res.refreshToken);
         return true; // refresh thành công
       }
-
       return false; // refresh thất bại
     }
     return true;
