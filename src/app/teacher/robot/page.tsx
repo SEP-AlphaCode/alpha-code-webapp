@@ -16,7 +16,7 @@ import {
   Zap,
   CheckCircle,
   RefreshCw,
-} from "lucide-react";
+} from "lucide-react" ;
 
 // Import tĩnh cả hai file ngôn ngữ
 import viTranslations from "@/lib/i18n/dictionaries/teacher/teacher.vi.json";

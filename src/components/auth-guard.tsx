@@ -16,7 +16,7 @@ export const AuthGuard = ({ children, allowedRoles }: AuthGuardProps) => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
 
   useEffect(() => {
-    const checkAuth = () => {
+    const checkAuth = async () => {
       const accessToken = sessionStorage.getItem('accessToken');
 
       // If no token, redirect to login
@@ -27,9 +27,8 @@ export const AuthGuard = ({ children, allowedRoles }: AuthGuardProps) => {
       }
 
       const accountData = getTokenPayload(accessToken || '');
-
       // Validate token format and expiry
-      if (!isValidToken(accessToken)) {
+      if (!(await isValidToken(accessToken))) {
         clearAuthData();
         router.push('/login');
         return;
