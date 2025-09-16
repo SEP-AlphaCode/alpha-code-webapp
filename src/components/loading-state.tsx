@@ -5,7 +5,7 @@ interface LoadingStateProps {
   message?: string;
 }
 
-export default function LoadingState({ message = "Loading Osmo Cards..." }: LoadingStateProps) {
+export default function LoadingState({ message = "" }: LoadingStateProps) {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-center py-8">
