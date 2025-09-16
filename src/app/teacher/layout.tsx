@@ -99,7 +99,6 @@ export default function TeacherLayout({ children }: TeacherLayoutProps) {
       <div className="min-h-screen bg-gray-50">
         {/* Header */}
         <TeacherHeader
-          isSidebarOpen={isSidebarOpen}
           onToggleSidebar={handleToggleSidebar}
           currentRobot={currentRobot}
           robotList={robotList}

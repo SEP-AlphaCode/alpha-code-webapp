@@ -11,6 +11,11 @@ export default function LoadingState({ message = "Loading Osmo Cards..." }: Load
       <div className="flex items-center justify-center py-8">
         <LoadingGif size="xl" />
       </div>
+      {message && (
+        <div className="text-center text-gray-600 text-sm">
+          {message}
+        </div>
+      )}
     </div>
   );
 }

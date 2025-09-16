@@ -12,7 +12,6 @@ import { AccountData } from "@/types/account";
 import { Robot, NavigationItem } from "@/types/teacher";
 
 interface TeacherHeaderProps {
-  isSidebarOpen: boolean;
   onToggleSidebar: () => void;
   currentRobot: Robot;
   robotList: Robot[];
@@ -26,7 +25,6 @@ interface TeacherHeaderProps {
 }
 
 export function TeacherHeader({
-  isSidebarOpen,
   onToggleSidebar,
   currentRobot,
   robotList,

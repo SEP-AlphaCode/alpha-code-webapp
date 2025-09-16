@@ -14,6 +14,7 @@ import { Switch } from '@/components/ui/switch';
 import { Separator } from '@/components/ui/separator';
 import { Save, X, Palette, Activity, Music, Zap, Smile } from 'lucide-react';
 import { OsmoCard } from '@/types/osmo-card';
+import { ApiResponse } from '@/types/api-error';
 import { useAction } from '@/hooks/use-action';
 import { useExpression } from '@/hooks/use-expression';
 import { useDance } from '@/hooks/use-dance';
@@ -24,7 +25,7 @@ interface EditOsmoCardModalProps {
   onSave: (cardId: string, updatedData: Partial<OsmoCard>) => void;
   card: OsmoCard | null;
   isLoading?: boolean;
-  apiError?: any; // Add API error prop
+  apiError?: ApiResponse; // Add API error prop with proper type
 }
 
 interface FormData {
@@ -37,6 +38,18 @@ interface FormData {
   expressionName: string;
   danceId: string;
   danceName: string;
+}
+
+interface FormErrors {
+  name?: string;
+  color?: string;
+  status?: string;
+  actionId?: string;
+  actionName?: string;
+  expressionId?: string;
+  expressionName?: string;
+  danceId?: string;
+  danceName?: string;
 }
 
 export default function EditOsmoCardModal({ 
@@ -59,7 +72,7 @@ export default function EditOsmoCardModal({
     danceName: ''
   });
 
-  const [errors, setErrors] = useState<Partial<FormData>>({});
+  const [errors, setErrors] = useState<FormErrors>({});
 
   // Fetch data from APIs
   const actionHooks = useAction();
@@ -112,12 +125,12 @@ export default function EditOsmoCardModal({
 
   // Handle API validation errors
   useEffect(() => {
-    if (apiError?.response?.status === 422 && apiError?.response?.data?.errors) {
-      const apiErrors: Partial<FormData> = {};
-      const serverErrors = apiError.response.data.errors;
+    if (apiError?.status === 422 && typeof apiError?.message === 'object') {
+      const apiErrors: FormErrors = {};
+      const serverErrors = apiError.message as unknown as Record<string, string[]>; // Type assertion for error object
       
       // Map server field names to form field names
-      const fieldMapping: { [key: string]: keyof FormData } = {
+      const fieldMapping: { [key: string]: keyof FormErrors } = {
         'name': 'name',
         'color': 'color',
         'actionId': 'actionId',
@@ -148,7 +161,7 @@ export default function EditOsmoCardModal({
     }));
     
     // Clear error when user starts typing
-    if (errors[field]) {
+    if (errors[field as keyof FormErrors]) {
       setErrors(prev => ({
         ...prev,
         [field]: undefined
@@ -184,7 +197,7 @@ export default function EditOsmoCardModal({
   };
 
   const validateForm = (): boolean => {
-    const newErrors: Partial<FormData> = {};
+    const newErrors: FormErrors = {};
 
     if (!formData.name.trim()) {
       newErrors.name = 'Card name is required';
