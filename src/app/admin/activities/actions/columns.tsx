@@ -1,7 +1,7 @@
 "use client"
 
 import { Action } from "@/types/action"
-import { ColumnDef } from "@tanstack/react-table"
+import { ColumnDef, Column } from "@tanstack/react-table"
 import { Checkbox } from "@/components/ui/checkbox"
 import { useAdminTranslation } from "@/lib/i18n/hooks/use-translation"
 
@@ -35,7 +35,7 @@ const formatDuration = (ms: number): string => {
 // Header cell components
 const HeaderCell = ({ children }: { children: React.ReactNode }) => {
     const { t, isLoading } = useAdminTranslation()
-    if (isLoading) return <span></span>
+    // if (isLoading) return <span></span>
     return (
         <span className="flex items-center gap-1 text-gray-700 font-semibold">
             {children}
@@ -53,7 +53,7 @@ const CodeHeaderCell = () => {
     )
 }
 
-const NameHeaderCell = ({ column }: { column: any }) => {
+const NameHeaderCell = ({ column }: { column: Column<Action, unknown> }) => {
     const { t, isLoading } = useAdminTranslation()
     if (isLoading) return <span></span>
     return (

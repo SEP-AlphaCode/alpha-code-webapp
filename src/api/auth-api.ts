@@ -1,12 +1,12 @@
-import http from '@/utils/http';
 import { LoginRequest, TokenResponse } from '@/types/login';
+import { springHttp } from '@/utils/http';
 import axios from 'axios';
 
 // Note: avoid UI side-effects (toasts) inside API functions; handle UI in hooks/components
 
 export const login = async (data: LoginRequest): Promise<TokenResponse> => {
   try {
-    const response = await http.post('/auth/login', data);
+    const response = await springHttp.post('/auth/login', data);
     // Handle different response structures
     let responseData = response.data;
     // If the data is wrapped in another property, unwrap it
@@ -39,7 +39,7 @@ export const refreshToken = async (): Promise<{ accessToken: string; refreshToke
     }
 
     // Use http instance (be careful about interceptor loops)
-    const response = await http.post('/auth/refresh-new-token', refreshTokenValue, {
+    const response = await springHttp.post('/auth/refresh-new-token', refreshTokenValue, {
     headers: { 'Content-Type': 'text/plain' }
     });
 
@@ -66,7 +66,7 @@ export const refreshToken = async (): Promise<{ accessToken: string; refreshToke
 export const logout = async (): Promise<void> => {
   try {
     const token = sessionStorage.getItem('refreshToken');
-    await http.post('/auth/logout', token, {
+    await springHttp.post('/auth/logout', token, {
       headers: { "Content-Type": "text/plain" }
     });
 
@@ -77,7 +77,7 @@ export const logout = async (): Promise<void> => {
 
 export const googleLogin = async (idToken: string): Promise<TokenResponse> => {
   try {
-    const response = await http.post('/auth/google-login', idToken, {
+    const response = await springHttp.post('/auth/google-login', idToken, {
       headers: { "Content-Type": "text/plain" }
     });
     return response.data;
@@ -91,7 +91,7 @@ export const requestResetPassword = async (email: string) => {
     if (!email || !email.includes("@")) {
       throw new Error("Please enter a valid email address")
     }
-    const response = await http.post(`/accounts/reset-password/request`, {
+    const response = await springHttp.post(`/accounts/reset-password/request`, {
       email,
     });
     return response.data;
@@ -115,7 +115,7 @@ export const requestResetPassword = async (email: string) => {
 
 export const resetPassword = async (resetToken: string, newPassword: string) => {
   try {
-    const response = await http.post(`/accounts/reset-password/reset`, {
+    const response = await springHttp.post(`/accounts/reset-password/reset`, {
       resetToken,
       newPassword,
     });

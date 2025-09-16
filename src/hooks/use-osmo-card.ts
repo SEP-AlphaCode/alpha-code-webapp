@@ -35,7 +35,7 @@ export const useOsmoCard = () => {
         });
     };
 
-    // Update osmo card mutation
+    // Update osmo card mutation (PATCH - partial update)
     const useUpdateOsmoCard = () => {
         return useMutation({
             mutationFn: ({ id, osmoCardData }: { id: string; osmoCardData: Partial<Omit<OsmoCard, 'id' | 'createdDate'>> }) => 

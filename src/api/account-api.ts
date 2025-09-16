@@ -1,9 +1,9 @@
 import { Account } from '@/types/account';
 import { PagedResult } from '@/types/page-result';
-import http from '@/utils/http';
+import { springHttp } from '@/utils/http';
 export const getAllAccounts = async () => {
   try {
-    const response = await http.get<PagedResult<Account>>('/accounts');
+    const response = await springHttp.get<PagedResult<Account>>('/accounts');
     return response.data;
   } catch (error) {
     throw error;
@@ -11,7 +11,7 @@ export const getAllAccounts = async () => {
 };
 
 export const getAccountById = async (id: string) => {
-  const response = await http.get<Account>(`/accounts/${id}`);
+  const response = await springHttp.get<Account>(`/accounts/${id}`);
   return response.data;
 };
 
@@ -36,7 +36,7 @@ export const createAccount = async (accountData: Omit<Account, 'id' | 'createdDa
       formData.append('avatarFile', accountData.avatarFile);
     }
     
-    const response = await http.post('/accounts', formData, {
+    const response = await springHttp.post('/accounts', formData, {
       headers: {
         'Content-Type': 'multipart/form-data',
       },
@@ -93,11 +93,11 @@ export const createAccount = async (accountData: Omit<Account, 'id' | 'createdDa
 };
 
 export const updateAccount = async (id: string, accountData: Partial<Omit<Account, 'id' | 'createdDate'>>) => {
-  const response = await http.patch(`/accounts/${id}`, accountData);
+  const response = await springHttp.patch(`/accounts/${id}`, accountData);
   return response.data;
 };
 
 export const deleteAccount = async (id: string) => {
-  const response = await http.delete(`/accounts/${id}`);
+  const response = await springHttp.delete(`/accounts/${id}`);
   return response.data;
 };

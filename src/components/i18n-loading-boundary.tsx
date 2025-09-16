@@ -9,7 +9,7 @@ export function I18nLoadingBoundary({ children }: { children: React.ReactNode })
   if (isLoading) {
     return (
       <div className="min-h-screen bg-white flex items-center justify-center">
-        <LoadingGif size="lg" />
+        <LoadingGif size="xl" />
       </div>
     )
   }

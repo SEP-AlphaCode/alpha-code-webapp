@@ -6,10 +6,10 @@ export const useAuth = () => {
   const [isLoading, setIsLoading] = useState<boolean>(true);
 
   useEffect(() => {
-    const checkAuth = () => {
+    const checkAuth = async () => {
       try {
         const accessToken = sessionStorage.getItem('accessToken');
-        const isValid = accessToken ? isValidToken(accessToken) : false;
+        const isValid = accessToken ? await isValidToken(accessToken) : false;
         setIsAuthenticated(isValid);
       } catch (error) {
         console.error('Error checking authentication:', error);

@@ -3,6 +3,7 @@ import React, { useState, useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useOsmoCard } from '@/hooks/use-osmo-card';
 import { CreateCardData, OsmoCard } from '@/types/osmo-card';
+import { toast } from 'sonner';
 // Import các component đã tách
 import PageHeader from '@/components/osmo-cards/page-header';
 import StatisticsCards from '@/components/osmo-cards/statistics-cards';
@@ -24,6 +25,7 @@ export default function OsmoCardManagement() {
   const [editModalOpen, setEditModalOpen] = useState(false);
   const [createModalOpen, setCreateModalOpen] = useState(false);
   const [selectedCard, setSelectedCard] = useState<OsmoCard | null>(null);
+  const [editApiError, setEditApiError] = useState<any>(null);
 
   const osmoCardHooks = useOsmoCard();
   // Keep full query object to enable retry (refetch)
@@ -64,7 +66,27 @@ export default function OsmoCardManagement() {
 
   // Event handlers
   const handleDeleteCard = (cardId: string) => {
-    deleteOsmoCardMutation.mutate(cardId);
+    deleteOsmoCardMutation.mutate(cardId, {
+      onSuccess: () => {
+        // Success toast will be shown by the osmo-card-item component
+      },
+      onError: (error: any) => {
+        console.error('Delete error:', error);
+        
+        // Extract error message from API response
+        let errorMessage = 'Failed to delete Osmo Card';
+        let errorDescription = 'Please try again later.';
+        
+        if (error?.response?.data?.message) {
+          errorDescription = error.response.data.message;
+        }
+        
+        toast.error(errorMessage, {
+          description: errorDescription,
+          duration: 5000,
+        });
+      }
+    });
   };
 
   const handleAddNewCard = () => {
@@ -88,6 +110,9 @@ export default function OsmoCardManagement() {
   };
 
   const handleSaveEdit = (cardId: string, updatedData: Partial<OsmoCard>) => {
+    // Clear previous errors
+    setEditApiError(null);
+    
     updateOsmoCardMutation.mutate({
       id: cardId,
       osmoCardData: updatedData
@@ -95,6 +120,43 @@ export default function OsmoCardManagement() {
       onSuccess: () => {
         setEditModalOpen(false);
         setSelectedCard(null);
+        setEditApiError(null);
+        toast.success('Osmo Card updated successfully');
+      },
+      onError: (error: any) => {
+        console.error('Update error:', error);
+        
+        // Store error for modal to display field-specific errors
+        setEditApiError(error);
+        
+        // Extract error message from API response
+        let errorMessage = 'Failed to update Osmo Card';
+        let errorDescription = 'Please check the form and try again.';
+        
+        if (error?.response?.data) {
+          const errorData = error.response.data;
+          
+          // Handle validation errors (422)
+          if (error.response.status === 422) {
+            errorMessage = 'Validation Error';
+            if (errorData.message) {
+              errorDescription = errorData.message;
+            } else if (errorData.errors) {
+              // Handle multiple validation errors
+              const errorDetails = Object.values(errorData.errors).flat().join(', ');
+              errorDescription = errorDetails;
+            }
+          }
+          // Handle other error types
+          else if (errorData.message) {
+            errorDescription = errorData.message;
+          }
+        }
+        
+        toast.error(errorMessage, {
+          description: errorDescription,
+          duration: 5000, // Show longer for error messages
+        });
       }
     });
   };
@@ -107,6 +169,7 @@ export default function OsmoCardManagement() {
   const handleCloseEditModal = () => {
     setEditModalOpen(false);
     setSelectedCard(null);
+    setEditApiError(null);
   };
 
   const handleCreateCard = () => {
@@ -117,6 +180,39 @@ export default function OsmoCardManagement() {
     createOsmoCardMutation.mutate(cardData, {
       onSuccess: () => {
         setCreateModalOpen(false);
+        toast.success('Osmo Card created successfully');
+      },
+      onError: (error: any) => {
+        console.error('Create error:', error);
+        
+        // Extract error message from API response
+        let errorMessage = 'Failed to create Osmo Card';
+        let errorDescription = 'Please try again later.';
+        
+        if (error?.response?.data) {
+          const errorData = error.response.data;
+          
+          // Handle validation errors (422)
+          if (error.response.status === 422) {
+            errorMessage = 'Validation Error';
+            if (errorData.message) {
+              errorDescription = errorData.message;
+            } else if (errorData.errors) {
+              // Handle multiple validation errors
+              const errorDetails = Object.values(errorData.errors).flat().join(', ');
+              errorDescription = errorDetails;
+            }
+          }
+          // Handle other error types
+          else if (errorData.message) {
+            errorDescription = errorData.message;
+          }
+        }
+        
+        toast.error(errorMessage, {
+          description: errorDescription,
+          duration: 5000,
+        });
       }
     });
   };
@@ -196,6 +292,7 @@ export default function OsmoCardManagement() {
         onSave={handleSaveEdit}
         card={selectedCard}
         isLoading={updateOsmoCardMutation.isPending}
+        apiError={editApiError}
       />
 
       <CreateOsmoCardModal
