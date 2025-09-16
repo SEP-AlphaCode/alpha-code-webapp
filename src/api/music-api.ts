@@ -1,4 +1,4 @@
-import { Music, MusicResponse } from '@/types/music';
+import { Music, MusicResponse, AudioConvertRequest, AudioConvertResponse } from '@/types/music';
 import { springHttp } from '@/utils/http';
 import { PagedResult } from '@/types/page-result';
 
@@ -43,4 +43,32 @@ export const updateMusic = async (id: string, musicData: Partial<Omit<Music, 'id
 export const deleteMusic = async (id: string) => {
     const response = await springHttp.delete(`/musics/${id}`);
     return response.data;
+};
+
+// Audio conversion API
+export const convertAudioToWav = async (params: AudioConvertRequest): Promise<AudioConvertResponse> => {
+    try {
+        const formData = new FormData();
+        formData.append('file', params.file);
+        
+        if (params.start_time !== undefined) {
+            formData.append('start_time', params.start_time.toString());
+        }
+        
+        if (params.end_time !== undefined) {
+            formData.append('end_time', params.end_time.toString());
+        }
+
+        const response = await springHttp.post<AudioConvertResponse>('/audio/convert/to-wav', formData, {
+            headers: {
+                'Content-Type': 'multipart/form-data',
+            },
+            timeout: 300000, // 5 minutes timeout for file conversion
+        });
+        
+        return response.data;
+    } catch (error) {
+        console.error('Error converting audio:', error);
+        throw error;
+    }
 };  

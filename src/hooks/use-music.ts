@@ -1,6 +1,6 @@
-import { getAllMusics, getPagedMusics, getMusicById, createMusic, updateMusic, deleteMusic } from "@/api/music-api";
+import { getAllMusics, getPagedMusics, getMusicById, createMusic, updateMusic, deleteMusic, convertAudioToWav } from "@/api/music-api";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Music, MusicResponse } from "@/types/music";
+import { Music, MusicResponse, AudioConvertRequest, AudioConvertResponse } from "@/types/music";
 import { PagedResult } from "@/types/page-result";
 
 export const useMusic = () => {
@@ -66,6 +66,15 @@ export const useMusic = () => {
         });
     };
 
+    // Convert audio to WAV mutation
+    const useConvertAudio = () => {
+        return useMutation<AudioConvertResponse, Error, AudioConvertRequest>({
+            mutationFn: convertAudioToWav,
+            // Note: We don't invalidate musics cache here as this is just conversion,
+            // not creating/updating music records
+        });
+    };
+
     return {
         useGetAllMusics,
         useGetPagedMusics,
@@ -73,5 +82,6 @@ export const useMusic = () => {
         useCreateMusic,
         useUpdateMusic,
         useDeleteMusic,
+        useConvertAudio,
     };
 };
