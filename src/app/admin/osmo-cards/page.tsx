@@ -14,6 +14,7 @@ import ErrorState from '@/components/error-state';
 import ViewOsmoCardModal from '@/components/osmo-cards/view-osmo-card-modal';
 import EditOsmoCardModal from '@/components/osmo-cards/edit-osmo-card-modal';
 import CreateOsmoCardModal from '@/components/osmo-cards/create-osmo-card-modal';
+import { ApiResponse } from '@/types/api-error';
 
 export default function OsmoCardManagement() {
   const [searchTerm, setSearchTerm] = useState('');
@@ -25,7 +26,7 @@ export default function OsmoCardManagement() {
   const [editModalOpen, setEditModalOpen] = useState(false);
   const [createModalOpen, setCreateModalOpen] = useState(false);
   const [selectedCard, setSelectedCard] = useState<OsmoCard | null>(null);
-  const [editApiError, setEditApiError] = useState<any>(null);
+  const [editApiError, setEditApiError] = useState<ApiResponse>();
 
   const osmoCardHooks = useOsmoCard();
   // Keep full query object to enable retry (refetch)
@@ -70,17 +71,19 @@ export default function OsmoCardManagement() {
       onSuccess: () => {
         // Success toast will be shown by the osmo-card-item component
       },
-      onError: (error: any) => {
+      onError: (error: Error) => {
         console.error('Delete error:', error);
-        
+
         // Extract error message from API response
-        let errorMessage = 'Failed to delete Osmo Card';
+        const errorMessage = 'Failed to delete Osmo Card';
         let errorDescription = 'Please try again later.';
-        
-        if (error?.response?.data?.message) {
-          errorDescription = error.response.data.message;
+
+        // Try to extract API error details if available
+        const apiError = error as unknown as ApiResponse;
+        if (typeof apiError?.message === 'string') {
+          errorDescription = apiError.message;
         }
-        
+
         toast.error(errorMessage, {
           description: errorDescription,
           duration: 5000,
@@ -111,8 +114,8 @@ export default function OsmoCardManagement() {
 
   const handleSaveEdit = (cardId: string, updatedData: Partial<OsmoCard>) => {
     // Clear previous errors
-    setEditApiError(null);
-    
+    setEditApiError(undefined);
+
     updateOsmoCardMutation.mutate({
       id: cardId,
       osmoCardData: updatedData
@@ -120,39 +123,28 @@ export default function OsmoCardManagement() {
       onSuccess: () => {
         setEditModalOpen(false);
         setSelectedCard(null);
-        setEditApiError(null);
+        setEditApiError(undefined);
         toast.success('Osmo Card updated successfully');
       },
-      onError: (error: any) => {
-        console.error('Update error:', error);
-        
+      onError: (error: Error) => {
+        // Cast error to ApiResponse to access custom properties
+        const apiError = error as unknown as ApiResponse;
         // Store error for modal to display field-specific errors
-        setEditApiError(error);
-        
+        setEditApiError(apiError);
+
         // Extract error message from API response
         let errorMessage = 'Failed to update Osmo Card';
-        let errorDescription = 'Please check the form and try again.';
-        
-        if (error?.response?.data) {
-          const errorData = error.response.data;
-          
+        const errorDescription = 'Please check the form and try again.';
+
+        if (apiError) {
+
           // Handle validation errors (422)
-          if (error.response.status === 422) {
-            errorMessage = 'Validation Error';
-            if (errorData.message) {
-              errorDescription = errorData.message;
-            } else if (errorData.errors) {
-              // Handle multiple validation errors
-              const errorDetails = Object.values(errorData.errors).flat().join(', ');
-              errorDescription = errorDetails;
-            }
-          }
-          // Handle other error types
-          else if (errorData.message) {
-            errorDescription = errorData.message;
+          const response = (error as unknown as ApiResponse);
+          if (typeof response?.message === 'string') {
+            errorMessage = response.message;
           }
         }
-        
+
         toast.error(errorMessage, {
           description: errorDescription,
           duration: 5000, // Show longer for error messages
@@ -169,7 +161,7 @@ export default function OsmoCardManagement() {
   const handleCloseEditModal = () => {
     setEditModalOpen(false);
     setSelectedCard(null);
-    setEditApiError(null);
+    setEditApiError(undefined);
   };
 
   const handleCreateCard = () => {
@@ -182,33 +174,19 @@ export default function OsmoCardManagement() {
         setCreateModalOpen(false);
         toast.success('Osmo Card created successfully');
       },
-      onError: (error: any) => {
-        console.error('Create error:', error);
-        
+      onError: (error: Error) => {
         // Extract error message from API response
         let errorMessage = 'Failed to create Osmo Card';
-        let errorDescription = 'Please try again later.';
-        
-        if (error?.response?.data) {
-          const errorData = error.response.data;
-          
-          // Handle validation errors (422)
-          if (error.response.status === 422) {
-            errorMessage = 'Validation Error';
-            if (errorData.message) {
-              errorDescription = errorData.message;
-            } else if (errorData.errors) {
-              // Handle multiple validation errors
-              const errorDetails = Object.values(errorData.errors).flat().join(', ');
-              errorDescription = errorDetails;
-            }
-          }
-          // Handle other error types
-          else if (errorData.message) {
-            errorDescription = errorData.message;
-          }
+        const errorDescription = 'Please try again later.';
+
+        // Try to extract API error details if available
+        // @ts-expect-error - Error object might have additional properties from API response
+        const response = (error as ApiResponse);
+        if (typeof response?.message === 'string') {
+          errorMessage = response.message;
         }
-        
+        // If response.message is not a string, keep the default
+
         toast.error(errorMessage, {
           description: errorDescription,
           duration: 5000,

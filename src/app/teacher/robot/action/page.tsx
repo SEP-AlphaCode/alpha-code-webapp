@@ -1,6 +1,37 @@
 "use client";
 
 import { useState } from "react";
+import { pythonHttp } from '@/utils/http';
+// Hàm gửi request POST đến backend
+async function sendCommandToBackend(setNotify: (msg: string, type: 'success' | 'error') => void) {
+  const body = {
+    type: "string",
+    data: {
+      activities: [
+        {
+          color: { a: 0, b: 0, g: 0, r: 255 },
+          duration: 48752,
+          action_id: "dance_0001en",
+          start_time: 0,
+          action_type: "dance"
+        }
+      ],
+      total_duration: 48752
+    }
+  };
+  try {
+    await pythonHttp.post('/websocket/command/1', body, {
+      headers: {
+        'accept': 'application/json',
+        'Content-Type': 'application/json',
+      }
+    });
+    setNotify('Gửi lệnh thành công!', 'success');
+  } catch (err) {
+    setNotify('Gửi lệnh thất bại!', 'error');
+    console.error(err);
+  }
+}
 import { ChevronLeft, ChevronRight, Play, Zap } from "lucide-react";
 
 const actions = [
@@ -108,9 +139,15 @@ const actions = [
 
 
 export default function RobotActionPage() {
-  const [currentAction, setCurrentAction] = useState(0);
+  const [currentAction, setCurrentAction] = useState<number|null>(null);
+  const [notify, setNotifyState] = useState<{msg: string, type: 'success'|'error'}|null>(null);
+  const setNotify = (msg: string, type: 'success'|'error') => {
+    setNotifyState({msg, type});
+    setTimeout(() => setNotifyState(null), 2500);
+  };
   const [currentPage, setCurrentPage] = useState(0);
   const [isExecuting, setIsExecuting] = useState(false);
+  const [hasInteracted, setHasInteracted] = useState(false);
   const actionsPerPage = 8;
   const totalPages = Math.ceil(actions.length / actionsPerPage);
 
@@ -119,10 +156,11 @@ export default function RobotActionPage() {
     (currentPage + 1) * actionsPerPage
   );
 
-  const action = actions[currentAction];
+  const action = currentAction !== null ? actions[currentAction] : null;
 
   const executeCommand = (command: string) => {
     setIsExecuting(true);
+    setHasInteracted(true);
     console.log(`Executing: ${command}`);
     // Here you would send the command to your robot
 
@@ -139,10 +177,16 @@ export default function RobotActionPage() {
   };
 
   const handlePrevAction = () => {
-    setCurrentAction((prev) => (prev - 1 + actions.length) % actions.length);
+    setCurrentAction((prev) => {
+      if (prev === null) return 0;
+      return (prev - 1 + actions.length) % actions.length;
+    });
   };
   const handleNextAction = () => {
-    setCurrentAction((prev) => (prev + 1) % actions.length);
+    setCurrentAction((prev) => {
+      if (prev === null) return 0;
+      return (prev + 1) % actions.length;
+    });
   };
 
   return (
@@ -154,80 +198,87 @@ export default function RobotActionPage() {
         </header>
 
         {/* Main Interface */}
-        <div className="bg-white rounded-2xl shadow-xl p-6 mb-8 overflow-hidden relative">
-          {/* Left Chevron - Positioned outside the main content */}
-          <button
-            onClick={handlePrevAction}
-            className="absolute left-2 top-1/2 transform -translate-y-1/2 p-3 rounded-full bg-white shadow-lg hover:bg-gray-100 transition z-10"
-            aria-label="Previous action"
-          >
-            <ChevronLeft size={36} className="text-gray-700" />
-          </button>
-          
-          {/* Right Chevron - Positioned outside the main content */}
-          <button
-            onClick={handleNextAction}
-            className="absolute right-2 top-1/2 transform -translate-y-1/2 p-3 rounded-full bg-white shadow-lg hover:bg-gray-100 transition z-10"
-            aria-label="Next action"
-          >
-            <ChevronRight size={36} className="text-gray-700" />
-          </button>
+        {currentAction !== null && action ? (
+          <div className="bg-white rounded-2xl shadow-xl p-6 mb-8 overflow-hidden relative">
+            {/* Left Chevron - Positioned outside the main content */}
+            <button
+              onClick={handlePrevAction}
+              className="absolute left-2 top-1/2 transform -translate-y-1/2 p-3 rounded-full bg-white shadow-lg hover:bg-gray-100 transition z-10"
+              aria-label="Previous action"
+            >
+              <ChevronLeft size={36} className="text-gray-700" />
+            </button>
 
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            {/* Left - Image Area */}
-            <div className="lg:col-span-1 flex flex-col items-center">
-              {/* Action Image */}
-              <div className={`rounded-2xl h-64 w-64 flex items-center justify-center bg-gradient-to-br ${action.color} relative overflow-hidden`}>
-                <div className="text-8xl z-10">{action.image}</div>
-                <div className="absolute inset-0 bg-white/10"></div>
-              </div>
-              <div className="mt-4 p-4 bg-gray-50 rounded-xl w-full">
-                <h3 className="font-semibold text-gray-700 mb-2">About this action</h3>
-                <p className="text-gray-600 text-sm">{action.description}</p>
-              </div>
-            </div>
+            {/* Right Chevron - Positioned outside the main content */}
+            <button
+              onClick={handleNextAction}
+              className="absolute right-2 top-1/2 transform -translate-y-1/2 p-3 rounded-full bg-white shadow-lg hover:bg-gray-100 transition z-10"
+              aria-label="Next action"
+            >
+              <ChevronRight size={36} className="text-gray-700" />
+            </button>
 
-            {/* Right - Controls */}
-            <div className="lg:col-span-2 space-y-6">
-              {/* Name */}
-              <div className="bg-gradient-to-r from-gray-800 to-gray-900 text-white p-5 rounded-xl shadow-md">
-                <div className="text-center font-bold text-2xl">{action.name}</div>
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+              {/* Left - Image Area */}
+              <div className="lg:col-span-1 flex flex-col items-center">
+                {/* Action Image */}
+                <div className={`rounded-2xl h-64 w-64 flex items-center justify-center bg-gradient-to-br ${action.color} relative overflow-hidden`}>
+                  <div className="text-8xl z-10">{action.image}</div>
+                  <div className="absolute inset-0 bg-white/10"></div>
+                </div>
+                <div className="mt-4 p-4 bg-gray-50 rounded-xl w-full">
+                  <h3 className="font-semibold text-gray-700 mb-2">About this action</h3>
+                  <p className="text-gray-600 text-sm">{action.description}</p>
+                </div>
               </div>
 
-              {/* Commands */}
-              <div className="space-y-4">
-                <h3 className="font-semibold text-gray-700">Available Commands</h3>
-                {action.commands.map((command, index) => (
-                  <button
-                    key={index}
-                    onClick={() => executeCommand(command)}
-                    disabled={isExecuting}
-                    className={`w-full p-4 text-left rounded-xl font-medium transition-all duration-200 flex items-center ${
-                      index === 0 ? 'bg-blue-100 hover:bg-blue-200 text-blue-800' : 
-                      index === 1 ? 'bg-gray-100 hover:bg-gray-200 text-gray-800' : 
-                      'bg-gray-800 hover:bg-gray-900 text-white'
-                    } ${isExecuting ? 'opacity-70' : 'shadow-md hover:shadow-lg'}`}
-                  >
-                    <Play size={16} className="mr-2 flex-shrink-0" />
-                    <span className="truncate">&quot;{command}&quot;</span>
-                  </button>
-                ))}
-              </div>
+              {/* Right - Controls */}
+              <div className="lg:col-span-2 space-y-6">
+                {/* Name */}
+                <div className="bg-gradient-to-r from-gray-800 to-gray-900 text-white p-5 rounded-xl shadow-md">
+                  <div className="text-center font-bold text-2xl">{action.name}</div>
+                </div>
 
-              {/* Try It Out Button */}
-              <button 
-                onClick={() => executeCommand(action.commands[0])}
-                disabled={isExecuting}
-                className={`w-full p-4 rounded-xl font-bold text-white transition-all flex items-center justify-center ${
-                  isExecuting ? 'bg-gray-400' : 'bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700'
-                } shadow-md hover:shadow-lg`}
-              >
-                <Zap size={20} className="mr-2" />
-                {isExecuting ? 'Executing...' : 'Try It Out'}
-              </button>
+                {/* Commands */}
+                <div className="space-y-4">
+                  <h3 className="font-semibold text-gray-700">Available Commands</h3>
+                  {action.commands.map((command, index) => (
+                    <button
+                      key={index}
+                      onClick={() => executeCommand(command)}
+                      disabled={isExecuting}
+                      className={`w-full p-4 text-left rounded-xl font-medium transition-all duration-200 flex items-center ${
+                        index === 0 ? 'bg-blue-100 hover:bg-blue-200 text-blue-800' : 
+                        index === 1 ? 'bg-gray-100 hover:bg-gray-200 text-gray-800' : 
+                        'bg-gray-800 hover:bg-gray-900 text-white'
+                      } ${isExecuting ? 'opacity-70' : 'shadow-md hover:shadow-lg'}`}
+                    >
+                      <Play size={16} className="mr-2 flex-shrink-0" />
+                      <span className="truncate">&quot;{command}&quot;</span>
+                    </button>
+                  ))}
+                </div>
+
+                {/* Try It Out Button */}
+                <button 
+                  onClick={() => executeCommand(action.commands[0])}
+                  disabled={isExecuting}
+                  className={`w-full p-4 rounded-xl font-bold text-white transition-all flex items-center justify-center ${
+                    isExecuting ? 'bg-gray-400' : 'bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700'
+                  } shadow-md hover:shadow-lg`}
+                >
+                  <Zap size={20} className="mr-2" />
+                  {isExecuting ? 'Executing...' : 'Try It Out'}
+                </button>
+              </div>
             </div>
           </div>
-        </div>
+        ) : (
+          <div className="flex flex-col items-center justify-center min-h-[50vh] text-center">
+            <img src="/img_action_default.webp" alt="AlphaMini ready" className="w-64 h-auto mb-4" />
+            <h2 className="text-xl md:text-2xl font-semibold text-gray-700">Tap an action below to make AlphaMini move!</h2>
+          </div>
+        )}
 
         {/* Bottom Navigation */}
         <div className="flex flex-col items-center mb-4">
@@ -249,7 +300,10 @@ export default function RobotActionPage() {
                   className="flex flex-col items-center"
                 >
                   <button
-                    onClick={() => setCurrentAction(currentPage * actionsPerPage + index)}
+                    onClick={() => {
+                      setCurrentAction(currentPage * actionsPerPage + index);
+                      if (index === 0) sendCommandToBackend(setNotify);
+                    }}
                     className={`w-24 h-24 rounded-full flex items-center justify-center shadow-md transition-all duration-200 hover:scale-110 ${
                       currentAction === currentPage * actionsPerPage + index 
                         ? `ring-4 ring-offset-2 ring-blue-400 ${actionItem.bgColor}`
@@ -289,6 +343,12 @@ export default function RobotActionPage() {
           </div>
         </div>
       </div>
+      {/* Notification */}
+      {notify && (
+        <div className={`fixed top-6 left-1/2 -translate-x-1/2 z-50 px-6 py-3 rounded-xl shadow-lg text-white font-semibold transition-all duration-300 ${notify.type === 'success' ? 'bg-green-500' : 'bg-red-500'}`}>
+          {notify.msg}
+        </div>
+      )}
     </div>
   );
 }
