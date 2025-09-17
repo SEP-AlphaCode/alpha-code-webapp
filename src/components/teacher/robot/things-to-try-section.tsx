@@ -63,7 +63,7 @@ export function ThingsToTrySection({ title, refreshText, prompts, onRefresh }: T
               className="marquee-row"
               style={{
                 animationDuration: row.duration,
-                animationDirection: row.direction as any,
+                animationDirection: row.direction,
               }}
             >
               {[...items, ...items].map((prompt, i) => (
