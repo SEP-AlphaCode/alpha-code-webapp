@@ -5,22 +5,13 @@ import { pythonHttp } from "@/utils/http";
 export function useRobotCommand(setNotify: (msg: string, type: "success" | "error") => void) {
   const sendCommandToBackend = async () => {
     const body = {
-      type: "string",
+      type: "action",
       data: {
-        activities: [
-          {
-            color: { a: 0, b: 0, g: 0, r: 255 },
-            duration: 48752,
-            action_id: "dance_0001en",
-            start_time: 0,
-            action_type: "dance",
-          },
-        ],
-        total_duration: 48752,
-      },
+        code: "015"
+      }
     };
     try {
-      await pythonHttp.post("/websocket/command/1", body, {
+      await pythonHttp.post("/websocket/command/EAA007UBT10000341", body, {
         headers: {
           accept: "application/json",
           "Content-Type": "application/json",
