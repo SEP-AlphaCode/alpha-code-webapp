@@ -34,11 +34,21 @@ const formatDuration = (ms: number): string => {
 
 // Header cell components
 const HeaderCell = ({ children }: { children: React.ReactNode }) => {
-    const { t, isLoading } = useAdminTranslation()
+    // const { t, isLoading } = useAdminTranslation()
     // if (isLoading) return <span></span>
     return (
         <span className="flex items-center gap-1 text-gray-700 font-semibold">
             {children}
+        </span>
+    )
+}
+
+const IdHeaderCell = () => {
+    const { t, isLoading } = useAdminTranslation()
+    if (isLoading) return <span></span>
+    return (
+        <span className="flex items-center gap-1 text-gray-700 font-semibold">
+            {t('actionManagement.fields.id')}
         </span>
     )
 }
@@ -77,6 +87,17 @@ const DescriptionHeaderCell = () => {
         <span className="flex items-center gap-1 text-yellow-700 font-semibold">
             <svg className="h-4 w-4 text-yellow-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 12h8M8 16h8M8 8h8" /></svg>
             {t('actionManagement.fields.description')}
+        </span>
+    )
+}
+
+const IconHeaderCell = () => {
+    const { t, isLoading } = useAdminTranslation()
+    if (isLoading) return <span></span>
+    return (
+        <span className="flex items-center gap-1 text-red-700 font-semibold">
+            <svg className="h-4 w-4 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
+            {t('actionManagement.fields.icon')}
         </span>
     )
 }
@@ -120,6 +141,19 @@ const DescriptionCell = ({ description }: { description?: string }) => {
         <div className="max-w-xs">
             <p className="text-sm text-gray-700 line-clamp-5 whitespace-normal break-words">
                 {description || t('common.noData')}
+            </p>
+        </div>
+    )
+}
+
+const IconCell = ({ icon }: { icon?: string }) => {
+    const { t, isLoading } = useAdminTranslation()
+    if (isLoading) return <span></span>
+    
+    return (
+        <div className="max-w-xs">
+            <p className="text-sm text-gray-700 line-clamp-5 whitespace-normal break-words">
+                {icon || t('common.noData')}
             </p>
         </div>
     )
@@ -247,7 +281,7 @@ export const createColumns = (
     },
     {
         accessorKey: "id",
-        header: () => <HeaderCell>ID</HeaderCell>,
+        header: () => <IdHeaderCell />,
         cell: ({ row }) => (
             <span className="text-gray-700 font-semibold">
                 {row.original.id.substring(0, 8)}...
@@ -271,6 +305,11 @@ export const createColumns = (
         accessorKey: "description",
         header: () => <DescriptionHeaderCell />,
         cell: ({ row }) => <DescriptionCell description={row.original.description} />,
+    },
+     {
+        accessorKey: "icon",
+        header: () => <IconHeaderCell />,
+        cell: ({ row }) => <IconCell icon={row.original.icon} />,
     },
     {
         accessorKey: "duration",

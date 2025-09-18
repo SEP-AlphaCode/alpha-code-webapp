@@ -242,13 +242,15 @@
     "createDescription": "Create a new dance for the robot system. Fill in the details below.",
     "editDescription": "Update the dance details below.",
     "fields": {
+      "id": "ID",
       "code": "Code",
       "name": "Name",
       "description": "Description",
       "duration": "Duration",
       "difficulty": "Difficulty",
       "category": "Category",
-      "status": "Status"
+      "status": "Status",
+      "icon": "Icon"
     },
     "placeholders": {
       "code": "Enter dance code",
@@ -269,6 +271,7 @@
     "createDescription": "Create a new action for the robot system. Fill in the details below.",
     "editDescription": "Update the action details below.",
     "fields": {
+      "id": "ID",
       "name": "Name",
       "description": "Description",
       "type": "Type",
@@ -276,7 +279,8 @@
       "status": "Status",
       "code": "Code",
       "duration": "Duration",
-      "canInterrupt": "Can Interrupt"
+      "canInterrupt": "Can Interrupt",
+      "icon": "Icon"
     },
     "placeholders": {
       "code": "Enter action code",
@@ -298,6 +302,7 @@
     "deleteTitle": "Delete Expression",
     "deleteConfirm": "Are you sure you want to delete this expression?",
     "fields": {
+      "id": "ID",
       "name": "Name",
       "description": "Description",
       "emotion": "Emotion",

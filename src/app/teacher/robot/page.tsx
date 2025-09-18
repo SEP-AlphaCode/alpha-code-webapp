@@ -2,21 +2,14 @@
 
 import React, { useState, useEffect } from "react";
 import { useI18n } from "@/lib/i18n/provider";
-import { useRouter } from "next/navigation";
-import { Card, CardContent, CardHeader } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import Image from "next/image";
-import {
-  Battery,
-  WifiOff,
-  Power,
-  Settings,
-  Activity,
-  MapPin,
-  Zap,
-  CheckCircle,
-  RefreshCw,
-} from "lucide-react" ;
+
+// Import extracted components
+import { RobotPageHeader } from "@/components/teacher/robot/robot-page-header";
+import { RobotGrid } from "@/components/teacher/robot/robot-grid";
+import { RobotDetails } from "@/components/teacher/robot/robot-details";
+import { ProgrammingSection } from "@/components/teacher/robot/programming-section";
+import { EntertainmentSection } from "@/components/teacher/robot/entertainment-section";
+import { ThingsToTrySection } from "@/components/teacher/robot/things-to-try-section";
 
 // Import tĩnh cả hai file ngôn ngữ
 import viTranslations from "@/lib/i18n/dictionaries/teacher/teacher.vi.json";
@@ -27,6 +20,23 @@ const translations: Record<string, TeacherTranslations> = {
   vi: viTranslations,
   en: enTranslations,
 };
+
+// Define Robot type to match component expectations
+interface Robot {
+  id: string;
+  name: string;
+  status: "online" | "offline" | "charging";
+  battery: number;
+  location: string;
+  lastSeen: string;
+  version: string;
+  students: number;
+  currentTask: string;
+  uptime: string;
+  ip: string;
+  temperature: number;
+  image: string;
+}
 
 // Hàm xáo trộn mảng ngẫu nhiên
 function shuffleArray(array: string[]) {
@@ -43,7 +53,6 @@ export default function TeacherDashboard() {
   const t = translations[locale];
   const [selectedRobot, setSelectedRobot] = useState<string | null>(null);
   const [shuffledPrompts, setShuffledPrompts] = useState<string[]>([]);
-  const router = useRouter();
 
   useEffect(() => {
     if (t?.things_to_try?.prompts) {
@@ -57,20 +66,9 @@ export default function TeacherDashboard() {
     }
   };
 
-  const getRowItems = (start: number, count: number) => {
-    if (!shuffledPrompts || shuffledPrompts.length === 0) {
-      return Array.from({ length: count }, () => "");
-    }
-    const items: string[] = [];
-    for (let i = 0; i < count; i++) {
-      items.push(shuffledPrompts[(start + i) % shuffledPrompts.length]);
-    }
-    return items;
-  };
-
   if (!t) return <div>Loading translations...</div>;
 
-  const robots = [
+  const robots: Robot[] = [
     {
       id: "Alpha-01",
       name: "Alpha Mini 01",
@@ -133,212 +131,82 @@ export default function TeacherDashboard() {
     },
   ];
 
-  const getStatusIcon = (status: string) => {
-    switch (status) {
-      case "online":
-        return <CheckCircle className="h-4 w-4 text-green-500" />;
-      case "offline":
-        return <WifiOff className="h-4 w-4 text-gray-500" />;
-      case "charging":
-        return <Zap className="h-4 w-4 text-yellow-500" />;
-      default:
-        return <Activity className="h-4 w-4" />;
-    }
-  };
-
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case "online":
-        return "bg-green-100 text-green-800";
-      case "offline":
-        return "bg-gray-100 text-gray-800";
-      case "charging":
-        return "bg-yellow-100 text-yellow-800";
-      default:
-        return "bg-gray-100 text-gray-800";
-    }
-  };
-
-  const getBatteryColor = (battery: number) => {
-    if (battery > 60) return "bg-green-500";
-    if (battery > 30) return "bg-yellow-500";
-    return "bg-red-500";
-  };
-
   const selectedRobotDetails = robots.find((robot) => robot.id === selectedRobot);
 
   return (
-    <div className="space-y-10 p-8 bg-gradient-to-br from-blue-50 to-white min-h-screen">
-      {/* Header */}
-      <header className="sticky top-0 z-10 bg-white/80 backdrop-blur border-b border-gray-200 mb-6 py-4 px-6 rounded-xl shadow flex items-center justify-between">
-        <h1 className="text-3xl font-bold text-blue-900 tracking-tight">{t.header.title}</h1>
-        <span className="text-base text-gray-500 font-medium">Manage and interact with your AlphaMini robots</span>
-      </header>
+    <div className="space-y-10">
+      <RobotPageHeader 
+        title={t.header.title}
+        subtitle="Manage and interact with your AlphaMini robots"
+      />
+      
+      <RobotGrid 
+        robots={robots}
+        selectedRobot={selectedRobot}
+        onRobotSelect={setSelectedRobot}
+        sectionTitle={t.robot_selection.title}
+        statusTexts={{
+          online: t.robot_selection.status_online,
+          offline: t.robot_selection.status_offline,
+          charging: t.robot_selection.charging,
+        }}
+      />
 
-      {/* Robot Selector - horizontal cards */}
-      <section>
-        <h2 className="text-2xl font-semibold text-blue-800 mb-4">{t.robot_selection.title}</h2>
-        <div className="flex gap-6 overflow-x-auto p-5 hide-scrollbar">
-          {robots.map((robot) => (
-            <div
-              key={robot.id}
-              className={`min-w-[320px] bg-white rounded-2xl shadow-lg border border-gray-100 p-5 flex flex-col items-center transition-transform duration-200 hover:scale-105 cursor-pointer ${selectedRobot === robot.id ? "ring-2 ring-blue-400" : ""}`}
-              onClick={() => setSelectedRobot(robot.id)}
-            >
-              <Image src={robot.image} alt={robot.name} width={80} height={80} className="rounded-full object-cover mb-2" />
-              <span className="font-bold text-lg text-gray-900 mb-1">{robot.name}</span>
-              <span className="text-xs text-gray-400 mb-2">{robot.id}</span>
-              <div className="flex items-center gap-2 mb-2">
-                {getStatusIcon(robot.status)}
-                <span className={`px-2 py-0.5 rounded-full text-xs font-semibold ${getStatusColor(robot.status)}`}>{robot.status === 'online' ? t.robot_selection.status_online : (robot.status === 'offline' ? t.robot_selection.status_offline : t.robot_selection.charging)}</span>
-              </div>
-              <div className="flex items-center gap-2 mb-2">
-                <Battery className="h-4 w-4" />
-                <span className="font-semibold text-sm">{robot.battery}%</span>
-                <div className="w-20 h-2 bg-gray-200 rounded-full overflow-hidden">
-                  <div className={`h-2 rounded-full ${getBatteryColor(robot.battery)}`} style={{ width: `${robot.battery}%` }}></div>
-                </div>
-              </div>
-              <div className="flex items-center gap-2">
-                <MapPin className="h-4 w-4 text-blue-400" />
-                <span className="text-sm text-gray-600">{robot.location}</span>
-              </div>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      {/* Selected Robot Details */}
       {selectedRobotDetails && (
-        <section className="mt-8">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {/* System Info */}
-            <div className="bg-white rounded-xl shadow p-6 border border-gray-100">
-              <h4 className="font-semibold text-lg text-blue-700 mb-4">{t.robot_selection.system_info.title}</h4>
-              <div className="space-y-2 text-sm">
-                <div className="flex justify-between"><span className="text-gray-400">ID:</span><span className="text-gray-900 font-medium">{selectedRobotDetails.id}</span></div>
-                <div className="flex justify-between"><span className="text-gray-400">{t.robot_selection.system_info.firmware}:</span><span className="text-gray-900 font-medium">{selectedRobotDetails.version}</span></div>
-                <div className="flex justify-between"><span className="text-gray-400">IP:</span><span className="text-gray-900 font-medium">{selectedRobotDetails.ip}</span></div>
-                <div className="flex justify-between"><span className="text-gray-400">{t.robot_selection.system_info.temperature}:</span><span className="text-gray-900 font-medium">{selectedRobotDetails.temperature}°C</span></div>
-              </div>
-            </div>
-            {/* Current Status */}
-            <div className="bg-white rounded-xl shadow p-6 border border-gray-100">
-              <h4 className="font-semibold text-lg text-blue-700 mb-4">{t.robot_selection.current_status.title}</h4>
-              <div className="space-y-2 text-sm">
-                <div className="flex justify-between"><span className="text-gray-400">{t.robot_selection.current_status.status}:</span><span className={`px-2 py-0.5 rounded-full text-xs font-semibold ${getStatusColor(selectedRobotDetails.status)}`}>{selectedRobotDetails.status === 'online' ? t.robot_selection.status_online : (selectedRobotDetails.status === 'offline' ? t.robot_selection.status_offline : t.robot_selection.charging)}</span></div>
-                <div className="flex justify-between"><span className="text-gray-400">{t.robot_selection.current_status.task}:</span><span className="text-gray-900 font-medium">{selectedRobotDetails.currentTask}</span></div>
-                <div className="flex justify-between"><span className="text-gray-400">{t.robot_selection.current_status.battery}:</span><span className="text-gray-900 font-medium">{selectedRobotDetails.battery}%</span></div>
-                <div className="w-full bg-gray-200 rounded-full h-2 my-2">
-                  <div className={`h-2 rounded-full ${getBatteryColor(selectedRobotDetails.battery)}`} style={{ width: `${selectedRobotDetails.battery}%` }}></div>
-                </div>
-                <div className="flex justify-between"><span className="text-gray-400">{t.robot_selection.current_status.location}:</span><span className="text-gray-900 font-medium">{selectedRobotDetails.location}</span></div>
-              </div>
-            </div>
-            {/* Quick Actions */}
-            <div className="bg-white rounded-xl shadow p-6 border border-gray-100 flex flex-col justify-center">
-              <h4 className="font-semibold text-lg text-blue-700 mb-4">{t.robot_selection.quick_actions.title}</h4>
-              <div className="space-y-3">
-                <Button className="w-full text-base py-3" variant="outline"><Power className="h-5 w-5 mr-2" />{t.robot_selection.quick_actions.restart}</Button>
-                <Button className="w-full text-base py-3" variant="outline"><Settings className="h-5 w-5 mr-2" />{t.robot_selection.quick_actions.settings}</Button>
-                <Button className="w-full text-base py-3" variant="outline"><RefreshCw className="h-5 w-5 mr-2" />{t.robot_selection.quick_actions.update_firmware}</Button>
-              </div>
-            </div>
-          </div>
-        </section>
+        <RobotDetails 
+          robot={selectedRobotDetails}
+          translations={{
+            systemInfo: {
+              title: t.robot_selection.system_info.title,
+              firmware: t.robot_selection.system_info.firmware,
+              temperature: t.robot_selection.system_info.temperature,
+            },
+            currentStatus: {
+              title: t.robot_selection.current_status.title,
+              status: t.robot_selection.current_status.status,
+              task: t.robot_selection.current_status.task,
+              battery: t.robot_selection.current_status.battery,
+              location: t.robot_selection.current_status.location,
+            },
+            quickActions: {
+              title: t.robot_selection.quick_actions.title,
+              restart: t.robot_selection.quick_actions.restart,
+              settings: t.robot_selection.quick_actions.settings,
+              updateFirmware: t.robot_selection.quick_actions.update_firmware,
+            },
+            statusTexts: {
+              online: t.robot_selection.status_online,
+              offline: t.robot_selection.status_offline,
+              charging: t.robot_selection.charging,
+            },
+          }}
+        />
       )}
 
-      {/* Programming Section */}
-      <section className="mt-10">
-        <h2 className="text-2xl font-semibold text-blue-800 mb-4">{t.programming.title}</h2>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-          <Card className="p-8 text-center cursor-pointer bg-white text-blue-900 shadow-lg hover:scale-105 transition-transform border border-gray-200">
-            <CardHeader className="flex items-center justify-center"><div className="text-4xl">✍️</div></CardHeader>
-            <CardContent><p className="font-medium text-lg">{t.programming.create_actions}</p></CardContent>
-          </Card>
-          <Card className="p-8 text-center cursor-pointer bg-gray-100 text-blue-900 shadow-lg hover:scale-105 transition-transform border border-gray-200">
-            <CardHeader className="flex items-center justify-center"><div className="text-4xl">📂</div></CardHeader>
-            <CardContent><p className="font-medium text-lg">{t.programming.workspace}</p></CardContent>
-          </Card>
-          <Card className="p-8 text-center cursor-pointer bg-blue-100 text-blue-900 shadow-lg hover:scale-105 transition-transform border border-gray-200">
-            <CardHeader className="flex items-center justify-center"><div className="text-4xl">🎨</div></CardHeader>
-            <CardContent><p className="font-medium text-lg">{t.programming.my_works}</p></CardContent>
-          </Card>
-        </div>
-      </section>
+      <ProgrammingSection 
+        title={t.programming.title}
+        items={{
+          createActions: t.programming.create_actions,
+          workspace: t.programming.workspace,
+          myWorks: t.programming.my_works,
+        }}
+      />
 
-      {/* Entertainment Section */}
-      <section className="mt-10">
-        <h2 className="text-2xl font-semibold text-blue-800 mb-4">{t.entertainment.title}</h2>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-          <Card className="p-6 text-center cursor-pointer bg-red-400 text-[var(--card-foreground)] shadow-lg hover:scale-105 transition-transform border border-[var(--border)]" suppressHydrationWarning
-            onClick={() => router.push("/teacher/robot/action")}>            
-            <CardHeader className="flex items-center justify-center"><div className="text-4xl">🕺</div></CardHeader>
-            <CardContent><p className="font-medium text-lg">{t.entertainment.action}</p></CardContent>
-          </Card>
-          <Card className="p-8 text-center cursor-pointer bg-blue-400 text-white shadow-lg hover:scale-105 transition-transform border border-gray-200">
-            <CardHeader className="flex items-center justify-center"><div className="text-4xl">🖼️</div></CardHeader>
-            <CardContent><p className="font-medium text-lg">{t.entertainment.album}</p></CardContent>
-          </Card>
-          <Card className="p-8 text-center cursor-pointer bg-yellow-400 text-white shadow-lg hover:scale-105 transition-transform border border-gray-200">
-            <CardHeader className="flex items-center justify-center"><div className="text-4xl">🤝</div></CardHeader>
-            <CardContent><p className="font-medium text-lg">{t.entertainment.friends}</p></CardContent>
-          </Card>
-        </div>
-      </section>
+      <EntertainmentSection 
+        title={t.entertainment.title}
+        items={{
+          action: t.entertainment.action,
+          album: t.entertainment.album,
+          friends: t.entertainment.friends,
+        }}
+      />
 
-      {/* Things to Try Section */}
-      <section className="mt-10">
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-2xl font-semibold text-blue-800">{t.things_to_try.title}</h2>
-          <Button variant="ghost" className="text-blue-600 hover:text-blue-800" onClick={handleRefreshPrompts}>
-            <RefreshCw className="h-4 w-4 mr-2" />{t.things_to_try.refresh}
-          </Button>
-        </div>
-        <style jsx>{`
-          @keyframes marquee {
-            0% { transform: translateX(0); }
-            100% { transform: translateX(-50%); }
-          }
-          .marquee-row {
-            display: flex;
-            animation-name: marquee;
-            animation-timing-function: linear;
-            animation-iteration-count: infinite;
-            animation-duration: 30s;
-            animation-direction: normal;
-            will-change: transform;
-          }
-          .marquee-row:hover {
-            animation-play-state: paused;
-          }
-        `}</style>
-        <div className="overflow-hidden w-full flex flex-col gap-4">
-          {[
-            { start: 0, count: 12, duration: "30s", direction: "normal" },
-            { start: 6, count: 14, duration: "35s", direction: "reverse" },
-            { start: 3, count: 13, duration: "32s", direction: "normal" },
-          ].map((row, rowIndex) => {
-            const items = getRowItems(row.start, row.count);
-            return (
-              <div
-                key={rowIndex}
-                className="marquee-row"
-                style={{
-                  animationDuration: row.duration,
-                  animationDirection: row.direction,
-                }}
-              >
-                {[...items, ...items].map((prompt, i) => (
-                  <div key={i} className="flex-shrink-0 p-5 bg-white rounded-xl shadow border border-gray-200 hover:bg-blue-50 transition-colors cursor-pointer text-blue-900 font-medium text-base min-w-[260px] mx-2">
-                    {prompt}
-                  </div>
-                ))}
-              </div>
-            );
-          })}
-        </div>
-      </section>
+      <ThingsToTrySection 
+        title={t.things_to_try.title}
+        refreshText={t.things_to_try.refresh}
+        prompts={shuffledPrompts}
+        onRefresh={handleRefreshPrompts}
+      />
     </div>
   );
 }

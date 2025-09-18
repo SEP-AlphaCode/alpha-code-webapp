@@ -108,7 +108,7 @@ export default function OsmoCardItem({
                 Delete Osmo Card
               </h3>
               <p className="text-sm text-gray-500 mt-1">
-                Are you sure you want to delete "{card.name}"? This action cannot be undone.
+                Are you sure you want to delete &quot;{card.name}&quot;? This action cannot be undone.
               </p>
               <div className="flex space-x-2 mt-3">
                 <Button
