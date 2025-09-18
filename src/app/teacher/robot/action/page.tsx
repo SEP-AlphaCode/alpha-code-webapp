@@ -9,9 +9,8 @@ import { useRobotCommand } from "@/hooks/use-robot-command";
 
 import { AnimatePresence, motion } from "framer-motion";
 import { ChevronLeft, ChevronRight } from "lucide-react";
-
 export default function RobotActionPage() {
-  const actions = [
+  const actions: RobotActionDetail[] = [
     {
       id: "tai-chi",
       name: "Tai Chi",
@@ -19,7 +18,6 @@ export default function RobotActionPage() {
       image: "🧘‍♂️",
       commands: ["Do a tai chi move", "Do some tai chi moves", "Perform some tai chi moves"],
       color: "from-blue-400 to-cyan-400",
-      bgColor: "bg-blue-50",
     },
     {
       id: "push-up",
@@ -28,7 +26,6 @@ export default function RobotActionPage() {
       image: "💪",
       commands: ["Do a push-up", "Show me eight push-ups", "Show me a push-up"],
       color: "from-red-400 to-orange-400",
-      bgColor: "bg-red-50",
     },
     {
       id: "kungfu",
@@ -37,7 +34,6 @@ export default function RobotActionPage() {
       image: "🥋",
       commands: ["Show me Kung fu", "Practice kung fu", "Practice Chinese kung fu"],
       color: "from-amber-500 to-yellow-400",
-      bgColor: "bg-amber-50",
     },
     {
       id: "yoga",
@@ -46,7 +42,6 @@ export default function RobotActionPage() {
       image: "🧘‍♀️",
       commands: ["Do a yoga pose", "Show me some yoga", "Practice yoga"],
       color: "from-purple-400 to-pink-400",
-      bgColor: "bg-purple-50",
     },
     {
       id: "lunge",
@@ -55,7 +50,6 @@ export default function RobotActionPage() {
       image: "🏃‍♂️",
       commands: ["Do a lunge", "Show me a lunge", "Perform a lunge"],
       color: "from-green-400 to-emerald-400",
-      bgColor: "bg-green-50",
     },
     {
       id: "nod",
@@ -64,7 +58,6 @@ export default function RobotActionPage() {
       image: "👤",
       commands: ["Nod your head", "Show me a nod", "Give a nod"],
       color: "from-gray-400 to-slate-400",
-      bgColor: "bg-gray-50",
     },
     {
       id: "raise-hand",
@@ -73,7 +66,6 @@ export default function RobotActionPage() {
       image: "✋",
       commands: ["Raise your hand", "Put your hand up", "Hand up"],
       color: "from-indigo-400 to-blue-400",
-      bgColor: "bg-indigo-50",
     },
     {
       id: "lift-foot",
@@ -82,7 +74,6 @@ export default function RobotActionPage() {
       image: "👣",
       commands: ["Lift your right foot", "Raise your right foot", "Pick up your right foot"],
       color: "from-teal-400 to-cyan-400",
-      bgColor: "bg-teal-50",
     },
     {
       id: "lift-left-foot",
@@ -91,7 +82,6 @@ export default function RobotActionPage() {
       image: "🦶",
       commands: ["Lift your left foot", "Raise your left foot", "Pick up your left foot"],
       color: "from-yellow-400 to-yellow-600",
-      bgColor: "bg-yellow-50",
     },
     {
       id: "bow",
@@ -100,7 +90,6 @@ export default function RobotActionPage() {
       image: "🙏",
       commands: ["Bow", "Give a bow", "Make a bow"],
       color: "from-purple-400 to-fuchsia-500",
-      bgColor: "bg-purple-50",
     },
     {
       id: "sit-down",
@@ -109,16 +98,15 @@ export default function RobotActionPage() {
       image: "🪑",
       commands: ["Sit down", "Take a seat", "Please sit down"],
       color: "from-orange-400 to-red-400",
-      bgColor: "bg-orange-50",
     },
   ];
 
   const [currentAction, setCurrentAction] = useState<number | null>(null);
   const [direction, setDirection] = useState<number>(0); // -1 left, +1 right
-
   const [notify, setNotifyState] = useState<{ msg: string; type: "success" | "error" } | null>(
     null
   );
+
   const setNotify = (msg: string, type: "success" | "error") => {
     setNotifyState({ msg, type });
     setTimeout(() => setNotifyState(null), 2500);
@@ -203,13 +191,12 @@ export default function RobotActionPage() {
         )}
 
         <RobotActionGrid
-          actions={actions}
           currentPage={currentPage}
           totalPages={totalPages}
           prevPage={() => setCurrentPage((prev) => (prev - 1 + totalPages) % totalPages)}
           nextPage={() => setCurrentPage((prev) => (prev + 1) % totalPages)}
           currentPageActions={currentPageActions}
-          currentAction={currentAction}
+          currentAction={currentAction ?? -1}
           setCurrentAction={setCurrentAction}
           sendCommandToBackend={sendCommandToBackend}
         />
