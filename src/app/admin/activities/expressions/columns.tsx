@@ -200,7 +200,7 @@ export const createColumns = (
     },
     {
         accessorKey: "id",
-        header: () => <HeaderCell text="ID" />,
+        header: () => <HeaderCell text="ID" translationKey="expressionManagement.fields.id" />,
         cell: ({ row }) => (
             <span className="text-gray-700 font-semibold">
                 {row.original.id.substring(0, 8)}...

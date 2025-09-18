@@ -52,6 +52,7 @@ export function CreateDanceModal({
       description: "",
       duration: 60,
       status: 1,
+      icon: "",
     }
   })
 
@@ -64,6 +65,7 @@ export function CreateDanceModal({
         description: editDance.description,
         duration: editDance.duration,
         status: editDance.status,
+        icon: editDance.icon,
       })
     } else {
       reset({
@@ -72,6 +74,7 @@ export function CreateDanceModal({
         description: "",
         duration: 60,
         status: 1,
+        icon: "",
       })
     }
   }, [editDance, isEditMode, reset])
@@ -162,6 +165,18 @@ export function CreateDanceModal({
               id="description"
               {...register("description")}
               placeholder={t('danceManagement.placeholders.description')}
+              rows={3}
+            />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="icon" className="text-sm font-medium">
+              {t('danceManagement.fields.icon')}
+            </Label>
+            <Textarea
+              id="icon"
+              {...register("icon")}
+              placeholder={t('danceManagement.placeholders.icon')}
               rows={3}
             />
           </div>

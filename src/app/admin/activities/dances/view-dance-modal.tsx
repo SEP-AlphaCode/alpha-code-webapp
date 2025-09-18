@@ -120,6 +120,16 @@ export function ViewDanceModal({
                   </p>
                 </div>
               </div>
+
+              <div className="flex items-start gap-3">
+                <FileText className="h-4 w-4 text-red-500 mt-1 flex-shrink-0" />
+                <div className="flex-1">
+                  <label className="text-sm font-medium text-gray-700">{t('danceManagement.fields.icon')}</label>
+                  <p className="text-sm text-gray-900 bg-red-50 p-2 rounded border">
+                    {dance.icon || t('common.noIconProvided')}
+                  </p>
+                </div>
+              </div>
             </div>
           </div>
 
