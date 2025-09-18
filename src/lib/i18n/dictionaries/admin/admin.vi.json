@@ -243,13 +243,15 @@
     "createDescription": "Tạo điệu nhảy mới cho hệ thống robot. Điền thông tin chi tiết bên dưới.",
     "editDescription": "Cập nhật thông tin chi tiết điệu nhảy bên dưới.",
     "fields": {
+      "id": "ID",
       "code": "Mã",
       "name": "Tên",
       "description": "Mô tả",
       "duration": "Thời lượng",
       "difficulty": "Độ khó",
       "category": "Danh mục",
-      "status": "Trạng thái"
+      "status": "Trạng thái",
+      "icon": "Biểu tượng"
     },
     "placeholders": {
       "code": "Nhập mã điệu nhảy",
@@ -270,6 +272,7 @@
     "createDescription": "Tạo hành động mới cho hệ thống robot. Điền thông tin chi tiết bên dưới.",
     "editDescription": "Cập nhật thông tin chi tiết hành động bên dưới.",
     "fields": {
+      "id": "ID",
       "name": "Tên",
       "description": "Mô tả",
       "type": "Loại",
@@ -277,7 +280,8 @@
       "status": "Trạng thái",
       "code": "Mã",
       "duration": "Thời lượng",
-      "canInterrupt": "Có thể ngắt"
+      "canInterrupt": "Có thể ngắt",
+      "icon": "Biểu tượng"
     },
     "placeholders": {
       "code": "Nhập mã hành động",
@@ -299,6 +303,7 @@
     "deleteTitle": "Xóa biểu cảm",
     "deleteConfirm": "Bạn có chắc chắn muốn xóa biểu cảm này?",
     "fields": {
+      "id": "ID",
       "name": "Tên",
       "description": "Mô tả",
       "emotion": "Cảm xúc",

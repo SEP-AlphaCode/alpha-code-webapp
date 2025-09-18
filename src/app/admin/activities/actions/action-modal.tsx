@@ -55,6 +55,7 @@ export function CreateActionModal({
       duration: 60,
       status: 1,
       canInterrupt: true,
+      icon: ""
     }
   })
 
@@ -68,6 +69,7 @@ export function CreateActionModal({
         duration: editAction.duration,
         status: editAction.status,
         canInterrupt: editAction.canInterrupt,
+        icon: editAction.icon
       })
     } else {
       reset({
@@ -77,6 +79,7 @@ export function CreateActionModal({
         duration: 60,
         status: 1,
         canInterrupt: true,
+        icon: ""
       })
     }
   }, [editAction, isEditMode, reset])
@@ -167,6 +170,18 @@ export function CreateActionModal({
               id="description"
               {...register("description")}
               placeholder={t('actionManagement.placeholders.description')}
+              rows={3}
+            />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="icon" className="text-sm font-medium">
+              {t('actionManagement.fields.icon')}
+            </Label>
+            <Textarea
+              id="icon"
+              {...register("icon")}
+              placeholder={t('actionManagement.placeholders.icon')}
               rows={3}
             />
           </div>
