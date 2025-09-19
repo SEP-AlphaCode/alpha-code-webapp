@@ -2,7 +2,6 @@ import { Button } from "@/components/ui/button"
 import Image from "next/image"
 import Link from "next/link"
 import { ArrowRight, LogOut, User } from "lucide-react"
-import { LanguageSwitcher } from "@/components/language-switcher"
 import { useHomepageTranslation } from "@/lib/i18n/hooks/use-translation"
 import { useAuth } from "@/hooks/use-auth"
 import { clearAuthData, getUserInfoFromToken } from "@/utils/tokenUtils"
@@ -111,7 +110,6 @@ export function Header({ currentSection, onNavigate }: HeaderProps) {
         </nav>
 
         <div className="flex items-center gap-4">
-          <LanguageSwitcher variant="minimal" />
           {isAuthenticated ? (
             <div className="flex items-center gap-3">
               <div className="hidden sm:flex items-center gap-2 text-sm text-gray-600">

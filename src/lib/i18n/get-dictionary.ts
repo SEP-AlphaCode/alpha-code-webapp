@@ -2,30 +2,30 @@ import type { Locale } from './config'
 
 // Common dictionaries
 const commonDictionaries = {
-    en: () => import('./dictionaries/common/common.en.json').then((module) => module.default),
+    // en: () => import('./dictionaries/common/common.en.json').then((module) => module.default),
     vi: () => import('./dictionaries/common/common.vi.json').then((module) => module.default),
 }
 
 // Page-specific dictionaries
 const pageDictionaries = {
     homepage: {
-        en: () => import('./dictionaries/home_page/homepage.en.json').then((module) => module.default),
+        // en: () => import('./dictionaries/home_page/homepage.en.json').then((module) => module.default),
         vi: () => import('./dictionaries/home_page/homepage.vi.json').then((module) => module.default),
     },
     login: {
-        en: () => import('./dictionaries/login/login.en.json').then((module) => module.default),
+        // en: () => import('./dictionaries/login/login.en.json').then((module) => module.default),
         vi: () => import('./dictionaries/login/login.vi.json').then((module) => module.default),
     },
     'reset-password': {
-        en: () => import('./dictionaries/reset-password/reset-password.en.json').then((module) => module.default),
+        // en: () => import('./dictionaries/reset-password/reset-password.en.json').then((module) => module.default),
         vi: () => import('./dictionaries/reset-password/reset-password.vi.json').then((module) => module.default),
     },
     admin: {
-        en: () => import('./dictionaries/admin/admin.en.json').then((module) => module.default),
+        // en: () => import('./dictionaries/admin/admin.en.json').then((module) => module.default),
         vi: () => import('./dictionaries/admin/admin.vi.json').then((module) => module.default),
     },
     teacher: {
-        en: () => import('./dictionaries/teacher/teacher.en.json').then((module) => module.default),
+        // en: () => import('./dictionaries/teacher/teacher.en.json').then((module) => module.default),
         vi: () => import('./dictionaries/teacher/teacher.vi.json').then((module) => module.default),
     },
     // Add more page dictionaries here as needed
@@ -33,7 +33,8 @@ const pageDictionaries = {
 
 // Get common translations (navigation, buttons, etc.)
 export const getCommonDictionary = async (locale: Locale) =>
-    commonDictionaries[locale]?.() ?? commonDictionaries.vi()
+    // commonDictionaries[locale]?.() ?? commonDictionaries.vi()
+    commonDictionaries.vi()
 
 // Get page-specific translations
 export const getPageDictionary = async (page: string, locale: Locale) => {
@@ -41,7 +42,8 @@ export const getPageDictionary = async (page: string, locale: Locale) => {
     if (!pageDictionary) {
         throw new Error(`Dictionary for page "${page}" not found`)
     }
-    return pageDictionary[locale]?.() ?? pageDictionary.vi()
+    // return pageDictionary[locale]?.() ?? pageDictionary.vi()
+    return pageDictionary.vi()
 }
 
 // Get combined dictionary (common + page-specific)
