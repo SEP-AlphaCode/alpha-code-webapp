@@ -60,10 +60,10 @@ export function LanguageSwitcher({ variant = 'default', className, side = 'top',
     switch (locale) {
       case 'vi':
         return <VN {...flagProps} />
-      case 'en':
-        return <US {...flagProps} />
+      // case 'en':
+      //   return <US {...flagProps} />
       default:
-        return <US {...flagProps} />
+        return <VN {...flagProps} />
     }
   }
 

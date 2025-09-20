@@ -1,21 +1,21 @@
 import { VN } from 'country-flag-icons/react/3x2'
-import { US } from 'country-flag-icons/react/3x2'
+// import { US } from 'country-flag-icons/react/3x2'
 
 export const i18n = {
   defaultLocale: 'vi',
-  locales: ['vi', 'en'],
+  locales: ['vi'], // ['vi', 'en']
 } as const
 
 export type Locale = (typeof i18n)['locales'][number]
 
 export const localeNames: Record<Locale, string> = {
   vi: 'Tiếng Việt',
-  en: 'English',
+  // en: 'English',
 }
 
 export const LocaleFlagComponents: Record<Locale, React.ComponentType<{ className?: string }>> = {
   vi: VN,
-  en: US,
+  // en: US,
 }
 
 export const localeInfo: Record<Locale, {
@@ -30,10 +30,10 @@ export const localeInfo: Record<Locale, {
     flag: '🇻🇳',
     FlagComponent: VN,
   },
-  en: {
-    name: 'English',
-    nativeName: 'English',
-    flag: '🇺🇸',
-    FlagComponent: US,
-  },
+  // en: {
+  //   name: 'English',
+  //   nativeName: 'English',
+  //   flag: '🇺🇸',
+  //   FlagComponent: US,
+  // },
 }
