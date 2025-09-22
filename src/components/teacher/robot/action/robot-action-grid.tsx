@@ -5,6 +5,7 @@ import { ChevronLeft, ChevronRight } from "lucide-react";
 import type { RobotAction } from "@/types/robot";
 
 interface RobotActionGridProps {
+  actions: RobotAction[]; 
   currentPage: number;
   totalPages: number;
   prevPage: () => void;
@@ -12,7 +13,7 @@ interface RobotActionGridProps {
   currentPageActions: RobotAction[];
   currentAction: number;
   setCurrentAction: (index: number) => void;
-  sendCommandToBackend: () => void;
+  sendCommandToBackend: (actionCode: string) => void; // sửa chỗ này
 }
 
 export function RobotActionGrid({
@@ -55,15 +56,24 @@ export function RobotActionGrid({
                   <button
                     onClick={() => {
                       setCurrentAction(currentPage * actionsPerPage + index);
-                      sendCommandToBackend();
+                      sendCommandToBackend(actionItem.code); // gửi code động từ API
                     }}
                     className={`w-24 h-24 rounded-full flex items-center justify-center shadow-md transition-all duration-200 hover:scale-110 ${
                       currentAction === currentPage * actionsPerPage + index
-                        ? `ring-4 ring-offset-2 ring-blue-400 ${actionItem.bgColor ?? "bg-white"}`
+                        ? `ring-4 ring-offset-2 ring-blue-400 bg-white`
                         : "bg-white hover:bg-gray-100"
                     }`}
                   >
-                    <div className="text-2xl">{actionItem.image}</div>
+                    {/* nếu API có imageUrl thì render img, không thì hiện icon/text */}
+                    {actionItem.imageUrl ? (
+                      <img
+                        src={actionItem.imageUrl}
+                        alt={actionItem.name}
+                        className="w-12 h-12 object-contain"
+                      />
+                    ) : (
+                      <span className="text-2xl">🎬</span>
+                    )}
                   </button>
                   <span className="text-xs font-medium text-gray-700 mt-2 text-center max-w-16 truncate">
                     {actionItem.name}
