@@ -7,7 +7,6 @@ interface ScrollSection {
 
 export function useScrollNavigation() {
   const [currentSection, setCurrentSection] = useState(0)
-  const [isScrolling, setIsScrolling] = useState(false)
   const [isVisible, setIsVisible] = useState(false)
 
   // Create refs at the top level
@@ -39,21 +38,6 @@ export function useScrollNavigation() {
   }, [sections])
 
   useEffect(() => {
-    const handleWheel = (e: WheelEvent) => {
-      e.preventDefault()
-
-      if (isScrolling) return
-
-      const direction = e.deltaY > 0 ? 1 : -1
-      const nextSection = Math.max(0, Math.min(sections.length - 1, currentSection + direction))
-
-      if (nextSection !== currentSection) {
-        setIsScrolling(true)
-        scrollToSection(nextSection)
-        setTimeout(() => setIsScrolling(false), 1000)
-      }
-    }
-
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === "ArrowDown" || e.key === "PageDown") {
         e.preventDefault()
@@ -72,15 +56,13 @@ export function useScrollNavigation() {
 
     const handleVisibility = () => setIsVisible(true)
 
-    window.addEventListener("wheel", handleWheel, { passive: false })
     window.addEventListener("keydown", handleKeyDown)
     setTimeout(handleVisibility, 100)
 
     return () => {
-      window.removeEventListener("wheel", handleWheel)
       window.removeEventListener("keydown", handleKeyDown)
     }
-  }, [currentSection, isScrolling, scrollToSection, sections.length])
+  }, [currentSection, scrollToSection, sections.length])
 
   return {
     currentSection,

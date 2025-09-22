@@ -9,7 +9,7 @@ interface HeroSectionProps {
 }
 
 export const HeroSection = forwardRef<HTMLElement, HeroSectionProps>(
-  ({ currentSection, isVisible }, ref) => {
+  ({  }, ref) => {
     const { t, isLoading } = useHomepageTranslation()
 
     if (isLoading) {
@@ -40,11 +40,7 @@ export const HeroSection = forwardRef<HTMLElement, HeroSectionProps>(
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 sm:gap-10 md:gap-12 items-center min-h-screen py-12 sm:py-16 md:py-20">
 
             {/* Left Content */}
-            <div
-              className={`space-y-6 sm:space-y-8 transition-all duration-1000 ease-out ${
-                isVisible && currentSection === 0 ? "opacity-100 translate-x-0" : "opacity-0 -translate-x-10"
-              }`}
-            >
+            <div data-aos="fade-right" data-aos-delay="100" className="space-y-6 sm:space-y-8">
               {/* Badge */}
               <div className="inline-flex items-center gap-2 px-3 sm:px-4 py-2 bg-blue-100 text-blue-700 rounded-full text-xs sm:text-sm font-semibold border border-blue-200">
                 <Bot className="w-3 h-3 sm:w-4 sm:h-4" />
@@ -104,11 +100,7 @@ export const HeroSection = forwardRef<HTMLElement, HeroSectionProps>(
             </div>
 
             {/* Right Content - Robot Image/Video */}
-            <div
-              className={`relative mt-8 lg:mt-0 transition-all duration-1000 ease-out delay-300 ${
-                isVisible && currentSection === 0 ? "opacity-100 translate-x-0" : "opacity-0 translate-x-10"
-              }`}
-            >
+            <div data-aos="fade-left" data-aos-delay="300" className="relative mt-8 lg:mt-0">
               <div className="relative">
                 {/* Robot Video/Image Container - Clean without overlays */}
                 <div className="relative z-10 bg-white rounded-2xl sm:rounded-3xl shadow-2xl overflow-hidden border border-gray-200">

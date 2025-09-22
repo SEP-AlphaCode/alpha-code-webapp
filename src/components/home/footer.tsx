@@ -8,7 +8,7 @@ interface FooterProps {
 }
 
 export const Footer = forwardRef<HTMLElement, FooterProps>(
-  ({ currentSection }, ref) => {
+  ({  }, ref) => {
     const { t, isLoading } = useHomepageTranslation()
 
     if (isLoading) {
@@ -37,13 +37,9 @@ export const Footer = forwardRef<HTMLElement, FooterProps>(
 
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
           {/* Main Footer Content */}
-          <div 
-            className={`grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 sm:gap-8 mb-8 sm:mb-12 transition-all duration-1000 ease-out ${
-              currentSection >= 4 ? "opacity-100 translate-y-0" : "opacity-0 translate-y-12"
-            }`}
-          >
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 sm:gap-8 mb-8 sm:mb-12 transition-all duration-1000 ease-out opacity-100 translate-y-0">
             {/* Brand Section */}
-            <div className="sm:col-span-2 lg:col-span-2">
+            <div data-aos="fade-up" data-aos-delay="100" className="sm:col-span-2 lg:col-span-2">
               <div className="flex items-center gap-3 mb-4 sm:mb-6">
                 <div className="w-10 h-10 sm:w-12 sm:h-12 bg-blue-500 rounded-lg sm:rounded-xl flex items-center justify-center">
                   <Image src="/logo2.png" alt="Alpha Mini Logo" width={24} height={24} className="sm:w-8 sm:h-8 rounded-lg" />
@@ -67,7 +63,7 @@ export const Footer = forwardRef<HTMLElement, FooterProps>(
             </div>
 
             {/* Quick Links */}
-            <div>
+            <div data-aos="fade-up" data-aos-delay="200">
               <h4 className="text-base sm:text-lg font-semibold mb-3 sm:mb-4">{t('footer.links.title')}</h4>
               <ul className="space-y-2 sm:space-y-3">
                 <li><a href="#" className="text-gray-300 hover:text-blue-400 transition-colors text-sm sm:text-base">{t('footer.links.features')}</a></li>
@@ -78,7 +74,8 @@ export const Footer = forwardRef<HTMLElement, FooterProps>(
             </div>
 
             {/* Contact Info */}
-            <div>
+            <div data-aos="fade-up" data-aos-delay="300">
+              CONTACT INFO
               <h4 className="text-base sm:text-lg font-semibold mb-3 sm:mb-4">{t('footer.contact.title')}</h4>
               <ul className="space-y-2 sm:space-y-3">
                 <li className="flex items-center gap-2 sm:gap-3">
@@ -100,21 +97,21 @@ export const Footer = forwardRef<HTMLElement, FooterProps>(
           </div>
 
           {/* Bottom Section */}
-          <div 
-            className={`border-t border-gray-800 pt-8 transition-all duration-1000 ease-out delay-300 ${
-              currentSection >= 4 ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"
-            }`}
+          <div
+            data-aos="fade-down"
+            data-aos-delay="400"
+            className="border-t border-gray-800 pt-8 transition-all duration-1000 ease-out opacity-100 translate-y-0"
           >
             <div className="flex flex-col md:flex-row justify-between items-center gap-4">
               {/* Copyright */}
-              <div className="flex items-center gap-2 text-gray-400 text-sm">
+              <div className="flex-1 flex items-center gap-2 text-gray-400 text-sm">
                 <span>{t('footer.copyright')}</span>
                 <Heart className="w-4 h-4 text-red-500 fill-current" />
                 <span>{t('footer.madeBy')}</span>
               </div>
 
               {/* Legal Links */}
-              <div className="flex gap-6 text-sm">
+              <div className="flex gap-6 text-sm flex-wrap md:flex-nowrap">
                 <a href="#" className="text-gray-400 hover:text-blue-400 transition-colors">
                   {t('footer.legal.privacy')}
                 </a>

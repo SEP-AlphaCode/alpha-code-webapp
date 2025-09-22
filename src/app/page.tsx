@@ -15,7 +15,7 @@ export default function Home() {
 
   return (
     <I18nLoadingBoundary>
-      <div ref={containerRef} className="min-h-screen bg-white overflow-x-hidden relative scroll-smooth">
+      <div ref={containerRef} className="min-h-screen bg-white overflow-x-hidden relative scroll-auto">
         <Header currentSection={currentSection} onNavigate={scrollToSection} />
         
         <HeroSection 

@@ -8,7 +8,7 @@ interface FeaturesSectionProps {
 }
 
 export const FeaturesSection = forwardRef<HTMLElement, FeaturesSectionProps>(
-  ({ currentSection }, ref) => {
+  ({  }, ref) => {
     const { t, isLoading } = useHomepageTranslation()
 
     if (isLoading) {
@@ -68,10 +68,7 @@ export const FeaturesSection = forwardRef<HTMLElement, FeaturesSectionProps>(
 
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
           {/* Section Header */}
-          <div
-            className={`text-center mb-8 sm:mb-12 md:mb-16 transition-all duration-1000 ease-out ${currentSection >= 2 ? "opacity-100 translate-y-0" : "opacity-0 translate-y-10"
-              }`}
-          >
+          <div data-aos="fade-up" data-aos-delay="100" className="text-center mb-8 sm:mb-12 md:mb-16">
             <div className="inline-flex items-center gap-2 px-3 sm:px-4 py-2 bg-blue-100 text-blue-700 rounded-full text-xs sm:text-sm font-semibold mb-4 sm:mb-6">
               <Sparkles className="w-3 h-3 sm:w-4 sm:h-4" />
               {t('features.badge')}
@@ -90,14 +87,7 @@ export const FeaturesSection = forwardRef<HTMLElement, FeaturesSectionProps>(
           {/* Features Grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 md:gap-8">
             {features.map((feature, index) => (
-              <div
-                key={index}
-                className={`group transition-all duration-1000 ease-out ${currentSection >= 2 ? "opacity-100 translate-y-0" : "opacity-0 translate-y-20"
-                  }`}
-                style={{
-                  transitionDelay: currentSection >= 2 ? `${index * 200}ms` : "0ms",
-                }}
-              >
+              <div key={index} data-aos="fade-up" data-aos-delay={`${100 + index * 150}`} className="group transition-all duration-1000 ease-out">
                 <Card className="bg-white border border-gray-200 rounded-2xl sm:rounded-3xl shadow-lg hover:shadow-2xl transition-all duration-500 transform hover:scale-105 hover:-translate-y-2 overflow-hidden h-full">
                   <CardContent className="p-4 sm:p-6 md:p-8 text-center h-full flex flex-col">
                     {/* Icon */}

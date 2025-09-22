@@ -8,7 +8,7 @@ interface RobotSectionProps {
 }
 
 export const RobotSection = forwardRef<HTMLElement, RobotSectionProps>(
-  ({ currentSection }, ref) => {
+  ({  }, ref) => {
     const { t, isLoading } = useHomepageTranslation()
 
     if (isLoading) {
@@ -40,11 +40,7 @@ export const RobotSection = forwardRef<HTMLElement, RobotSectionProps>(
 
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           {/* Section Header */}
-          <div 
-            className={`text-center mb-8 sm:mb-10 md:mb-12 transition-all duration-1000 ease-out ${
-              currentSection >= 1 ? "opacity-100 translate-y-0" : "opacity-0 translate-y-10"
-            }`}
-          >
+          <div data-aos="fade-up" data-aos-delay="100" className="text-center mb-8 sm:mb-10 md:mb-12">
             <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-gray-900 mb-3 leading-tight">
               {t('robot.title')}
               <span className="block bg-gradient-to-r from-blue-600 to-blue-700 bg-clip-text text-transparent py-1 leading-relaxed">
@@ -59,11 +55,7 @@ export const RobotSection = forwardRef<HTMLElement, RobotSectionProps>(
           {/* Robot Gallery - Compact Layout */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 items-center mb-8 sm:mb-10 md:mb-12">
             {/* Left Robot Image - Blue theme */}
-            <div 
-              className={`transition-all duration-1000 ease-out delay-200 ${
-                currentSection >= 1 ? "opacity-100 translate-x-0" : "opacity-0 -translate-x-20"
-              }`}
-            >
+            <div data-aos="fade-right" data-aos-delay="200" className="transition-all duration-1000 ease-out delay-200">
               <div className="group relative">
                 <div className="relative overflow-hidden rounded-xl sm:rounded-2xl bg-gradient-to-br from-blue-100 to-blue-200 hover:from-blue-200 hover:to-blue-300 p-4 sm:p-6 shadow-lg hover:shadow-xl transition-all duration-500 transform hover:scale-105">
                   <div className="aspect-square w-full">
@@ -87,11 +79,7 @@ export const RobotSection = forwardRef<HTMLElement, RobotSectionProps>(
             </div>
 
             {/* Center Robot Image (Main) - Purple theme */}
-            <div 
-              className={`transition-all duration-1000 ease-out delay-400 ${
-                currentSection >= 1 ? "opacity-100 translate-y-0" : "opacity-0 translate-y-20"
-              }`}
-            >
+            <div data-aos="zoom-in" data-aos-delay="400" className="transition-all duration-1000 ease-out delay-400">
               <div className="group relative">
                 <div className="relative overflow-hidden rounded-xl sm:rounded-2xl bg-gradient-to-br from-purple-100 to-purple-200 hover:from-purple-200 hover:to-purple-300 p-4 sm:p-6 md:p-8 shadow-xl hover:shadow-2xl transition-all duration-500 transform hover:scale-105">
                   <div className="aspect-square w-full">
@@ -126,11 +114,7 @@ export const RobotSection = forwardRef<HTMLElement, RobotSectionProps>(
             </div>
 
             {/* Right Robot Image - Green theme */}
-            <div 
-              className={`transition-all duration-1000 ease-out delay-600 ${
-                currentSection >= 1 ? "opacity-100 translate-x-0" : "opacity-0 translate-x-20"
-              }`}
-            >
+            <div data-aos="fade-left" data-aos-delay="600" className="transition-all duration-1000 ease-out delay-600">
               <div className="group relative">
                 <div className="relative overflow-hidden rounded-xl sm:rounded-2xl bg-gradient-to-br from-green-100 to-green-200 hover:from-green-200 hover:to-green-300 p-4 sm:p-6 shadow-lg hover:shadow-xl transition-all duration-500 transform hover:scale-105">
                   <div className="aspect-square w-full">
@@ -155,11 +139,7 @@ export const RobotSection = forwardRef<HTMLElement, RobotSectionProps>(
           </div>
 
           {/* Robot Features Grid - Compact */}
-          <div 
-            className={`grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 sm:gap-6 transition-all duration-1000 ease-out delay-800 ${
-              currentSection >= 1 ? "opacity-100 translate-y-0" : "opacity-0 translate-y-20"
-            }`}
-          >
+          <div data-aos="fade-up" data-aos-delay="800" className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 sm:gap-6 transition-all duration-1000 ease-out delay-800">
             <div className="text-center group">
               <div className="w-10 h-10 sm:w-12 sm:h-12 bg-blue-100 rounded-lg sm:rounded-xl flex items-center justify-center mx-auto mb-2 sm:mb-3 group-hover:bg-blue-200 transition-colors duration-300">
                 <Shield className="w-5 h-5 sm:w-6 sm:h-6 text-blue-600" />
