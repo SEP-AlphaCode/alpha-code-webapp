@@ -145,6 +145,9 @@ export default function MusicPage() {
     if (audioRef.current) {
       const time = audioRef.current.currentTime
       setStartTime(formatTime(time))
+    } else if (videoRef.current) {
+      const time = videoRef.current.currentTime
+      setStartTime(formatTime(time))
     }
   }
 
@@ -152,18 +155,25 @@ export default function MusicPage() {
     if (audioRef.current) {
       const time = audioRef.current.currentTime
       setEndTime(formatTime(time))
+    } else if (videoRef.current) {
+      const time = videoRef.current.currentTime
+      setEndTime(formatTime(time))
     }
   }
 
   const handleTimeUpdate = () => {
     if (audioRef.current) {
       setCurrentTime(audioRef.current.currentTime)
+    } else if (videoRef.current) {
+      setCurrentTime(videoRef.current.currentTime)
     }
   }
 
   const handleLoadedMetadata = () => {
     if (audioRef.current) {
       setDuration(audioRef.current.duration)
+    } else if (videoRef.current) {
+      setDuration(videoRef.current.duration)
     }
   }
 
@@ -632,6 +642,8 @@ export default function MusicPage() {
                       preload="metadata"
                       onPlay={() => setIsPlaying(true)}
                       onPause={() => setIsPlaying(false)}
+                      onTimeUpdate={handleTimeUpdate}
+                      onLoadedMetadata={handleLoadedMetadata}
                     >
                       Your browser does not support video playback.
                     </video>
@@ -642,6 +654,136 @@ export default function MusicPage() {
                       <Video className="w-4 h-4 mr-2" />
                       Video File
                     </Badge>
+                  </div>
+
+                  {/* AI Dance Configuration for Video */}
+                  <div className="bg-gray-50 p-8 rounded-2xl border border-gray-200 shadow-lg">
+                    <div className="flex items-center gap-4 mb-6">
+                      <div className="p-3 bg-gray-600 rounded-xl shadow-lg">
+                        <Bot className="w-6 h-6 text-white" />
+                      </div>
+                      <div>
+                        <h4 className="text-xl font-bold text-gray-900">AI Dance Configuration</h4>
+                        <p className="text-sm text-gray-600">Customize choreography parameters</p>
+                      </div>
+                    </div>
+                    
+                    <p className="text-sm text-gray-600 mb-8 p-4 bg-white/60 rounded-xl border border-gray-200">
+                      <Sparkles className="w-4 h-4 inline mr-2 text-gray-600" />
+                      Set time range for focused dance generation. Leave empty to analyze the entire video file.
+                    </p>
+                    
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                      {/* Start Time */}
+                      <div className="space-y-3">
+                        <label className="block text-sm font-semibold text-gray-800">Start Time (mm:ss or seconds)</label>
+                        <div className="flex gap-3">
+                          <Input
+                            type="text"
+                            placeholder="0:00"
+                            value={startTime}
+                            onChange={(e) => setStartTime(e.target.value)}
+                            className="flex-1 h-12 bg-white/80 border-gray-200 focus:border-gray-400 focus:ring-gray-400/20 rounded-xl shadow-sm text-center font-medium"
+                          />
+                          <Button
+                            onClick={handleSetStartTime}
+                            size="default"
+                            className="bg-gray-600 hover:bg-gray-700 text-white px-6 h-12 rounded-xl shadow-sm hover:shadow-md transition-all duration-200 whitespace-nowrap font-medium"
+                          >
+                            Set Current
+                          </Button>
+                        </div>
+                        {startTime && (
+                          <p className="text-xs text-gray-600 mt-2 text-center">
+                            ⏰ Start at: {startTime.includes(':') ? startTime : formatTime(parseFloat(startTime))}
+                          </p>
+                        )}
+                      </div>
+
+                      {/* End Time */}
+                      <div className="space-y-3">
+                        <label className="block text-sm font-semibold text-gray-800">End Time (mm:ss or seconds)</label>
+                        <div className="flex gap-3">
+                          <Input
+                            type="text"
+                            placeholder="0:30"
+                            value={endTime}
+                            onChange={(e) => setEndTime(e.target.value)}
+                            className="flex-1 h-12 bg-white/80 border-gray-200 focus:border-gray-400 focus:ring-gray-400/20 rounded-xl shadow-sm text-center font-medium"
+                          />
+                          <Button
+                            onClick={handleSetEndTime}
+                            size="default"
+                            className="bg-gray-600 hover:bg-gray-700 text-white px-6 h-12 rounded-xl shadow-sm hover:shadow-md transition-all duration-200 whitespace-nowrap font-medium"
+                          >
+                            Set Current
+                          </Button>
+                        </div>
+                        {endTime && (
+                          <p className="text-xs text-gray-600 mt-2 text-center">
+                            ⏰ End at: {endTime.includes(':') ? endTime : formatTime(parseFloat(endTime))}
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                    
+                    <div className="mt-6 p-4 bg-gray-100/50 rounded-xl border border-gray-200">
+                      <div className="text-sm text-gray-700 flex items-center gap-3">
+                        <div className="p-1 bg-gray-600 rounded-full">
+                          <Sparkles className="w-3 h-3 text-white" />
+                        </div>
+                        AI will analyze rhythm, tempo, and mood to create synchronized dance movements
+                      </div>
+                      
+                      {/* Show selected range */}
+                      {startTime && endTime && (
+                        <div className="mt-3 p-3 bg-white/70 rounded-lg border border-gray-200">
+                          <p className="text-sm font-medium text-gray-800 mb-2">
+                            📍 Selected Range:
+                          </p>
+                          <div className="flex items-center gap-4 text-sm">
+                            <span className="flex items-center gap-1 text-gray-600">
+                              <Clock className="w-4 h-4" />
+                              {startTime.includes(':') ? startTime : formatTime(parseFloat(startTime))} - {endTime.includes(':') ? endTime : formatTime(parseFloat(endTime))}
+                            </span>
+                            <span className="text-gray-500">
+                              Duration: {formatTime(parseTimeToSeconds(endTime) - parseTimeToSeconds(startTime))}
+                            </span>
+                          </div>
+                          
+                          {/* Progress visualization */}
+                          {duration > 0 && (
+                            <div className="mt-3">
+                              <div className="relative h-2 bg-gray-200 rounded-full overflow-hidden">
+                                <div className="absolute inset-0 bg-gray-200 rounded-full"></div>
+                                
+                                {/* Selected range */}
+                                <div 
+                                  className="absolute top-0 h-full bg-gray-500 rounded-full transition-all duration-300"
+                                  style={{
+                                    left: `${(parseTimeToSeconds(startTime) / duration) * 100}%`,
+                                    width: `${((parseTimeToSeconds(endTime) - parseTimeToSeconds(startTime)) / duration) * 100}%`
+                                  }}
+                                ></div>
+                                
+                                {/* Current time indicator */}
+                                <div 
+                                  className="absolute top-0 w-1 h-full bg-gray-600 transition-all duration-100"
+                                  style={{
+                                    left: `${(currentTime / duration) * 100}%`
+                                  }}
+                                ></div>
+                              </div>
+                              <div className="flex justify-between text-xs text-gray-500 mt-1">
+                                <span>0:00</span>
+                                <span className="text-red-500">Current: {formatTime(currentTime)}</span>
+                                <span>{formatTime(duration)}</span>
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      )}
+                    </div>
                   </div>
                 </div>
               )}
@@ -662,7 +804,7 @@ export default function MusicPage() {
                     {isPlaying ? "Pause" : "Play"}
                   </Button>
                   
-                  {isAudio && (
+                  {(isAudio || isVideo) && (
                     <Button
                       onClick={handleGenerateDancePlan}
                       disabled={isGeneratingPlan}
