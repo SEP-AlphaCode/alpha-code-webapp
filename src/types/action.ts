@@ -1,3 +1,5 @@
+import { Color } from "./color"
+
 export type Action = {
     id: string
     code: string
@@ -20,3 +22,12 @@ export type ActionModal = {
     canInterrupt: boolean
     icon: string
 }
+
+export type ActionActivites = {
+    action_id: string;
+    start_time: number;
+    duration: number;
+    action_type: string;
+    color: Color[];
+}
+

@@ -1,3 +1,5 @@
+import { ActionActivites } from "./action";
+
 export type Music = {
     id: string;
     classId: string;
@@ -39,4 +41,19 @@ export type AudioConvertResponse = {
         start_time: number;
         end_time: number;
     };
+}
+
+export type MusicInfor ={
+    name: string;
+    music_file_url: string;
+    duration: number;
+    start_time: number;
+    end_time: number;   
+}
+
+export type DancePlanReposnse = {
+    music_info: MusicInfor;
+    activity : {
+        actions: ActionActivites[]; // Add the action
+    }
 }

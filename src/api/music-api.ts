@@ -1,5 +1,5 @@
-import { Music, MusicResponse, AudioConvertRequest, AudioConvertResponse } from '@/types/music';
-import { springHttp } from '@/utils/http';
+import { Music, MusicResponse, AudioConvertRequest, AudioConvertResponse, DancePlanReposnse } from '@/types/music';
+import { pythonHttp, springHttp } from '@/utils/http';
 import { PagedResult } from '@/types/page-result';
 
 export const getAllMusics = async () => {
@@ -72,3 +72,34 @@ export const convertAudioToWav = async (params: AudioConvertRequest): Promise<Au
         throw error;
     }
 };  
+
+export const getDancePlan = async (
+    file: File, 
+    start_time?: number, 
+    end_time?: number
+): Promise<DancePlanReposnse> => {
+    try {
+        const formData = new FormData();
+        formData.append('file', file);
+        
+        // Add optional start_time and end_time to form data
+        if (start_time !== undefined && start_time !== null) {
+            formData.append('start_time', start_time.toString());
+        }
+        
+        if (end_time !== undefined && end_time !== null) {
+            formData.append('end_time', end_time.toString());
+        }
+        
+        const response = await pythonHttp.post('/music/upload-music-and-generate-plan', formData, {
+            headers: {
+                'Content-Type': 'multipart/form-data',
+            },
+            timeout: 300000, // 5 minutes timeout for dance plan generation 
+        });
+        return response.data;
+    } catch (error) {
+        console.error('Error generating dance plan:', error);
+        throw error;
+    }
+};
