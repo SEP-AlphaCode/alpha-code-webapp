@@ -22,6 +22,8 @@ export default function MusicPage() {
   const [startTime, setStartTime] = useState<string>("")
   const [endTime, setEndTime] = useState<string>("")
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false)
+  const [currentTime, setCurrentTime] = useState<number>(0)
+  const [duration, setDuration] = useState<number>(0)
   const fileInputRef = useRef<HTMLInputElement>(null)
   const audioRef = useRef<HTMLAudioElement>(null)
   const videoRef = useRef<HTMLVideoElement>(null)
@@ -80,6 +82,8 @@ export default function MusicPage() {
     setDancePlan(null)
     setStartTime("")
     setEndTime("")
+    setCurrentTime(0)
+    setDuration(0)
     setIsModalOpen(false)
     if (fileInputRef.current) {
       fileInputRef.current.value = ""
@@ -112,6 +116,57 @@ export default function MusicPage() {
     return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + " " + sizes[i]
   }
 
+  const formatTime = (time: number) => {
+    const minutes = Math.floor(time / 60)
+    const seconds = Math.floor(time % 60)
+    return `${minutes}:${seconds.toString().padStart(2, '0')}`
+  }
+
+  const parseTimeToSeconds = (timeString: string): number => {
+    if (!timeString) return 0
+    
+    // If it's already a number, return as is
+    if (!isNaN(parseFloat(timeString)) && !timeString.includes(':')) {
+      return parseFloat(timeString)
+    }
+    
+    // If it's in mm:ss format, convert to seconds
+    const parts = timeString.split(':')
+    if (parts.length === 2) {
+      const minutes = parseInt(parts[0]) || 0
+      const seconds = parseInt(parts[1]) || 0
+      return minutes * 60 + seconds
+    }
+    
+    return 0
+  }
+
+  const handleSetStartTime = () => {
+    if (audioRef.current) {
+      const time = audioRef.current.currentTime
+      setStartTime(formatTime(time))
+    }
+  }
+
+  const handleSetEndTime = () => {
+    if (audioRef.current) {
+      const time = audioRef.current.currentTime
+      setEndTime(formatTime(time))
+    }
+  }
+
+  const handleTimeUpdate = () => {
+    if (audioRef.current) {
+      setCurrentTime(audioRef.current.currentTime)
+    }
+  }
+
+  const handleLoadedMetadata = () => {
+    if (audioRef.current) {
+      setDuration(audioRef.current.duration)
+    }
+  }
+
   const handleGenerateDancePlan = async () => {
     if (!currentFile) {
       alert("Please upload a file first")
@@ -124,13 +179,13 @@ export default function MusicPage() {
     }
 
     // Parse start and end time if provided
-    const startTimeNum = startTime ? parseFloat(startTime) : undefined
-    const endTimeNum = endTime ? parseFloat(endTime) : undefined
+    const startTimeNum = startTime ? parseTimeToSeconds(startTime) : undefined
+    const endTimeNum = endTime ? parseTimeToSeconds(endTime) : undefined
     
     // Validate if both are provided
     if (startTime && endTime) {
       if (isNaN(startTimeNum!) || isNaN(endTimeNum!)) {
-        alert("Please enter valid numbers for start and end time")
+        alert("Please enter valid time format (mm:ss or seconds)")
         return
       }
       if (startTimeNum! >= endTimeNum!) {
@@ -170,32 +225,32 @@ export default function MusicPage() {
   const isVideo = fileType.startsWith("video/")
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50 relative overflow-hidden">
+    <div className="min-h-screen bg-slate-50 relative overflow-hidden">
       {/* Enhanced Background Patterns */}
       <div className="absolute inset-0">
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_120%,rgba(99,102,241,0.1),transparent_50%)]"></div>
-        <div className="absolute inset-0 bg-[linear-gradient(rgba(99,102,241,0.05)_1px,transparent_1px),linear-gradient(90deg,rgba(99,102,241,0.05)_1px,transparent_1px)] bg-[size:40px_40px]"></div>
-        <div className="absolute top-20 left-20 w-72 h-72 bg-gradient-to-r from-violet-200 to-blue-200 rounded-full mix-blend-multiply filter blur-xl opacity-30 animate-pulse"></div>
-        <div className="absolute bottom-20 right-20 w-96 h-96 bg-gradient-to-r from-blue-200 to-cyan-200 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-pulse delay-1000"></div>
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_120%,rgba(71,85,105,0.05),transparent_50%)]"></div>
+        <div className="absolute inset-0 bg-[linear-gradient(rgba(71,85,105,0.03)_1px,transparent_1px),linear-gradient(90deg,rgba(71,85,105,0.03)_1px,transparent_1px)] bg-[size:40px_40px]"></div>
+        <div className="absolute top-20 left-20 w-72 h-72 bg-emerald-100 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-pulse"></div>
+        <div className="absolute bottom-20 right-20 w-96 h-96 bg-teal-100 rounded-full mix-blend-multiply filter blur-xl opacity-15 animate-pulse delay-1000"></div>
       </div>
 
       <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Enhanced Header Section */}
         <div className="text-center mb-16">
           {/* Alpha Mini Badge */}
-          <div className="inline-flex items-center gap-3 px-6 py-3 bg-gradient-to-r from-indigo-500/10 to-blue-500/10 backdrop-blur-sm border border-indigo-200/50 text-indigo-700 rounded-2xl text-sm font-semibold mb-8 shadow-lg hover:shadow-xl transition-all duration-300">
-            <div className="w-8 h-8 bg-gradient-to-r from-indigo-500 to-blue-600 rounded-lg flex items-center justify-center">
+          <div className="inline-flex items-center gap-3 px-6 py-3 bg-emerald-50 backdrop-blur-sm border border-emerald-200 text-emerald-700 rounded-2xl text-sm font-semibold mb-8 shadow-lg hover:shadow-xl transition-all duration-300">
+            <div className="w-8 h-8 bg-emerald-600 rounded-lg flex items-center justify-center">
               <Bot className="w-5 h-5 text-white" />
             </div>
             Alpha Mini Studio
-            <Sparkles className="w-5 h-5 text-indigo-500" />
+            <Sparkles className="w-5 h-5 text-emerald-600" />
           </div>
           
           {/* Main Title */}
           <div className="space-y-6">
             <h1 className="text-6xl md:text-7xl font-bold text-gray-900 mb-6 tracking-tight">
               Music & Dance 
-              <span className="block bg-gradient-to-r from-indigo-600 via-blue-600 to-cyan-600 bg-clip-text text-transparent py-2">
+              <span className="block text-emerald-600 py-2">
                 Creative Studio
               </span>
             </h1>
@@ -213,15 +268,15 @@ export default function MusicPage() {
             {/* Feature Highlights */}
             <div className="flex flex-wrap justify-center gap-4 mt-8">
               <div className="flex items-center gap-2 px-4 py-2 bg-white/80 backdrop-blur-sm border border-gray-200 rounded-xl shadow-sm hover:shadow-md transition-all duration-200">
-                <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+                <div className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></div>
                 <span className="text-sm font-medium text-gray-700">AI-Powered</span>
               </div>
               <div className="flex items-center gap-2 px-4 py-2 bg-white/80 backdrop-blur-sm border border-gray-200 rounded-xl shadow-sm hover:shadow-md transition-all duration-200">
-                <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse delay-300"></div>
+                <div className="w-2 h-2 bg-teal-500 rounded-full animate-pulse delay-300"></div>
                 <span className="text-sm font-medium text-gray-700">Real-time Analysis</span>
               </div>
               <div className="flex items-center gap-2 px-4 py-2 bg-white/80 backdrop-blur-sm border border-gray-200 rounded-xl shadow-sm hover:shadow-md transition-all duration-200">
-                <div className="w-2 h-2 bg-purple-500 rounded-full animate-pulse delay-500"></div>
+                <div className="w-2 h-2 bg-cyan-500 rounded-full animate-pulse delay-500"></div>
                 <span className="text-sm font-medium text-gray-700">Custom Choreography</span>
               </div>
             </div>
@@ -231,14 +286,14 @@ export default function MusicPage() {
         {/* Enhanced Upload Area */}
         <Card className="mb-12 overflow-hidden border-0 bg-white/80 backdrop-blur-xl shadow-2xl hover:shadow-3xl transition-all duration-700 group relative">
           {/* Animated Border */}
-          <div className="absolute inset-0 bg-gradient-to-r from-indigo-500 via-blue-500 to-cyan-500 opacity-0 group-hover:opacity-100 transition-opacity duration-500 blur-xl"></div>
+          <div className="absolute inset-0 bg-emerald-500 opacity-0 group-hover:opacity-100 transition-opacity duration-500 blur-xl"></div>
           <div className="relative bg-white rounded-xl m-0.5">
             <CardContent className="p-0">
               <div
                 className={`relative transition-all duration-700 ${
                   isDragOver 
-                    ? "bg-gradient-to-br from-indigo-50 via-blue-50 to-cyan-50 border-2 border-indigo-300 border-dashed scale-[1.02]" 
-                    : "hover:bg-gradient-to-br hover:from-gray-50 hover:via-blue-50 hover:to-indigo-50 border-2 border-dashed border-gray-200 hover:border-indigo-200"
+                    ? "bg-emerald-50 border-2 border-emerald-300 border-dashed scale-[1.02]" 
+                    : "hover:bg-gray-50 border-2 border-dashed border-gray-200 hover:border-emerald-200"
                 }`}
                 onDragOver={handleDragOver}
                 onDragLeave={handleDragLeave}
@@ -248,33 +303,33 @@ export default function MusicPage() {
                 <div className="absolute inset-0 overflow-hidden pointer-events-none">
                   {/* Floating Music Notes */}
                   <div className="absolute top-12 left-12 opacity-20">
-                    <Music className="w-6 h-6 text-indigo-400 animate-bounce" />
+                    <Music className="w-6 h-6 text-emerald-400 animate-bounce" />
                   </div>
                   <div className="absolute top-20 right-20 opacity-15">
-                    <Music className="w-4 h-4 text-blue-400 animate-bounce delay-500" />
+                    <Music className="w-4 h-4 text-teal-400 animate-bounce delay-500" />
                   </div>
                   <div className="absolute bottom-16 left-24 opacity-25">
                     <Music className="w-5 h-5 text-cyan-400 animate-bounce delay-1000" />
                   </div>
                   
                   {/* Animated Circles */}
-                  <div className="absolute top-16 right-32 w-3 h-3 bg-indigo-200 rounded-full opacity-30 animate-ping"></div>
-                  <div className="absolute bottom-24 right-16 w-4 h-4 bg-blue-200 rounded-full opacity-25 animate-ping delay-700"></div>
+                  <div className="absolute top-16 right-32 w-3 h-3 bg-emerald-200 rounded-full opacity-30 animate-ping"></div>
+                  <div className="absolute bottom-24 right-16 w-4 h-4 bg-teal-200 rounded-full opacity-25 animate-ping delay-700"></div>
                   <div className="absolute top-32 left-32 w-2 h-2 bg-cyan-200 rounded-full opacity-35 animate-ping delay-300"></div>
                 </div>
 
                 <div className="relative z-10 flex flex-col items-center space-y-8 py-20 px-8">
                   {/* Enhanced Icon with Animation */}
                   <div className="relative">
-                    <div className="absolute inset-0 bg-gradient-to-r from-indigo-500 to-blue-600 rounded-3xl blur-lg opacity-50 group-hover:opacity-75 transition-opacity duration-500"></div>
-                    <div className="relative p-8 bg-gradient-to-br from-indigo-500 via-blue-600 to-cyan-600 rounded-3xl shadow-xl group-hover:shadow-2xl group-hover:scale-110 transition-all duration-500">
+                    <div className="absolute inset-0 bg-emerald-500 rounded-3xl blur-lg opacity-50 group-hover:opacity-75 transition-opacity duration-500"></div>
+                    <div className="relative p-8 bg-emerald-600 rounded-3xl shadow-xl group-hover:shadow-2xl group-hover:scale-110 transition-all duration-500">
                       <Upload className="w-16 h-16 text-white" />
                     </div>
                   </div>
                   
                   {/* Enhanced Text Content */}
                   <div className="space-y-6 text-center max-w-2xl">
-                    <h3 className="text-3xl font-bold text-gray-900 group-hover:text-indigo-700 transition-colors duration-300">
+                    <h3 className="text-3xl font-bold text-gray-900 group-hover:text-emerald-700 transition-colors duration-300">
                       Drop Your Music Here
                     </h3>
                     <div className="space-y-3">
@@ -288,15 +343,15 @@ export default function MusicPage() {
                     
                     {/* Enhanced Feature Tags */}
                     <div className="flex flex-wrap gap-3 justify-center">
-                      <div className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-indigo-50 to-blue-50 border border-indigo-200 rounded-full shadow-sm hover:shadow-md transition-all duration-200">
-                        <Music className="w-4 h-4 text-indigo-600" />
-                        <span className="text-sm font-medium text-indigo-700">Audio Analysis</span>
+                      <div className="flex items-center gap-2 px-4 py-2 bg-emerald-50 border border-emerald-200 rounded-full shadow-sm hover:shadow-md transition-all duration-200">
+                        <Music className="w-4 h-4 text-emerald-600" />
+                        <span className="text-sm font-medium text-emerald-700">Audio Analysis</span>
                       </div>
-                      <div className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-blue-50 to-cyan-50 border border-blue-200 rounded-full shadow-sm hover:shadow-md transition-all duration-200">
-                        <Bot className="w-4 h-4 text-blue-600" />
-                        <span className="text-sm font-medium text-blue-700">AI Choreography</span>
+                      <div className="flex items-center gap-2 px-4 py-2 bg-teal-50 border border-teal-200 rounded-full shadow-sm hover:shadow-md transition-all duration-200">
+                        <Bot className="w-4 h-4 text-teal-600" />
+                        <span className="text-sm font-medium text-teal-700">AI Choreography</span>
                       </div>
-                      <div className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-cyan-50 to-indigo-50 border border-cyan-200 rounded-full shadow-sm hover:shadow-md transition-all duration-200">
+                      <div className="flex items-center gap-2 px-4 py-2 bg-cyan-50 border border-cyan-200 rounded-full shadow-sm hover:shadow-md transition-all duration-200">
                         <Zap className="w-4 h-4 text-cyan-600" />
                         <span className="text-sm font-medium text-cyan-700">Instant Preview</span>
                       </div>
@@ -308,9 +363,9 @@ export default function MusicPage() {
                     <Button
                       onClick={() => fileInputRef.current?.click()}
                       size="lg"
-                      className="bg-gradient-to-r from-indigo-600 via-blue-600 to-cyan-600 hover:from-indigo-700 hover:via-blue-700 hover:to-cyan-700 text-white px-10 py-4 rounded-2xl font-semibold text-lg shadow-xl hover:shadow-2xl hover:scale-105 transition-all duration-300 group relative overflow-hidden"
+                      className="bg-emerald-600 hover:bg-emerald-700 text-white px-10 py-4 rounded-2xl font-semibold text-lg shadow-xl hover:shadow-2xl hover:scale-105 transition-all duration-300 group relative overflow-hidden"
                     >
-                      <div className="absolute inset-0 bg-gradient-to-r from-white/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                      <div className="absolute inset-0 bg-white/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
                       <Upload className="w-6 h-6 mr-3 group-hover:scale-110 transition-transform duration-300" />
                       Choose Your Music
                     </Button>
@@ -332,7 +387,7 @@ export default function MusicPage() {
         {fileUrl && (
           <Card className="overflow-hidden shadow-2xl border-0 bg-white/90 backdrop-blur-xl mb-12 group hover:shadow-3xl transition-all duration-700">
             {/* Enhanced Header with Gradient */}
-            <CardHeader className="bg-gradient-to-r from-indigo-600 via-blue-600 to-cyan-600 text-white relative overflow-hidden">
+            <CardHeader className="bg-emerald-600 text-white relative overflow-hidden">
               {/* Animated Background Pattern */}
               <div className="absolute inset-0 opacity-20">
                 <div className="absolute inset-0 bg-[linear-gradient(45deg,rgba(255,255,255,0.1)_1px,transparent_1px),linear-gradient(-45deg,rgba(255,255,255,0.1)_1px,transparent_1px)] bg-[size:20px_20px] animate-pulse"></div>
@@ -382,29 +437,29 @@ export default function MusicPage() {
               {isAudio && (
                 <div className="space-y-8">
                   {/* Audio Visualization Area */}
-                  <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-indigo-50 via-blue-50 to-cyan-50 border border-indigo-200/50 shadow-inner">
-                    <div className="absolute inset-0 bg-gradient-to-r from-indigo-100/50 to-transparent"></div>
+                  <div className="relative overflow-hidden rounded-3xl bg-emerald-50 border border-emerald-200 shadow-inner">
+                    <div className="absolute inset-0 bg-emerald-100/30"></div>
                     
                     <div className="relative flex items-center justify-center p-16">
                       {/* Animated Background Elements */}
                       <div className="absolute inset-0 flex items-center justify-center">
-                        <div className="w-48 h-48 border-4 border-indigo-200/50 rounded-full animate-pulse"></div>
-                        <div className="absolute w-36 h-36 border-2 border-blue-300/50 rounded-full animate-ping"></div>
-                        <div className="absolute w-24 h-24 border border-cyan-400/50 rounded-full animate-pulse delay-500"></div>
+                        <div className="w-48 h-48 border-4 border-emerald-200 rounded-full animate-pulse"></div>
+                        <div className="absolute w-36 h-36 border-2 border-teal-300 rounded-full animate-ping"></div>
+                        <div className="absolute w-24 h-24 border border-cyan-400 rounded-full animate-pulse delay-500"></div>
                       </div>
                       
                       {/* Central Music Icon */}
                       <div className="relative z-10 text-center">
-                        <div className="w-28 h-28 bg-gradient-to-br from-indigo-500 via-blue-600 to-cyan-600 rounded-3xl flex items-center justify-center mb-6 mx-auto shadow-2xl hover:shadow-3xl hover:scale-110 transition-all duration-500 group-hover:rotate-3">
+                        <div className="w-28 h-28 bg-emerald-600 rounded-3xl flex items-center justify-center mb-6 mx-auto shadow-2xl hover:shadow-3xl hover:scale-110 transition-all duration-500 group-hover:rotate-3">
                           <Music className="w-14 h-14 text-white" />
                         </div>
                         
                         <div className="space-y-3">
-                          <Badge className="bg-gradient-to-r from-indigo-100 to-blue-100 text-indigo-800 px-4 py-2 font-semibold border border-indigo-200 shadow-sm">
+                          <Badge className="bg-emerald-100 text-emerald-800 px-4 py-2 font-semibold border border-emerald-200 shadow-sm">
                             <Music className="w-4 h-4 mr-2" />
                             Ready for AI Analysis
                           </Badge>
-                          <p className="text-base text-indigo-700 font-medium">
+                          <p className="text-base text-emerald-700 font-medium">
                             Alpha Mini Choreography Engine
                           </p>
                         </div>
@@ -422,15 +477,23 @@ export default function MusicPage() {
                       preload="metadata"
                       onPlay={() => setIsPlaying(true)}
                       onPause={() => setIsPlaying(false)}
+                      onTimeUpdate={handleTimeUpdate}
+                      onLoadedMetadata={handleLoadedMetadata}
                     >
                       Your browser does not support audio playback.
                     </audio>
+                    
+                    {/* Current Time Display */}
+                    <div className="mt-4 flex items-center justify-between text-sm text-gray-600">
+                      <span>Current Time: {formatTime(currentTime)}</span>
+                      <span>Duration: {formatTime(duration)}</span>
+                    </div>
                   </div>
                   
                   {/* Enhanced AI Dance Configuration */}
-                  <div className="bg-gradient-to-br from-indigo-50 via-blue-50 to-cyan-50 p-8 rounded-2xl border border-indigo-200/50 shadow-lg">
+                  <div className="bg-emerald-50 p-8 rounded-2xl border border-emerald-200 shadow-lg">
                     <div className="flex items-center gap-4 mb-6">
-                      <div className="p-3 bg-gradient-to-r from-indigo-500 to-blue-600 rounded-xl shadow-lg">
+                      <div className="p-3 bg-emerald-600 rounded-xl shadow-lg">
                         <Bot className="w-6 h-6 text-white" />
                       </div>
                       <div>
@@ -439,45 +502,119 @@ export default function MusicPage() {
                       </div>
                     </div>
                     
-                    <p className="text-sm text-gray-600 mb-8 p-4 bg-white/60 rounded-xl border border-indigo-200/30">
-                      <Sparkles className="w-4 h-4 inline mr-2 text-indigo-600" />
+                    <p className="text-sm text-gray-600 mb-8 p-4 bg-white/60 rounded-xl border border-emerald-200">
+                      <Sparkles className="w-4 h-4 inline mr-2 text-emerald-600" />
                       Set time range for focused dance generation. Leave empty to analyze the entire audio file.
                     </p>
                     
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                      <div className="space-y-2">
-                        <label className="block text-sm font-semibold text-gray-800">Start Time (seconds)</label>
-                        <Input
-                          type="number"
-                          placeholder="0"
-                          value={startTime}
-                          onChange={(e) => setStartTime(e.target.value)}
-                          min="0"
-                          step="0.1"
-                          className="h-14 bg-white/80 border-indigo-200 focus:border-indigo-400 focus:ring-indigo-400/20 rounded-xl shadow-sm"
-                        />
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                      <div className="space-y-3">
+                        <label className="block text-sm font-semibold text-gray-800">Start Time (mm:ss or seconds)</label>
+                        <div className="flex gap-3">
+                          <Input
+                            type="text"
+                            placeholder="0:00"
+                            value={startTime}
+                            onChange={(e) => setStartTime(e.target.value)}
+                            className="flex-1 h-12 bg-white/80 border-emerald-200 focus:border-emerald-400 focus:ring-emerald-400/20 rounded-xl shadow-sm text-center font-medium"
+                          />
+                          <Button
+                            onClick={handleSetStartTime}
+                            size="default"
+                            className="bg-emerald-600 hover:bg-emerald-700 text-white px-6 h-12 rounded-xl shadow-sm hover:shadow-md transition-all duration-200 whitespace-nowrap font-medium"
+                          >
+                            Set Current
+                          </Button>
+                        </div>
+                        {startTime && (
+                          <p className="text-xs text-emerald-600 mt-2 text-center">
+                            ⏰ Start at: {startTime.includes(':') ? startTime : formatTime(parseFloat(startTime))}
+                          </p>
+                        )}
                       </div>
-                      <div className="space-y-2">
-                        <label className="block text-sm font-semibold text-gray-800">End Time (seconds)</label>
-                        <Input
-                          type="number"
-                          placeholder="30"
-                          value={endTime}
-                          onChange={(e) => setEndTime(e.target.value)}
-                          min="0"
-                          step="0.1"
-                          className="h-14 bg-white/80 border-indigo-200 focus:border-indigo-400 focus:ring-indigo-400/20 rounded-xl shadow-sm"
-                        />
+                      <div className="space-y-3">
+                        <label className="block text-sm font-semibold text-gray-800">End Time (mm:ss or seconds)</label>
+                        <div className="flex gap-3">
+                          <Input
+                            type="text"
+                            placeholder="0:30"
+                            value={endTime}
+                            onChange={(e) => setEndTime(e.target.value)}
+                            className="flex-1 h-12 bg-white/80 border-emerald-200 focus:border-emerald-400 focus:ring-emerald-400/20 rounded-xl shadow-sm text-center font-medium"
+                          />
+                          <Button
+                            onClick={handleSetEndTime}
+                            size="default"
+                            className="bg-teal-600 hover:bg-teal-700 text-white px-6 h-12 rounded-xl shadow-sm hover:shadow-md transition-all duration-200 whitespace-nowrap font-medium"
+                          >
+                            Set Current
+                          </Button>
+                        </div>
+                        {endTime && (
+                          <p className="text-xs text-teal-600 mt-2 text-center">
+                            ⏰ End at: {endTime.includes(':') ? endTime : formatTime(parseFloat(endTime))}
+                          </p>
+                        )}
                       </div>
                     </div>
                     
-                    <div className="mt-6 p-4 bg-gradient-to-r from-indigo-100/50 to-blue-100/50 rounded-xl border border-indigo-200/30">
-                      <p className="text-sm text-indigo-700 flex items-center gap-3">
-                        <div className="p-1 bg-indigo-500 rounded-full">
+                    <div className="mt-6 p-4 bg-emerald-100/50 rounded-xl border border-emerald-200">
+                      <div className="text-sm text-emerald-700 flex items-center gap-3">
+                        <div className="p-1 bg-emerald-600 rounded-full">
                           <Sparkles className="w-3 h-3 text-white" />
                         </div>
                         AI will analyze rhythm, tempo, and mood to create synchronized dance movements
-                      </p>
+                      </div>
+                      
+                      {/* Show selected range */}
+                      {startTime && endTime && (
+                        <div className="mt-3 p-3 bg-white/70 rounded-lg border border-emerald-200">
+                          <p className="text-sm font-medium text-emerald-800 mb-2">
+                            📍 Selected Range:
+                          </p>
+                          <div className="flex items-center gap-4 text-sm">
+                            <span className="flex items-center gap-1 text-emerald-600">
+                              <Clock className="w-4 h-4" />
+                              {startTime.includes(':') ? startTime : formatTime(parseFloat(startTime))} - {endTime.includes(':') ? endTime : formatTime(parseFloat(endTime))}
+                            </span>
+                            <span className="text-gray-500">
+                              ({(parseTimeToSeconds(endTime) - parseTimeToSeconds(startTime)).toFixed(1)}s duration)
+                            </span>
+                          </div>
+                          
+                          {/* Progress bar visualization */}
+                          {duration > 0 && (
+                            <div className="mt-3">
+                              <div className="w-full bg-gray-200 rounded-full h-2 relative overflow-hidden">
+                                {/* Full duration bar */}
+                                <div className="absolute inset-0 bg-gray-200 rounded-full"></div>
+                                
+                                {/* Selected range */}
+                                <div 
+                                  className="absolute top-0 h-full bg-emerald-500 rounded-full transition-all duration-300"
+                                  style={{
+                                    left: `${(parseTimeToSeconds(startTime) / duration) * 100}%`,
+                                    width: `${((parseTimeToSeconds(endTime) - parseTimeToSeconds(startTime)) / duration) * 100}%`
+                                  }}
+                                ></div>
+                                
+                                {/* Current time indicator */}
+                                <div 
+                                  className="absolute top-0 w-1 h-full bg-teal-600 transition-all duration-100"
+                                  style={{
+                                    left: `${(currentTime / duration) * 100}%`
+                                  }}
+                                ></div>
+                              </div>
+                              <div className="flex justify-between text-xs text-gray-500 mt-1">
+                                <span>0:00</span>
+                                <span className="text-red-500">Current: {formatTime(currentTime)}</span>
+                                <span>{formatTime(duration)}</span>
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      )}
                     </div>
                   </div>
                 </div>
@@ -510,12 +647,12 @@ export default function MusicPage() {
               )}
 
               {/* Enhanced Controls */}
-              <div className="flex items-center justify-between pt-8 border-t border-gray-200/50">
-                <div className="flex items-center space-x-4">
+              <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pt-8 border-t border-gray-200/50">
+                <div className="flex flex-wrap items-center gap-4">
                   <Button
                     onClick={togglePlayPause}
                     size="lg"
-                    className="bg-gradient-to-r from-gray-600 to-gray-800 hover:from-gray-700 hover:to-gray-900 px-6 py-3 rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all duration-300"
+                    className="bg-emerald-600 hover:bg-emerald-700 px-8 py-3 rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all duration-300"
                   >
                     {isPlaying ? (
                       <Pause className="w-5 h-5 mr-2" />
@@ -530,7 +667,7 @@ export default function MusicPage() {
                       onClick={handleGenerateDancePlan}
                       disabled={isGeneratingPlan}
                       size="lg"
-                      className="bg-gradient-to-r from-emerald-500 to-green-600 hover:from-emerald-600 hover:to-green-700 px-6 py-3 rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all duration-300 disabled:opacity-50"
+                      className="bg-emerald-600 hover:bg-emerald-700 px-8 py-3 rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all duration-300 disabled:opacity-50"
                     >
                       {isGeneratingPlan ? (
                         <>
@@ -546,7 +683,7 @@ export default function MusicPage() {
                     </Button>
                   )}
                   
-                  <div className="flex items-center text-sm text-gray-500 bg-gray-50 px-4 py-2 rounded-lg border border-gray-200">
+                  <div className="flex items-center text-sm text-gray-500 bg-gray-50 px-4 py-3 rounded-xl border border-gray-200">
                     <Volume2 className="w-4 h-4 mr-2" />
                     <span>Ready to play</span>
                   </div>
@@ -556,7 +693,7 @@ export default function MusicPage() {
                   onClick={removePreview}
                   variant="outline"
                   size="lg"
-                  className="border-red-200 text-red-600 hover:bg-red-50 px-6 py-3 rounded-xl font-semibold shadow-sm hover:shadow-md transition-all duration-200"
+                  className="border-red-200 text-red-600 hover:bg-red-50 px-8 py-3 rounded-xl font-semibold shadow-sm hover:shadow-md transition-all duration-200"
                 >
                   <X className="w-5 h-5 mr-2" />
                   Remove
@@ -625,7 +762,7 @@ export default function MusicPage() {
                     <h4 className="text-lg font-bold text-gray-800">{fileName}</h4>
                     <p className="text-sm text-gray-600">
                       {startTime && endTime ? (
-                        <>Time Range: {startTime}s - {endTime}s ({parseFloat(endTime) - parseFloat(startTime)}s duration)</>
+                        <>Time Range: {startTime.includes(':') ? startTime : formatTime(parseFloat(startTime))} - {endTime.includes(':') ? endTime : formatTime(parseFloat(endTime))} ({(parseTimeToSeconds(endTime) - parseTimeToSeconds(startTime)).toFixed(1)}s duration)</>
                       ) : (
                         <>Processing entire audio file</>
                       )}
