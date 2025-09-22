@@ -12,7 +12,6 @@ import {
 import { useI18n } from '@/lib/i18n/provider'
 import { i18n, localeNames, type Locale } from '@/lib/i18n/config'
 import { VN } from 'country-flag-icons/react/3x2'
-import { US } from 'country-flag-icons/react/3x2'
 
 interface LanguageSwitcherProps {
   variant?: 'default' | 'minimal'

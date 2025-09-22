@@ -32,12 +32,12 @@ const pageDictionaries = {
 }
 
 // Get common translations (navigation, buttons, etc.)
-export const getCommonDictionary = async (locale: Locale) =>
+export const getCommonDictionary = async (_locale: Locale) =>
     // commonDictionaries[locale]?.() ?? commonDictionaries.vi()
     commonDictionaries.vi()
 
 // Get page-specific translations
-export const getPageDictionary = async (page: string, locale: Locale) => {
+export const getPageDictionary = async (page: string, _locale: Locale) => {
     const pageDictionary = pageDictionaries[page as keyof typeof pageDictionaries]
     if (!pageDictionary) {
         throw new Error(`Dictionary for page "${page}" not found`)

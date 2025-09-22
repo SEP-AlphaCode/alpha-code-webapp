@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Image from "next/image";
 import { RobotActionHeader } from "@/components/teacher/robot/action/robot-action-header";
 import { RobotActionDetail } from "@/components/teacher/robot/action/robot-action-detail";
 import { RobotActionGrid } from "@/components/teacher/robot/action/robot-action-grid";
@@ -98,19 +99,19 @@ export default function RobotActionPage() {
             </AnimatePresence>
           </div>
         ) : (
-          !loading &&
-          !error && (
-            <div className="flex flex-col items-center justify-center min-h-[50vh] text-center">
-              <img
-                src="/img_action_default.webp"
-                alt="AlphaMini ready"
-                className="w-64 h-auto mb-4"
-              />
-              <h2 className="text-xl md:text-2xl font-semibold text-gray-700">
-                Tap an action below to make AlphaMini move!
-              </h2>
-            </div>
-          )
+          <div className="flex flex-col items-center justify-center min-h-[50vh] text-center">
+            <Image
+              src="/img_action_default.webp"
+              alt="AlphaMini ready"
+              width={256}
+              height={256}
+              className="w-64 h-auto mb-4"
+            />
+            <h2 className="text-xl md:text-2xl font-semibold text-gray-700">
+              Tap an action below to make AlphaMini move!
+            </h2>
+          </div>
+
         )}
 
         {/* Grid hiển thị actions */}
