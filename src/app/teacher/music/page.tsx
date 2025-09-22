@@ -230,27 +230,27 @@ export default function MusicPage() {
       <div className="absolute inset-0">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_120%,rgba(71,85,105,0.05),transparent_50%)]"></div>
         <div className="absolute inset-0 bg-[linear-gradient(rgba(71,85,105,0.03)_1px,transparent_1px),linear-gradient(90deg,rgba(71,85,105,0.03)_1px,transparent_1px)] bg-[size:40px_40px]"></div>
-        <div className="absolute top-20 left-20 w-72 h-72 bg-emerald-100 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-pulse"></div>
-        <div className="absolute bottom-20 right-20 w-96 h-96 bg-teal-100 rounded-full mix-blend-multiply filter blur-xl opacity-15 animate-pulse delay-1000"></div>
+        <div className="absolute top-20 left-20 w-72 h-72 bg-gray-100 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-pulse"></div>
+        <div className="absolute bottom-20 right-20 w-96 h-96 bg-gray-100 rounded-full mix-blend-multiply filter blur-xl opacity-15 animate-pulse delay-1000"></div>
       </div>
 
       <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Enhanced Header Section */}
         <div className="text-center mb-16">
           {/* Alpha Mini Badge */}
-          <div className="inline-flex items-center gap-3 px-6 py-3 bg-emerald-50 backdrop-blur-sm border border-emerald-200 text-emerald-700 rounded-2xl text-sm font-semibold mb-8 shadow-lg hover:shadow-xl transition-all duration-300">
-            <div className="w-8 h-8 bg-emerald-600 rounded-lg flex items-center justify-center">
+          <div className="inline-flex items-center gap-3 px-6 py-3 bg-white backdrop-blur-sm border border-gray-200 text-gray-700 rounded-2xl text-sm font-semibold mb-8 shadow-lg hover:shadow-xl transition-all duration-300">
+            <div className="w-8 h-8 bg-gray-600 rounded-lg flex items-center justify-center">
               <Bot className="w-5 h-5 text-white" />
             </div>
             Alpha Mini Studio
-            <Sparkles className="w-5 h-5 text-emerald-600" />
+            <Sparkles className="w-5 h-5 text-gray-600" />
           </div>
           
           {/* Main Title */}
           <div className="space-y-6">
             <h1 className="text-6xl md:text-7xl font-bold text-gray-900 mb-6 tracking-tight">
               Music & Dance 
-              <span className="block text-emerald-600 py-2">
+              <span className="block text-gray-700 py-2">
                 Creative Studio
               </span>
             </h1>
@@ -268,15 +268,15 @@ export default function MusicPage() {
             {/* Feature Highlights */}
             <div className="flex flex-wrap justify-center gap-4 mt-8">
               <div className="flex items-center gap-2 px-4 py-2 bg-white/80 backdrop-blur-sm border border-gray-200 rounded-xl shadow-sm hover:shadow-md transition-all duration-200">
-                <div className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></div>
+                <div className="w-2 h-2 bg-gray-500 rounded-full animate-pulse"></div>
                 <span className="text-sm font-medium text-gray-700">AI-Powered</span>
               </div>
               <div className="flex items-center gap-2 px-4 py-2 bg-white/80 backdrop-blur-sm border border-gray-200 rounded-xl shadow-sm hover:shadow-md transition-all duration-200">
-                <div className="w-2 h-2 bg-teal-500 rounded-full animate-pulse delay-300"></div>
+                <div className="w-2 h-2 bg-gray-500 rounded-full animate-pulse delay-300"></div>
                 <span className="text-sm font-medium text-gray-700">Real-time Analysis</span>
               </div>
               <div className="flex items-center gap-2 px-4 py-2 bg-white/80 backdrop-blur-sm border border-gray-200 rounded-xl shadow-sm hover:shadow-md transition-all duration-200">
-                <div className="w-2 h-2 bg-cyan-500 rounded-full animate-pulse delay-500"></div>
+                <div className="w-2 h-2 bg-gray-500 rounded-full animate-pulse delay-500"></div>
                 <span className="text-sm font-medium text-gray-700">Custom Choreography</span>
               </div>
             </div>
@@ -286,14 +286,14 @@ export default function MusicPage() {
         {/* Enhanced Upload Area */}
         <Card className="mb-12 overflow-hidden border-0 bg-white/80 backdrop-blur-xl shadow-2xl hover:shadow-3xl transition-all duration-700 group relative">
           {/* Animated Border */}
-          <div className="absolute inset-0 bg-emerald-500 opacity-0 group-hover:opacity-100 transition-opacity duration-500 blur-xl"></div>
+          <div className="absolute inset-0 bg-gray-500 opacity-0 group-hover:opacity-100 transition-opacity duration-500 blur-xl"></div>
           <div className="relative bg-white rounded-xl m-0.5">
             <CardContent className="p-0">
               <div
                 className={`relative transition-all duration-700 ${
                   isDragOver 
-                    ? "bg-emerald-50 border-2 border-emerald-300 border-dashed scale-[1.02]" 
-                    : "hover:bg-gray-50 border-2 border-dashed border-gray-200 hover:border-emerald-200"
+                    ? "bg-gray-50 border-2 border-gray-300 border-dashed scale-[1.02]" 
+                    : "hover:bg-gray-50 border-2 border-dashed border-gray-200 hover:border-gray-300"
                 }`}
                 onDragOver={handleDragOver}
                 onDragLeave={handleDragLeave}
@@ -303,33 +303,33 @@ export default function MusicPage() {
                 <div className="absolute inset-0 overflow-hidden pointer-events-none">
                   {/* Floating Music Notes */}
                   <div className="absolute top-12 left-12 opacity-20">
-                    <Music className="w-6 h-6 text-emerald-400 animate-bounce" />
+                    <Music className="w-6 h-6 text-gray-400 animate-bounce" />
                   </div>
                   <div className="absolute top-20 right-20 opacity-15">
-                    <Music className="w-4 h-4 text-teal-400 animate-bounce delay-500" />
+                    <Music className="w-4 h-4 text-gray-400 animate-bounce delay-500" />
                   </div>
                   <div className="absolute bottom-16 left-24 opacity-25">
-                    <Music className="w-5 h-5 text-cyan-400 animate-bounce delay-1000" />
+                    <Music className="w-5 h-5 text-gray-400 animate-bounce delay-1000" />
                   </div>
                   
                   {/* Animated Circles */}
-                  <div className="absolute top-16 right-32 w-3 h-3 bg-emerald-200 rounded-full opacity-30 animate-ping"></div>
-                  <div className="absolute bottom-24 right-16 w-4 h-4 bg-teal-200 rounded-full opacity-25 animate-ping delay-700"></div>
-                  <div className="absolute top-32 left-32 w-2 h-2 bg-cyan-200 rounded-full opacity-35 animate-ping delay-300"></div>
+                  <div className="absolute top-16 right-32 w-3 h-3 bg-gray-200 rounded-full opacity-30 animate-ping"></div>
+                  <div className="absolute bottom-24 right-16 w-4 h-4 bg-gray-200 rounded-full opacity-25 animate-ping delay-700"></div>
+                  <div className="absolute top-32 left-32 w-2 h-2 bg-gray-200 rounded-full opacity-35 animate-ping delay-300"></div>
                 </div>
 
                 <div className="relative z-10 flex flex-col items-center space-y-8 py-20 px-8">
                   {/* Enhanced Icon with Animation */}
                   <div className="relative">
-                    <div className="absolute inset-0 bg-emerald-500 rounded-3xl blur-lg opacity-50 group-hover:opacity-75 transition-opacity duration-500"></div>
-                    <div className="relative p-8 bg-emerald-600 rounded-3xl shadow-xl group-hover:shadow-2xl group-hover:scale-110 transition-all duration-500">
+                    <div className="absolute inset-0 bg-gray-500 rounded-3xl blur-lg opacity-50 group-hover:opacity-75 transition-opacity duration-500"></div>
+                    <div className="relative p-8 bg-gray-600 rounded-3xl shadow-xl group-hover:shadow-2xl group-hover:scale-110 transition-all duration-500">
                       <Upload className="w-16 h-16 text-white" />
                     </div>
                   </div>
                   
                   {/* Enhanced Text Content */}
                   <div className="space-y-6 text-center max-w-2xl">
-                    <h3 className="text-3xl font-bold text-gray-900 group-hover:text-emerald-700 transition-colors duration-300">
+                    <h3 className="text-3xl font-bold text-gray-900 group-hover:text-gray-700 transition-colors duration-300">
                       Drop Your Music Here
                     </h3>
                     <div className="space-y-3">
@@ -343,17 +343,17 @@ export default function MusicPage() {
                     
                     {/* Enhanced Feature Tags */}
                     <div className="flex flex-wrap gap-3 justify-center">
-                      <div className="flex items-center gap-2 px-4 py-2 bg-emerald-50 border border-emerald-200 rounded-full shadow-sm hover:shadow-md transition-all duration-200">
-                        <Music className="w-4 h-4 text-emerald-600" />
-                        <span className="text-sm font-medium text-emerald-700">Audio Analysis</span>
+                      <div className="flex items-center gap-2 px-4 py-2 bg-gray-50 border border-gray-200 rounded-full shadow-sm hover:shadow-md transition-all duration-200">
+                        <Music className="w-4 h-4 text-gray-600" />
+                        <span className="text-sm font-medium text-gray-700">Audio Analysis</span>
                       </div>
-                      <div className="flex items-center gap-2 px-4 py-2 bg-teal-50 border border-teal-200 rounded-full shadow-sm hover:shadow-md transition-all duration-200">
-                        <Bot className="w-4 h-4 text-teal-600" />
-                        <span className="text-sm font-medium text-teal-700">AI Choreography</span>
+                      <div className="flex items-center gap-2 px-4 py-2 bg-gray-50 border border-gray-200 rounded-full shadow-sm hover:shadow-md transition-all duration-200">
+                        <Bot className="w-4 h-4 text-gray-600" />
+                        <span className="text-sm font-medium text-gray-700">AI Choreography</span>
                       </div>
-                      <div className="flex items-center gap-2 px-4 py-2 bg-cyan-50 border border-cyan-200 rounded-full shadow-sm hover:shadow-md transition-all duration-200">
-                        <Zap className="w-4 h-4 text-cyan-600" />
-                        <span className="text-sm font-medium text-cyan-700">Instant Preview</span>
+                      <div className="flex items-center gap-2 px-4 py-2 bg-gray-50 border border-gray-200 rounded-full shadow-sm hover:shadow-md transition-all duration-200">
+                        <Zap className="w-4 h-4 text-gray-600" />
+                        <span className="text-sm font-medium text-gray-700">Instant Preview</span>
                       </div>
                     </div>
                   </div>
@@ -363,7 +363,7 @@ export default function MusicPage() {
                     <Button
                       onClick={() => fileInputRef.current?.click()}
                       size="lg"
-                      className="bg-emerald-600 hover:bg-emerald-700 text-white px-10 py-4 rounded-2xl font-semibold text-lg shadow-xl hover:shadow-2xl hover:scale-105 transition-all duration-300 group relative overflow-hidden"
+                      className="bg-gray-600 hover:bg-gray-700 text-white px-10 py-4 rounded-2xl font-semibold text-lg shadow-xl hover:shadow-2xl hover:scale-105 transition-all duration-300 group relative overflow-hidden"
                     >
                       <div className="absolute inset-0 bg-white/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
                       <Upload className="w-6 h-6 mr-3 group-hover:scale-110 transition-transform duration-300" />
@@ -387,7 +387,7 @@ export default function MusicPage() {
         {fileUrl && (
           <Card className="overflow-hidden shadow-2xl border-0 bg-white/90 backdrop-blur-xl mb-12 group hover:shadow-3xl transition-all duration-700">
             {/* Enhanced Header with Gradient */}
-            <CardHeader className="bg-emerald-600 text-white relative overflow-hidden">
+            <CardHeader className="bg-gray-600 text-white relative overflow-hidden">
               {/* Animated Background Pattern */}
               <div className="absolute inset-0 opacity-20">
                 <div className="absolute inset-0 bg-[linear-gradient(45deg,rgba(255,255,255,0.1)_1px,transparent_1px),linear-gradient(-45deg,rgba(255,255,255,0.1)_1px,transparent_1px)] bg-[size:20px_20px] animate-pulse"></div>
@@ -437,29 +437,29 @@ export default function MusicPage() {
               {isAudio && (
                 <div className="space-y-8">
                   {/* Audio Visualization Area */}
-                  <div className="relative overflow-hidden rounded-3xl bg-emerald-50 border border-emerald-200 shadow-inner">
-                    <div className="absolute inset-0 bg-emerald-100/30"></div>
+                  <div className="relative overflow-hidden rounded-3xl bg-gray-50 border border-gray-200 shadow-inner">
+                    <div className="absolute inset-0 bg-gray-100/30"></div>
                     
                     <div className="relative flex items-center justify-center p-16">
                       {/* Animated Background Elements */}
                       <div className="absolute inset-0 flex items-center justify-center">
-                        <div className="w-48 h-48 border-4 border-emerald-200 rounded-full animate-pulse"></div>
-                        <div className="absolute w-36 h-36 border-2 border-teal-300 rounded-full animate-ping"></div>
-                        <div className="absolute w-24 h-24 border border-cyan-400 rounded-full animate-pulse delay-500"></div>
+                        <div className="w-48 h-48 border-4 border-gray-200 rounded-full animate-pulse"></div>
+                        <div className="absolute w-36 h-36 border-2 border-gray-300 rounded-full animate-ping"></div>
+                        <div className="absolute w-24 h-24 border border-gray-400 rounded-full animate-pulse delay-500"></div>
                       </div>
                       
                       {/* Central Music Icon */}
                       <div className="relative z-10 text-center">
-                        <div className="w-28 h-28 bg-emerald-600 rounded-3xl flex items-center justify-center mb-6 mx-auto shadow-2xl hover:shadow-3xl hover:scale-110 transition-all duration-500 group-hover:rotate-3">
+                        <div className="w-28 h-28 bg-gray-600 rounded-3xl flex items-center justify-center mb-6 mx-auto shadow-2xl hover:shadow-3xl hover:scale-110 transition-all duration-500 group-hover:rotate-3">
                           <Music className="w-14 h-14 text-white" />
                         </div>
                         
                         <div className="space-y-3">
-                          <Badge className="bg-emerald-100 text-emerald-800 px-4 py-2 font-semibold border border-emerald-200 shadow-sm">
+                          <Badge className="bg-gray-100 text-gray-800 px-4 py-2 font-semibold border border-gray-200 shadow-sm">
                             <Music className="w-4 h-4 mr-2" />
-                            Ready for AI Analysis
+                            Ready for Analysis
                           </Badge>
-                          <p className="text-base text-emerald-700 font-medium">
+                          <p className="text-base text-gray-700 font-medium">
                             Alpha Mini Choreography Engine
                           </p>
                         </div>
@@ -491,9 +491,9 @@ export default function MusicPage() {
                   </div>
                   
                   {/* Enhanced AI Dance Configuration */}
-                  <div className="bg-emerald-50 p-8 rounded-2xl border border-emerald-200 shadow-lg">
+                  <div className="bg-gray-50 p-8 rounded-2xl border border-gray-200 shadow-lg">
                     <div className="flex items-center gap-4 mb-6">
-                      <div className="p-3 bg-emerald-600 rounded-xl shadow-lg">
+                      <div className="p-3 bg-gray-600 rounded-xl shadow-lg">
                         <Bot className="w-6 h-6 text-white" />
                       </div>
                       <div>
@@ -502,8 +502,8 @@ export default function MusicPage() {
                       </div>
                     </div>
                     
-                    <p className="text-sm text-gray-600 mb-8 p-4 bg-white/60 rounded-xl border border-emerald-200">
-                      <Sparkles className="w-4 h-4 inline mr-2 text-emerald-600" />
+                    <p className="text-sm text-gray-600 mb-8 p-4 bg-white/60 rounded-xl border border-gray-200">
+                      <Sparkles className="w-4 h-4 inline mr-2 text-gray-600" />
                       Set time range for focused dance generation. Leave empty to analyze the entire audio file.
                     </p>
                     
@@ -516,18 +516,18 @@ export default function MusicPage() {
                             placeholder="0:00"
                             value={startTime}
                             onChange={(e) => setStartTime(e.target.value)}
-                            className="flex-1 h-12 bg-white/80 border-emerald-200 focus:border-emerald-400 focus:ring-emerald-400/20 rounded-xl shadow-sm text-center font-medium"
+                            className="flex-1 h-12 bg-white/80 border-gray-200 focus:border-gray-400 focus:ring-gray-400/20 rounded-xl shadow-sm text-center font-medium"
                           />
                           <Button
                             onClick={handleSetStartTime}
                             size="default"
-                            className="bg-emerald-600 hover:bg-emerald-700 text-white px-6 h-12 rounded-xl shadow-sm hover:shadow-md transition-all duration-200 whitespace-nowrap font-medium"
+                            className="bg-gray-600 hover:bg-gray-700 text-white px-6 h-12 rounded-xl shadow-sm hover:shadow-md transition-all duration-200 whitespace-nowrap font-medium"
                           >
                             Set Current
                           </Button>
                         </div>
                         {startTime && (
-                          <p className="text-xs text-emerald-600 mt-2 text-center">
+                          <p className="text-xs text-gray-600 mt-2 text-center">
                             ⏰ Start at: {startTime.includes(':') ? startTime : formatTime(parseFloat(startTime))}
                           </p>
                         )}
@@ -540,27 +540,27 @@ export default function MusicPage() {
                             placeholder="0:30"
                             value={endTime}
                             onChange={(e) => setEndTime(e.target.value)}
-                            className="flex-1 h-12 bg-white/80 border-emerald-200 focus:border-emerald-400 focus:ring-emerald-400/20 rounded-xl shadow-sm text-center font-medium"
+                            className="flex-1 h-12 bg-white/80 border-gray-200 focus:border-gray-400 focus:ring-gray-400/20 rounded-xl shadow-sm text-center font-medium"
                           />
                           <Button
                             onClick={handleSetEndTime}
                             size="default"
-                            className="bg-teal-600 hover:bg-teal-700 text-white px-6 h-12 rounded-xl shadow-sm hover:shadow-md transition-all duration-200 whitespace-nowrap font-medium"
+                            className="bg-gray-600 hover:bg-gray-700 text-white px-6 h-12 rounded-xl shadow-sm hover:shadow-md transition-all duration-200 whitespace-nowrap font-medium"
                           >
                             Set Current
                           </Button>
                         </div>
                         {endTime && (
-                          <p className="text-xs text-teal-600 mt-2 text-center">
+                          <p className="text-xs text-gray-600 mt-2 text-center">
                             ⏰ End at: {endTime.includes(':') ? endTime : formatTime(parseFloat(endTime))}
                           </p>
                         )}
                       </div>
                     </div>
                     
-                    <div className="mt-6 p-4 bg-emerald-100/50 rounded-xl border border-emerald-200">
-                      <div className="text-sm text-emerald-700 flex items-center gap-3">
-                        <div className="p-1 bg-emerald-600 rounded-full">
+                    <div className="mt-6 p-4 bg-gray-100/50 rounded-xl border border-gray-200">
+                      <div className="text-sm text-gray-700 flex items-center gap-3">
+                        <div className="p-1 bg-gray-600 rounded-full">
                           <Sparkles className="w-3 h-3 text-white" />
                         </div>
                         AI will analyze rhythm, tempo, and mood to create synchronized dance movements
@@ -568,12 +568,12 @@ export default function MusicPage() {
                       
                       {/* Show selected range */}
                       {startTime && endTime && (
-                        <div className="mt-3 p-3 bg-white/70 rounded-lg border border-emerald-200">
-                          <p className="text-sm font-medium text-emerald-800 mb-2">
+                        <div className="mt-3 p-3 bg-white/70 rounded-lg border border-gray-200">
+                          <p className="text-sm font-medium text-gray-800 mb-2">
                             📍 Selected Range:
                           </p>
                           <div className="flex items-center gap-4 text-sm">
-                            <span className="flex items-center gap-1 text-emerald-600">
+                            <span className="flex items-center gap-1 text-gray-600">
                               <Clock className="w-4 h-4" />
                               {startTime.includes(':') ? startTime : formatTime(parseFloat(startTime))} - {endTime.includes(':') ? endTime : formatTime(parseFloat(endTime))}
                             </span>
@@ -591,7 +591,7 @@ export default function MusicPage() {
                                 
                                 {/* Selected range */}
                                 <div 
-                                  className="absolute top-0 h-full bg-emerald-500 rounded-full transition-all duration-300"
+                                  className="absolute top-0 h-full bg-gray-500 rounded-full transition-all duration-300"
                                   style={{
                                     left: `${(parseTimeToSeconds(startTime) / duration) * 100}%`,
                                     width: `${((parseTimeToSeconds(endTime) - parseTimeToSeconds(startTime)) / duration) * 100}%`
@@ -600,7 +600,7 @@ export default function MusicPage() {
                                 
                                 {/* Current time indicator */}
                                 <div 
-                                  className="absolute top-0 w-1 h-full bg-teal-600 transition-all duration-100"
+                                  className="absolute top-0 w-1 h-full bg-gray-600 transition-all duration-100"
                                   style={{
                                     left: `${(currentTime / duration) * 100}%`
                                   }}
@@ -652,7 +652,7 @@ export default function MusicPage() {
                   <Button
                     onClick={togglePlayPause}
                     size="lg"
-                    className="bg-emerald-600 hover:bg-emerald-700 px-8 py-3 rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all duration-300"
+                    className="bg-gray-600 hover:bg-gray-700 text-white px-8 py-3 rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all duration-300"
                   >
                     {isPlaying ? (
                       <Pause className="w-5 h-5 mr-2" />
@@ -667,7 +667,7 @@ export default function MusicPage() {
                       onClick={handleGenerateDancePlan}
                       disabled={isGeneratingPlan}
                       size="lg"
-                      className="bg-emerald-600 hover:bg-emerald-700 px-8 py-3 rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all duration-300 disabled:opacity-50"
+                      className="bg-gray-600 hover:bg-gray-700 text-white px-8 py-3 rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all duration-300 disabled:opacity-50"
                     >
                       {isGeneratingPlan ? (
                         <>
