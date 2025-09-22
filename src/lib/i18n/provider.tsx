@@ -35,16 +35,16 @@ export function I18nProvider({
   const [isLoading, setIsLoading] = useState(true)
 
   const setLocale = (newLocale: Locale) => {
-    setLocaleState(newLocale)
-    localStorage.setItem('preferred-locale', newLocale)
+    // setLocaleState(newLocale)
+    // localStorage.setItem('preferred-locale', newLocale)
   }
 
   useEffect(() => {
     // Load saved locale from localStorage
-    const savedLocale = localStorage.getItem('preferred-locale') as Locale
-    if (savedLocale && i18n.locales.includes(savedLocale)) {
-      setLocaleState(savedLocale)
-    }
+    // const savedLocale = localStorage.getItem('preferred-locale') as Locale
+    // if (savedLocale && i18n.locales.includes(savedLocale)) {
+    //   setLocaleState(savedLocale)
+    // }
   }, [])
 
   // Helper methods for dynamic dictionary loading
@@ -85,24 +85,24 @@ export function I18nProvider({
       } catch (error) {
         console.error('Failed to load dictionaries:', error)
         // Fallback to default locale
-        if (locale !== i18n.defaultLocale) {
-          try {
-            const fallbackCommon = await getCommonDictionary(i18n.defaultLocale)
-            setCommonDict(fallbackCommon)
-            
-            if (page) {
-              const fallbackPageDict = await getPageDictionary(page, i18n.defaultLocale)
-              setDict({ common: fallbackCommon, [page]: fallbackPageDict })
-            } else {
-              // For backward compatibility, just use common dictionary
-              setDict({ common: fallbackCommon })
-            }
-          } catch (fallbackError) {
-            console.error('Failed to load fallback dictionaries:', fallbackError)
-            setCommonDict({})
-            setDict({})
-          }
-        }
+        // if (locale !== i18n.defaultLocale) {
+        //   try {
+        //     const fallbackCommon = await getCommonDictionary(i18n.defaultLocale)
+        //     setCommonDict(fallbackCommon)
+        //     
+        //     if (page) {
+        //       const fallbackPageDict = await getPageDictionary(page, i18n.defaultLocale)
+        //       setDict({ common: fallbackCommon, [page]: fallbackPageDict })
+        //     } else {
+        //       // For backward compatibility, just use common dictionary
+        //       setDict({ common: fallbackCommon })
+        //     }
+        //   } catch (fallbackError) {
+        //     console.error('Failed to load fallback dictionaries:', fallbackError)
+        //     setCommonDict({})
+        //     setDict({})
+        //   }
+        // }
       } finally {
         setIsLoading(false)
       }

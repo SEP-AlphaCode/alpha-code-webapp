@@ -34,7 +34,6 @@ import logo2 from '../../public/logo2.png';
 import Image from "next/image"
 import { getTokenPayload } from "@/utils/tokenUtils"
 import { useAdminTranslation } from "@/lib/i18n/hooks/use-translation"
-import { LanguageSwitcher } from "@/components/language-switcher"
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const { t, isLoading } = useAdminTranslation()
@@ -209,9 +208,6 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
           </SidebarMenuItem>
         </SidebarMenu>
       </SidebarHeader>
-      <div className="p-2">
-        <LanguageSwitcher variant="minimal" />
-      </div>
       <SidebarContent>
         <NavProjects projects={data.projects} />
         <NavMain items={data.navMain} />

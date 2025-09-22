@@ -13,7 +13,6 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { LanguageSwitcher } from "@/components/language-switcher";
 import { AccountData } from "@/types/account";
 import { NavigationItem } from "@/types/teacher";
 
@@ -76,9 +75,6 @@ export function TeacherSidebar({
       <div className="absolute bottom-4 left-0 right-0 flex flex-col items-center gap-2">
         {isSidebarOpen ? (
           <>
-            <div className="flex justify-start w-full mb-2 ml-5">
-              <LanguageSwitcher variant="minimal" />
-            </div>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <button className="w-full focus:outline-none">

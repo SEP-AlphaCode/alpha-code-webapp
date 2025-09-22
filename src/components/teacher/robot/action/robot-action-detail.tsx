@@ -1,8 +1,23 @@
 "use client";
 
 import { Volume2Icon } from "lucide-react";
+import React from "react";
 
-export function RobotActionDetail({ action }: { action: any }) {
+export interface RobotActionDetail {
+  id: string;
+  name: string;
+  description?: string;
+  image?: React.ReactNode;
+  color?: string;
+  commands: string[];
+  bgColor?: string; // thêm luôn cho đồng bộ grid
+}
+
+interface RobotActionDetailProps {
+  action: RobotActionDetail;
+}
+
+export function RobotActionDetail({ action }: RobotActionDetailProps) {
   return (
     <div className="bg-white rounded-2xl shadow-xl p-6 mb-8 relative">
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
@@ -15,9 +30,7 @@ export function RobotActionDetail({ action }: { action: any }) {
             <div className="absolute inset-0 bg-white/10"></div>
           </div>
           <div className="mt-4 p-4 bg-gray-50 rounded-xl w-full">
-            <h3 className="font-semibold text-gray-700 mb-2">
-              About this action
-            </h3>
+            <h3 className="font-semibold text-gray-700 mb-2">About this action</h3>
             <p className="text-gray-600 text-sm">{action.description}</p>
           </div>
         </div>
@@ -25,14 +38,12 @@ export function RobotActionDetail({ action }: { action: any }) {
         {/* Right - Controls */}
         <div className="lg:col-span-2 space-y-6">
           <div className="bg-gradient-to-r from-gray-800 to-gray-900 text-white p-5 rounded-xl shadow-md">
-            <div className="text-center font-bold text-2xl">
-              {action.name}
-            </div>
+            <div className="text-center font-bold text-2xl">{action.name}</div>
           </div>
 
           <div className="space-y-4">
             <h3 className="font-semibold text-gray-700">Available Commands</h3>
-            {action.commands.map((command: string, index: number) => (
+            {action.commands.map((command, index) => (
               <div
                 key={index}
                 className="w-full p-4 text-left rounded-xl font-medium flex items-center bg-gray-100 text-gray-800"

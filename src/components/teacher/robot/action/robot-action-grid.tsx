@@ -2,9 +2,20 @@
 
 import { motion, AnimatePresence } from "framer-motion";
 import { ChevronLeft, ChevronRight } from "lucide-react";
+import type { RobotAction } from "@/types/robot";
+
+interface RobotActionGridProps {
+  currentPage: number;
+  totalPages: number;
+  prevPage: () => void;
+  nextPage: () => void;
+  currentPageActions: RobotAction[];
+  currentAction: number;
+  setCurrentAction: (index: number) => void;
+  sendCommandToBackend: () => void;
+}
 
 export function RobotActionGrid({
-  actions,
   currentPage,
   totalPages,
   prevPage,
@@ -13,7 +24,7 @@ export function RobotActionGrid({
   currentAction,
   setCurrentAction,
   sendCommandToBackend,
-}: any) {
+}: RobotActionGridProps) {
   const actionsPerPage = 8;
 
   return (
@@ -39,7 +50,7 @@ export function RobotActionGrid({
               transition={{ duration: 0.4, ease: "easeInOut" }}
               className="grid grid-cols-4 gap-6 mx-15"
             >
-              {currentPageActions.map((actionItem: any, index: number) => (
+              {currentPageActions.map((actionItem, index) => (
                 <div key={actionItem.id} className="flex flex-col items-center">
                   <button
                     onClick={() => {
@@ -48,7 +59,7 @@ export function RobotActionGrid({
                     }}
                     className={`w-24 h-24 rounded-full flex items-center justify-center shadow-md transition-all duration-200 hover:scale-110 ${
                       currentAction === currentPage * actionsPerPage + index
-                        ? `ring-4 ring-offset-2 ring-blue-400 ${actionItem.bgColor}`
+                        ? `ring-4 ring-offset-2 ring-blue-400 ${actionItem.bgColor ?? "bg-white"}`
                         : "bg-white hover:bg-gray-100"
                     }`}
                   >
