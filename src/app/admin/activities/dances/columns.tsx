@@ -4,6 +4,7 @@ import { Dance } from "@/types/dance"
 import { ColumnDef, Column } from "@tanstack/react-table"
 import { Checkbox } from "@/components/ui/checkbox"
 import { useAdminTranslation } from "@/lib/i18n/hooks/use-translation"
+import Image from "next/image"
 
 import { ArrowUpDown } from "lucide-react"
 import { MoreHorizontal, Edit, Trash2, Eye } from "lucide-react"
@@ -133,7 +134,13 @@ const IconCell = ({ icon }: { icon?: string }) => {
     return (
         <div className="max-w-xs">
             {icon ? (
-                <img src={icon} alt="Dance icon" className="h-8 w-8 object-cover rounded" />
+                <Image 
+                    src={icon} 
+                    alt="Dance icon" 
+                    width={32}
+                    height={32}
+                    className="h-8 w-8 object-cover rounded" 
+                />
             ) : (
                 <span className="text-sm text-gray-400">{t('common.noData')}</span>
             )}

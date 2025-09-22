@@ -6,8 +6,11 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
-import { Upload, Music, Video, X, Play, Pause, Volume2, FileAudio, FileVideo, Sparkles, Clock, CheckCircle, Copy, Bot, Zap } from "lucide-react"
+import { Upload, Music, Video, X, Play, Pause, Volume2, FileAudio, FileVideo, Sparkles, Clock, Copy, Bot, Zap } from "lucide-react"
 import { getDancePlan } from "@/api/music-api"
+import { DancePlanReposnse } from "@/types/music"
+import { ActionActivites } from "@/types/action"
+import { Color } from "@/types/color"
 
 export default function MusicPage() {
   const [fileUrl, setFileUrl] = useState<string>("")
@@ -17,7 +20,7 @@ export default function MusicPage() {
   const [isPlaying, setIsPlaying] = useState<boolean>(false)
   const [isDragOver, setIsDragOver] = useState<boolean>(false)
   const [isGeneratingPlan, setIsGeneratingPlan] = useState<boolean>(false)
-  const [dancePlan, setDancePlan] = useState<any>(null)
+  const [dancePlan, setDancePlan] = useState<DancePlanReposnse | null>(null)
   const [currentFile, setCurrentFile] = useState<File | null>(null)
   const [startTime, setStartTime] = useState<string>("")
   const [endTime, setEndTime] = useState<string>("")
@@ -183,8 +186,8 @@ export default function MusicPage() {
       return
     }
 
-    if (!isAudio) {
-      alert("Please upload an audio file to generate a dance plan")
+    if (!isAudio && !isVideo) {
+      alert("Please upload an audio or video file to generate a dance plan")
       return
     }
 
@@ -235,9 +238,9 @@ export default function MusicPage() {
   const isVideo = fileType.startsWith("video/")
 
   return (
-    <div className="min-h-screen bg-slate-50 relative overflow-hidden">
+    <div className="min-h-screen bg-slate-50 relative overflow-hidden" suppressHydrationWarning>
       {/* Enhanced Background Patterns */}
-      <div className="absolute inset-0">
+      <div className="absolute inset-0" suppressHydrationWarning>
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_120%,rgba(71,85,105,0.05),transparent_50%)]"></div>
         <div className="absolute inset-0 bg-[linear-gradient(rgba(71,85,105,0.03)_1px,transparent_1px),linear-gradient(90deg,rgba(71,85,105,0.03)_1px,transparent_1px)] bg-[size:40px_40px]"></div>
         <div className="absolute top-20 left-20 w-72 h-72 bg-gray-100 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-pulse"></div>
@@ -858,21 +861,21 @@ export default function MusicPage() {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <ul className="space-y-3 text-sm text-gray-600">
                   <li className="flex items-start gap-2">
-                    <div className="w-1.5 h-1.5 bg-indigo-500 rounded-full mt-2 flex-shrink-0"></div>
+                    <div className="w-1.5 h-1.5 bg-gray-500 rounded-full mt-2 flex-shrink-0"></div>
                     <span>Drag and drop files directly onto the upload area for quick access</span>
                   </li>
                   <li className="flex items-start gap-2">
-                    <div className="w-1.5 h-1.5 bg-blue-500 rounded-full mt-2 flex-shrink-0"></div>
+                    <div className="w-1.5 h-1.5 bg-gray-500 rounded-full mt-2 flex-shrink-0"></div>
                     <span>Supported formats: MP3, WAV, M4A, FLAC, and other popular audio formats</span>
                   </li>
                 </ul>
                 <ul className="space-y-3 text-sm text-gray-600">
                   <li className="flex items-start gap-2">
-                    <div className="w-1.5 h-1.5 bg-cyan-500 rounded-full mt-2 flex-shrink-0"></div>
+                    <div className="w-1.5 h-1.5 bg-gray-500 rounded-full mt-2 flex-shrink-0"></div>
                     <span>Files are processed securely in your browser for complete privacy</span>
                   </li>
                   <li className="flex items-start gap-2">
-                    <div className="w-1.5 h-1.5 bg-green-500 rounded-full mt-2 flex-shrink-0"></div>
+                    <div className="w-1.5 h-1.5 bg-gray-500 rounded-full mt-2 flex-shrink-0"></div>
                     <span>Use time ranges for focused choreography on specific song sections</span>
                   </li>
                 </ul>
@@ -886,7 +889,7 @@ export default function MusicPage() {
           <DialogContent className="max-w-6xl w-[95vw] max-h-[90vh] overflow-y-auto bg-white/95 backdrop-blur-xl border-0 shadow-2xl">
             <DialogHeader className="border-b border-gray-200 pb-6">
               <DialogTitle className="flex items-center space-x-3 text-2xl">
-                <div className="p-2 bg-gradient-to-r from-indigo-500 to-blue-600 rounded-lg">
+                <div className="p-2 bg-gray-600 rounded-lg">
                   <Sparkles className="w-6 h-6 text-white" />
                 </div>
                 <span>Dance Plan Generation</span>
@@ -895,9 +898,9 @@ export default function MusicPage() {
 
             <div className="space-y-8 pt-6">
               {/* Enhanced File Info */}
-              <div className="bg-gradient-to-r from-indigo-50 to-blue-50 p-6 rounded-2xl border border-indigo-200">
+              <div className="bg-gray-50 p-6 rounded-2xl border border-gray-200">
                 <div className="flex items-center space-x-4">
-                  <div className="p-3 bg-gradient-to-r from-indigo-500 to-blue-600 rounded-xl">
+                  <div className="p-3 bg-gray-600 rounded-xl">
                     <FileAudio className="w-6 h-6 text-white" />
                   </div>
                   <div>
@@ -916,8 +919,8 @@ export default function MusicPage() {
               {/* Enhanced Generation Status */}
               {isGeneratingPlan && (
                 <div className="text-center py-12">
-                  <div className="inline-flex items-center space-x-4 bg-gradient-to-r from-indigo-50 to-blue-50 px-8 py-6 rounded-2xl border border-indigo-200">
-                    <div className="w-10 h-10 border-4 border-indigo-500 border-t-transparent rounded-full animate-spin"></div>
+                  <div className="inline-flex items-center space-x-4 bg-gray-50 px-8 py-6 rounded-2xl border border-gray-200">
+                    <div className="w-10 h-10 border-4 border-gray-500 border-t-transparent rounded-full animate-spin"></div>
                     <div>
                       <h3 className="text-lg font-bold text-gray-700">Generating Dance Plan...</h3>
                       <p className="text-sm text-gray-600">This may take up to 5 minutes. Please wait.</p>
@@ -936,7 +939,7 @@ export default function MusicPage() {
                   <div className="bg-white border border-gray-200 rounded-2xl overflow-hidden shadow-sm">
                     <div className="p-6 border-b border-gray-100 bg-gray-50">
                       <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 bg-blue-500 rounded-lg flex items-center justify-center">
+                        <div className="w-10 h-10 bg-gray-500 rounded-lg flex items-center justify-center">
                           <Sparkles className="w-5 h-5 text-white" />
                         </div>
                         <div>
@@ -948,14 +951,14 @@ export default function MusicPage() {
                     <div className="p-6">
                       {dancePlan?.activity?.actions && Array.isArray(dancePlan.activity.actions) ? (
                         <div className="space-y-4">
-                          {dancePlan.activity.actions.map((action: any, index: number) => (
+                          {dancePlan.activity.actions.map((action: ActionActivites, index: number) => (
                             <div key={index} className="bg-gray-50 border border-gray-200 rounded-xl p-5 hover:bg-gray-100 transition-colors">
                               <div className="flex items-center justify-between mb-4">
                                 <div className="flex items-center gap-3">
-                                  <span className="w-8 h-8 bg-blue-500 text-white rounded-lg flex items-center justify-center text-sm font-medium">
+                                  <span className="w-8 h-8 bg-gray-500 text-white rounded-lg flex items-center justify-center text-sm font-medium">
                                     {index + 1}
                                   </span>
-                                  <span className="text-sm font-medium text-gray-700 bg-blue-50 px-3 py-1 rounded-full">
+                                  <span className="text-sm font-medium text-gray-700 bg-gray-100 px-3 py-1 rounded-full">
                                     Activity {index + 1}
                                   </span>
                                 </div>
@@ -971,7 +974,7 @@ export default function MusicPage() {
                                     Action ID: {action.action_id}
                                   </h5>
                                   {action.action_type && (
-                                    <p className="text-sm text-blue-600 font-medium">
+                                    <p className="text-sm text-gray-600 font-medium">
                                       Type: {action.action_type}
                                     </p>
                                   )}
@@ -981,17 +984,20 @@ export default function MusicPage() {
                                   <div className="bg-white p-4 rounded-lg border border-gray-100">
                                     <p className="text-sm font-medium text-gray-700 mb-3">Colors</p>
                                     <div className="flex flex-wrap gap-2">
-                                      {action.color.map((color: any, colorIndex: number) => (
+                                      {action.color.map((color: Color, colorIndex: number) => {
+                                        const hexColor = `#${[color.r, color.g, color.b].map(x => x.toString(16).padStart(2, '0')).join('')}`
+                                        return (
                                         <div key={colorIndex} className="flex items-center gap-2 bg-gray-50 px-3 py-2 rounded-lg border border-gray-200">
                                           <div 
                                             className="w-4 h-4 rounded-full border border-gray-300" 
-                                            style={{ backgroundColor: color.hexCode || color.hex || '#3b82f6' }}
+                                            style={{ backgroundColor: hexColor }}
                                           ></div>
                                           <span className="text-sm text-gray-700">
-                                            {color.name || color.colorName || 'Unknown'}
+                                            RGB({color.r}, {color.g}, {color.b})
                                           </span>
                                         </div>
-                                      ))}
+                                        )
+                                      })}
                                     </div>
                                   </div>
                                 )}
@@ -1021,11 +1027,11 @@ export default function MusicPage() {
                       variant="outline"
                       onClick={() => {
                         const activitiesText = dancePlan?.activity?.actions
-                          ? dancePlan.activity.actions.map((action: any, index: number) => 
+                          ? dancePlan.activity.actions.map((action: ActionActivites, index: number) => 
                               `Activity ${index + 1}: Action ID: ${action.action_id}\n` +
                               `Type: ${action.action_type || 'N/A'}\n` +
                               `Time: ${action.start_time}s - ${action.start_time + action.duration}s (${action.duration}s)\n` +
-                              `${action.color && action.color.length > 0 ? `Colors: ${action.color.map((c: any) => c.name || c.colorName || 'Unknown').join(', ')}\n` : ''}\n`
+                              `${action.color && action.color.length > 0 ? `Colors: ${action.color.map((c: Color) => `RGB(${c.r}, ${c.g}, ${c.b})`).join(', ')}\n` : ''}\n`
                             ).join('\n')
                           : JSON.stringify(dancePlan, null, 2)
                         
