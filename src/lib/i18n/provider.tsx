@@ -29,12 +29,12 @@ export function I18nProvider({
   children: ReactNode
   page?: string // Page identifier for loading page-specific translations
 }) {
-  const [locale, setLocaleState] = useState<Locale>(i18n.defaultLocale)
+  const [locale, _setLocaleState] = useState<Locale>(i18n.defaultLocale)
   const [dict, setDict] = useState<Dictionary | null>(null)
   const [commonDict, setCommonDict] = useState<Dictionary | null>(null)
   const [isLoading, setIsLoading] = useState(true)
 
-  const setLocale = (newLocale: Locale) => {
+  const setLocale = (_newLocale: Locale) => {
     // setLocaleState(newLocale)
     // localStorage.setItem('preferred-locale', newLocale)
   }

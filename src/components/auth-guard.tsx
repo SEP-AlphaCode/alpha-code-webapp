@@ -14,8 +14,15 @@ export const AuthGuard = ({ children, allowedRoles }: AuthGuardProps) => {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(true);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [isMounted, setIsMounted] = useState(false);
 
   useEffect(() => {
+    setIsMounted(true);
+  }, []);
+
+  useEffect(() => {
+    if (!isMounted) return;
+    
     const checkAuth = async () => {
       const accessToken = sessionStorage.getItem('accessToken');
 
@@ -91,12 +98,17 @@ export const AuthGuard = ({ children, allowedRoles }: AuthGuardProps) => {
     };
 
     checkAuth();
-  }, [router, allowedRoles]);
+  }, [router, allowedRoles, isMounted]);
+
+  // Don't render anything until component is mounted
+  if (!isMounted) {
+    return null;
+  }
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+      <div className="flex items-center justify-center min-h-screen" suppressHydrationWarning>
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600" suppressHydrationWarning></div>
       </div>
     );
   }
