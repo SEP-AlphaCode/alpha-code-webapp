@@ -15,6 +15,7 @@ export interface RobotAction {
   status: number;
   canInterrupt: boolean;
   statusText: string;
+  icon?: string;
   category: RobotActionCategory;
 }
 
