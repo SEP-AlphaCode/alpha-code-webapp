@@ -134,7 +134,7 @@ export default function TeacherDashboard() {
   const selectedRobotDetails = robots.find((robot) => robot.id === selectedRobot);
 
   return (
-    <div className="space-y-10">
+    <div className="space-y-10 p-10">
       <RobotPageHeader 
         title={t.header.title}
         subtitle="Manage and interact with your AlphaMini robots"

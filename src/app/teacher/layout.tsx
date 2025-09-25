@@ -72,8 +72,8 @@ export default function TeacherLayout({ children }: TeacherLayoutProps) {
     { name: "Robot Management", href: "/teacher/robot", icon: "🤖" },
     { name: "Students", href: "/teacher/student", icon: "👥" },
     { name: "Programming", href: "/teacher/programming", icon: "💻" },
-    { name: "Activities", href: "/teacher/activities", icon: "🎯" },
     { name: "Classroom", href: "/teacher/classroom", icon: "🏫" },
+    { name: "Activities", href: "/teacher/activities", icon: "🎯" },
     { name: "Music", href: "/teacher/music", icon: "🎵" },
   ];
 
@@ -128,7 +128,7 @@ export default function TeacherLayout({ children }: TeacherLayoutProps) {
             isSidebarOpen ? "ml-64" : "ml-16"
           }`}
         >
-          <div className="mt-10 p-10 bg-white min-h-screen">
+          <div className="mt-10 bg-white min-h-screen">
             {children}
           </div>
         </main>

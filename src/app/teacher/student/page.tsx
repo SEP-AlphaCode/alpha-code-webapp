@@ -536,7 +536,7 @@ export default function StudentManagementPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 p-10">
       {/* Tab Navigation */}
       <div className="border-b border-gray-200">
         <nav className="-mb-px flex space-x-8">
