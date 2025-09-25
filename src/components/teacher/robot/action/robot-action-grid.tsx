@@ -2,6 +2,7 @@
 
 import { motion, AnimatePresence } from "framer-motion";
 import { ChevronLeft, ChevronRight } from "lucide-react";
+import Image from "next/image";
 import type { RobotAction } from "@/types/robot";
 
 interface RobotActionGridProps {
@@ -66,9 +67,11 @@ export function RobotActionGrid({
                   >
                     {/* nếu API có imageUrl thì render img, không thì hiện icon/text */}
                     {actionItem.imageUrl ? (
-                      <img
+                      <Image
                         src={actionItem.imageUrl}
                         alt={actionItem.name}
+                        width={48}
+                        height={48}
                         className="w-12 h-12 object-contain"
                       />
                     ) : (
