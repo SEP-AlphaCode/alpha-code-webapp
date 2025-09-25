@@ -1,98 +1,142 @@
-"use client";
+// src/components/teacher/robot/action/robot-action-grid.tsx
+"use client"
 
-import { motion, AnimatePresence } from "framer-motion";
-import { ChevronLeft, ChevronRight } from "lucide-react";
-import type { RobotAction } from "@/types/robot";
-
-interface RobotActionGridProps {
-  actions: RobotAction[]; 
-  currentPage: number;
-  totalPages: number;
-  prevPage: () => void;
-  nextPage: () => void;
-  currentPageActions: RobotAction[];
-  currentAction: number;
-  setCurrentAction: (index: number) => void;
-  sendCommandToBackend: (actionCode: string) => void; // sửa chỗ này
-}
+import { useState, Dispatch, SetStateAction, useEffect } from "react"
+import { RobotActionTab } from "./robot-action-tab"
+import { RobotActionCategory, RobotAction } from "@/types/robot"
+import { useRobotActions } from "@/hooks/use-robot-action"
+import { useDances } from "@/hooks/use-robot-dance"
 
 export function RobotActionGrid({
-  currentPage,
-  totalPages,
-  prevPage,
-  nextPage,
-  currentPageActions,
-  currentAction,
-  setCurrentAction,
   sendCommandToBackend,
-}: RobotActionGridProps) {
-  const actionsPerPage = 8;
+  onActionSelect,
+}: {
+  sendCommandToBackend: (actionCode: string) => Promise<unknown>
+  onActionSelect: (action: RobotAction) => void
+}) {
+  const [selectedTab, setSelectedTab] =
+    useState<RobotActionCategory>("action")
+  const [currentActionIndex, setCurrentActionIndex] =
+    useState<number | null>(null)
+
+  // page state riêng cho từng tab
+  const [actionPage, setActionPage] = useState(1)
+  const [dancePage, setDancePage] = useState(1)
+  const [funnyPage, setFunnyPage] = useState(1)
+
+  // search + debounce
+  const [searchTerm, setSearchTerm] = useState("")
+  const [debouncedSearchTerm, setDebouncedSearchTerm] = useState("")
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearchTerm(searchTerm)
+    }, 500)
+    return () => clearTimeout(timer)
+  }, [searchTerm])
+
+  const pageSize = 8
+
+  // query actions
+  const {
+    data: actionData,
+    isLoading: actionLoading,
+    error: actionError,
+  } = useRobotActions(actionPage, pageSize, debouncedSearchTerm)
+
+  const actionActions = actionData?.data ?? []
+  const actionTotal = actionData?.total_pages ?? 1
+
+  // query dances
+  const {
+    data: danceData,
+    isLoading: danceLoading,
+    error: danceError,
+  } = useDances(dancePage, pageSize, debouncedSearchTerm)
+
+  const dances = danceData?.data ?? []
+  const danceTotal = danceData?.total_pages ?? 1
+
+  // funny tạm mock
+  const funnyActions: RobotAction[] = []
+  const funnyTotal = 1
+  const funnyLoading = false
+  const funnyError = null
+
+  type TabData = {
+    actions: RobotAction[]
+    totalPages: number
+    currentPage: number
+    setCurrentPage: Dispatch<SetStateAction<number>>
+    loading: boolean
+    error: string | null
+  }
+
+  let tabData: TabData
+  if (selectedTab === "action") {
+    tabData = {
+      actions: actionActions,
+      totalPages: actionTotal,
+      currentPage: actionPage,
+      setCurrentPage: setActionPage,
+      loading: actionLoading,
+      error: actionError ? String(actionError) : null,
+    }
+  } else if (selectedTab === "dance") {
+    tabData = {
+      actions: dances,
+      totalPages: danceTotal,
+      currentPage: dancePage,
+      setCurrentPage: setDancePage,
+      loading: danceLoading,
+      error: danceError ? String(danceError) : null,
+    }
+  } else {
+    tabData = {
+      actions: funnyActions,
+      totalPages: funnyTotal,
+      currentPage: funnyPage,
+      setCurrentPage: setFunnyPage,
+      loading: funnyLoading,
+      error: funnyError,
+    }
+  }
 
   return (
-    <div className="flex flex-col items-center mb-4">
-      <div className="flex items-center justify-between w-full mb-4">
-        {/* Left Arrow */}
-        <button
-          onClick={prevPage}
-          className="p-3 bg-white rounded-full shadow-md hover:bg-gray-100 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
-          disabled={currentPage === 0}
-        >
-          <ChevronLeft size={28} />
-        </button>
-
-        {/* Circle Grid */}
-        <div className="relative w-full overflow-hidden p-4">
-          <AnimatePresence mode="wait">
-            <motion.div
-              key={currentPage}
-              initial={{ opacity: 0, x: 50 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -50 }}
-              transition={{ duration: 0.4, ease: "easeInOut" }}
-              className="grid grid-cols-4 gap-6 mx-15"
-            >
-              {currentPageActions.map((actionItem, index) => (
-                <div key={actionItem.id} className="flex flex-col items-center">
-                  <button
-                    onClick={() => {
-                      setCurrentAction(currentPage * actionsPerPage + index);
-                      sendCommandToBackend(actionItem.code); // gửi code động từ API
-                    }}
-                    className={`w-24 h-24 rounded-full flex items-center justify-center shadow-md transition-all duration-200 hover:scale-110 ${
-                      currentAction === currentPage * actionsPerPage + index
-                        ? `ring-4 ring-offset-2 ring-blue-400 bg-white`
-                        : "bg-white hover:bg-gray-100"
-                    }`}
-                  >
-                    {/* nếu API có imageUrl thì render img, không thì hiện icon/text */}
-                    {actionItem.imageUrl ? (
-                      <img
-                        src={actionItem.imageUrl}
-                        alt={actionItem.name}
-                        className="w-12 h-12 object-contain"
-                      />
-                    ) : (
-                      <span className="text-2xl">🎬</span>
-                    )}
-                  </button>
-                  <span className="text-xs font-medium text-gray-700 mt-2 text-center max-w-16 truncate">
-                    {actionItem.name}
-                  </span>
-                </div>
-              ))}
-            </motion.div>
-          </AnimatePresence>
-        </div>
-
-        {/* Right Arrow */}
-        <button
-          onClick={nextPage}
-          className="p-3 bg-white rounded-full shadow-md hover:bg-gray-100 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
-          disabled={currentPage === totalPages - 1}
-        >
-          <ChevronRight size={28} />
-        </button>
+    <div className="flex flex-col items-center mb-4 w-full">
+      {/* Tabs */}
+      <div className="flex justify-center space-x-4 mb-6">
+        {(["action", "dance", "funny"] as const).map((tab) => (
+          <button
+            key={tab}
+            onClick={() => {
+              setSelectedTab(tab)
+              setCurrentActionIndex(null) // reset index khi đổi tab
+            }}
+            className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+              selectedTab === tab
+                ? "bg-blue-500 text-white"
+                : "bg-gray-200 text-gray-700 hover:bg-gray-300"
+            }`}
+          >
+            {tab.charAt(0).toUpperCase() + tab.slice(1)}
+          </button>
+        ))}
       </div>
+
+      {/* Tab content */}
+      <RobotActionTab
+        actions={tabData.actions}
+        currentActionIndex={currentActionIndex}
+        setCurrentActionIndex={setCurrentActionIndex}
+        sendCommandToBackend={sendCommandToBackend}
+        onActionSelect={onActionSelect}
+        pageSize={pageSize}
+        currentPage={tabData.currentPage}
+        setCurrentPage={tabData.setCurrentPage}
+        totalPages={tabData.totalPages}
+        loading={tabData.loading}
+        error={tabData.error}
+      />
     </div>
-  );
+  )
 }

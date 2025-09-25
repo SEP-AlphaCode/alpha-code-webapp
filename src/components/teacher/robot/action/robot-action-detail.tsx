@@ -43,7 +43,7 @@ export function RobotActionDetail({ action }: RobotActionDetailProps) {
 
           <div className="space-y-4">
             <h3 className="font-semibold text-gray-700">Available Commands</h3>
-            {action.commands.map((command, index) => (
+            {Array.isArray(action.commands) && action.commands.map((command, index) => (
               <div
                 key={index}
                 className="w-full p-4 text-left rounded-xl font-medium flex items-center bg-gray-100 text-gray-800"

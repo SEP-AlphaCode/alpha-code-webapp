@@ -73,6 +73,7 @@ export default function TeacherLayout({ children }: TeacherLayoutProps) {
     { name: "Students", href: "/teacher/student", icon: "👥" },
     { name: "Programming", href: "/teacher/programming", icon: "💻" },
     { name: "Classroom", href: "/teacher/classroom", icon: "🏫" },
+    { name: "Activities", href: "/teacher/activities", icon: "🎯" },
     { name: "Music", href: "/teacher/music", icon: "🎵" },
     { name: "Courses", href: "/teacher/courses", icon: "📖" },
   ];
@@ -128,7 +129,7 @@ export default function TeacherLayout({ children }: TeacherLayoutProps) {
             isSidebarOpen ? "ml-64" : "ml-16"
           }`}
         >
-          <div className="mt-10 p-10 bg-gradient-to-br from-blue-50 to-white min-h-screen">
+          <div className="mt-10 bg-white min-h-screen">
             {children}
           </div>
         </main>

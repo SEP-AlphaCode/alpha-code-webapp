@@ -1,4 +1,7 @@
 // src/types/robot.ts
+
+export type RobotActionCategory = "action" | "dance" | "funny";
+
 export interface RobotAction {
   id: string;
   imageUrl: string | null;
@@ -12,6 +15,8 @@ export interface RobotAction {
   status: number;
   canInterrupt: boolean;
   statusText: string;
+  icon?: string;
+  category: RobotActionCategory;
 }
 
 export interface RobotActionResponse {
