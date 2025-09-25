@@ -238,16 +238,9 @@ export default function MusicPage() {
   const isVideo = fileType.startsWith("video/")
 
   return (
-    <div className="min-h-screen bg-slate-50 relative overflow-hidden" suppressHydrationWarning>
-      {/* Enhanced Background Patterns */}
-      <div className="absolute inset-0" suppressHydrationWarning>
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_120%,rgba(71,85,105,0.05),transparent_50%)]"></div>
-        <div className="absolute inset-0 bg-[linear-gradient(rgba(71,85,105,0.03)_1px,transparent_1px),linear-gradient(90deg,rgba(71,85,105,0.03)_1px,transparent_1px)] bg-[size:40px_40px]"></div>
-        <div className="absolute top-20 left-20 w-72 h-72 bg-gray-100 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-pulse"></div>
-        <div className="absolute bottom-20 right-20 w-96 h-96 bg-gray-100 rounded-full mix-blend-multiply filter blur-xl opacity-15 animate-pulse delay-1000"></div>
-      </div>
+    <div className="min-h-screen bg-white relative" suppressHydrationWarning>
 
-      <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="relative z-10 p-100 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Enhanced Header Section */}
         <div className="text-center mb-16">
           {/* Alpha Mini Badge */}
