@@ -1,8 +1,11 @@
 "use client"
 import { useCourse } from '@/hooks/use-course';
-import { Clock } from 'lucide-react';
 import Link from 'next/link';
 import React, { useState } from 'react'
+import img from '../../../../public/img_disconnect.png'
+import Image from 'next/image';
+import { cn } from '@/lib/utils';
+import { mapDifficulty } from '@/types/class';
 
 export default function CourseBoardPage() {
   const [page, setPage] = useState(1);
@@ -25,7 +28,7 @@ export default function CourseBoardPage() {
     return nextCat
   }
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 p-10" suppressHydrationWarning>
       {/* Categories scroll bar */}
       <div
         className="overflow-x-auto"
@@ -66,16 +69,21 @@ export default function CourseBoardPage() {
                   key={course.id}
                   className="hover:cursor-pointer bg-white shadow rounded-lg p-4 flex flex-col hover:shadow-md transition"
                 >
-                  <img
-                    src={course.imageUrl || "/placeholder.png"}
-                    alt={course.name}
-                    className="w-full h-40 object-cover rounded-md mb-3"
-                  />
-                  <h3 className="text-lg font-semibold mb-2">{course.name}</h3>
+                  <div className=''>
+                    {course.imageUrl ? (
+                      <img
+                        src={course.imageUrl}
+                        alt={course.name}
+                        className="w-full  h-40 object-cover rounded-md mb-3"
+                      />
+                    ) : (
+                      <div className={cn("w-full rounded-lg h-40 flex items-center justify-center", "bg-" + mapDifficulty(course.level).textColor)}>
+                        <span className="text-3xl text-white text-center">{course.name}</span>
+                      </div>
+                    )}
+                  </div>
+                  <h3 className="text-xl font-semibold my-2">{course.name}</h3>
                   <p className="text-sm text-gray-600 flex-grow">{course.description}</p>
-                  <span className="mt-3 text-sm font-medium text-blue-600 flex gap-2">
-                    <Clock />{course.totalDuration}s
-                  </span>
                 </Link>
               )
             })}

@@ -1,4 +1,4 @@
-import { getCategories, getCourses } from "@/api/course-api";
+import { getCategories, getCategoryBySlug, getCourseBySlug, getCourses } from "@/api/course-api";
 import { Category, Course } from "@/types/courses";
 import { PagedResult } from "@/types/page-result";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
@@ -19,8 +19,20 @@ export const useCourse = () => {
             queryFn: ({ signal }) => getCourses(page, size, search, signal)
         })
     }
+    const useGetCourseBySlug = (slug: string) => useQuery<Course | undefined>({
+        queryKey: ['courses', slug],
+        staleTime: STALE_TIME,
+        queryFn: () => getCourseBySlug(slug)
+    })
+    const useGetCategoryBySlug = (slug: string) => useQuery<Category | undefined>({
+        queryKey: ['category', slug],
+        staleTime: STALE_TIME,
+        queryFn: () => getCategoryBySlug(slug)
+    })
     return {
         useGetCategories,
-        useGetCourses
+        useGetCourses,
+        useGetCategoryBySlug,
+        useGetCourseBySlug
     }
 }

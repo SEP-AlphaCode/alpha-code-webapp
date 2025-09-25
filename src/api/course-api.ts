@@ -229,3 +229,11 @@ export const getCourses = async (page: number, size: number, search?: string, si
     total_pages: totalPages
   };
 };
+
+export const getCourseBySlug = async (slug: string) => {
+  return courses.find(x => x.slug === slug)
+}
+
+export const getCategoryBySlug = async (slug: string) => {
+  return categories.find(x => x.slug === slug)
+}
