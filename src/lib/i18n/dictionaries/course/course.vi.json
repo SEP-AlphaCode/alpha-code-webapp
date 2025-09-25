@@ -1,0 +1,16 @@
+{
+    "navigation": {
+        "home": "Trang chủ",
+        "learningPath": "Lộ trình",
+        "articles": "Bài viết",
+        "myCourse": "Khóa học của tôi",
+        "notification": "Thông báo",
+        "admin": "Quản trị",
+        "dashboard": "Bảng điều khiển"
+    },
+    "common": {
+        "loading": "Đang tải...",
+        "error": "Đã xảy ra lỗi",
+        "retry": "Thử lại"
+    }
+}

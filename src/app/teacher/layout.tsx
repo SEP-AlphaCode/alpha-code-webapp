@@ -74,6 +74,7 @@ export default function TeacherLayout({ children }: TeacherLayoutProps) {
     { name: "Programming", href: "/teacher/programming", icon: "💻" },
     { name: "Classroom", href: "/teacher/classroom", icon: "🏫" },
     { name: "Music", href: "/teacher/music", icon: "🎵" },
+    { name: "Courses", href: "/teacher/courses", icon: "📖" },
   ];
 
   const isActiveRoute = (href: string) => {

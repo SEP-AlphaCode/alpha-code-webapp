@@ -27,7 +27,7 @@ const pageDictionaries = {
     teacher: {
         // en: () => import('./dictionaries/teacher/teacher.en.json').then((module) => module.default),
         vi: () => import('./dictionaries/teacher/teacher.vi.json').then((module) => module.default),
-    },
+    }
     // Add more page dictionaries here as needed
 }
 
