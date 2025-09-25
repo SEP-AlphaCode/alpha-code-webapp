@@ -11,8 +11,11 @@ export const useSendRobotCommand = () => {
     onSuccess: (data) => {
       toast.success(data.message || 'Lệnh đã gửi thành công!');
     },
-    onError: (error: any) => {
-      toast.error(error?.message || 'Không thể gửi lệnh đến robot');
+    onError: (error: unknown) => {
+      const errorMessage = error && typeof error === 'object' && 'message' in error 
+        ? (error as { message: string }).message 
+        : 'Không thể gửi lệnh đến robot';
+      toast.error(errorMessage);
     },
   });
 };
@@ -21,7 +24,7 @@ export const useSendRobotCommand = () => {
 export const useRobotControls = () => {
   const sendCommand = useSendRobotCommand();
   
-  const startActivity = (serial: string, type: string, data: any) => {
+  const startActivity = (serial: string, type: string, data: unknown) => {
     const command = {
       type: type,
       data: data // Gửi trực tiếp data object thay vì array

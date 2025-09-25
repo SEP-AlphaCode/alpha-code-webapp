@@ -15,10 +15,13 @@ export const useActivities = (page: number = 1, size: number = 10, search?: stri
     queryKey: ['activities', page, size, search],
     queryFn: ({ signal }) => getPagedActivities(page, size, search, signal),
     staleTime: 1000 * 60 * 5, // 5 minutes
-    retry: (failureCount, error: any) => {
+    retry: (failureCount, error: unknown) => {
       // Don't retry on canceled errors
-      if (error.name === 'CanceledError' || error.code === 'ERR_CANCELED') {
-        return false;
+      if (error && typeof error === 'object') {
+        const errorObj = error as { name?: string; code?: string };
+        if (errorObj.name === 'CanceledError' || errorObj.code === 'ERR_CANCELED') {
+          return false;
+        }
       }
       return failureCount < 3;
     },
@@ -51,8 +54,11 @@ export const useCreateActivity = () => {
       queryClient.invalidateQueries({ queryKey: ['activities'] });
       toast.success('Activity created successfully!');
     },
-    onError: (error: any) => {
-      toast.error(error?.message || 'Failed to create activity');
+    onError: (error: unknown) => {
+      const errorMessage = error && typeof error === 'object' && 'message' in error 
+        ? (error as { message: string }).message 
+        : 'Failed to create activity';
+      toast.error(errorMessage);
     },
   });
 };
@@ -67,8 +73,11 @@ export const useUpdateActivity = () => {
       queryClient.invalidateQueries({ queryKey: ['activities'] });
       toast.success('Activity updated successfully!');
     },
-    onError: (error: any) => {
-      toast.error(error?.message || 'Failed to update activity');
+    onError: (error: unknown) => {
+      const errorMessage = error && typeof error === 'object' && 'message' in error 
+        ? (error as { message: string }).message 
+        : 'Failed to update activity';
+      toast.error(errorMessage);
     },
   });
 };
@@ -82,8 +91,11 @@ export const useDeleteActivity = () => {
       queryClient.invalidateQueries({ queryKey: ['activities'] });
       toast.success('Activity deleted successfully!');
     },
-    onError: (error: any) => {
-      toast.error(error?.message || 'Failed to delete activity');
+    onError: (error: unknown) => {
+      const errorMessage = error && typeof error === 'object' && 'message' in error 
+        ? (error as { message: string }).message 
+        : 'Failed to delete activity';
+      toast.error(errorMessage);
     },
   });
 };

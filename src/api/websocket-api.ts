@@ -14,11 +14,17 @@ export const sendRobotCommand = async (serial: string, command: WebSocketCommand
     
     console.log('API Response:', response.data);
     return response.data;
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Error sending robot command:', error);
-    console.error('Error response data:', error.response?.data);
-    console.error('Error response status:', error.response?.status);
-    console.error('Error response headers:', error.response?.headers);
+    
+    // Type guard for Axios error
+    if (error && typeof error === 'object' && 'response' in error) {
+      const axiosError = error as { response?: { data?: unknown; status?: number; headers?: unknown } };
+      console.error('Error response data:', axiosError.response?.data);
+      console.error('Error response status:', axiosError.response?.status);
+      console.error('Error response headers:', axiosError.response?.headers);
+    }
+    
     throw error;
   }
 };

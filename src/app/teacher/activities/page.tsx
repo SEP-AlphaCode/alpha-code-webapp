@@ -26,7 +26,7 @@ import {
   Activity,
   Loader2
 } from "lucide-react"
-import { useActivities, useCreateActivity, useDeleteActivity, useUpdateActivity } from "@/hooks/use-activities"
+import { useActivities, useCreateActivity } from "@/hooks/use-activities"
 import { useRobotControls } from "@/hooks/use-websocket"
 import { Activity as ActivityType } from "@/types/activities"
 
@@ -37,7 +37,6 @@ export default function ActivitiesPage() {
   const [filterStatus, setFilterStatus] = useState<string>("all")
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false)
   const [currentPage, setCurrentPage] = useState(1)
-  const [selectedActivity, setSelectedActivity] = useState<ActivityType | null>(null)
 
   // Debounce search term
   useEffect(() => {
@@ -52,8 +51,6 @@ export default function ActivitiesPage() {
   // API Hooks - use debounced search term
   const { data: activitiesData, isLoading, error } = useActivities(currentPage, 12, debouncedSearchTerm)
   const createActivityMutation = useCreateActivity()
-  const updateActivityMutation = useUpdateActivity()
-  const deleteActivityMutation = useDeleteActivity()
 
   // Robot Controls Hook
   const { startActivity, isLoading: isRobotLoading } = useRobotControls()
@@ -93,19 +90,6 @@ export default function ActivitiesPage() {
         return "bg-green-100 text-green-800"
       case "project":
         return "bg-orange-100 text-orange-800"
-      default:
-        return "bg-gray-100 text-gray-800"
-    }
-  }
-
-  const getDifficultyColor = (difficulty: string) => {
-    switch (difficulty) {
-      case "easy":
-        return "bg-green-100 text-green-800"
-      case "medium":
-        return "bg-yellow-100 text-yellow-800"
-      case "hard":
-        return "bg-red-100 text-red-800"
       default:
         return "bg-gray-100 text-gray-800"
     }
@@ -468,12 +452,19 @@ export default function ActivitiesPage() {
               </Card>
             ))}
           </div>
-        ) : error && error.name !== 'CanceledError' && error.code !== 'ERR_CANCELED' ? (
+        ) : error && 
+             !(error && typeof error === 'object' && 
+               (('name' in error && error.name === 'CanceledError') || 
+                ('code' in error && error.code === 'ERR_CANCELED'))) ? (
           <div className="text-center py-16">
             <div className="text-red-500 mb-4">
               <Activity className="w-16 h-16 mx-auto mb-4" />
               <h3 className="text-lg font-semibold mb-2">Lỗi khi tải dữ liệu</h3>
-              <p className="text-gray-600">{error.message}</p>
+              <p className="text-gray-600">
+                {error && typeof error === 'object' && 'message' in error 
+                  ? (error as { message: string }).message 
+                  : 'Đã xảy ra lỗi khi tải dữ liệu'}
+              </p>
               <Button 
                 onClick={() => window.location.reload()} 
                 variant="outline" 

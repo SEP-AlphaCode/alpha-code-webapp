@@ -23,10 +23,13 @@ export const getPagedActivities = async (page: number, size: number, search?: st
       signal
     });
     return response.data;
-  } catch (error: any) {       
+  } catch (error: unknown) {       
     // Don't log or throw canceled errors
-    if (error.name === 'CanceledError' || error.code === 'ERR_CANCELED') {
-      return Promise.reject(error); // Let React Query handle it
+    if (error && typeof error === 'object') {
+      const errorObj = error as { name?: string; code?: string };
+      if (errorObj.name === 'CanceledError' || errorObj.code === 'ERR_CANCELED') {
+        return Promise.reject(error); // Let React Query handle it
+      }
     }
     console.error('Error fetching paged activities:', error);
     throw error;
