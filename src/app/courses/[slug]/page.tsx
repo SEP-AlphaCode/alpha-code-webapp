@@ -15,7 +15,7 @@ export default function CoursePage({ params }: Props) {
   // Skeleton Loader
   if (isLoading)
     return (
-      <div className="space-y-6 p-10 bg-blue-50 min-h-screen" suppressHydrationWarning>
+      <div className="space-y-6 min-h-screen" suppressHydrationWarning>
         <div className="max-w-7xl mx-auto">
           {/* Breadcrumb Skeleton */}
           <div className="mb-6">
@@ -58,7 +58,7 @@ export default function CoursePage({ params }: Props) {
   // Error State - Course not found
   if (!data)
     return (
-      <div className="space-y-6 p-10 bg-red-50 min-h-screen flex items-center justify-center" suppressHydrationWarning>
+      <div className="space-y-6 bg-red-50 min-h-screen flex items-center justify-center" suppressHydrationWarning>
         <div className="text-center max-w-md">
           <div className="text-6xl mb-4">😞</div>
           <h1 className="text-2xl font-bold text-red-800 mb-2">Course Not Found</h1>
@@ -78,16 +78,8 @@ export default function CoursePage({ params }: Props) {
   // Success State
   const diff = mapDifficulty(data.level)
   return (
-    <div className="space-y-6 p-10 min-h-screen bg-gradient-to-br from-blue-50 to-white" suppressHydrationWarning>
-      <div className="max-w-7xl mx-auto">
-        {/* Breadcrumb */}
-        <nav className="mb-6">
-          <ol className="flex items-center space-x-2 text-sm text-gray-500">
-            <li>Courses</li>
-            <li>›</li>
-            <li className="text-blue-600 font-medium">{data.name}</li>
-          </ol>
-        </nav>
+    <div className="space-y-6 min-h-screen" suppressHydrationWarning>
+      <div className="">
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Main Content - Left Column (2/3 width) */}
@@ -154,15 +146,13 @@ export default function CoursePage({ params }: Props) {
                 </div>
               </div>
             </section>
-
-            {/* Lessons Section - Added this new section */}
-            {data.lessons && data.lessons.length > 0 && (
-              <section className="bg-white rounded-lg shadow-sm border">
-                <div className="p-6 border-b">
-                  <h2 className="text-2xl font-semibold">Course Lessons</h2>
-                  <p className="text-gray-600 mt-1">{data.lessons.length} lessons • {formatTimespan(data.lessons.reduce((total, lesson) => total + lesson.duration, 0))} total</p>
-                </div>
-
+            <section className="bg-white rounded-lg shadow-sm border">
+              <div className="p-6 border-b">
+                <h2 className="text-2xl font-semibold">Course Lessons</h2>
+                <p className="text-gray-600 mt-1">{data.lessons?.length || 0} lessons • {formatTimespan((data.lessons ?? []).reduce((total, lesson) => total + lesson.duration, 0))} total</p>
+              </div>
+              {/* Lessons Section - Added this new section */}
+              {data.lessons && data.lessons.length > 0 && (
                 <div className="divide-y">
                   {data.lessons
                     .sort((a, b) => a.orderNumber - b.orderNumber)
@@ -205,8 +195,8 @@ export default function CoursePage({ params }: Props) {
                     ))
                   }
                 </div>
-              </section>
-            )}
+              )}
+            </section>
           </div>
 
           {/* Sidebar - Right Column (1/3 width) */}
