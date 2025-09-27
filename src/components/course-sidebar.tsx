@@ -2,26 +2,10 @@
 
 import * as React from "react"
 import {
-  BarChart3,
-  Bot,
-  CreditCard,
   Home,
-  LifeBuoy,
-  School,
-  Send,
-  Settings2,
-  SquareTerminal,
-  Users,
-  BookMarkedIcon,
-  QrCode,
-  Bell,
   BookOpen,
   FileText
 } from "lucide-react"
-
-import { NavMain } from "@/components/nav-main"
-import { NavProjects } from "@/components/nav-projects"
-import { NavSecondary } from "@/components/nav-secondary"
 import { NavUser } from "@/components/nav-user"
 import {
   Sidebar,
@@ -33,16 +17,13 @@ import {
   SidebarMenuItem,
 } from "@/components/ui/sidebar"
 import logo1 from '../../public/logo1.png';
-import logo2 from '../../public/logo2.png';
 import Image from "next/image"
-import { getTokenPayload } from "@/utils/tokenUtils"
-import { useCourseTranslation } from "@/lib/i18n/hooks/use-translation"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
+import { cn } from "@/lib/utils"
 
 export function CourseSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const pathname = usePathname()
-  const { t, isLoading } = useCourseTranslation()
   const [userData, setUserData] = React.useState({
     name: "Admin",
     email: "",
@@ -51,55 +32,61 @@ export function CourseSidebar({ ...props }: React.ComponentProps<typeof Sidebar>
   const navigationItems = React.useMemo(
     () => [
       {
-        name: t("navigation.home"),
+        name: 'Home',
         url: "/courses",
         icon: Home,
       },
       {
-        name: t("navigation.learningPath"),
+        name: 'Learning Path',
         url: "/courses/learning-path",
         icon: BookOpen,
       },
       {
-        name: t("navigation.articles"),
+        name: 'Articles',
         url: "/courses/articles",
         icon: FileText,
       },
     ],
-    [t],
+    [],
   )
 
-  if (isLoading) {
-    return (
-      <Sidebar variant="inset" {...props} className="w-40">
-        <SidebarHeader>
-          <SidebarMenu>
-            <SidebarMenuItem>
-              <SidebarMenuButton size="lg" asChild>
-                <Link href="/courses">
-                  <div className="text-sidebar-primary-foreground flex aspect-square size-30 items-center justify-center rounded-lg">
-                    <Image src={logo1} alt="Logo" className="object-contain w-30 h-30" />
-                  </div>
-                </Link>
-              </SidebarMenuButton>
-            </SidebarMenuItem>
-          </SidebarMenu>
-        </SidebarHeader>
-        <SidebarContent>
-          <div className="p-4 space-y-2">
-            <div className="animate-pulse space-y-2">
-              <div className="h-4 bg-gray-200 rounded w-3/4"></div>
-              <div className="h-4 bg-gray-200 rounded w-1/2"></div>
-              <div className="h-4 bg-gray-200 rounded w-5/6"></div>
-            </div>
-          </div>
-        </SidebarContent>
-      </Sidebar>
-    )
-  }
+  // if (isLoading) {
+  //   return (
+  //     <Sidebar variant="inset" {...props} className="w-40">
+  //       <SidebarHeader>
+  //         <SidebarMenu>
+  //           <SidebarMenuItem>
+  //             <SidebarMenuButton size="lg" asChild>
+  //               <Link href="/courses">
+  //                 <div className="text-sidebar-primary-foreground flex aspect-square size-30 items-center justify-center rounded-lg">
+  //                   <Image src={logo1} alt="Logo" className="object-contain w-30 h-30" />
+  //                 </div>
+  //               </Link>
+  //             </SidebarMenuButton>
+  //           </SidebarMenuItem>
+  //         </SidebarMenu>
+  //       </SidebarHeader>
+  //       <SidebarContent>
+  //         <div className="p-4 space-y-2">
+  //           <div className="animate-pulse space-y-2">
+  //             <div className="h-4 bg-gray-200 rounded w-3/4"></div>
+  //             <div className="h-4 bg-gray-200 rounded w-1/2"></div>
+  //             <div className="h-4 bg-gray-200 rounded w-5/6"></div>
+  //           </div>
+  //         </div>
+  //       </SidebarContent>
+  //     </Sidebar>
+  //   )
+  // }
 
   return (
-    <Sidebar variant="inset" {...props} className="w-40 bg-blue-500"> {/* narrower sidebar */}
+    // <div className="w-40">
+    <Sidebar variant="inset" {...props}
+      style={{
+        // "--sidebar-width": "10rem",
+        // "--sidebar-width-mobile": "20rem",
+      }}
+    > {/* narrower sidebar */}
       <SidebarHeader>
         <SidebarMenu>
           <SidebarMenuItem>
@@ -125,11 +112,11 @@ export function CourseSidebar({ ...props }: React.ComponentProps<typeof Sidebar>
                   href={item.url}
                   className={`flex flex-col items-center justify-center w-24 h-24 rounded-lg transition-colors 
                 ${isActive
-                      ? "bg-sidebar-accent text-sidebar-accent-foreground"
+                      ? "bg-sidebar-accent text-blue-500"
                       : "text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"}`}
                 >
-                  <Icon className="h-6 w-6 mb-1" />
-                  <span className="text-xs font-medium text-center">{item.name}</span>
+                  <Icon className={cn("h-6 w-6 mb-1 ")} />
+                  <span className={cn("text-xs font-medium text-center")}>{item.name}</span>
                 </Link>
               </li>
             )
@@ -141,5 +128,6 @@ export function CourseSidebar({ ...props }: React.ComponentProps<typeof Sidebar>
         <NavUser user={userData} />
       </SidebarFooter>
     </Sidebar>
+    // </div>
   )
 }
