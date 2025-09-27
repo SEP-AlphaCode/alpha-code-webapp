@@ -36,6 +36,7 @@ interface Robot {
   ip: string;
   temperature: number;
   image: string;
+  serialNumber: string;
 }
 
 // Hàm xáo trộn mảng ngẫu nhiên
@@ -83,6 +84,7 @@ export default function TeacherDashboard() {
       ip: "192.168.1.101",
       temperature: 32,
       image: "/alpha-mini-2.webp",
+      serialNumber: "030006KFK18081800461",
     },
     {
       id: "Alpha-02",
@@ -98,40 +100,11 @@ export default function TeacherDashboard() {
       ip: "192.168.1.102",
       temperature: 29,
       image: "/alpha-mini-2.webp",
-    },
-    {
-      id: "Alpha-03",
-      name: "Alpha Mini 03",
-      status: "offline",
-      battery: 37,
-      location: "Charging Station",
-      lastSeen: "15 minutes ago",
-      version: "v2.1.3",
-      students: 0,
-      currentTask: "Idle",
-      uptime: "0h 0m",
-      ip: "192.168.1.103",
-      temperature: 25,
-      image: "/alpha-mini-2.webp",
-    },
-    {
-      id: "Alpha-04",
-      name: "Alpha Mini 04",
-      status: "charging",
-      battery: 61,
-      location: "Classroom D",
-      lastSeen: "5 minutes ago",
-      version: "v2.1.3",
-      students: 0,
-      currentTask: "Charging",
-      uptime: "0h 0m",
-      ip: "192.168.1.104",
-      temperature: 28,
-      image: "/alpha-mini-2.webp",
-    },
+      serialNumber: "EAA007UBT10000341",
+    }
   ];
 
-  const selectedRobotDetails = robots.find((robot) => robot.id === selectedRobot);
+  const selectedRobotDetails = robots.find((robot) => robot.id === selectedRobot) || null;
 
   return (
     <div className="space-y-10 p-10">
@@ -143,7 +116,13 @@ export default function TeacherDashboard() {
       <RobotGrid 
         robots={robots}
         selectedRobot={selectedRobot}
-        onRobotSelect={setSelectedRobot}
+        onRobotSelect={(robotId) => {
+          setSelectedRobot(robotId);
+          const robot = robots.find(r => r.id === robotId);
+          if (robot) {
+            sessionStorage.setItem("selectedRobotSerial", robot.serialNumber);
+          }
+        }}
         sectionTitle={t.robot_selection.title}
         statusTexts={{
           online: t.robot_selection.status_online,

@@ -1,7 +1,7 @@
 // src/components/teacher/robot/action/robot-action-page.tsx
 "use client";
 
-import { useState } from "react";
+import { use, useEffect, useState } from "react";
 import Image from "next/image";
 import { RobotActionHeader } from "@/components/teacher/robot/action/robot-action-header";
 import { RobotActionDetail } from "@/components/teacher/robot/action/robot-action-detail";
@@ -19,17 +19,39 @@ export default function RobotActionPage() {
   };
 
   const { sendCommandToBackend } = useRobotCommand(setNotify);
-  
+
   const [currentAction, setCurrentAction] = useState<RobotAction | null>(null);
   const [direction, setDirection] = useState<number>(0);
+  // Thêm state lưu serial của robot được chọn
+  const [robotSerial, setRobotSerial] = useState<string>("");
 
+  // TODO: Nếu bạn có component chọn robot, hãy truyền setRobotSerial cho nó
+  // Ví dụ: <RobotSelector onRobotChange={robot => setRobotSerial(robot.id)} ... />
+
+
+  // Khai báo lại các hàm chuyển trang
   const handlePrevAction = () => {
     // Logic này sẽ được xử lý trong RobotActionGrid, không cần ở đây
   };
-
   const handleNextAction = () => {
     // Logic này cũng được xử lý trong RobotActionGrid
   };
+
+  // Hàm gọi lệnh sẽ truyền serial, trả về Promise cho đúng kiểu
+  const handleSendCommand = async (actionCode: string) => {
+    if (!robotSerial) {
+      setNotify("Bạn chưa chọn robot!", "error");
+      return Promise.resolve();
+    }
+    await sendCommandToBackend(actionCode, robotSerial);
+  };
+
+  useEffect(() => {
+    const serialNumber = sessionStorage.getItem("selectedRobotSerial");
+    if (serialNumber) {
+      setRobotSerial(serialNumber);
+    }
+  }, []);
 
   return (
     <div className="min-h-screen">
@@ -82,9 +104,11 @@ export default function RobotActionPage() {
 
         {/* Grid hiển thị actions */}
         <RobotActionGrid
-          sendCommandToBackend={sendCommandToBackend}
+          sendCommandToBackend={handleSendCommand}
           onActionSelect={(action) => setCurrentAction(action)}
         />
+        {/* Ví dụ: Truyền setRobotSerial cho component chọn robot nếu có */}
+        {/* <RobotSelector onRobotChange={robot => setRobotSerial(robot.id)} ... /> */}
       </div>
 
       {notify && (
