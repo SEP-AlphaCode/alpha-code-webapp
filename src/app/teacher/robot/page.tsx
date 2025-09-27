@@ -84,7 +84,7 @@ export default function TeacherDashboard() {
       ip: "192.168.1.101",
       temperature: 32,
       image: "/alpha-mini-2.webp",
-      serialNumber: "030006KFK18081800461",
+      serialNumber: "010058YUD18073102086",
     },
     {
       id: "Alpha-02",
