@@ -38,7 +38,7 @@ export default function CoursePage() {
         >
           <div className="flex space-x-4 pb-2 w-max">
             {loadingCategories ? (
-              <span className="px-4 py-2">Loading categories...</span>
+              <span className="px-4 py-2">Đang tải các danh mục...</span>
             ) : (
               categories.map((cat) => (
                 <button
@@ -60,7 +60,7 @@ export default function CoursePage() {
       {/* Courses Grid Section */}
       {loadingCourses ? (
         <div className="flex justify-center py-8">
-          <p className="text-gray-600">Loading courses...</p>
+          <p className="text-gray-600">Đang tải các khóa học...</p>
         </div>
       ) : (
         <>
@@ -126,11 +126,11 @@ export default function CoursePage() {
                     : "bg-white text-gray-700 hover:bg-gray-50 border-gray-300"
                   }`}
               >
-                Previous
+                Trước
               </button>
 
               <span className="text-gray-600 min-w-[100px] text-center">
-                Page {page} of {totalPages}
+                Trang {page} / {totalPages}
               </span>
 
               <button
@@ -141,7 +141,7 @@ export default function CoursePage() {
                     : "bg-white text-gray-700 hover:bg-gray-50 border-gray-300"
                   }`}
               >
-                Next
+                Sau
               </button>
             </div>
           )}

@@ -40,7 +40,7 @@ export default function CourseBoardPage() {
         >
           <div className="flex space-x-4 pb-2 w-max">
             {loadingCategories ? (
-              <span className="px-4 py-2">Loading categories...</span>
+              <span className="px-4 py-2">Đang tải các danh mục...</span>
             ) : (
               categories.map((cat) => (
                 <button
@@ -61,7 +61,7 @@ export default function CourseBoardPage() {
 
       {/* Courses grid */}
       {loadingCourses ? (
-        <p>Loading courses...</p>
+        <p>Đang tải các khóa học...</p>
       ) : (
         <>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -122,10 +122,10 @@ export default function CourseBoardPage() {
                 : "bg-white hover:bg-gray-100"
                 }`}
             >
-              Previous
+              Trước
             </button>
             <span className="text-gray-600">
-              Page {page} of {totalPages || 1}
+              Trang {page} / {totalPages || 1}
             </span>
             <button
               onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
@@ -135,7 +135,7 @@ export default function CourseBoardPage() {
                 : "bg-white hover:bg-gray-100"
                 }`}
             >
-              Next
+              Sau
             </button>
           </div>
         </>

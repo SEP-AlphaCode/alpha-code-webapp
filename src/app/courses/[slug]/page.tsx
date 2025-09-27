@@ -58,18 +58,18 @@ export default function CoursePage({ params }: Props) {
   // Error State - Course not found
   if (!data)
     return (
-      <div className="space-y-6 bg-red-50 min-h-screen flex items-center justify-center" suppressHydrationWarning>
+      <div className="space-y-6 p-10 bg-red-50 min-h-screen flex items-center justify-center" suppressHydrationWarning>
         <div className="text-center max-w-md">
           <div className="text-6xl mb-4">😞</div>
-          <h1 className="text-2xl font-bold text-red-800 mb-2">Course Not Found</h1>
+          <h1 className="text-2xl font-bold text-red-800 mb-2">Không tìm thấy khóa học</h1>
           <p className="text-red-600 mb-6">
-            The course you're looking for doesn't exist or may have been removed.
+            Khóa học bạn đang tìm kiếm không tồn tại hoặc đã bị xóa.
           </p>
           <button
             onClick={() => window.history.back()}
             className="px-6 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
           >
-            Go Back
+            Quay lại trang trước
           </button>
         </div>
       </div>
@@ -89,14 +89,14 @@ export default function CoursePage({ params }: Props) {
               <h1 className="text-4xl font-bold text-gray-900 mb-4">{data.name}</h1>
               <div className="flex flex-wrap items-center gap-4 text-sm text-gray-600 mb-4">
                 <span className="flex items-center">
-                  📚 {data.totalLessons} lessons
+                  📚 {data.totalLessons} bài học
                 </span>
                 <span className="flex items-center">
                   ⏱️ {formatTimespan(data.totalDuration)}
                 </span>
                 {data.requireLicense && (
                   <span className="flex items-center text-red-600">
-                    🔒 License Required
+                    🔒 Cần có giấy phép
                   </span>
                 )}
               </div>
@@ -104,7 +104,7 @@ export default function CoursePage({ params }: Props) {
 
             {/* Course Description */}
             <section>
-              <h2 className="text-2xl font-semibold mb-4">About This Course</h2>
+              <h2 className="text-2xl font-semibold mb-4">Về khóa học này</h2>
               <div className="prose max-w-none text-gray-700 leading-relaxed">
                 <p className="whitespace-pre-line">{data.description}</p>
               </div>
@@ -117,8 +117,8 @@ export default function CoursePage({ params }: Props) {
                   📖
                 </div>
                 <div>
-                  <p className="text-sm text-gray-500">Total Lessons</p>
-                  <p className="font-semibold text-lg">{data.totalLessons} lessons</p>
+                  <p className="text-sm text-gray-500">Số bài học</p>
+                  <p className="font-semibold text-lg">{data.totalLessons}</p>
                 </div>
               </div>
 
@@ -127,7 +127,7 @@ export default function CoursePage({ params }: Props) {
                   ⏰
                 </div>
                 <div>
-                  <p className="text-sm text-gray-500">Duration</p>
+                  <p className="text-sm text-gray-500">Thời lượng</p>
                   <p className="font-semibold text-lg">
                     {formatTimespan(data.totalDuration)}
                   </p>
@@ -139,17 +139,19 @@ export default function CoursePage({ params }: Props) {
                   🎯
                 </div>
                 <div>
-                  <p className="text-sm text-gray-500">Level</p>
+                  <p className="text-sm text-gray-500">Mức độ</p>
                   <p className={cn("font-semibold text-lg", "text-" + diff.textColor)}>
                     {diff.text}
                   </p>
                 </div>
               </div>
             </section>
+
+            {/* Lessons Section - Added this new section */}
             <section className="bg-white rounded-lg shadow-sm border">
               <div className="p-6 border-b">
-                <h2 className="text-2xl font-semibold">Course Lessons</h2>
-                <p className="text-gray-600 mt-1">{data.lessons?.length || 0} lessons • {formatTimespan((data.lessons ?? []).reduce((total, lesson) => total + lesson.duration, 0))} total</p>
+                <h2 className="text-2xl font-semibold">Nội dung khóa học</h2>
+                <p className="text-gray-600 mt-1">{data.lessons?.length || 0} bài • Tổng cộng {formatTimespan((data.lessons ?? []).reduce((total, lesson) => total + lesson.duration, 0))}</p>
               </div>
               {/* Lessons Section - Added this new section */}
               {data.lessons && data.lessons.length > 0 && (
@@ -176,7 +178,7 @@ export default function CoursePage({ params }: Props) {
                                 </span>
                                 {lesson.requireRobot && (
                                   <span className="flex items-center text-red-600">
-                                    🤖 Robot Required
+                                    🤖 Cần có robot
                                   </span>
                                 )}
                               </div>
@@ -187,7 +189,7 @@ export default function CoursePage({ params }: Props) {
                           </div>
                           <div className="flex-shrink-0">
                             <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
-                              Lesson {lesson.orderNumber}
+                              Bài {lesson.orderNumber}
                             </span>
                           </div>
                         </div>
@@ -218,53 +220,53 @@ export default function CoursePage({ params }: Props) {
               {/* Price and Register Button */}
               <div className="p-6">
                 <div className="text-center mb-4">
-                  <span className="text-3xl font-bold text-gray-900">${data.price}</span>
+                  <span className="text-3xl font-bold text-gray-900">{data.price} đ</span>
                   {data.price === 0 && (
                     <span className="ml-2 px-2 py-1 bg-green-100 text-green-800 text-sm rounded">
-                      Free
+                      Miễn phí
                     </span>
                   )}
                 </div>
 
                 <button className="w-full bg-blue-600 text-white py-3 px-4 rounded-lg font-semibold hover:bg-blue-700 transition-colors shadow-lg">
-                  Register Now
+                  Đăng ký khóa học
                 </button>
 
                 {/* Additional Info */}
-                <div className="mt-4 text-center text-sm text-gray-600">
-                  <p>✅ Lifetime access</p>
-                  <p>✅ Certificate of completion</p>
-                  <p>✅ 30-day money-back guarantee</p>
-                </div>
+                {/* <div className="mt-4 text-center text-sm text-gray-600">
+                          <p>✅ Lifetime access</p>
+                          <p>✅ Certificate of completion</p>
+                          <p>✅ 30-day money-back guarantee</p>
+                        </div> */}
               </div>
             </div>
 
             {/* Quick Stats */}
-            <div className="bg-white rounded-lg shadow-sm border p-6">
-              <h3 className="font-semibold mb-3">Course Includes</h3>
-              <ul className="space-y-2 text-sm text-gray-600">
-                <li className="flex items-center">
-                  <span className="text-green-500 mr-2">✓</span>
-                  {data.totalLessons} on-demand videos
-                </li>
-                <li className="flex items-center">
-                  <span className="text-green-500 mr-2">✓</span>
-                  Downloadable resources
-                </li>
-                <li className="flex items-center">
-                  <span className="text-green-500 mr-2">✓</span>
-                  Full lifetime access
-                </li>
-                <li className="flex items-center">
-                  <span className="text-green-500 mr-2">✓</span>
-                  Access on mobile and TV
-                </li>
-                <li className="flex items-center">
-                  <span className="text-green-500 mr-2">✓</span>
-                  Certificate of completion
-                </li>
-              </ul>
-            </div>
+            {/* <div className="bg-white rounded-lg shadow-sm border p-6">
+                      <h3 className="font-semibold mb-3">Course Includes</h3>
+                      <ul className="space-y-2 text-sm text-gray-600">
+                        <li className="flex items-center">
+                          <span className="text-green-500 mr-2">✓</span>
+                          {data.totalLessons} on-demand videos
+                        </li>
+                        <li className="flex items-center">
+                          <span className="text-green-500 mr-2">✓</span>
+                          Downloadable resources
+                        </li>
+                        <li className="flex items-center">
+                          <span className="text-green-500 mr-2">✓</span>
+                          Full lifetime access
+                        </li>
+                        <li className="flex items-center">
+                          <span className="text-green-500 mr-2">✓</span>
+                          Access on mobile and TV
+                        </li>
+                        <li className="flex items-center">
+                          <span className="text-green-500 mr-2">✓</span>
+                          Certificate of completion
+                        </li>
+                      </ul>
+                    </div> */}
           </div>
         </div>
       </div>

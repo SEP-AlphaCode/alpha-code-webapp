@@ -1,7 +1,8 @@
-import { getCategories, getCategoryBySlug, getCourseBySlug, getCourses } from "@/api/course-api";
+import { getCategories, getCategoryBySlug, getCourseBySlug, getCourses, getOwnedCourses } from "@/api/course-api";
 import { Category, Course } from "@/types/courses";
 import { PagedResult } from "@/types/page-result";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { use } from "react";
 
 const STALE_TIME = 24 * 3600 * 1000
 export const useCourse = () => {
@@ -29,10 +30,16 @@ export const useCourse = () => {
         staleTime: STALE_TIME,
         queryFn: () => getCategoryBySlug(slug)
     })
+    const useGetOwnedCourses = (username: string, page: number, size: number, signal?: AbortSignal) => useQuery<PagedResult<Course>>({
+        queryKey: ['owned-courses', username, page, size],
+        staleTime: STALE_TIME,
+        queryFn: ({ signal }) => getOwnedCourses(username, page, size, signal) // TODO: replace with getOwnedCourses
+    })
     return {
         useGetCategories,
         useGetCourses,
         useGetCategoryBySlug,
-        useGetCourseBySlug
+        useGetCourseBySlug,
+        useGetOwnedCourses
     }
 }

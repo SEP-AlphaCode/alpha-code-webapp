@@ -28,7 +28,7 @@ function CourseBreadcrumb() {
 
   const breadcrumbItems = [{
     href: '/courses',
-    label: 'Home',
+    label: 'Trang chủ',
     isLast: false
   }]
 
@@ -94,7 +94,7 @@ export default function CourseLayout({
   children: React.ReactNode
 }) {
   return (
-    <AuthGuard allowedRoles={[]}>
+    // <AuthGuard>
       <SidebarProvider
         style={
           {
@@ -117,6 +117,6 @@ export default function CourseLayout({
           </div>
         </SidebarInset>
       </SidebarProvider>
-    </AuthGuard>
+    // </AuthGuard>
   )
 }
