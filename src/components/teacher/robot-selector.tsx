@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useEffect } from "react";
 import Image from "next/image";
 import {
   DropdownMenu,
@@ -13,30 +13,63 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import imageFallback from "../../../public/img_fallback.png";
-import { Robot } from "@/types/teacher";
+import { useRobotStore } from "@/hooks/use-robot-store";
+import { Robot as ReduxRobot } from "@/store/robotSlice";
 
 interface RobotSelectorProps {
-  currentRobot: Robot;
-  robotList: Robot[];
-  onRobotChange: (robot: Robot) => void;
+  className?: string;
 }
 
-export function RobotSelector({ currentRobot, robotList, onRobotChange }: RobotSelectorProps) {
+export function RobotSelector({ className = "" }: RobotSelectorProps) {
+  const { 
+    robots, 
+    selectedRobot, 
+    selectRobot, 
+    initializeMockData 
+  } = useRobotStore();
+
+  // Initialize mock data on component mount
+  useEffect(() => {
+    initializeMockData();
+  }, [initializeMockData]);
+
+  // Convert Redux robot to display format
+  const convertToDisplayRobot = (robot: ReduxRobot) => ({
+    id: robot.serial,
+    name: robot.name,
+    status: robot.status,
+    avatar: robot.status === "online" ? "/img_top_alphamini_connect.webp" : "/img_top_alphamini_disconnect.webp",
+    battery: Math.floor(Math.random() * 100) + 1 // Mock battery since it's not in Redux state
+  });
+
+  const currentRobot = selectedRobot ? convertToDisplayRobot(selectedRobot) : null;
+  const robotList = robots.map(convertToDisplayRobot);
+
+  if (!currentRobot) {
+    return (
+      <div className={`flex items-center px-2 py-1 rounded-xl shadow border border-gray-100 bg-gray-50 min-w-[260px] ${className}`}>
+        <div className="text-gray-500 text-sm">Chưa chọn robot</div>
+      </div>
+    );
+  }
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <button className="flex items-center px-2 py-1 rounded-xl shadow border border-gray-100 bg-blue-50 hover:bg-blue-100 transition-colors focus:outline-none min-w-[260px]">
-          <Image 
-            src={currentRobot.status === "online" ? "/img_top_alphamini_connect.webp" : "/img_top_alphamini_disconnect.webp"} 
-            alt="AlphaMini" 
-            width={70} 
-            height={70} 
-            className="object-cover object-top rounded-lg" 
-          />
-          <div className="flex flex-row ml-2 flex-1 gap-4">
-            <div className="flex flex-col justify-center items-start">
-              <span className="font-semibold text-base text-gray-900 leading-tight">{currentRobot.name}</span>
-              <span className="text-xs text-gray-500 font-mono tracking-wide mt-0.5">{currentRobot.id}</span>
+        <button className={`flex items-center px-2 py-1 rounded-xl shadow border border-gray-100 bg-blue-50 hover:bg-blue-100 transition-colors focus:outline-none min-w-[260px] ${className}`}>
+          <div className="flex flex-row flex-1 gap-4">
+            <div className="flex items-center gap-2">
+              <Image 
+                src={currentRobot.status === "online" ? "/img_top_alphamini_connect.webp" : "/img_top_alphamini_disconnect.webp"} 
+                alt="AlphaMini" 
+                width={50} 
+                height={50} 
+                className="object-cover object-top rounded-lg ml-2" 
+              />
+              <div className="flex flex-col justify-center items-start">
+                <span className="font-semibold text-base text-gray-900 leading-tight">{currentRobot.name}</span>
+                <span className="text-xs text-gray-500 font-mono tracking-wide mt-0.5">{currentRobot.id}</span>
+              </div>
+              
             </div>
             <div className="flex flex-col justify-center items-start gap-2 mt-1 px-1 py-0.5">
               {/* Battery status with true battery icon, always colored bg */}
@@ -77,7 +110,7 @@ export function RobotSelector({ currentRobot, robotList, onRobotChange }: RobotS
           {robotList.map((robot) => (
             <DropdownMenuItem
               key={robot.id}
-              onClick={() => onRobotChange(robot)}
+              onClick={() => selectRobot(robot.id)}
               className={`flex items-center gap-3 py-2 px-2 rounded-lg ${robot.id === currentRobot.id ? 'bg-blue-50' : ''}`}
             >
               <Avatar className="h-9 w-9 rounded-none overflow-hidden">

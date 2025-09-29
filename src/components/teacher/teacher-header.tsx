@@ -9,13 +9,10 @@ import Logo2 from "../../../public/logo2.png";
 import { RobotSelector } from "./robot-selector";
 import { TeacherSidebar } from "./teacher-sidebar";
 import { AccountData } from "@/types/account";
-import { Robot, NavigationItem } from "@/types/teacher";
+import { NavigationItem } from "@/types/teacher";
 
 interface TeacherHeaderProps {
   onToggleSidebar: () => void;
-  currentRobot: Robot;
-  robotList: Robot[];
-  onRobotChange: (robot: Robot) => void;
   // Sidebar props for mobile
   navigationItems: NavigationItem[];
   isActiveRoute: (href: string) => boolean;
@@ -26,9 +23,6 @@ interface TeacherHeaderProps {
 
 export function TeacherHeader({
   onToggleSidebar,
-  currentRobot,
-  robotList,
-  onRobotChange,
   navigationItems,
   isActiveRoute,
   accountData,
@@ -91,11 +85,7 @@ export function TeacherHeader({
           </Button> */}
 
           {/* Robot Selector Dropdown */}
-          <RobotSelector
-            currentRobot={currentRobot}
-            robotList={robotList}
-            onRobotChange={onRobotChange}
-          />
+          <RobotSelector className="hidden sm:block" />
         </div>
       </div>
     </header>
