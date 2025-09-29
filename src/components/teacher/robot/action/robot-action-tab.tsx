@@ -2,6 +2,7 @@
 "use client";
 
 import { Dispatch, SetStateAction } from "react";
+import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import type { RobotAction } from "@/types/robot";
@@ -86,10 +87,13 @@ export function RobotActionTab({
                         {actionItem.icon ? (
                           <span className="text-2xl">{actionItem.icon}</span>
                         ) : actionItem.imageUrl ? (
-                          <img
+                          <Image
                             src={actionItem.imageUrl}
                             alt={actionItem.name}
+                            width={48}
+                            height={48}
                             className="w-12 h-12 object-contain"
+                            unoptimized
                           />
                         ) : (
                           <span className="text-2xl">🎬</span>

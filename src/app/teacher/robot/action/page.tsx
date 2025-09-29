@@ -1,7 +1,7 @@
 // src/components/teacher/robot/action/robot-action-page.tsx
 "use client";
 
-import { use, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import Image from "next/image";
 import { RobotActionHeader } from "@/components/teacher/robot/action/robot-action-header";
 import { RobotActionDetail } from "@/components/teacher/robot/action/robot-action-detail";
