@@ -3,7 +3,7 @@
 
 import { useQuery } from "@tanstack/react-query"
 import { springHttp } from "@/utils/http"
-import type { RobotAction, RobotActionResponse } from "@/types/robot"
+import type { RobotActionResponse } from "@/types/robot"
 
 export function useRobotActions(page: number, size: number, search = "") {
   return useQuery<RobotActionResponse, Error>({

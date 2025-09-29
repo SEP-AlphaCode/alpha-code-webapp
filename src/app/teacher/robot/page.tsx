@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import { useI18n } from "@/lib/i18n/provider";
+import { useRobotStore } from "@/hooks/use-robot-store";
 
 // Import extracted components
 import { RobotPageHeader } from "@/components/teacher/robot/robot-page-header";
@@ -21,8 +22,8 @@ const translations: Record<string, TeacherTranslations> = {
   en: enTranslations,
 };
 
-// Define Robot type to match component expectations
-interface Robot {
+// Define Robot type to match component expectations - extending Redux Robot type
+interface ExtendedRobot {
   id: string;
   name: string;
   status: "online" | "offline" | "charging";
@@ -49,11 +50,66 @@ function shuffleArray(array: string[]) {
   return newArray;
 }
 
+// Function to extend Redux Robot with additional mock data
+function extendRobotWithMockData(robot: ReturnType<typeof useRobotStore>['robots'][0], index: number): ExtendedRobot {
+  const mockData = [
+    {
+      location: "Classroom A",
+      lastSeen: "2 minutes ago",
+      version: "v2.1.3",
+      students: 6,
+      currentTask: "Teaching Colors",
+      uptime: "4h 23m",
+      ip: "192.168.1.101",
+      temperature: 32,
+      image: "/alpha-mini-2.webp",
+    },
+    {
+      location: "Classroom B",
+      lastSeen: "1 minute ago", 
+      version: "v2.1.3",
+      students: 4,
+      currentTask: "Programming Basics",
+      uptime: "3h 45m",
+      ip: "192.168.1.102",
+      temperature: 29,
+      image: "/alpha-mini-2.webp",
+    },
+    {
+      location: "Classroom C",
+      lastSeen: "5 minutes ago",
+      version: "v2.1.2",
+      students: 2,
+      currentTask: "Charging",
+      uptime: "1h 12m",
+      ip: "192.168.1.103", 
+      temperature: 26,
+      image: "/alpha-mini-2.webp",
+    }
+  ];
+
+  const mockInfo = mockData[index] || mockData[0];
+  
+  return {
+    id: robot.id,
+    name: robot.name,
+    status: robot.status === 'busy' ? 'charging' : robot.status,
+    battery: robot.battery || 0, // Use battery from Redux, fallback to 0
+    serialNumber: robot.serial,
+    ...mockInfo,
+  };
+}
+
 export default function TeacherDashboard() {
   const { locale } = useI18n();
   const t = translations[locale];
-  const [selectedRobot, setSelectedRobot] = useState<string | null>(null);
+  const { robots, selectedRobotSerial, selectRobot, initializeMockData } = useRobotStore();
   const [shuffledPrompts, setShuffledPrompts] = useState<string[]>([]);
+
+  useEffect(() => {
+    // Initialize mock data if no robots exist
+    initializeMockData();
+  }, [initializeMockData]);
 
   useEffect(() => {
     if (t?.things_to_try?.prompts) {
@@ -69,42 +125,12 @@ export default function TeacherDashboard() {
 
   if (!t) return <div>Loading translations...</div>;
 
-  const robots: Robot[] = [
-    {
-      id: "Alpha-01",
-      name: "Alpha Mini 01",
-      status: "online",
-      battery: 94,
-      location: "Classroom A",
-      lastSeen: "2 minutes ago",
-      version: "v2.1.3",
-      students: 6,
-      currentTask: "Teaching Colors",
-      uptime: "4h 23m",
-      ip: "192.168.1.101",
-      temperature: 32,
-      image: "/alpha-mini-2.webp",
-      serialNumber: "030006KFK18081800461",
-    },
-    {
-      id: "Alpha-02",
-      name: "Alpha Mini 02",
-      status: "online",
-      battery: 73,
-      location: "Classroom B",
-      lastSeen: "1 minute ago",
-      version: "v2.1.3",
-      students: 4,
-      currentTask: "Programming Basics",
-      uptime: "3h 45m",
-      ip: "192.168.1.102",
-      temperature: 29,
-      image: "/alpha-mini-2.webp",
-      serialNumber: "EAA007UBT10000341",
-    }
-  ];
+  // Convert Redux robots to extended robot format
+  const extendedRobots: ExtendedRobot[] = robots.map((robot, index) => 
+    extendRobotWithMockData(robot, index)
+  );
 
-  const selectedRobotDetails = robots.find((robot) => robot.id === selectedRobot) || null;
+  const selectedRobotDetails = extendedRobots.find((robot) => robot.serialNumber === selectedRobotSerial) || null;
 
   return (
     <div className="space-y-10 p-10">
@@ -114,11 +140,11 @@ export default function TeacherDashboard() {
       />
       
       <RobotGrid 
-        robots={robots}
-        selectedRobot={selectedRobot}
-        onRobotSelect={(robotId) => {
-          setSelectedRobot(robotId);
-          const robot = robots.find(r => r.id === robotId);
+        robots={extendedRobots}
+        selectedRobot={selectedRobotSerial}
+        onRobotSelect={(robotSerial) => {
+          selectRobot(robotSerial);
+          const robot = extendedRobots.find(r => r.serialNumber === robotSerial);
           if (robot) {
             sessionStorage.setItem("selectedRobotSerial", robot.serialNumber);
           }

@@ -4,8 +4,8 @@ import React, { useState, useEffect } from "react";
 import { usePathname } from "next/navigation";
 import { AuthGuard } from "@/components/auth-guard";
 import { useLogout } from "@/hooks/use-logout";
+import { useRobotStore } from "@/hooks/use-robot-store";
 import { AccountData } from "@/types/account";
-import { Robot } from "@/types/teacher";
 import { TeacherHeader } from "@/components/teacher/teacher-header";
 import { TeacherSidebar } from "@/components/teacher/teacher-sidebar";
 
@@ -24,39 +24,8 @@ export default function TeacherLayout({ children }: TeacherLayoutProps) {
     roleId: "teacher",
   }); // Dữ liệu giả định
   
-  // Giả lập robot đang kết nối
-  const [currentRobot, setCurrentRobot] = useState<Robot>({
-    name: "AlphaMini",
-    status: "online",
-    avatar: "/connect_robot.png",
-    id: "EAA007UBT10000341",
-    battery: 76
-  });
-  
-  // Danh sách robot đã kết nối
-  const [robotList] = useState<Robot[]>([
-    {
-      name: "AlphaMini",
-      status: "online",
-      avatar: "/connect_robot.png",
-      id: "EAA007UBT10000341",
-      battery: 76
-    },
-    {
-      name: "AlphaMini",
-      status: "offline",
-      avatar: "/unconnect_robot.png",
-      id: "EAA007UBT10000339",
-      battery: 76
-    },
-    {
-      name: "AlphaMini",
-      status: "offline",
-      avatar: "/unconnect_robot.png",
-      id: "EAA007UBT10000332",
-      battery: 76
-    }
-  ]);
+  // Redux Robot Store
+  const { initializeMockData } = useRobotStore();
   
   const pathname = usePathname();
   const logoutMutation = useLogout();
@@ -65,11 +34,14 @@ export default function TeacherLayout({ children }: TeacherLayoutProps) {
     // Logic để lấy dữ liệu account từ storage
     // const data = getAccountDataFromStorage();
     // setAccountData(data);
-  }, []);
+    
+    // Initialize robot mock data
+    initializeMockData();
+  }, [initializeMockData]);
 
   const navigationItems = [
     { name: "Dashboard", href: "/teacher", icon: "📊" },
-    { name: "Robot Management", href: "/teacher/robot", icon: "🤖" },
+    { name: "Robots", href: "/teacher/robot", icon: "🤖" },
     { name: "Students", href: "/teacher/student", icon: "👥" },
     { name: "Programming", href: "/teacher/programming", icon: "💻" },
     { name: "Classroom", href: "/teacher/classroom", icon: "🏫" },
@@ -92,9 +64,10 @@ export default function TeacherLayout({ children }: TeacherLayoutProps) {
     setIsSidebarOpen(!isSidebarOpen);
   };
 
-  const handleRobotChange = (robot: Robot) => {
-    setCurrentRobot(robot);
-  };
+  // Robot change handler is now handled by Redux
+  // const handleRobotChange = (robot: Robot) => {
+  //   setCurrentRobot(robot);
+  // };
 
   return (
     <AuthGuard allowedRoles={["teacher"]}>
@@ -102,9 +75,6 @@ export default function TeacherLayout({ children }: TeacherLayoutProps) {
         {/* Header */}
         <TeacherHeader
           onToggleSidebar={handleToggleSidebar}
-          currentRobot={currentRobot}
-          robotList={robotList}
-          onRobotChange={handleRobotChange}
           navigationItems={navigationItems}
           isActiveRoute={isActiveRoute}
           accountData={accountData}
