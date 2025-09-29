@@ -14,7 +14,7 @@ export default function CourseBoardPage() {
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
 
   // Get categories
-  const { data: categoriesData, isLoading: loadingCategories } = useGetCategories();
+  const { data: categoriesData, isLoading: loadingCategories } = useGetCategories(1, size);
   const categories = categoriesData?.data ?? [];
 
   // Get courses (page=1, size=12 for example)
