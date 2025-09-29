@@ -16,6 +16,7 @@ interface Robot {
   ip: string;
   temperature: number;
   image: string;
+  serialNumber: string;
 }
 
 interface RobotDetailsProps {

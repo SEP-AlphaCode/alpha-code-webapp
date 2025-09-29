@@ -7,6 +7,7 @@ export interface Robot {
   status: 'online' | 'offline' | 'busy'
   lastConnected?: string
   isSelected?: boolean
+  battery?: number
 }
 
 interface RobotState {
@@ -23,7 +24,8 @@ const mockRobots: Robot[] = [
     name: 'Alpha Mini #1',
     status: 'online',
     lastConnected: new Date().toISOString(),
-    isSelected: true
+    isSelected: true,
+    battery: 85
   },
   {
     id: '2', 
@@ -31,7 +33,8 @@ const mockRobots: Robot[] = [
     name: 'Alpha Mini #2',
     status: 'offline',
     lastConnected: new Date(Date.now() - 3600000).toISOString(),
-    isSelected: false
+    isSelected: false,
+    battery: 45
   },
   {
     id: '3',
@@ -39,7 +42,8 @@ const mockRobots: Robot[] = [
     name: 'Alpha Mini #3',
     status: 'busy',
     lastConnected: new Date(Date.now() - 1800000).toISOString(),
-    isSelected: false
+    isSelected: false,
+    battery: 12
   }
 ]
 
@@ -89,6 +93,12 @@ const robotSlice = createSlice({
         Object.assign(robot, action.payload)
       }
     },
+    updateRobotBattery: (state, action: PayloadAction<{ serial: string; battery: number }>) => {
+      const robot = state.robots.find(robot => robot.serial === action.payload.serial)
+      if (robot) {
+        robot.battery = action.payload.battery
+      }
+    },
     clearAllRobots: (state) => {
       state.robots = []
       state.selectedRobotSerial = null
@@ -110,6 +120,7 @@ export const {
   selectRobot,
   setConnectionStatus,
   updateRobotInfo,
+  updateRobotBattery,
   clearAllRobots,
   initializeMockData
 } = robotSlice.actions

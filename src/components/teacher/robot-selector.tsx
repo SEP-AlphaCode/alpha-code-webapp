@@ -39,7 +39,7 @@ export function RobotSelector({ className = "" }: RobotSelectorProps) {
     name: robot.name,
     status: robot.status,
     avatar: robot.status === "online" ? "/img_top_alphamini_connect.webp" : "/img_top_alphamini_disconnect.webp",
-    battery: Math.floor(Math.random() * 100) + 1 // Mock battery since it's not in Redux state
+    battery: robot.battery ?? 50 // Use battery from Redux, fallback to 50 if not available
   });
 
   const currentRobot = selectedRobot ? convertToDisplayRobot(selectedRobot) : null;

@@ -6,7 +6,9 @@ import Image from "next/image";
 import { RobotActionHeader } from "@/components/teacher/robot/action/robot-action-header";
 import { RobotActionDetail } from "@/components/teacher/robot/action/robot-action-detail";
 import { RobotActionGrid } from "@/components/teacher/robot/action/robot-action-grid";
+import { RobotSelector } from "@/components/teacher/robot-selector";
 import { useRobotCommand } from "@/hooks/use-robot-command";
+import { useRobotStore } from "@/hooks/use-robot-store";
 import { AnimatePresence, motion } from "framer-motion";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import type { RobotAction } from "@/types/robot";
@@ -22,11 +24,14 @@ export default function RobotActionPage() {
 
   const [currentAction, setCurrentAction] = useState<RobotAction | null>(null);
   const [direction, setDirection] = useState<number>(0);
-  // Thêm state lưu serial của robot được chọn
-  const [robotSerial, setRobotSerial] = useState<string>("");
+  
+  // Sử dụng Redux store để lấy robot data
+  const { selectedRobot, selectedRobotSerial, initializeMockData } = useRobotStore();
 
-  // TODO: Nếu bạn có component chọn robot, hãy truyền setRobotSerial cho nó
-  // Ví dụ: <RobotSelector onRobotChange={robot => setRobotSerial(robot.id)} ... />
+  // Initialize mock data on component mount
+  useEffect(() => {
+    initializeMockData();
+  }, [initializeMockData]);
 
 
   // Khai báo lại các hàm chuyển trang
@@ -37,26 +42,48 @@ export default function RobotActionPage() {
     // Logic này cũng được xử lý trong RobotActionGrid
   };
 
-  // Hàm gọi lệnh sẽ truyền serial, trả về Promise cho đúng kiểu
+  // Hàm gọi lệnh sử dụng robot được chọn từ Redux
   const handleSendCommand = async (actionCode: string) => {
-    if (!robotSerial) {
+    if (!selectedRobotSerial || !selectedRobot) {
       setNotify("Bạn chưa chọn robot!", "error");
       return Promise.resolve();
     }
-    await sendCommandToBackend(actionCode, robotSerial);
-  };
-
-  useEffect(() => {
-    const serialNumber = sessionStorage.getItem("selectedRobotSerial");
-    if (serialNumber) {
-      setRobotSerial(serialNumber);
+    
+    if (selectedRobot.status === 'offline') {
+      setNotify(`Robot ${selectedRobot.name} đang offline!`, "error");
+      return Promise.resolve();
     }
-  }, []);
+    
+    await sendCommandToBackend(actionCode, selectedRobotSerial);
+  };
 
   return (
     <div className="min-h-screen">
       <div className="max-w-6xl mx-auto">
         <RobotActionHeader />
+        
+        {/* Robot Selector */}
+        <div className="mb-6 flex justify-between items-center">
+          <RobotSelector className="" />
+          {selectedRobot && (
+            <div className="text-sm text-gray-600 flex items-center gap-2">
+              <span>Robot hiện tại:</span>
+              <span className="font-medium">{selectedRobot.name}</span>
+              <span className={`px-2 py-1 rounded-full text-xs ${
+                selectedRobot.status === 'online' 
+                  ? 'bg-green-100 text-green-800' 
+                  : selectedRobot.status === 'busy'
+                  ? 'bg-yellow-100 text-yellow-800'
+                  : 'bg-gray-100 text-gray-800'
+              }`}>
+                {selectedRobot.status}
+              </span>
+              {selectedRobot.battery && (
+                <span className="text-xs">🔋 {selectedRobot.battery}%</span>
+              )}
+            </div>
+          )}
+        </div>
 
         {/* Nếu có action đang chọn thì show detail */}
         {currentAction ? (
@@ -107,8 +134,6 @@ export default function RobotActionPage() {
           sendCommandToBackend={handleSendCommand}
           onActionSelect={(action) => setCurrentAction(action)}
         />
-        {/* Ví dụ: Truyền setRobotSerial cho component chọn robot nếu có */}
-        {/* <RobotSelector onRobotChange={robot => setRobotSerial(robot.id)} ... /> */}
       </div>
 
       {notify && (

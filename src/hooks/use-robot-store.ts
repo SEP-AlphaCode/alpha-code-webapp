@@ -6,6 +6,7 @@ import {
   selectRobot, 
   setConnectionStatus,
   updateRobotInfo,
+  updateRobotBattery,
   clearAllRobots,
   initializeMockData,
   Robot 
@@ -33,6 +34,8 @@ export const useRobotStore = () => {
     setConnectionStatus: (connected: boolean) => dispatch(setConnectionStatus(connected)),
     updateRobotInfo: (info: Partial<Robot> & { serial: string }) => 
       dispatch(updateRobotInfo(info)),
+    updateRobotBattery: (serial: string, battery: number) =>
+      dispatch(updateRobotBattery({ serial, battery })),
     clearAllRobots: () => dispatch(clearAllRobots()),
     initializeMockData: () => dispatch(initializeMockData())
   }
