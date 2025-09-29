@@ -113,13 +113,6 @@ export const FeaturesSection = forwardRef<HTMLElement, FeaturesSectionProps>(
             ))}
           </div>
         </div>
-        {/* Scroll Indicator */}
-        <div className="absolute bottom-4 sm:bottom-6 md:bottom-8 left-1/2 transform -translate-x-1/2">
-          <div className="flex flex-col items-center gap-1 sm:gap-2 animate-bounce">
-            <span className="text-gray-500 text-xs sm:text-sm hidden sm:block">{t('features.scrollIndicator')}</span>
-            <ChevronDown className="w-4 h-4 sm:w-5 sm:h-5 text-gray-500" />
-          </div>
-        </div>
       </section>
     )
   }
