@@ -5,7 +5,7 @@ import { pythonHttp } from "@/utils/http";
 export function useRobotCommand(
   setNotify: (msg: string, type: "success" | "error") => void
 ) {
-  const sendCommandToBackend = async (actionCode: string) => {
+  const sendCommandToBackend = async (actionCode: string, robotSerial: string) => {
     const body = {
       type: "action",
       data: {
@@ -14,7 +14,7 @@ export function useRobotCommand(
     };
 
     try {
-      await pythonHttp.post("/websocket/command/EAA007UBT10000341", body, {
+      await pythonHttp.post(`/websocket/command/${robotSerial}`, body, {
         headers: {
           accept: "application/json",
           "Content-Type": "application/json",

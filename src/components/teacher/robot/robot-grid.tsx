@@ -16,12 +16,13 @@ interface Robot {
   ip: string;
   temperature: number;
   image: string;
+  serialNumber: string;
 }
 
 interface RobotGridProps {
   robots: Robot[];
   selectedRobot: string | null;
-  onRobotSelect: (robotId: string) => void;
+  onRobotSelect: (robotSerial: string) => void;
   sectionTitle: string;
   statusTexts: {
     online: string;
@@ -90,9 +91,9 @@ export function RobotGrid({
           <div
             key={robot.id}
             className={`min-w-[320px] bg-white rounded-2xl shadow-lg border border-gray-100 p-5 flex flex-col items-center transition-transform duration-200 hover:scale-105 cursor-pointer ${
-              selectedRobot === robot.id ? "ring-2 ring-blue-400" : ""
+              selectedRobot === robot.serialNumber ? "ring-2 ring-blue-400" : ""
             }`}
-            onClick={() => onRobotSelect(robot.id)}
+            onClick={() => onRobotSelect(robot.serialNumber)}
           >
             <Image
               src={robot.image}
@@ -102,7 +103,7 @@ export function RobotGrid({
               className="rounded-full object-cover mb-2"
             />
             <span className="font-bold text-lg text-gray-900 mb-1">{robot.name}</span>
-            <span className="text-xs text-gray-400 mb-2">{robot.id}</span>
+            <span className="text-xs text-gray-400 mb-2">{robot.serialNumber}</span>
             <div className="flex items-center gap-2 mb-2">
               {getStatusIcon(robot.status)}
               <span className={`px-2 py-0.5 rounded-full text-xs font-semibold ${getStatusColor(robot.status)}`}>

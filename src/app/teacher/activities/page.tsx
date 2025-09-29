@@ -28,6 +28,7 @@ import {
 } from "lucide-react"
 import { useActivities, useCreateActivity } from "@/hooks/use-activities"
 import { useRobotControls } from "@/hooks/use-websocket"
+import { useRobotStore } from "@/hooks/use-robot-store"
 import { Activity as ActivityType } from "@/types/activities"
 
 export default function ActivitiesPage() {
@@ -54,6 +55,19 @@ export default function ActivitiesPage() {
 
   // Robot Controls Hook
   const { startActivity, isLoading: isRobotLoading } = useRobotControls()
+  
+  // Robot Store Hook
+  const { 
+    selectedRobotSerial, 
+    selectedRobot, 
+    updateRobotStatus, 
+    initializeMockData 
+  } = useRobotStore()
+
+  // Initialize mock robot data
+  useEffect(() => {
+    initializeMockData()
+  }, [initializeMockData])
 
   const activities = activitiesData?.data || []
   const pagination = activitiesData ? {
@@ -142,10 +156,17 @@ export default function ActivitiesPage() {
   }
 
   const handleStartActivity = (activity: ActivityType) => {
-    // Serial của robot kết nối
-    const robotSerial = "EAA007UBT10000341";
+    // Sử dụng selected robot serial từ Redux
+    const robotSerial = selectedRobotSerial || "EAA007UBT10000341";
     
+    console.log('Selected Robot:', selectedRobot);
+    console.log('Using Robot Serial:', robotSerial);
     console.log('Activity data before processing:', activity);
+    
+    // Update robot status to busy when starting activity
+    if (robotSerial && selectedRobot) {
+      updateRobotStatus(robotSerial, 'busy');
+    }
     
     // Parse data từ activity (nếu là JSON string)
     let activityData;
@@ -159,8 +180,15 @@ export default function ActivitiesPage() {
     console.log('Processed activity data:', activityData);
     console.log('Activity type:', activity.type);
     
-    // Gửi command với type của activity và data
+    // Gửi command với selected robot
     startActivity(robotSerial, activity.type, activityData);
+    
+    // Set robot back to online after a delay (mock behavior)
+    setTimeout(() => {
+      if (robotSerial) {
+        updateRobotStatus(robotSerial, 'online');
+      }
+    }, 3000);
   }
 
   const CreateActivityForm = () => {

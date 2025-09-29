@@ -6,6 +6,8 @@ import type React from "react"
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools"
 import { ThemeProvider } from "next-themes"
+import { Provider as ReduxProvider } from "react-redux"
+import { store } from "@/store/store"
 import AOS from "aos"
 import "aos/dist/aos.css"
 
@@ -40,11 +42,13 @@ export default function Provider({ children }: { children: React.ReactNode }) {
   }, [])
 
   return (
-    <QueryClientProvider client={queryClient}>
-      <ThemeProvider attribute="class" enableSystem>
-        {children}
-      </ThemeProvider>
-      <ReactQueryDevtools initialIsOpen={false} />
-    </QueryClientProvider>
+    <ReduxProvider store={store}>
+      <QueryClientProvider client={queryClient}>
+        <ThemeProvider attribute="class" enableSystem>
+          {children}
+        </ThemeProvider>
+        <ReactQueryDevtools initialIsOpen={false} />
+      </QueryClientProvider>
+    </ReduxProvider>
   )
 }
