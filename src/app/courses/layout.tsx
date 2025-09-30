@@ -5,8 +5,10 @@ import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbP
 import { Separator } from "@/components/ui/separator"
 import { SidebarInset, SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar"
 import { I18nProvider } from "@/lib/i18n/provider"
+import { RootState } from "@/store/store"
 import { usePathname } from "next/navigation"
 import React from "react"
+import { useSelector } from "react-redux"
 
 function formatPathToDisplayName(path: string): string {
   return path
@@ -18,13 +20,9 @@ function formatPathToDisplayName(path: string): string {
 function CourseBreadcrumb() {
   const pathname = usePathname()
   const pathSegments = pathname.split('/').filter(Boolean)
-
-  const formatSlugToDisplayName = (slug: string) => {
-    return slug
-      .split('-')
-      .map(word => word.charAt(0).toUpperCase() + word.slice(1))
-      .join(' ')
-  }
+  
+  // Get current course from Redux
+  const currentCourse = useSelector((state: RootState) => state.course.currentCourse);
 
   const breadcrumbItems = [{
     href: '/courses',
@@ -39,10 +37,9 @@ function CourseBreadcrumb() {
       isLast: true
     })
   } else if (pathSegments.length === 2 && pathSegments[0] === 'courses') {
-    // Course detail page - you could add category here if you have the data
+    // Course detail page - use the course name from Redux
     const courseSlug = pathSegments[1]
-    const courseName = formatSlugToDisplayName(courseSlug)
-
+    
     breadcrumbItems.push({
       href: '/courses',
       label: 'Tất cả khóa học',
@@ -51,13 +48,14 @@ function CourseBreadcrumb() {
 
     breadcrumbItems.push({
       href: pathname,
-      label: courseName,
+      // Use the course name from Redux if available, otherwise fall back to formatted slug
+      label: currentCourse?.name || formatPathToDisplayName(courseSlug),
       isLast: true
     })
   } else {
     // Handle other pages
     const lastSegment = pathSegments[pathSegments.length - 1]
-    const pageName = formatSlugToDisplayName(lastSegment)
+    const pageName = formatPathToDisplayName(lastSegment)
 
     breadcrumbItems.push({
       href: pathname,

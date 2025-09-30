@@ -8,6 +8,10 @@ interface CourseState {
   filters: {
     categoryId: string | null;
   };
+  currentCourse: {
+    name: string | null;
+    slug: string | null;
+  };
 }
 
 const initialState: CourseState = {
@@ -17,6 +21,10 @@ const initialState: CourseState = {
   },
   filters: {
     categoryId: null
+  },
+  currentCourse: {
+    name: null,
+    slug: null
   }
 };
 
@@ -31,8 +39,21 @@ const courseSlice = createSlice({
       state.filters.categoryId = action.payload;
       state.pagination.page = 1;
     },
+    setCurrentCourse: (state, action: PayloadAction<{ name: string; slug: string } | null>) => {
+      if (action.payload) {
+        state.currentCourse = {
+          name: action.payload.name,
+          slug: action.payload.slug
+        };
+      } else {
+        state.currentCourse = {
+          name: null,
+          slug: null
+        };
+      }
+    },
   }
 });
 
-export const { setPage, setCategoryFilter } = courseSlice.actions;
+export const { setPage, setCategoryFilter, setCurrentCourse } = courseSlice.actions;
 export default courseSlice.reducer;

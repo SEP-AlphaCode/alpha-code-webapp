@@ -1,16 +1,34 @@
 'use client'
 import { useCourse } from '@/hooks/use-course'
 import { cn } from '@/lib/utils'
+import { setCurrentCourse } from '@/store/course-slice'
+import { AppDispatch } from '@/store/store'
 import { formatTimespan, mapDifficulty } from '@/types/class'
 import Link from 'next/link'
 import { useParams } from 'next/navigation'
 import React, { use } from 'react'
+import { useDispatch } from 'react-redux'
 
 export default function CoursePage() {
+  const dispatch = useDispatch<AppDispatch>();
   const params = useParams()
   const slug = params.slug as string
   const { data, isLoading } = useCourse().useGetCourseBySlug(slug)
 
+  // Set current course in Redux when data is loaded
+  React.useEffect(() => {
+    if (data) {
+      dispatch(setCurrentCourse({
+        name: data.name,
+        slug: data.slug
+      }));
+    }
+
+    // Clean up when component unmounts
+    return () => {
+      dispatch(setCurrentCourse(null));
+    };
+  }, [data, dispatch]);
   // Skeleton Loader
   if (isLoading)
     return (
