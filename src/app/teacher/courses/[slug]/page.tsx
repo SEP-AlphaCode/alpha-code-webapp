@@ -2,14 +2,13 @@
 import { useCourse } from '@/hooks/use-course'
 import { cn } from '@/lib/utils'
 import { formatTimespan, mapDifficulty } from '@/types/class'
+import { useParams, useRouter } from 'next/navigation'
 import React from 'react'
-interface Props {
-  params: {
-    slug: string
-  }
-}
-export default function CoursePage({ params }: Props) {
-  const { slug } = params
+
+export default function CoursePage() {
+  const router = useRouter()
+  const params = useParams()
+  const slug = params.slug as string
   const { data, isLoading } = useCourse().useGetCourseBySlug(slug)
 
   // Skeleton Loader
@@ -66,7 +65,9 @@ export default function CoursePage({ params }: Props) {
             Khóa học bạn đang tìm kiếm không tồn tại hoặc đã bị xóa.
           </p>
           <button
-            onClick={() => window.history.back()}
+            onClick={() => {
+              router.push('/')
+            }}
             className="px-6 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
           >
             Quay lại trang trước

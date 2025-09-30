@@ -2,14 +2,13 @@
 import { useCourse } from '@/hooks/use-course'
 import { cn } from '@/lib/utils'
 import { formatTimespan, mapDifficulty } from '@/types/class'
-import React from 'react'
-interface Props {
-  params: {
-    slug: string
-  }
-}
-export default function CoursePage({ params }: Props) {
-  const { slug } = params
+import Link from 'next/link'
+import { useParams } from 'next/navigation'
+import React, { use } from 'react'
+
+export default function CoursePage() {
+  const params = useParams()
+  const slug = params.slug as string
   const { data, isLoading } = useCourse().useGetCourseBySlug(slug)
 
   // Skeleton Loader
@@ -65,12 +64,12 @@ export default function CoursePage({ params }: Props) {
           <p className="text-red-600 mb-6">
             Khóa học bạn đang tìm kiếm không tồn tại hoặc đã bị xóa.
           </p>
-          <button
-            onClick={() => window.history.back()}
+          <Link
+            href={'/courses'}
             className="px-6 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
           >
             Quay lại trang trước
-          </button>
+          </Link>
         </div>
       </div>
     )

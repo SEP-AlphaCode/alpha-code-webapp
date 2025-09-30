@@ -5,26 +5,41 @@ import { formatTimespan, mapDifficulty } from '@/types/class';
 import Link from 'next/link';
 import React, { useState } from 'react'
 
-export default function CoursePage() {
-  const [page, setPage] = useState(1);
-  const size = 12;
-  const { useGetCategories, useGetCourses } = useCourse();
-  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+import { useDispatch, useSelector } from 'react-redux';
+import { setCategoryFilter, setPage } from '@/store/course-slice';
+import { AppDispatch, RootState } from '@/store/store';
 
-  // Get categories
+export default function CoursePage() {
+  const dispatch = useDispatch<AppDispatch>();
+  const { pagination, filters } = useSelector((state: RootState) => state.course);
+
+  const { useGetCategories, useGetCourses } = useCourse();
+  const size = 12;
+
+  // Get categories - using React Query
   const { data: categoriesData, isLoading: loadingCategories } = useGetCategories(1, size);
   const categories = categoriesData?.data ?? [];
 
-  // Get courses (page=1, size=12 for example)
-  const { data: coursesData, isLoading: loadingCourses } = useGetCourses(page, 12, selectedCategory || undefined);
+  // Get courses - using React Query with Redux state
+  const { data: coursesData, isLoading: loadingCourses } = useGetCourses(
+    pagination.page,
+    size,
+    filters.categoryId || undefined
+  );
   const courses = coursesData?.data ?? [];
   const total = coursesData?.total_count ?? 0;
   const totalPages = Math.ceil(total / size);
+
   const setSearch = (search: string) => {
-    const nextCat = (selectedCategory && selectedCategory === search) ? null : search
-    if (nextCat) setPage(1)
-    return nextCat
-  }
+    const nextCat = (filters.categoryId && filters.categoryId === search) ? null : search;
+    if (nextCat) dispatch(setPage(1));
+    return nextCat;
+  };
+
+  const handlePageChange = (page: number) => {
+    dispatch(setPage(page));
+  };
+
   return (
     <div className="w-full max-w-full overflow-hidden" suppressHydrationWarning>
       {/* Categories Scroll Section */}
@@ -43,10 +58,10 @@ export default function CoursePage() {
               categories.map((cat) => (
                 <button
                   key={cat.id}
-                  onClick={() => setSelectedCategory(setSearch(cat.id))}
-                  className={`px-4 py-2 rounded-full whitespace-nowrap border transition-colors ${selectedCategory === cat.id
-                      ? "bg-blue-600 text-white border-blue-600"
-                      : "bg-white text-gray-700 border-gray-300 hover:border-blue-300"
+                  onClick={() => dispatch(setCategoryFilter(setSearch(cat.id)))}
+                  className={`px-4 py-2 rounded-full whitespace-nowrap border transition-colors ${filters.categoryId === cat.id
+                    ? "bg-blue-600 text-white border-blue-600"
+                    : "bg-white text-gray-700 border-gray-300 hover:border-blue-300"
                     }`}
                 >
                   {cat.name}
@@ -119,26 +134,26 @@ export default function CoursePage() {
           {totalPages > 1 && (
             <div className="flex justify-center items-center space-x-4 mt-8">
               <button
-                onClick={() => setPage((p) => Math.max(1, p - 1))}
-                disabled={page === 1}
-                className={`px-4 py-2 rounded-lg border transition-colors ${page === 1
-                    ? "bg-gray-100 text-gray-400 cursor-not-allowed border-gray-200"
-                    : "bg-white text-gray-700 hover:bg-gray-50 border-gray-300"
+                onClick={() => handlePageChange(Math.max(1, pagination.page - 1))}
+                disabled={pagination.page === 1}
+                className={`px-4 py-2 rounded-lg border transition-colors ${pagination.page === 1
+                  ? "bg-gray-100 text-gray-400 cursor-not-allowed border-gray-200"
+                  : "bg-white text-gray-700 hover:bg-gray-50 border-gray-300"
                   }`}
               >
                 Trước
               </button>
 
               <span className="text-gray-600 min-w-[100px] text-center">
-                Trang {page} / {totalPages}
+                Trang {pagination.page} / {totalPages}
               </span>
 
               <button
-                onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
-                disabled={page === totalPages || totalPages === 0}
-                className={`px-4 py-2 rounded-lg border transition-colors ${page === totalPages || totalPages === 0
-                    ? "bg-gray-100 text-gray-400 cursor-not-allowed border-gray-200"
-                    : "bg-white text-gray-700 hover:bg-gray-50 border-gray-300"
+                onClick={() => handlePageChange(Math.min(totalPages, pagination.page + 1))}
+                disabled={pagination.page === totalPages || totalPages === 0}
+                className={`px-4 py-2 rounded-lg border transition-colors ${pagination.page === totalPages || totalPages === 0
+                  ? "bg-gray-100 text-gray-400 cursor-not-allowed border-gray-200"
+                  : "bg-white text-gray-700 hover:bg-gray-50 border-gray-300"
                   }`}
               >
                 Sau

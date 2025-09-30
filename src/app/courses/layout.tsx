@@ -35,7 +35,7 @@ function CourseBreadcrumb() {
   if (pathname === '/courses') {
     breadcrumbItems.push({
       href: '/courses',
-      label: 'All Courses',
+      label: 'Tất cả khóa học',
       isLast: true
     })
   } else if (pathSegments.length === 2 && pathSegments[0] === 'courses') {
@@ -45,7 +45,7 @@ function CourseBreadcrumb() {
 
     breadcrumbItems.push({
       href: '/courses',
-      label: 'All Courses',
+      label: 'Tất cả khóa học',
       isLast: false
     })
 
