@@ -23,7 +23,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { Input } from "@/components/ui/input"
-import { useAdminTranslation } from "@/lib/i18n/hooks/use-translation"
+
 
 
 
@@ -73,7 +73,7 @@ export function DataTable<TData, TValue>({
   const [columnVisibility, setColumnVisibility] =
     React.useState<VisibilityState>({})
   const [rowSelection, setRowSelection] = React.useState({})
-  const { t, isLoading } = useAdminTranslation()
+  // Đã loại bỏ i18n, chỉ dùng tiếng Việt
 
   const table = useReactTable({
     data,
@@ -117,8 +117,8 @@ export function DataTable<TData, TValue>({
         />
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="outline" className="ml-auto" disabled={isLoading}>
-              {isLoading ? "" : t('common.columns')}
+            <Button variant="outline" className="ml-auto">
+              Cột hiển thị
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
@@ -185,7 +185,7 @@ export function DataTable<TData, TValue>({
             ) : (
               <TableRow>
                 <TableCell colSpan={columns.length} className="h-24 text-center">
-                  {isLoading ? "" : t('common.noResults')}
+                  Không có kết quả
                 </TableCell>
               </TableRow>
             )}

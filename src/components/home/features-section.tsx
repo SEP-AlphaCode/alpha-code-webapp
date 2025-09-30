@@ -1,7 +1,7 @@
 import { Card, CardContent } from "@/components/ui/card"
 import { Zap, Brain, Heart, Sparkles, ChevronDown } from "lucide-react"
 import { forwardRef } from "react"
-import { useHomepageTranslation } from "@/lib/i18n/hooks/use-translation"
+
 
 interface FeaturesSectionProps {
   currentSection: number
@@ -9,27 +9,13 @@ interface FeaturesSectionProps {
 
 export const FeaturesSection = forwardRef<HTMLElement, FeaturesSectionProps>(
   ({  }, ref) => {
-    const { t, isLoading } = useHomepageTranslation()
 
-    if (isLoading) {
-      return (
-        <section ref={ref} className="py-12 sm:py-16 md:py-20 lg:py-24 bg-gray-50 relative overflow-hidden min-h-screen flex items-center">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="text-center mb-8 sm:mb-10 md:mb-12">
-              <div className="animate-pulse bg-gray-200 h-8 w-48 mx-auto rounded mb-4"></div>
-              <div className="animate-pulse bg-gray-200 h-12 w-3/4 mx-auto rounded mb-4"></div>
-              <div className="animate-pulse bg-gray-200 h-4 w-1/2 mx-auto rounded"></div>
-            </div>
-          </div>
-        </section>
-      )
-    }
 
     const features = [
       {
         icon: Brain,
-        title: t('features.list.ai.title'),
-        description: t('features.list.ai.description'),
+        title: "Trí tuệ nhân tạo",
+        description: "Tích hợp AI giúp robot học hỏi và tương tác thông minh với người dùng.",
         color: "blue",
         bgColor: "bg-blue-100",
         iconColor: "text-blue-600",
@@ -37,8 +23,8 @@ export const FeaturesSection = forwardRef<HTMLElement, FeaturesSectionProps>(
       },
       {
         icon: Zap,
-        title: t('features.list.speed.title'),
-        description: t('features.list.speed.description'),
+        title: "Tốc độ xử lý",
+        description: "Phản hồi nhanh, xử lý mượt mà mọi thao tác lập trình và điều khiển.",
         color: "purple",
         bgColor: "bg-purple-100",
         iconColor: "text-purple-600",
@@ -46,8 +32,8 @@ export const FeaturesSection = forwardRef<HTMLElement, FeaturesSectionProps>(
       },
       {
         icon: Heart,
-        title: t('features.list.interface.title'),
-        description: t('features.list.interface.description'),
+        title: "Giao diện thân thiện",
+        description: "Thiết kế trực quan, dễ sử dụng cho mọi lứa tuổi và trình độ.",
         color: "green",
         bgColor: "bg-green-100",
         iconColor: "text-green-600",
@@ -71,16 +57,16 @@ export const FeaturesSection = forwardRef<HTMLElement, FeaturesSectionProps>(
           <div data-aos="fade-up" data-aos-delay="100" className="text-center mb-8 sm:mb-12 md:mb-16">
             <div className="inline-flex items-center gap-2 px-3 sm:px-4 py-2 bg-blue-100 text-blue-700 rounded-full text-xs sm:text-sm font-semibold mb-4 sm:mb-6">
               <Sparkles className="w-3 h-3 sm:w-4 sm:h-4" />
-              {t('features.badge')}
+              Nổi bật
             </div>
             <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-gray-900 mb-3 sm:mb-4 leading-tight">
-              {t('features.title')}
+              Tính năng vượt trội
               <span className="block bg-gradient-to-r from-blue-600 to-blue-700 bg-clip-text text-transparent py-1 leading-relaxed">
-                {t('features.titleHighlight')}
+                Khám phá Alpha Mini Code
               </span>
             </h2>
             <p className="text-base sm:text-lg md:text-xl text-gray-600 max-w-3xl mx-auto px-4">
-              {t('features.subtitle')}
+              Hệ sinh thái lập trình và điều khiển robot toàn diện, sáng tạo và an toàn cho giáo dục.
             </p>
           </div>
 
@@ -116,7 +102,7 @@ export const FeaturesSection = forwardRef<HTMLElement, FeaturesSectionProps>(
         {/* Scroll Indicator */}
         <div className="absolute bottom-4 sm:bottom-6 md:bottom-8 left-1/2 transform -translate-x-1/2">
           <div className="flex flex-col items-center gap-1 sm:gap-2 animate-bounce">
-            <span className="text-gray-500 text-xs sm:text-sm hidden sm:block">{t('features.scrollIndicator')}</span>
+            <span className="text-gray-500 text-xs sm:text-sm hidden sm:block">Cuộn xuống để xem thêm</span>
             <ChevronDown className="w-4 h-4 sm:w-5 sm:h-5 text-gray-500" />
           </div>
         </div>

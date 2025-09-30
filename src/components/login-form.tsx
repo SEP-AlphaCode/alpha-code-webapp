@@ -9,7 +9,7 @@ import { useState, useEffect } from "react"
 import { useGoogleLogin, useLogin } from "@/hooks/use-login"
 import { LoginRequest } from "@/types/login"
 import { auth, GoogleAuthProvider, signInWithPopup } from "@/config/firebase-config"
-import { useLoginTranslation } from "@/lib/i18n/hooks/use-translation"
+
 import logo2 from '../../public/logo2.png'
 import alphamini2 from '../../public/alpha-mini-2.webp'
 import { toast } from "sonner"
@@ -20,7 +20,7 @@ export function LoginForm({
   ...props
 }: React.ComponentProps<"div">) {
   const router = useRouter()
-  const { t, isLoading } = useLoginTranslation()
+
   const [formData, setFormData] = useState<LoginRequest>({
     username: "",
     password: "",
@@ -52,7 +52,7 @@ export function LoginForm({
       if (error instanceof Error) {
         toast.error(error.message);
       } else {
-        toast.error(t('messages.googleLoginFailed'));
+  toast.error('Đăng nhập Google thất bại.');
       }
     }
 
@@ -71,45 +71,18 @@ export function LoginForm({
       message?: string;
     };
     if (error.response?.status === 404) {
-      return t('messages.endpointNotFound');
+      return 'Không tìm thấy endpoint.';
     }
     if (error.response?.status === 401) {
-      return t('messages.invalidCredentials');
+      return 'Sai tên đăng nhập hoặc mật khẩu.';
     }
     if (error.response?.status && error.response.status >= 500) {
-      return t('messages.serverError');
+      return 'Lỗi máy chủ. Vui lòng thử lại sau.';
     }
-    return error.message || t('messages.loginFailed');
+    return error.message || 'Đăng nhập thất bại.';
   };
 
-  if (isLoading) {
-    return (
-      <div className={cn("flex flex-col gap-6", className)} {...props}>
-        <Card className="overflow-hidden p-0 shadow-[0_0_64px_0_rgba(0,0,0,0.25)]">
-          <CardContent className="grid p-0 md:grid-cols-2">
-            <div className="p-6 md:p-8">
-              <div className="flex flex-col gap-6">
-                <div className="flex flex-col items-center text-center">
-                  <div className="w-16 h-16 rounded-2xl flex items-center justify-center mb-4 overflow-hidden animate-pulse bg-gray-200">
-                  </div>
-                  <div className="h-6 bg-gray-200 rounded animate-pulse w-32 mb-2"></div>
-                  <div className="h-4 bg-gray-200 rounded animate-pulse w-48"></div>
-                </div>
-                <div className="grid gap-4">
-                  <div className="h-10 bg-gray-200 rounded animate-pulse"></div>
-                  <div className="h-10 bg-gray-200 rounded animate-pulse"></div>
-                  <div className="h-10 bg-gray-200 rounded animate-pulse"></div>
-                </div>
-              </div>
-            </div>
-            <div className="relative hidden bg-muted md:block">
-              <div className="absolute inset-0 bg-gradient-to-br from-white via-gray-500 animate-pulse"></div>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-    )
-  }
+
 
   return (
     <div className={cn("flex flex-col gap-6", className)} {...props}>
@@ -128,18 +101,18 @@ export function LoginForm({
                     onClick={() => {router.push('/')}}
                   />
                 </div>
-                <h1 className="text-2xl font-bold">{t('subtitle')}</h1>
+                <h1 className="text-2xl font-bold">Đăng nhập vào Alpha Mini Code</h1>
                 <p className="text-muted-foreground text-balance">
-                  {t('description')}
+                  Nền tảng lập trình và điều khiển robot giáo dục thông minh.
                 </p>
               </div>
               <div className="grid gap-3">
-                <Label htmlFor="username">{t('form.username.label')}</Label>
+                <Label htmlFor="username">Tên đăng nhập</Label>
                 <Input
                   id="username"
                   name="username"
                   type="text"
-                  placeholder={t('form.username.placeholder')}
+                  placeholder="Nhập tên đăng nhập"
                   value={formData.username}
                   onChange={handleInputChange}
                   required
@@ -149,20 +122,20 @@ export function LoginForm({
               </div>
               <div className="grid gap-3">
                 <div className="flex items-center">
-                  <Label htmlFor="password">{t('form.password.label')}</Label>
+                  <Label htmlFor="password">Mật khẩu</Label>
                   <a
                     href="/reset-password/request"
                     className="ml-auto text-sm underline-offset-2 hover:underline"
                     tabIndex={-1}
                   >
-                    {t('form.forgotPassword')}
+                    Quên mật khẩu?
                   </a>
                 </div>
                 <Input
                   id="password"
                   name="password"
                   type="password"
-                  placeholder={t('form.password.placeholder')}
+                  placeholder="Nhập mật khẩu"
                   value={formData.password}
                   onChange={handleInputChange}
                   required
@@ -180,12 +153,12 @@ export function LoginForm({
                 className="w-full bg-black text-white hover:text-black"
                 disabled={loginMutation.isPending}
               >
-                {loginMutation.isPending ? t('form.loginButton') + '...' : t('form.loginButton')}
+                {loginMutation.isPending ? 'Đang đăng nhập...' : 'Đăng nhập'}
               </Button>
               <div className="relative flex items-center">
                 <div className="flex-grow border-t border-border"></div>
                 <span className="bg-card text-muted-foreground px-2 z-10 text-center">
-                  {t('form.orContinueWith')}
+                  Hoặc đăng nhập bằng
                 </span>
                 <div className="flex-grow border-t border-border"></div>
               </div>
@@ -203,9 +176,9 @@ export function LoginForm({
                 </Button>
               </div>
               <div className="text-center text-sm">
-                {t('footer.noAccount')}{" "}
+                Chưa có tài khoản? {" "}
                 <a href="#" className="underline underline-offset-4">
-                  {t('footer.signUp')}
+                  Đăng ký
                 </a>
               </div>
             </div>
@@ -222,8 +195,7 @@ export function LoginForm({
         </CardContent>
       </Card>
       <div className="text-muted-foreground *:[a]:hover:text-primary text-center text-xs text-balance *:[a]:underline *:[a]:underline-offset-4">
-        {t('terms.agreement')} <a href="#">{t('terms.termsOfService')}</a>{" "}
-        {t('terms.and')} <a href="#">{t('terms.privacyPolicy')}</a>.
+  Khi đăng nhập, bạn đồng ý với <a href="#">Điều khoản dịch vụ</a> và <a href="#">Chính sách bảo mật</a>.
       </div>
     </div>
   )

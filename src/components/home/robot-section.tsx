@@ -1,7 +1,7 @@
 import Image from "next/image"
 import { Star, Zap, Shield, Sparkles } from "lucide-react"
 import { forwardRef } from "react"
-import { useHomepageTranslation } from "@/lib/i18n/hooks/use-translation"
+
 
 interface RobotSectionProps {
   currentSection: number
@@ -9,25 +9,9 @@ interface RobotSectionProps {
 
 export const RobotSection = forwardRef<HTMLElement, RobotSectionProps>(
   ({  }, ref) => {
-    const { t, isLoading } = useHomepageTranslation()
 
-    if (isLoading) {
-      return (
-        <section ref={ref} className="py-12 sm:py-16 md:py-20 lg:py-24 bg-white relative overflow-hidden min-h-screen flex items-center">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="text-center mb-8 sm:mb-10 md:mb-12">
-              <div className="animate-pulse bg-gray-200 h-12 w-3/4 mx-auto rounded mb-4"></div>
-              <div className="animate-pulse bg-gray-200 h-4 w-1/2 mx-auto rounded"></div>
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
-              {[1, 2, 3].map((i) => (
-                <div key={i} className="animate-pulse bg-gray-200 h-64 rounded-xl"></div>
-              ))}
-            </div>
-          </div>
-        </section>
-      )
-    }
+
+
     return (
       <section
         ref={ref}
@@ -42,13 +26,13 @@ export const RobotSection = forwardRef<HTMLElement, RobotSectionProps>(
           {/* Section Header */}
           <div data-aos="fade-up" data-aos-delay="100" className="text-center mb-8 sm:mb-10 md:mb-12">
             <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-gray-900 mb-3 leading-tight">
-              {t('robot.title')}
+              Robot giáo dục thông minh
               <span className="block bg-gradient-to-r from-blue-600 to-blue-700 bg-clip-text text-transparent py-1 leading-relaxed">
-                {t('robot.titleHighlight')}
+                Khám phá Alpha Mini
               </span>
             </h2>
             <p className="text-base sm:text-lg md:text-xl text-gray-600 max-w-2xl mx-auto px-4">
-              {t('robot.subtitle')}
+              Alpha Mini - Robot hỗ trợ học tập, sáng tạo và phát triển kỹ năng cho mọi lứa tuổi.
             </p>
           </div>
 
@@ -71,7 +55,7 @@ export const RobotSection = forwardRef<HTMLElement, RobotSectionProps>(
                   <div className="absolute top-2 sm:top-3 left-2 sm:left-3 bg-white/90 backdrop-blur-sm rounded-md sm:rounded-lg px-1.5 sm:px-2 py-1 shadow-md">
                     <div className="flex items-center gap-1">
                       <Shield className="w-2.5 h-2.5 sm:w-3 sm:h-3 text-blue-600" />
-                      <span className="text-xs font-medium text-gray-700 hidden sm:inline">{t('robot.badges.security')}</span>
+                      <span className="text-xs font-medium text-gray-700 hidden sm:inline">Bảo mật cao</span>
                     </div>
                   </div>
                 </div>
@@ -100,7 +84,7 @@ export const RobotSection = forwardRef<HTMLElement, RobotSectionProps>(
                         </div>
                         <div>
                           <div className="font-semibold text-gray-900 text-xs sm:text-sm">Alpha Mini</div>
-                          <div className="text-xs text-gray-600 hidden sm:block">{t('robot.badges.main')}</div>
+                          <div className="text-xs text-gray-600 hidden sm:block">Robot giáo dục đa năng, thân thiện với trẻ em</div>
                         </div>
                       </div>
                     </div>
@@ -130,7 +114,7 @@ export const RobotSection = forwardRef<HTMLElement, RobotSectionProps>(
                   <div className="absolute top-2 sm:top-3 right-2 sm:right-3 bg-white/90 backdrop-blur-sm rounded-md sm:rounded-lg px-1.5 sm:px-2 py-1 shadow-md">
                     <div className="flex items-center gap-1">
                       <Zap className="w-2.5 h-2.5 sm:w-3 sm:h-3 text-green-600" />
-                      <span className="text-xs font-medium text-gray-700 hidden sm:inline">{t('robot.badges.interaction')}</span>
+                      <span className="text-xs font-medium text-gray-700 hidden sm:inline">Tương tác thông minh</span>
                     </div>
                   </div>
                 </div>
@@ -144,22 +128,22 @@ export const RobotSection = forwardRef<HTMLElement, RobotSectionProps>(
               <div className="w-10 h-10 sm:w-12 sm:h-12 bg-blue-100 rounded-lg sm:rounded-xl flex items-center justify-center mx-auto mb-2 sm:mb-3 group-hover:bg-blue-200 transition-colors duration-300">
                 <Shield className="w-5 h-5 sm:w-6 sm:h-6 text-blue-600" />
               </div>
-              <h3 className="text-base sm:text-lg font-semibold text-gray-900 mb-1 sm:mb-2">{t('robot.features.security.title')}</h3>
-              <p className="text-gray-600 text-xs sm:text-sm px-2">{t('robot.features.security.description')}</p>
+              <h3 className="text-base sm:text-lg font-semibold text-gray-900 mb-1 sm:mb-2">Bảo mật & an toàn</h3>
+              <p className="text-gray-600 text-xs sm:text-sm px-2">Dữ liệu và quyền riêng tư của trẻ được bảo vệ tối đa.</p>
             </div>
             <div className="text-center group">
               <div className="w-10 h-10 sm:w-12 sm:h-12 bg-purple-100 rounded-lg sm:rounded-xl flex items-center justify-center mx-auto mb-2 sm:mb-3 group-hover:bg-purple-200 transition-colors duration-300">
                 <Sparkles className="w-5 h-5 sm:w-6 sm:h-6 text-purple-600" />
               </div>
-              <h3 className="text-base sm:text-lg font-semibold text-gray-900 mb-1 sm:mb-2">{t('robot.features.ai.title')}</h3>
-              <p className="text-gray-600 text-xs sm:text-sm px-2">{t('robot.features.ai.description')}</p>
+              <h3 className="text-base sm:text-lg font-semibold text-gray-900 mb-1 sm:mb-2">Trí tuệ nhân tạo</h3>
+              <p className="text-gray-600 text-xs sm:text-sm px-2">Tích hợp AI giúp robot học hỏi và hỗ trợ học sinh hiệu quả.</p>
             </div>
             <div className="text-center group sm:col-span-2 md:col-span-1">
               <div className="w-10 h-10 sm:w-12 sm:h-12 bg-green-100 rounded-lg sm:rounded-xl flex items-center justify-center mx-auto mb-2 sm:mb-3 group-hover:bg-green-200 transition-colors duration-300">
                 <Zap className="w-5 h-5 sm:w-6 sm:h-6 text-green-600" />
               </div>
-              <h3 className="text-base sm:text-lg font-semibold text-gray-900 mb-1 sm:mb-2">{t('robot.features.interaction.title')}</h3>
-              <p className="text-gray-600 text-xs sm:text-sm px-2">{t('robot.features.interaction.description')}</p>
+              <h3 className="text-base sm:text-lg font-semibold text-gray-900 mb-1 sm:mb-2">Tương tác linh hoạt</h3>
+              <p className="text-gray-600 text-xs sm:text-sm px-2">Robot giao tiếp, phản hồi và tương tác tự nhiên với người dùng.</p>
             </div>
           </div>
         </div>

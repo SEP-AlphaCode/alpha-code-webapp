@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { useI18n } from "@/lib/i18n/provider";
+
 import { useRobotStore } from "@/hooks/use-robot-store";
 
 // Import extracted components
@@ -13,14 +13,7 @@ import { EntertainmentSection } from "@/components/teacher/robot/entertainment-s
 import { ThingsToTrySection } from "@/components/teacher/robot/things-to-try-section";
 
 // Import tĩnh cả hai file ngôn ngữ
-import viTranslations from "@/lib/i18n/dictionaries/teacher/teacher.vi.json";
-import enTranslations from "@/lib/i18n/dictionaries/teacher/teacher.en.json";
 
-type TeacherTranslations = typeof viTranslations;
-const translations: Record<string, TeacherTranslations> = {
-  vi: viTranslations,
-  en: enTranslations,
-};
 
 // Define Robot type to match component expectations - extending Redux Robot type
 interface ExtendedRobot {
@@ -101,10 +94,19 @@ function extendRobotWithMockData(robot: ReturnType<typeof useRobotStore>['robots
 }
 
 export default function TeacherDashboard() {
-  const { locale } = useI18n();
-  const t = translations[locale];
   const { robots, selectedRobotSerial, selectRobot, initializeMockData } = useRobotStore();
   const [shuffledPrompts, setShuffledPrompts] = useState<string[]>([]);
+
+  // Hardcoded Vietnamese prompts for "Things to Try"
+  const thingsToTryPrompts = [
+    "Hãy thử cho robot nhảy một điệu nhạc vui nhộn!",
+    "Yêu cầu robot kể một câu chuyện cho lớp học.",
+    "Hỏi robot về thời tiết hôm nay.",
+    "Cho robot chơi trò chơi đoán hình.",
+    "Hướng dẫn robot chụp ảnh cùng học sinh.",
+    "Thử cho robot hát một bài hát thiếu nhi.",
+    "Yêu cầu robot giải thích một khái niệm khoa học đơn giản."
+  ];
 
   useEffect(() => {
     // Initialize mock data if no robots exist
@@ -112,18 +114,12 @@ export default function TeacherDashboard() {
   }, [initializeMockData]);
 
   useEffect(() => {
-    if (t?.things_to_try?.prompts) {
-      setShuffledPrompts(shuffleArray(t.things_to_try.prompts));
-    }
-  }, [locale, t]);
+    setShuffledPrompts(shuffleArray(thingsToTryPrompts));
+  }, []);
 
   const handleRefreshPrompts = () => {
-    if (t?.things_to_try?.prompts) {
-      setShuffledPrompts(shuffleArray(t.things_to_try.prompts));
-    }
+    setShuffledPrompts(shuffleArray(thingsToTryPrompts));
   };
-
-  if (!t) return <div>Loading translations...</div>;
 
   // Convert Redux robots to extended robot format
   const extendedRobots: ExtendedRobot[] = robots.map((robot, index) => 
@@ -135,8 +131,8 @@ export default function TeacherDashboard() {
   return (
     <div className="space-y-10 p-10">
       <RobotPageHeader 
-        title={t.header.title}
-        subtitle="Manage and interact with your AlphaMini robots"
+        title="Quản lý robot"
+        subtitle="Quản lý và tương tác với các robot AlphaMini của bạn"
       />
       
       <RobotGrid 
@@ -149,11 +145,11 @@ export default function TeacherDashboard() {
             sessionStorage.setItem("selectedRobotSerial", robot.serialNumber);
           }
         }}
-        sectionTitle={t.robot_selection.title}
+        sectionTitle="Danh sách robot"
         statusTexts={{
-          online: t.robot_selection.status_online,
-          offline: t.robot_selection.status_offline,
-          charging: t.robot_selection.charging,
+          online: "Đang hoạt động",
+          offline: "Ngoại tuyến",
+          charging: "Đang sạc",
         }}
       />
 
@@ -162,53 +158,53 @@ export default function TeacherDashboard() {
           robot={selectedRobotDetails}
           translations={{
             systemInfo: {
-              title: t.robot_selection.system_info.title,
-              firmware: t.robot_selection.system_info.firmware,
-              temperature: t.robot_selection.system_info.temperature,
+              title: "Thông tin hệ thống",
+              firmware: "Phiên bản phần mềm",
+              temperature: "Nhiệt độ",
             },
             currentStatus: {
-              title: t.robot_selection.current_status.title,
-              status: t.robot_selection.current_status.status,
-              task: t.robot_selection.current_status.task,
-              battery: t.robot_selection.current_status.battery,
-              location: t.robot_selection.current_status.location,
+              title: "Trạng thái hiện tại",
+              status: "Trạng thái",
+              task: "Nhiệm vụ",
+              battery: "Pin",
+              location: "Vị trí",
             },
             quickActions: {
-              title: t.robot_selection.quick_actions.title,
-              restart: t.robot_selection.quick_actions.restart,
-              settings: t.robot_selection.quick_actions.settings,
-              updateFirmware: t.robot_selection.quick_actions.update_firmware,
+              title: "Tác vụ nhanh",
+              restart: "Khởi động lại",
+              settings: "Cài đặt",
+              updateFirmware: "Cập nhật phần mềm",
             },
             statusTexts: {
-              online: t.robot_selection.status_online,
-              offline: t.robot_selection.status_offline,
-              charging: t.robot_selection.charging,
+              online: "Đang hoạt động",
+              offline: "Ngoại tuyến",
+              charging: "Đang sạc",
             },
           }}
         />
       )}
 
       <ProgrammingSection 
-        title={t.programming.title}
+        title="Lập trình"
         items={{
-          createActions: t.programming.create_actions,
-          workspace: t.programming.workspace,
-          myWorks: t.programming.my_works,
+          createActions: "Tạo hành động",
+          workspace: "Không gian lập trình",
+          myWorks: "Công việc của tôi",
         }}
       />
 
       <EntertainmentSection 
-        title={t.entertainment.title}
+        title="Giải trí"
         items={{
-          action: t.entertainment.action,
-          album: t.entertainment.album,
-          friends: t.entertainment.friends,
+          action: "Hành động vui nhộn",
+          album: "Album ảnh",
+          friends: "Bạn bè",
         }}
       />
 
       <ThingsToTrySection 
-        title={t.things_to_try.title}
-        refreshText={t.things_to_try.refresh}
+        title="Những điều nên thử"
+        refreshText="Làm mới đề xuất"
         prompts={shuffledPrompts}
         onRefresh={handleRefreshPrompts}
       />

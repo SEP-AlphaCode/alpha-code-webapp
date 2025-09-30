@@ -2,6 +2,7 @@
 
 import React from "react"
 import { AppSidebar } from "@/components/admin-sidebar"
+import { usePathname } from "next/navigation"
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -10,16 +11,14 @@ import {
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb"
+
+import { AuthGuard } from "@/components/auth-guard"
 import { Separator } from "@/components/ui/separator"
 import {
   SidebarInset,
   SidebarProvider,
   SidebarTrigger,
 } from "@/components/ui/sidebar"
-import { usePathname } from "next/navigation"
-import { AuthGuard } from "@/components/auth-guard"
-import { I18nProvider } from "@/lib/i18n/provider"
-import { useAdminTranslation } from "@/lib/i18n/hooks/use-translation"
 
 // Function to format path segments into a display name
 function formatPathToDisplayName(path: string): string {
@@ -28,55 +27,52 @@ function formatPathToDisplayName(path: string): string {
     .map(word => word.charAt(0).toUpperCase() + word.slice(1))
     .join(' ')
 }
-
 function AdminBreadcrumb() {
-  const pathname = usePathname()
-  const { t, isLoading } = useAdminTranslation()
+  const pathname = usePathname();
+  const pathSegments = pathname.split('/').filter(Boolean);
+  const breadcrumbItems = [];
 
-  // Don't render breadcrumb while loading translations to prevent flickering
-  if (isLoading) {
-    return (
-      <div className="animate-pulse">
-        <div className="h-4 w-32 bg-gray-200 rounded"></div>
-      </div>
-    )
-  }
-
-  // Create breadcrumb items from pathname
-  const pathSegments = pathname.split('/').filter(Boolean)
-  const breadcrumbItems = []
-
-  // If it's the admin main page, show Admin -> Dashboard
+  // Nếu là trang chính admin, hiển thị Quản trị viên -> Bảng điều khiển
   if (pathname === '/admin') {
     breadcrumbItems.push({
       href: '/admin',
-      label: t('navigation.admin'),
+      label: 'Quản trị viên',
       isLast: false
-    })
+    });
     breadcrumbItems.push({
       href: '/admin',
-      label: t('navigation.dashboard'),
+      label: 'Bảng điều khiển',
       isLast: true
-    })
+    });
   } else {
-    // If it's a subpage, show Admin -> Current Page
+    // Nếu là trang con, hiển thị Quản trị viên -> Tên trang hiện tại
     breadcrumbItems.push({
       href: '/admin',
-      label: t('navigation.admin'),
+      label: 'Quản trị viên',
       isLast: false
-    })
-    
-    // Extract the name of the page from the last path segment and get translation
-    const lastSegment = pathSegments[pathSegments.length - 1]
-    const translationKey = `navigation.${lastSegment.replace('-', '')}`
-    const currentPageName = t(translationKey) || formatPathToDisplayName(lastSegment)
+    });
+    // Lấy tên trang từ segment cuối cùng
+    const lastSegment = pathSegments[pathSegments.length - 1];
+    // Chuyển đổi segment thành tên hiển thị tiếng Việt
+    let currentPageName = '';
+    switch (lastSegment) {
+      case 'dashboard':
+        currentPageName = 'Bảng điều khiển'; break;
+      case 'users':
+        currentPageName = 'Người dùng'; break;
+      case 'settings':
+        currentPageName = 'Cài đặt'; break;
+      // Thêm các trường hợp khác nếu cần
+      default:
+        currentPageName = formatPathToDisplayName(lastSegment);
+    }
     breadcrumbItems.push({
       href: pathname,
       label: currentPageName,
       isLast: true
-    })
+    });
   }
-  
+
   return (
     <Breadcrumb>
       <BreadcrumbList>
@@ -96,8 +92,9 @@ function AdminBreadcrumb() {
         ))}
       </BreadcrumbList>
     </Breadcrumb>
-  )
+  );
 }
+
 
 export default function AdminLayout({
   children,
@@ -105,7 +102,6 @@ export default function AdminLayout({
   children: React.ReactNode
 }) {
   return (
-    <I18nProvider page="admin">
       <AuthGuard allowedRoles={['admin']}>
         <SidebarProvider>
           <AppSidebar />
@@ -126,6 +122,5 @@ export default function AdminLayout({
           </SidebarInset>
         </SidebarProvider>
       </AuthGuard>
-    </I18nProvider>
   )
 }
