@@ -12,16 +12,16 @@ import {
   Cell
 } from "recharts"
 import { DashboardUserStats } from "@/types/dashboard"
-import { useAdminTranslation } from "@/lib/i18n/hooks/use-translation"
+
+
 
 interface UserStatsOverviewProps {
-  userStats: DashboardUserStats
-  isLoading?: boolean
+  userStats: DashboardUserStats;
+  isLoading?: boolean;
 }
 
-export function UserStatsOverview({ userStats, isLoading }: UserStatsOverviewProps) {
-  const { t } = useAdminTranslation()
 
+export function UserStatsOverview({ userStats, isLoading }: UserStatsOverviewProps) {
   if (isLoading) {
     return (
       <div className="rounded-lg border bg-card p-6 shadow-sm">
@@ -30,39 +30,38 @@ export function UserStatsOverview({ userStats, isLoading }: UserStatsOverviewPro
           <div className="h-64 bg-muted rounded"></div>
         </div>
       </div>
-    )
+    );
   }
 
   const chartData = [
     {
-      name: t('dashboard.userStatsOverview.totalAccounts', 'Total Accounts'),
+      name: 'Tổng tài khoản',
       value: userStats.totalAccounts,
       color: "#3b82f6",
-      description: t('dashboard.userStatsOverview.totalAccountsDescription', 'All registered accounts')
+      description: 'Tất cả tài khoản đã đăng ký'
     },
     {
-      name: t('dashboard.userStatsOverview.newLastMonth', 'New Last Month'),
+      name: 'Mới tháng trước',
       value: userStats.newUsersLastMonth,
       color: "#8b5cf6",
-      description: t('dashboard.userStatsOverview.newLastMonthDescription', 'Previous month signups')
+      description: 'Đăng ký tháng trước'
     },
     {
-      name: t('dashboard.userStatsOverview.newThisMonth', 'New This Month'),
+      name: 'Mới tháng này',
       value: userStats.newUsersThisMonth,
       color: "#10b981",
-      description: t('dashboard.userStatsOverview.newThisMonthDescription', 'Current month signups')
+      description: 'Đăng ký tháng này'
     }
-  ]
+  ];
 
   return (
     <div className="rounded-lg border bg-card p-6 shadow-sm">
       <div className="flex items-center justify-between mb-6">
-        <h3 className="text-xl font-semibold">{t('dashboard.userStatsOverview.title', 'User Statistics Overview')}</h3>
+        <h3 className="text-xl font-semibold">Tổng quan người dùng</h3>
         <div className="text-sm text-muted-foreground">
-          <span className="font-medium capitalize text-purple-600">{t('dashboard.userStatsOverview.subtitle', 'User Analytics')}</span>
+          <span className="font-medium capitalize text-purple-600">Phân tích người dùng</span>
         </div>
       </div>
-      
       <div className="h-72 mb-6">
         <ResponsiveContainer width="100%" height="100%">
           <BarChart data={chartData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
@@ -93,22 +92,21 @@ export function UserStatsOverview({ userStats, isLoading }: UserStatsOverviewPro
           </BarChart>
         </ResponsiveContainer>
       </div>
-
-      {/* Summary Cards */}
+      {/* Thẻ tổng hợp */}
       <div className="grid grid-cols-3 gap-4">
         <div className="p-4 bg-blue-50 rounded-lg border border-blue-200">
           <div className="text-2xl font-bold text-blue-600">{userStats.totalAccounts}</div>
-          <div className="text-sm text-blue-700">{t('dashboard.userStatsOverview.totalAccounts', 'Total Accounts')}</div>
+          <div className="text-sm text-blue-700">Tổng tài khoản</div>
         </div>
         <div className="p-4 bg-purple-50 rounded-lg border border-purple-200">
           <div className="text-2xl font-bold text-purple-600">{userStats.newUsersLastMonth}</div>
-          <div className="text-sm text-purple-700">{t('dashboard.userStatsOverview.lastMonth', 'Last Month')}</div>
+          <div className="text-sm text-purple-700">Tháng trước</div>
         </div>
         <div className="p-4 bg-green-50 rounded-lg border border-green-200">
           <div className="text-2xl font-bold text-green-600">+{userStats.newUsersThisMonth}</div>
-          <div className="text-sm text-green-700">{t('dashboard.userStatsOverview.thisMonth', 'This Month')}</div>
+          <div className="text-sm text-green-700">Tháng này</div>
         </div>
       </div>
     </div>
-  )
+  );
 }

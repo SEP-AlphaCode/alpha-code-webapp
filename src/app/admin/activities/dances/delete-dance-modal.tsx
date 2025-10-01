@@ -11,7 +11,7 @@ import {
 import { Button } from "@/components/ui/button"
 import { Dance } from "@/types/dance"
 import { AlertTriangle } from "lucide-react"
-import { useAdminTranslation } from "@/lib/i18n/hooks/use-translation"
+
 
 interface DeleteDanceModalProps {
     isOpen: boolean
@@ -28,8 +28,6 @@ export function DeleteDanceModal({
     dance,
     isDeleting = false
 }: DeleteDanceModalProps) {
-    const { t, isLoading } = useAdminTranslation()
-    if (isLoading) return null
     if (!dance) return null
 
     return (
@@ -38,10 +36,10 @@ export function DeleteDanceModal({
                 <DialogHeader>
                     <DialogTitle className="flex items-center gap-2 text-red-600">
                         <AlertTriangle className="h-5 w-5" />
-                        {t('danceManagement.deleteTitle')}
+                        Xóa điệu nhảy
                     </DialogTitle>
                     <DialogDescription className="text-left">
-                        {t('danceManagement.deleteConfirm')}
+                        Bạn có chắc chắn muốn xóa điệu nhảy này không?
                     </DialogDescription>
                 </DialogHeader>
 
@@ -51,12 +49,12 @@ export function DeleteDanceModal({
                         <span className="ml-2 text-gray-900">{dance.id}</span>
                     </div>
                     <div className="text-sm">
-                        <span className="font-medium text-gray-700">{t('danceManagement.fields.name')}:</span>
+                        <span className="font-medium text-gray-700">Tên điệu nhảy:</span>
                         <span className="ml-2 text-gray-900">{dance.name}</span>
                     </div>
                     <div className="text-sm">
-                        <span className="font-medium text-gray-700">{t('danceManagement.fields.description')}:</span>
-                        <span className="ml-2 text-gray-900">{dance.description || t('common.noProvided')}</span>
+                        <span className="font-medium text-gray-700">Mô tả:</span>
+                        <span className="ml-2 text-gray-900">{dance.description || 'Không có mô tả'}</span>
                     </div>
                 </div>
 
@@ -67,7 +65,7 @@ export function DeleteDanceModal({
                         onClick={onClose}
                         disabled={isDeleting}
                     >
-                        {t('common.cancel')}
+                        Hủy
                     </Button>
                     <Button
                         type="button"
@@ -76,7 +74,7 @@ export function DeleteDanceModal({
                         disabled={isDeleting}
                         className="bg-red-600 hover:bg-red-700"
                     >
-                        {isDeleting ? t('common.deleting') : t('danceManagement.deleteTitle')}
+                        {isDeleting ? 'Đang xóa...' : 'Xóa điệu nhảy'}
                     </Button>
                 </DialogFooter>
             </DialogContent>

@@ -12,11 +12,12 @@ import { ViewDanceModal } from "@/app/admin/activities/dances/view-dance-modal"
 import { Dance } from "@/types/dance"
 import { useDance } from "@/hooks/use-dance"
 import { toast } from "sonner"
-import { useAdminTranslation } from "@/lib/i18n/hooks/use-translation"
+
 import LoadingGif from "@/components/ui/loading-gif"
 
+
 export default function DancesPage() {
-  const { t, isLoading: translationsLoading } = useAdminTranslation()
+  // Đã loại bỏ i18n, chỉ dùng tiếng Việt
   const [page, setPage] = useState(1)
   const [size, setSize] = useState(10)
   const [searchTerm, setSearchTerm] = useState("")
@@ -151,28 +152,16 @@ export default function DancesPage() {
 
   const columns = createColumns(handleEditDance, handleDeleteDance, handleViewDance)
 
-  if (translationsLoading) {
-    return (
-      <div className="container mx-auto py-10">
-        <div className="animate-pulse space-y-4">
-          <div className="h-8 bg-gray-200 rounded w-1/4"></div>
-          <div className="h-10 bg-gray-200 rounded w-full"></div>
-          <div className="h-64 bg-gray-200 rounded w-full"></div>
-        </div>
-      </div>
-    )
-  }
-
   return (
     <div className="container mx-auto py-10">
       <div className="mb-6">
         <div className="flex items-center justify-between mb-4">
-          <h1 className="text-2xl font-bold">{t('danceManagement.title')}</h1>
+          <h1 className="text-2xl font-bold">Quản lý điệu nhảy</h1>
           <Button
             onClick={handleAddDance}
             variant="outline"
           >
-            {t('danceManagement.addDance')}
+            Thêm điệu nhảy
           </Button>
         </div>
       </div>
@@ -183,7 +172,7 @@ export default function DancesPage() {
         onSizeChange={handleSizeChange}
         searchValue={searchTerm}
         onSearchChange={setSearchTerm}
-        searchPlaceholder={t('danceManagement.searchPlaceholder')}
+        searchPlaceholder="Tìm kiếm điệu nhảy..."
         pageCount={data?.total_pages || 0}
         page={page}
         onPageChange={handlePageChange}
