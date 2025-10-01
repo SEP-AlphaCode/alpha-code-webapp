@@ -14,7 +14,7 @@ export const HeroSection = forwardRef<HTMLElement, HeroSectionProps>(
 
 
     return (
-      <section ref={ref} className="relative min-h-screen bg-gradient-to-b from-white via-gray-50 to-blue-50 overflow-hidden">
+      <section ref={ref} className="relative min-h-screen mt-10 bg-gradient-to-b from-white via-gray-50 to-blue-50 overflow-hidden">
         {/* Clean Background Pattern */}
         <div className="absolute inset-0">
           {/* Grid pattern - made more visible */}
