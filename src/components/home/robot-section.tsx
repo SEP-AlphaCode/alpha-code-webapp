@@ -15,7 +15,7 @@ export const RobotSection = forwardRef<HTMLElement, RobotSectionProps>(
     return (
       <section
         ref={ref}
-        className="py-12 sm:py-16 md:py-20 lg:py-24 bg-white relative overflow-hidden min-h-screen flex items-center"
+        className="py-12 sm:py-16 md:py-20 lg:py-24 bg-gradient-to-b from-white via-gray-50 to-blue-50 relative overflow-hidden min-h-screen flex items-center"
       >
         {/* Background pattern */}
         <div className="absolute inset-0">
