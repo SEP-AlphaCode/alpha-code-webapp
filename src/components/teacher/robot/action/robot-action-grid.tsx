@@ -4,7 +4,7 @@ import { useState, useEffect } from "react"
 import { RobotActionTab } from "./robot-action-tab"
 import { useRobotActions } from "@/hooks/use-robot-action"
 import { useDances } from "@/hooks/use-robot-dance"
-import { useExpression } from "@/hooks/use-expression"
+import { useExpression } from "@/features/activities/hooks/use-expression"
 import { TabData } from "@/types/tab-data"
 import {
   RobotActionUI,
