@@ -1,4 +1,4 @@
-import { getDashboardStats, getOnlineUsersCount, getUserStats } from "@/api/dashboard-api";
+import { getDashboardStats, getOnlineUsersCount, getUserStats } from "@/features/users/api/dashboard-api";
 import { ApiResponse } from "@/types/api-error";
 import { DashboardStats, DashboardUserStats } from "@/types/dashboard";
 import { useQuery } from "@tanstack/react-query";

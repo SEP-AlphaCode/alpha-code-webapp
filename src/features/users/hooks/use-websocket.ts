@@ -1,5 +1,5 @@
 import { useMutation } from '@tanstack/react-query';
-import { sendRobotCommand } from '@/api/websocket-api';
+import { sendRobotCommand } from '@/features/users/api/websocket-api';
 import { WebSocketCommand } from '@/types/websocket';
 import { toast } from 'sonner';
 
