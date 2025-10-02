@@ -17,7 +17,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { useRoles } from '@/hooks/use-roles';
+import { useRoles } from '@/features/users/hooks/use-roles';
 import { Role } from '@/types/role';
 
 interface CreateUserData {

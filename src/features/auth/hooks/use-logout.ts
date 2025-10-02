@@ -1,5 +1,5 @@
 import { useMutation } from '@tanstack/react-query';
-import { logout } from '@/api/auth-api';
+import { logout } from '@/features/auth/api/auth-api';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 

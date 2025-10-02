@@ -22,7 +22,7 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { Label } from '@/components/ui/label'
-import { useQRCode } from '@/hooks/use-qr-code'
+import { useQRCode } from '@/features/activities/hooks/use-qr-code'
 import { QRCode, QRCodeRequest } from '@/types/qrcode'
 import Image from 'next/image'
 import LoadingState from '@/components/loading-state'

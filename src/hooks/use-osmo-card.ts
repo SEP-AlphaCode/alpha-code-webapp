@@ -1,4 +1,4 @@
-import { getAllOsmoCards, getOsmoCardById, createOsmoCard, updateOsmoCard, deleteOsmoCard } from "@/api/osmo-card-api";
+import { getAllOsmoCards, getOsmoCardById, createOsmoCard, updateOsmoCard, deleteOsmoCard } from "@/features/activities/api/osmo-card-api";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { OsmoCard } from "@/types/osmo-card";
 import { PagedResult } from "@/types/page-result";

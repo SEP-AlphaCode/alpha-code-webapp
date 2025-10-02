@@ -6,7 +6,7 @@ import {
   createActivity, 
   updateActivity, 
   deleteActivity 
-} from '@/api/activities-api';
+} from '@/features/activities/api/activities-api';
 import { Activity } from '@/types/activities';
 import { toast } from 'sonner';
 

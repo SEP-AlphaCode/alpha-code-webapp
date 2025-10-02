@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query'
-import { getRoles, getRoleById } from '@/api/role-api'
+import { getRoles, getRoleById } from '@/features/users/api/role-api'
 
 // Query keys
 export const roleKeys = {
