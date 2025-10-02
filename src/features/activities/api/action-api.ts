@@ -1,10 +1,10 @@
 import { Action, ActionModal } from "@/types/action";
 import { PagedResult } from "@/types/page-result";
-import { springHttp } from "@/utils/http";
+import { activitiesHttp } from "@/utils/http";
 
 export const getPagedActions = async (page: number, size: number, search?: string, signal?: AbortSignal) => {
   try {
-    const response = await springHttp.get<PagedResult<Action>>('/actions', {
+    const response = await activitiesHttp.get<PagedResult<Action>>('/actions', {
       params: {
         page,
         size,
@@ -22,16 +22,16 @@ export const getPagedActions = async (page: number, size: number, search?: strin
 };
 
 export const createAction = async (actionData: ActionModal) => {
-  const response = await springHttp.post('/actions', actionData);
+  const response = await activitiesHttp.post('/actions', actionData);
   return response.data;
 };
 
 export const updateAction = async (id: string, actionData: ActionModal) => {
-  const response = await springHttp.put(`/actions/${id}`, actionData);
+  const response = await activitiesHttp.put(`/actions/${id}`, actionData);
   return response.data;
 };
 
 export const deleteAction = async (id: string) => {
-  const response = await springHttp.delete(`/actions/${id}`);
+  const response = await activitiesHttp.delete(`/actions/${id}`);
   return response.data;
 };

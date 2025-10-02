@@ -1,10 +1,10 @@
 import { Expression, ExpressionModal } from "@/types/expression";
 import { PagedResult } from "@/types/page-result";
-import { springHttp } from "@/utils/http";
+import { activitiesHttp } from "@/utils/http";
 
 export const getPagedExpressions = async (page: number, size: number, search?: string, signal?: AbortSignal) => {
   try {
-    const response = await springHttp.get<PagedResult<Expression>>('/expressions', {
+    const response = await activitiesHttp.get<PagedResult<Expression>>('/expressions', {
       params: {
         page,
         size,
@@ -22,16 +22,16 @@ export const getPagedExpressions = async (page: number, size: number, search?: s
 };
 
 export const createExpression = async (expressionData: ExpressionModal) => {
-  const response = await springHttp.post('/expressions', expressionData);
+  const response = await activitiesHttp.post('/expressions', expressionData);
   return response.data;
 };
 
 export const updateExpression = async (id: string, expressionData: ExpressionModal) => {
-  const response = await springHttp.put(`/expressions/${id}`, expressionData);
+  const response = await activitiesHttp.put(`/expressions/${id}`, expressionData);
   return response.data;
 };
 
 export const deleteExpression = async (id: string) => {
-  const response = await springHttp.delete(`/expressions/${id}`);
+  const response = await activitiesHttp.delete(`/expressions/${id}`);
   return response.data;
 };

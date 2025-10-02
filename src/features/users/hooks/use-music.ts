@@ -1,4 +1,4 @@
-import { getAllMusics, getPagedMusics, getMusicById, createMusic, updateMusic, deleteMusic, convertAudioToWav } from "@/api/music-api";
+import { getAllMusics, getPagedMusics, getMusicById, createMusic, updateMusic, deleteMusic, convertAudioToWav } from "@/features/users/api/music-api";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Music, MusicResponse, AudioConvertRequest, AudioConvertResponse } from "@/types/music";
 import { PagedResult } from "@/types/page-result";
