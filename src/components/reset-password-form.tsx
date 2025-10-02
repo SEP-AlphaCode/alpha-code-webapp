@@ -170,8 +170,6 @@ export default function ResetPasswordForm() {
             </div>
             <div>
               <h1 className="text-2xl font-bold text-gray-900">Đặt lại mật khẩu mới</h1>
-              <h1 className="text-2xl font-bold text-gray-900">Đặt lại mật khẩu mới</h1>
-                Vui lòng nhập mật khẩu mới cho tài khoản của bạn.
               <p className="text-gray-600 mt-2">
                 Vui lòng nhập mật khẩu mới cho tài khoản của bạn.
               </p>
@@ -183,7 +181,6 @@ export default function ResetPasswordForm() {
             {/* New Password */}
             <div className="space-y-2">
               <Label htmlFor="newPassword" className="text-sm font-medium text-gray-700">
-                Mật khẩu mới
                 Mật khẩu mới
               </Label>
               <div className="relative">
@@ -211,7 +208,6 @@ export default function ResetPasswordForm() {
               {newPassword && (
                 <div className="space-y-2">
                   <div className="flex justify-between text-xs">
-                    <span className="text-gray-500">Password strength:</span>
                     <span className="text-gray-500">Độ mạnh mật khẩu:</span>
                     <span className={`font-medium ${
                       passwordStrength === 'weak' ? 'text-red-500' :
@@ -252,27 +248,6 @@ export default function ResetPasswordForm() {
                   {showConfirmPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                 </button>
               </div>
-              
-              {/* Match Indicator */}
-              {confirmPassword && (
-                <div className="flex items-center space-x-2 text-xs">
-                  {newPassword === confirmPassword ? (
-                    <>
-                      <CheckCircle className="h-3 w-3 text-green-500" />
-                      <span className="text-green-600">Passwords match</span>
-                      <span className="text-green-600">Mật khẩu khớp</span>
-                    </>
-                  ) : (
-                    <>
-                      <AlertCircle className="h-3 w-3 text-red-500" />
-                      <span className="text-red-600">Passwords do not match</span>
-                      <span className="text-red-600">Mật khẩu không khớp</span>
-                Xác nhận mật khẩu
-                  placeholder=&quot;Nhập lại mật khẩu mới&quot;
-                    </>
-                  )}
-                </div>
-              )}
             </div>
 
             {/* Error Message */}
@@ -295,12 +270,10 @@ export default function ResetPasswordForm() {
                 <div className="flex items-center justify-center">
                   <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2" />
                   Đang đặt lại...
-                  Đang đặt lại...
                 </div>
               ) : (
                 <>
                   <Lock className="mr-2 h-4 w-4" />
-                  Đặt lại mật khẩu
                   Đặt lại mật khẩu
                 </>
               )}
@@ -314,7 +287,6 @@ export default function ResetPasswordForm() {
               className="inline-flex items-center text-sm text-gray-500 hover:text-gray-700 transition-colors duration-200 font-medium"
             >
               <ArrowLeft className="mr-1 h-4 w-4" />
-              Quay lại đăng nhập
               Quay lại đăng nhập
             </Link>
           </div>
