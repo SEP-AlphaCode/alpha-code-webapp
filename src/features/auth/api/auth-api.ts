@@ -91,7 +91,7 @@ export const requestResetPassword = async (email: string) => {
     if (!email || !email.includes("@")) {
       throw new Error("Please enter a valid email address")
     }
-    const response = await usersHttp.post(`/accounts/reset-password/request`, {
+    const response = await usersHttp.post(`/auth/reset-password/request`, {
       email,
     });
     return response.data;
@@ -115,7 +115,7 @@ export const requestResetPassword = async (email: string) => {
 
 export const resetPassword = async (resetToken: string, newPassword: string) => {
   try {
-    const response = await usersHttp.post(`/accounts/reset-password/reset`, {
+    const response = await usersHttp.post(`/auth/reset-password/reset`, {
       resetToken,
       newPassword,
     });
