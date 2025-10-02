@@ -1,5 +1,5 @@
 import { useMutation } from '@tanstack/react-query';
-import { login, googleLogin } from '@/api/auth-api';
+import { login, googleLogin } from '@/features/auth/api/auth-api';
 import { useRouter } from 'next/navigation';
 import { LoginRequest, TokenResponse } from '@/types/login';
 import { getTokenPayload } from '@/utils/tokenUtils';

@@ -1,4 +1,4 @@
-import { createExpression, getPagedExpressions, updateExpression, deleteExpression } from "@/api/expression-api";
+import { createExpression, getPagedExpressions, updateExpression, deleteExpression } from "@/features/activities/api/expression-api";
 import { ExpressionModal } from "@/types/expression";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 

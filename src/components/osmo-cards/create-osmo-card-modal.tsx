@@ -14,9 +14,9 @@ import { Switch } from '@/components/ui/switch';
 import { Separator } from '@/components/ui/separator';
 import { Plus, X, Palette, Music, Zap, Smile } from 'lucide-react';
 import { CreateCardData } from '@/types/osmo-card';
-import { useAction } from '@/hooks/use-action';
-import { useExpression } from '@/hooks/use-expression';
-import { useDance } from '@/hooks/use-dance';
+import { useAction } from '@/features/activities/hooks/use-action';
+import { useExpression } from '@/features/activities/hooks/use-expression';
+import { useDance } from '@/features/activities/hooks/use-dance';
 
 interface CreateOsmoCardModalProps {
   isOpen: boolean;

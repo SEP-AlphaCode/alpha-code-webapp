@@ -1,4 +1,4 @@
-import { createDance, getPagedDances, updateDance, deleteDance } from "@/api/dance-api";
+import { createDance, getPagedDances, updateDance, deleteDance } from "@/features/activities/api/dance-api";
 import { DanceModal } from "@/types/dance";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 

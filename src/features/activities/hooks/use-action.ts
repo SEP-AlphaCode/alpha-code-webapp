@@ -1,4 +1,4 @@
-import { createAction, getPagedActions, updateAction, deleteAction } from "@/api/action-api";
+import { createAction, getPagedActions, updateAction, deleteAction } from "@/features/activities/api/action-api";
 import { ActionModal } from "@/types/action";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
