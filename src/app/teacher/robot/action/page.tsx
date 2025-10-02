@@ -12,6 +12,7 @@ import { useRobotStore } from "@/hooks/use-robot-store";
 import { AnimatePresence, motion } from "framer-motion";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import type { RobotAction } from "@/types/robot";
+import type { RobotActionUI } from "@/types/robot-ui"; // nếu bạn có UI type
 
 export default function RobotActionPage() {
   const [notify, setNotifyState] = useState<{ msg: string; type: "success" | "error" } | null>(null);
@@ -22,38 +23,28 @@ export default function RobotActionPage() {
 
   const { sendCommandToBackend } = useRobotCommand(setNotify);
 
-  const [currentAction, setCurrentAction] = useState<RobotAction | null>(null);
+  // 👇 Cho phép state nhận cả RobotAction lẫn RobotActionUI
+  const [currentAction, setCurrentAction] = useState<RobotAction | RobotActionUI | null>(null);
   const [direction, setDirection] = useState<number>(0);
-  
-  // Sử dụng Redux store để lấy robot data
+
   const { selectedRobot, selectedRobotSerial, initializeMockData } = useRobotStore();
 
-  // Initialize mock data on component mount
   useEffect(() => {
     initializeMockData();
   }, [initializeMockData]);
 
+  const handlePrevAction = () => {};
+  const handleNextAction = () => {};
 
-  // Khai báo lại các hàm chuyển trang
-  const handlePrevAction = () => {
-    // Logic này sẽ được xử lý trong RobotActionGrid, không cần ở đây
-  };
-  const handleNextAction = () => {
-    // Logic này cũng được xử lý trong RobotActionGrid
-  };
-
-  // Hàm gọi lệnh sử dụng robot được chọn từ Redux
   const handleSendCommand = async (actionCode: string) => {
     if (!selectedRobotSerial || !selectedRobot) {
       setNotify("Bạn chưa chọn robot!", "error");
       return Promise.resolve();
     }
-    
-    if (selectedRobot.status === 'offline') {
+    if (selectedRobot.status === "offline") {
       setNotify(`Robot ${selectedRobot.name} đang offline!`, "error");
       return Promise.resolve();
     }
-    
     await sendCommandToBackend(actionCode, selectedRobotSerial);
   };
 
@@ -61,7 +52,7 @@ export default function RobotActionPage() {
     <div className="min-h-screen">
       <div className="max-w-6xl mx-auto">
         <RobotActionHeader />
-        
+
         {/* Robot Selector */}
         <div className="mb-6 flex justify-between items-center">
           <RobotSelector className="" />
@@ -69,13 +60,15 @@ export default function RobotActionPage() {
             <div className="text-sm text-gray-600 flex items-center gap-2">
               <span>Robot hiện tại:</span>
               <span className="font-medium">{selectedRobot.name}</span>
-              <span className={`px-2 py-1 rounded-full text-xs ${
-                selectedRobot.status === 'online' 
-                  ? 'bg-green-100 text-green-800' 
-                  : selectedRobot.status === 'busy'
-                  ? 'bg-yellow-100 text-yellow-800'
-                  : 'bg-gray-100 text-gray-800'
-              }`}>
+              <span
+                className={`px-2 py-1 rounded-full text-xs ${
+                  selectedRobot.status === "online"
+                    ? "bg-green-100 text-green-800"
+                    : selectedRobot.status === "busy"
+                    ? "bg-yellow-100 text-yellow-800"
+                    : "bg-gray-100 text-gray-800"
+                }`}
+              >
                 {selectedRobot.status}
               </span>
               {selectedRobot.battery && (
@@ -109,7 +102,17 @@ export default function RobotActionPage() {
                 exit={{ x: direction > 0 ? -100 : 100, opacity: 0 }}
                 transition={{ duration: 0.4, ease: "easeInOut" }}
               >
-                <RobotActionDetail action={{ ...currentAction, description: currentAction.description ?? undefined }} />
+                <RobotActionDetail
+                  action={{
+                    id: currentAction.id,
+                    name: currentAction.name,
+                    description: currentAction.description ?? "",
+                    image: null, // TODO: map từ currentAction.icon hay imageUrl
+                    color: "from-blue-400 to-blue-600", // TODO: map dynamic nếu có
+                    commands: [currentAction.code], // 👈 Ví dụ: lấy code làm command
+                    bgColor: "bg-gray-50",
+                  }}
+                />
               </motion.div>
             </AnimatePresence>
           </div>
@@ -123,10 +126,9 @@ export default function RobotActionPage() {
               className="w-64 h-auto mb-4"
             />
             <h2 className="text-xl md:text-2xl font-semibold text-gray-700">
-              Tap an action below to make AlphaMini move!
+              Bấm vào một hành động bên dưới để khiến AlphaMini di chuyển!
             </h2>
           </div>
-
         )}
 
         {/* Grid hiển thị actions */}
