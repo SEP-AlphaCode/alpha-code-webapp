@@ -8,7 +8,7 @@ const STALE_TIME = 24 * 3600 * 1000
 export const useCourse = () => {
     const useGetCategories = (page: number, size: number, signal?: AbortSignal) => {
         return useQuery<PagedResult<Category>>({
-            queryKey: ['categories'],
+            queryKey: ['categories', page, size],
             staleTime: STALE_TIME,
             queryFn: () => getCategories(page, size, signal),
             refetchOnWindowFocus: false,

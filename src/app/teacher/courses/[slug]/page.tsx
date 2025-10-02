@@ -88,7 +88,7 @@ export default function CoursePage() {
         <nav className="mb-6">
           <ol className="flex items-center space-x-2 text-sm text-slate-500">
             <li onClick={() => window.history.back()} className="hover:cursor-pointer hover:text-blue-600">
-              Courses
+              Khóa học
             </li>
             <li>›</li>
             <li className="text-blue-600 font-medium">{data.name}</li>

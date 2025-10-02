@@ -112,7 +112,7 @@ export function CourseSidebar({ ...props }: React.ComponentProps<typeof Sidebar>
                   href={item.url}
                   className={`flex flex-col items-center justify-center w-24 h-24 rounded-lg transition-colors 
                 ${isActive
-                      ? "bg-sidebar-accent text-blue-500"
+                      ? "text-blue-700 bg-blue-100"
                       : "text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"}`}
                 >
                   <Icon className={cn("h-6 w-6 mb-1 ")} />
