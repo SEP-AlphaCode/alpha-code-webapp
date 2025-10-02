@@ -1,6 +1,6 @@
 "use client"
 
-import { useDashboard } from "@/hooks/use-dashboard"
+import { useDashboard } from "@/features/users/hooks/use-dashboard"
 // import { UserStatsChart } from "@/components/ui/user-stats-chart"
 import { UserStatsOverview } from "@/components/ui/user-stats-overview"
 import { GrowthTrendChart } from "@/components/ui/growth-trend-chart"

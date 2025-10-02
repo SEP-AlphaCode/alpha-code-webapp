@@ -213,7 +213,9 @@ export default function ResetPasswordForm() {
                       passwordStrength === 'weak' ? 'text-red-500' :
                       passwordStrength === 'medium' ? 'text-yellow-500' : 'text-green-500'
                     }`}>
-                      {passwordStrength?.toUpperCase()}
+                      {passwordStrength === 'weak' ? 'YẾU' : 
+                       passwordStrength === 'medium' ? 'TRUNG BÌNH' : 
+                       passwordStrength === 'strong' ? 'MẠNH' : ''}
                     </span>
                   </div>
                   <div className="w-full bg-gray-200 rounded-full h-1.5">

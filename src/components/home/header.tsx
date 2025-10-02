@@ -3,7 +3,7 @@ import Image from "next/image"
 import Link from "next/link"
 import { ArrowRight, LogOut, User } from "lucide-react"
 
-import { useAuth } from "@/hooks/use-auth"
+import { useAuth } from "@/features/auth/hooks/use-auth"
 import { clearAuthData, getUserInfoFromToken } from "@/utils/tokenUtils"
 
 interface HeaderProps {
