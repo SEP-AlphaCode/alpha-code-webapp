@@ -107,10 +107,19 @@ export default function RobotActionPage() {
                     id: currentAction.id,
                     name: currentAction.name,
                     description: currentAction.description ?? "",
-                    image: null, // TODO: map từ currentAction.icon hay imageUrl
-                    color: "from-blue-400 to-blue-600", // TODO: map dynamic nếu có
-                    commands: [currentAction.code], // 👈 Ví dụ: lấy code làm command
-                    bgColor: "bg-gray-50",
+                    code: currentAction.code,
+                    duration: currentAction.duration,
+                    category: (currentAction as RobotActionUI).category ?? "action",
+
+                    // Ưu tiên ảnh nếu có, fallback sang icon
+                    imageUrl: (currentAction as RobotActionUI).imageUrl ?? null,
+                    icon: (currentAction as RobotActionUI).icon ?? null,
+
+                    status: (currentAction as RobotActionUI).status,
+                    statusText: (currentAction as RobotActionUI).statusText ?? "",
+
+                    createdDate: currentAction.createdDate,
+                    lastUpdate: currentAction.lastUpdate,
                   }}
                 />
               </motion.div>
