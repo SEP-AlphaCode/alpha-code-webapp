@@ -1,5 +1,5 @@
 import { Card, CardContent } from "@/components/ui/card"
-import { Zap, Brain, Heart, Sparkles, ChevronDown } from "lucide-react"
+import { Zap, Brain, Heart, Sparkles } from "lucide-react"
 import { forwardRef } from "react"
 
 

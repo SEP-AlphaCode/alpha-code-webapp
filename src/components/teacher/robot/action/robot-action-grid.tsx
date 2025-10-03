@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState } from "react"
 import { RobotActionTab } from "./robot-action-tab"
 import { useRobotActions } from "@/hooks/use-robot-action"
 import { useDances } from "@/hooks/use-robot-dance"
@@ -27,18 +27,11 @@ export function RobotActionGrid({
   const [dancePage, setDancePage] = useState(1)
   const [expressionPage, setExpressionPage] = useState(1)
 
-  const [searchTerm, setSearchTerm] = useState("")
-  const [debouncedSearchTerm, setDebouncedSearchTerm] = useState("")
-  useEffect(() => {
-    const timer = setTimeout(() => setDebouncedSearchTerm(searchTerm), 500)
-    return () => clearTimeout(timer)
-  }, [searchTerm])
-
   const pageSize = 8
 
   // --- Actions ---
   const { data: actionData, isLoading: actionLoading, error: actionError } =
-    useRobotActions(actionPage, pageSize, debouncedSearchTerm)
+    useRobotActions(actionPage, pageSize, "")
   const actionTab: TabData<RobotActionUI> = {
     actions: (actionData?.data ?? []).map(mapActionToUI),
     totalPages: actionData?.total_pages ?? 1,
@@ -50,7 +43,7 @@ export function RobotActionGrid({
 
   // --- Dances ---
   const { data: danceData, isLoading: danceLoading, error: danceError } =
-    useDances(dancePage, pageSize, debouncedSearchTerm)
+    useDances(dancePage, pageSize, "")
   const danceTab: TabData<RobotActionUI> = {
     actions: (danceData?.data ?? []).map(mapDanceToUI),
     totalPages: danceData?.total_pages ?? 1,
@@ -62,7 +55,7 @@ export function RobotActionGrid({
 
   // --- Expressions ---
   const { data: expData, isLoading: expLoading, error: expError } =
-    useExpression().useGetPagedExpressions(expressionPage, pageSize, debouncedSearchTerm)
+    useExpression().useGetPagedExpressions(expressionPage, pageSize, "")
   const expressionTab: TabData<RobotActionUI> = {
     actions: (expData?.data ?? []).map(mapExpressionToUI),
     totalPages: expData?.total_pages ?? 1,
