@@ -26,8 +26,8 @@ import {
   Activity,
   Loader2
 } from "lucide-react"
-import { useActivities, useCreateActivity } from "@/hooks/use-activities"
-import { useRobotControls } from "@/hooks/use-websocket"
+import { useActivities, useCreateActivity } from "@/features/activities/hooks/use-activities"
+import { useRobotControls } from "@/features/users/hooks/use-websocket"
 import { useRobotStore } from "@/hooks/use-robot-store"
 import { Activity as ActivityType } from "@/types/activities"
 

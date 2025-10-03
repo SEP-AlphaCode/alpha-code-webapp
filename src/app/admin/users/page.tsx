@@ -1,6 +1,6 @@
 "use client";
 import React, { useState, useMemo } from 'react';
-import { useAccount } from '@/hooks/use-account';
+import { useAccount } from '@/features/users/hooks/use-account';
 import { Account } from '@/types/account';
 import { ApiResponse } from '@/types/api-error';
 import {

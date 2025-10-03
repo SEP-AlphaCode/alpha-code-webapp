@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from "react";
 import { usePathname } from "next/navigation";
 import { AuthGuard } from "@/components/auth-guard";
-import { useLogout } from "@/hooks/use-logout";
+import { useLogout } from "@/features/auth/hooks/use-logout";
 import { useRobotStore } from "@/hooks/use-robot-store";
 import { AccountData } from "@/types/account";
 import { TeacherHeader } from "@/components/teacher/teacher-header";

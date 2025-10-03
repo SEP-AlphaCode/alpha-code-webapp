@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import Image from "next/image"
 import { useState, useEffect } from "react"
-import { useGoogleLogin, useLogin } from "@/hooks/use-login"
+import { useGoogleLogin, useLogin } from "@/features/auth/hooks/use-login"
 import { LoginRequest } from "@/types/login"
 import { auth, GoogleAuthProvider, signInWithPopup } from "@/config/firebase-config"
 

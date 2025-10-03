@@ -1,26 +1,74 @@
-// src/types/robot.ts
-
-export type RobotActionCategory = "action" | "dance" | "funny";
-
+// Loại Action (hành động cơ bản)
 export interface RobotAction {
   id: string;
-  imageUrl: string | null;
-  createdDate?: string;
+  createdDate: string;
   lastUpdate: string;
   name: string;
   code: string;
-  commands: string[]; 
-  description: string | null;
+  description: string;
   duration: number; // đơn vị ms
+  icon: string | null;
   status: number;
-  canInterrupt: boolean;
+  canInterrupt?: boolean;
   statusText: string;
-  icon?: string;
-  category: RobotActionCategory;
 }
 
+// Response chung cho Action
 export interface RobotActionResponse {
   data: RobotAction[];
+  page: number;
+  total_count: number;
+  per_page: number;
+  total_pages: number;
+  has_next: boolean;
+  has_previous: boolean;
+}
+
+// ========================
+// Loại Dance (điệu nhảy)
+// ========================
+export interface RobotDance {
+  id: string;
+  code: string;
+  name: string;
+  description: string | null;
+  status: number;
+  icon: string | null;
+  lastUpdate: string;
+  createdDate: string;
+  duration: number; // có thể là ms hoặc giây, cần confirm
+  osmoCards?: string | null;
+  statusText: string;
+}
+
+// Response Dance
+export interface RobotDanceResponse {
+  data: RobotDance[];
+  page: number;
+  total_count: number;
+  per_page: number;
+  total_pages: number;
+  has_next: boolean;
+  has_previous: boolean;
+}
+
+// ========================
+// Loại Expression (biểu cảm)
+// ========================
+export interface RobotExpression {
+  id: string;
+  name: string;
+  code: string;
+  imageUrl: string;
+  status: number;
+  createdDate: string;
+  lastUpdate: string;
+  statusText?: string;
+}
+
+// Response Expression
+export interface RobotExpressionResponse {
+  data: RobotExpression[];
   page: number;
   total_count: number;
   per_page: number;

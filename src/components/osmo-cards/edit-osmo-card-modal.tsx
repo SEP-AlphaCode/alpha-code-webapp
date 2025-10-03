@@ -15,9 +15,9 @@ import { Separator } from '@/components/ui/separator';
 import { Save, X, Palette, Activity, Music, Zap, Smile } from 'lucide-react';
 import { OsmoCard } from '@/types/osmo-card';
 import { ApiResponse } from '@/types/api-error';
-import { useAction } from '@/hooks/use-action';
-import { useExpression } from '@/hooks/use-expression';
-import { useDance } from '@/hooks/use-dance';
+import { useAction } from '@/features/activities/hooks/use-action';
+import { useExpression } from '@/features/activities/hooks/use-expression';
+import { useDance } from '@/features/activities/hooks/use-dance';
 
 interface EditOsmoCardModalProps {
   isOpen: boolean;

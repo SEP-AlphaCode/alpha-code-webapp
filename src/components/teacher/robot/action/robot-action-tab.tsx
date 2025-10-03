@@ -5,18 +5,18 @@ import { Dispatch, SetStateAction } from "react";
 import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
 import { ChevronLeft, ChevronRight } from "lucide-react";
-import type { RobotAction } from "@/types/robot";
+import type { RobotActionUI } from "@/types/robot-ui"; // 👈 đổi sang RobotActionUI
 import { RobotPaginationDots } from "./robot-pagination.dots";
 
 interface RobotActionTabProps {
-  actions: RobotAction[];
+  actions: RobotActionUI[]; // 👈 đổi type
   currentActionIndex: number | null;
   setCurrentActionIndex: Dispatch<SetStateAction<number | null>>;
   sendCommandToBackend: (actionCode: string) => Promise<unknown>;
-  onActionSelect: (action: RobotAction) => void;
+  onActionSelect: (action: RobotActionUI) => void; // 👈 đổi type
   pageSize: number;
   currentPage: number;
-  setCurrentPage: Dispatch<SetStateAction<number>>; // 👈 fix ở đây
+  setCurrentPage: Dispatch<SetStateAction<number>>;
   totalPages: number;
   loading: boolean;
   error: string | null;
@@ -84,6 +84,7 @@ export function RobotActionTab({
                             : "bg-white hover:bg-gray-100"
                         }`}
                       >
+                        {/* Ưu tiên hiển thị icon -> imageUrl -> fallback */}
                         {actionItem.icon ? (
                           <span className="text-2xl">{actionItem.icon}</span>
                         ) : actionItem.imageUrl ? (
@@ -110,7 +111,9 @@ export function RobotActionTab({
 
             {/* Right Arrow */}
             <button
-              onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
+              onClick={() =>
+                setCurrentPage(Math.min(totalPages, currentPage + 1))
+              }
               className="p-3 bg-white rounded-full shadow-md hover:bg-gray-100 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
               disabled={currentPage >= totalPages}
             >

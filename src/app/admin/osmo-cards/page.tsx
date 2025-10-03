@@ -1,7 +1,7 @@
 "use client";
 import React, { useState, useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { useOsmoCard } from '@/hooks/use-osmo-card';
+import { useOsmoCard } from '@/features/activities/hooks/use-osmo-card';
 import { CreateCardData, OsmoCard } from '@/types/osmo-card';
 import { toast } from 'sonner';
 // Import các component đã tách

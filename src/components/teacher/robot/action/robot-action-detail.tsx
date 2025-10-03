@@ -1,36 +1,52 @@
 "use client";
 
 import { Volume2Icon } from "lucide-react";
+import Image from "next/image";
 import React from "react";
-
-export interface RobotActionDetail {
-  id: string;
-  name: string;
-  description?: string;
-  image?: React.ReactNode;
-  color?: string;
-  commands: string[];
-  bgColor?: string; // thêm luôn cho đồng bộ grid
-}
+import type { RobotActionUI } from "@/types/robot-ui";
 
 interface RobotActionDetailProps {
-  action: RobotActionDetail;
+  action: RobotActionUI;
 }
 
 export function RobotActionDetail({ action }: RobotActionDetailProps) {
+  const isValidUrl = (url: string | null | undefined) => {
+    if (!url) return false;
+    try {
+      new URL(url);
+      return true;
+    } catch {
+      return false;
+    }
+  };
+
   return (
     <div className="bg-white rounded-2xl shadow-xl p-6 mb-8 relative">
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-        {/* Left - Image Area */}
+        {/* Left - Image/Icon Area */}
         <div className="lg:col-span-1 flex flex-col items-center">
-          <div
-            className={`rounded-2xl h-64 w-64 flex items-center justify-center bg-gradient-to-br ${action.color} relative overflow-hidden`}
-          >
-            <div className="text-8xl z-10">{action.image}</div>
-            <div className="absolute inset-0 bg-white/10"></div>
+          <div className="rounded-2xl h-64 w-64 flex items-center justify-center relative overflow-hidden bg-gray-100">
+            {isValidUrl(action.imageUrl) ? (
+              <Image
+                src={action.imageUrl!}
+                alt={action.name}
+                width={256}
+                height={256}
+                className="object-contain"
+              />
+            ) : action.icon ? (
+              <span className="text-8xl">{action.icon}</span> // emoji hoặc icon string
+            ) : (
+              <div className="w-32 h-32 flex items-center justify-center text-gray-400">
+                No Image
+              </div>
+            )}
           </div>
+
           <div className="mt-4 p-4 bg-gray-50 rounded-xl w-full">
-            <h3 className="font-semibold text-gray-700 mb-2">About this action</h3>
+            <h3 className="font-semibold text-gray-700 mb-2">
+              About this action
+            </h3>
             <p className="text-gray-600 text-sm">{action.description}</p>
           </div>
         </div>
@@ -43,7 +59,7 @@ export function RobotActionDetail({ action }: RobotActionDetailProps) {
 
           <div className="space-y-4">
             <h3 className="font-semibold text-gray-700">Available Commands</h3>
-            {Array.isArray(action.commands) && action.commands.map((command, index) => (
+            {[action.code].map((command, index) => (
               <div
                 key={index}
                 className="w-full p-4 text-left rounded-xl font-medium flex items-center bg-gray-100 text-gray-800"

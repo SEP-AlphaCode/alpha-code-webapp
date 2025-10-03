@@ -6,7 +6,7 @@ import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { requestResetPassword } from "@/api/auth-api"
+import { requestResetPassword } from "@/features/auth/api/auth-api"
 import { useState } from "react"
 import { Mail, ArrowLeft, Loader2, Shield } from "lucide-react"
 

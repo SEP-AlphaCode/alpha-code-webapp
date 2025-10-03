@@ -1,6 +1,6 @@
 import { JWTPayload } from '@/types/jwt-payload';
 import { jwtDecode } from 'jwt-decode';
-import { refreshToken as callRefreshToken } from "@/api/auth-api";
+import { refreshToken as callRefreshToken } from "@/features/auth/api/auth-api";
 
 
 // Interface cho JWT payload
