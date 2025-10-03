@@ -1,8 +1,8 @@
 export type Category = {
     id: string,
     name: string,
-    description: string, 
-    slug: string, 
+    description: string,
+    slug: string,
     imageUrl: string,
     status: number,
     lastUpdated?: string,
@@ -10,49 +10,49 @@ export type Category = {
 }
 
 export interface Lesson {
-  id: string; // uuid
-  courseId: string; // uuid
-  title: string; // varchar(255)
-  contentUrl?: string; // varchar(255) - nullable
-  requireRobot: boolean; // bool
-  duration: number; // int4 (in seconds)
-  content?: string; // varchar(255) - nullable
-  contentType: string; // varchar(255)
-  orderNumber: number; // int4
-  solution?: any; // jsonb - nullable, can be more specific based on your JSON structure
+    id: string; // uuid
+    courseId: string; // uuid
+    title: string; // varchar(255)
+    contentUrl?: string; // varchar(255) - nullable
+    requireRobot: boolean; // bool
+    duration: number; // int4 (in seconds)
+    content?: string; // varchar(255) - nullable
+    contentType: string; // varchar(255)
+    orderNumber: number; // int4
+    solution?: any; // jsonb - nullable, can be more specific based on your JSON structure
 }
 
 export interface Course {
-  id: string; // uuid
-  name: string; // varchar(255)
-  description: string; // varchar(max) - assuming nullable
-  price: number; // numeric(19, 2)
-  requireLicense: boolean; // bool
-  level: number; // int4
-  totalLessons: number; // int4
-  status: number; // int4
-  createdDate: string; // timestamp
-  lastUpdated?: string; // timestamp
-  totalDuration: number; // int4
-  categoryId: string; // uuid
-  slug: string; // varchar(255)
-  imageUrl?: string; // varchar(255) - assuming nullable
-  lessons?: Lesson[]
+    id: string; // uuid
+    name: string; // varchar(255)
+    description: string; // varchar(max) - assuming nullable
+    price: number; // numeric(19, 2)
+    requireLicense: boolean; // bool
+    level: number; // int4
+    totalLessons: number; // int4
+    status: number; // int4
+    createdDate: string; // timestamp
+    lastUpdated?: string; // timestamp
+    totalDuration: number; // int4
+    categoryId: string; // uuid
+    slug: string; // varchar(255)
+    imageUrl?: string; // varchar(255) - assuming nullable
+    lessons?: Lesson[]
 }
 
 export function mapDifficulty(d: number) {
     switch (d) {
-        case 1: return {
+        case 3: return {
             text: 'Cơ bản',
             color: 'text-blue-500',
             bg: 'bg-blue-500/10'
         }
-        case 2: return {
+        case 4: return {
             text: 'Trung bình',
             color: 'text-green-500',
             bg: 'bg-green-500/10'
         }
-        case 3: return {
+        case 5: return {
             text: 'Nâng cao',
             color: 'text-yellow-500',
             bg: 'bg-yellow-500/10'
@@ -65,6 +65,7 @@ export function mapDifficulty(d: number) {
     }
 }
 
+//Round to nearest hour
 export function formatTimespan(seconds: number): string {
     if (seconds < 0) {
         throw new Error('Seconds cannot be negative');
@@ -79,22 +80,22 @@ export function formatTimespan(seconds: number): string {
     const minutes = Math.floor((seconds % (60 * 60)) / 60);
     const remainingSeconds = seconds % 60;
 
-    const parts: string[] = [];
-
     if (days > 0) {
-        parts.push(`${days}d`);
+        if (hours >= 12) {
+            return `${days}d ${hours}h`;
+        }
+        return `${days}d`;
     }
     if (hours > 0) {
-        parts.push(`${hours}h`);
+        if (minutes >= 15) {
+            return `${hours}h ${minutes}m`;
+        }
+        return `${hours}h`;
     }
     if (minutes > 0) {
-        parts.push(`${minutes}m`);
+        return `${minutes}m`;
     }
-    if (remainingSeconds > 0 || parts.length === 0) {
-        parts.push(`${remainingSeconds}s`);
-    }
-
-    return parts.join('');
+    return `${remainingSeconds}s`;
 }
 
 export function formatPrice(price: number): string {

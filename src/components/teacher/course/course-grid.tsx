@@ -31,7 +31,6 @@ export function CourseGrid({ courses }: CourseGridProps) {
                             ) : (
                                 <div className={cn(
                                     "w-full h-40 md:h-48 flex items-center justify-center",
-                                    course.level === 1 ? "bg-green-500" : course.level === 2 ? "bg-blue-500" : "bg-orange-500",
                                 )}>
                                     <span className="text-lg md:text-xl font-semibold text-white text-center px-4">
                                         {course.name}
@@ -39,7 +38,7 @@ export function CourseGrid({ courses }: CourseGridProps) {
                                 </div>
                             )}
                             <div className="absolute top-3 right-3 bg-white/95 backdrop-blur-sm px-3 py-1 rounded-full shadow-md">
-                                <span className={cn("text-xs md:text-sm font-bold", "text-" + diff.color)}>
+                                <span className={cn("text-xs md:text-sm font-bold", diff.color)}>
                                     {diff.text}
                                 </span>
                             </div>
