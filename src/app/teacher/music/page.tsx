@@ -1,18 +1,18 @@
 "use client"
 
 import { useState, useRef } from "react"
+import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
-import { Upload, Music, Video, X, Play, Pause, Volume2, FileAudio, FileVideo, Sparkles, Clock, Copy, Bot, Zap } from "lucide-react"
+import { Upload, Music, Video, X, Play, Pause, Volume2, FileAudio, FileVideo, Sparkles, Clock, Bot, Zap } from "lucide-react"
 import { getDancePlan } from "@/features/users/api/music-api"
-import { DancePlanReposnse } from "@/types/music"
-import { ActionActivites } from "@/types/action"
-import { Color } from "@/types/color"
+import { toast } from "sonner"
+import LoadingState from "@/components/loading-state"
 
 export default function MusicPage() {
+  const router = useRouter()
   const [fileUrl, setFileUrl] = useState<string>("")
   const [fileType, setFileType] = useState<string>("")
   const [fileName, setFileName] = useState<string>("")
@@ -20,11 +20,9 @@ export default function MusicPage() {
   const [isPlaying, setIsPlaying] = useState<boolean>(false)
   const [isDragOver, setIsDragOver] = useState<boolean>(false)
   const [isGeneratingPlan, setIsGeneratingPlan] = useState<boolean>(false)
-  const [dancePlan, setDancePlan] = useState<DancePlanReposnse | null>(null)
   const [currentFile, setCurrentFile] = useState<File | null>(null)
   const [startTime, setStartTime] = useState<string>("")
   const [endTime, setEndTime] = useState<string>("")
-  const [isModalOpen, setIsModalOpen] = useState<boolean>(false)
   const [currentTime, setCurrentTime] = useState<number>(0)
   const [duration, setDuration] = useState<number>(0)
   const fileInputRef = useRef<HTMLInputElement>(null)
@@ -40,6 +38,9 @@ export default function MusicPage() {
       setFileSize(file.size)
       setIsPlaying(false)
       setCurrentFile(file) // Store the actual file for API calls
+      
+      // Thông báo tải file thành công
+      toast.success(`Tải file "${file.name}" thành công!`)
     }
   }
 
@@ -76,20 +77,24 @@ export default function MusicPage() {
     if (fileUrl) {
       URL.revokeObjectURL(fileUrl)
     }
+    const fileName = currentFile?.name
     setFileUrl("")
     setFileType("")
     setFileName("")
     setFileSize(0)
     setIsPlaying(false)
     setCurrentFile(null)
-    setDancePlan(null)
     setStartTime("")
     setEndTime("")
     setCurrentTime(0)
     setDuration(0)
-    setIsModalOpen(false)
     if (fileInputRef.current) {
       fileInputRef.current.value = ""
+    }
+    
+    // Thông báo xóa file thành công
+    if (fileName) {
+      toast.info(`Đã xóa file "${fileName}"`)
     }
   }
 
@@ -148,9 +153,11 @@ export default function MusicPage() {
     if (audioRef.current) {
       const time = audioRef.current.currentTime
       setStartTime(formatTime(time))
+      toast.success(`Đã đặt thời gian bắt đầu: ${formatTime(time)}`)
     } else if (videoRef.current) {
       const time = videoRef.current.currentTime
       setStartTime(formatTime(time))
+      toast.success(`Đã đặt thời gian bắt đầu: ${formatTime(time)}`)
     }
   }
 
@@ -158,9 +165,11 @@ export default function MusicPage() {
     if (audioRef.current) {
       const time = audioRef.current.currentTime
       setEndTime(formatTime(time))
+      toast.success(`Đã đặt thời gian kết thúc: ${formatTime(time)}`)
     } else if (videoRef.current) {
       const time = videoRef.current.currentTime
       setEndTime(formatTime(time))
+      toast.success(`Đã đặt thời gian kết thúc: ${formatTime(time)}`)
     }
   }
 
@@ -182,12 +191,12 @@ export default function MusicPage() {
 
   const handleGenerateDancePlan = async () => {
     if (!currentFile) {
-      alert("Please upload a file first")
+      toast.error("Vui lòng tải lên file trước!")
       return
     }
 
     if (!isAudio && !isVideo) {
-      alert("Please upload an audio or video file to generate a dance plan")
+      toast.error("Vui lòng tải lên file audio hoặc video để tạo dance plan!")
       return
     }
 
@@ -198,23 +207,21 @@ export default function MusicPage() {
     // Validate if both are provided
     if (startTime && endTime) {
       if (isNaN(startTimeNum!) || isNaN(endTimeNum!)) {
-        alert("Please enter valid time format (mm:ss or seconds)")
+        toast.error("Vui lòng nhập đúng định dạng thời gian (mm:ss hoặc giây)!")
         return
       }
       if (startTimeNum! >= endTimeNum!) {
-        alert("Start time must be less than end time")
+        toast.error("Thời gian bắt đầu phải nhỏ hơn thời gian kết thúc!")
         return
       }
       if (startTimeNum! < 0) {
-        alert("Start time must be greater than or equal to 0")
+        toast.error("Thời gian bắt đầu phải lớn hơn hoặc bằng 0!")
         return
       }
     }
 
-    // Open modal and start generation
-    setIsModalOpen(true)
+    // Start generation
     setIsGeneratingPlan(true)
-    setDancePlan(null)
 
     try {
       console.log("Generating dance plan for:", currentFile.name)
@@ -223,12 +230,68 @@ export default function MusicPage() {
       }
       
       const result = await getDancePlan(currentFile, startTimeNum, endTimeNum)
-      setDancePlan(result)
       console.log("Dance plan generated:", result)
-    } catch (error) {
+      
+      // Hiển thị thông báo thành công
+      toast.success("Tạo dance plan thành công! Đang chuyển hướng...")
+      
+      // Chuyển hướng đến trang preview activities với data
+      const params = new URLSearchParams()
+      params.set('data', encodeURIComponent(JSON.stringify(result)))
+      params.set('file', encodeURIComponent(currentFile.name))
+      
+      if (startTime && endTime) {
+        const timeRangeText = `${startTime.includes(':') ? startTime : formatTime(parseFloat(startTime))} - ${endTime.includes(':') ? endTime : formatTime(parseFloat(endTime))} (${(parseTimeToSeconds(endTime) - parseTimeToSeconds(startTime)).toFixed(1)}s)`
+        params.set('range', encodeURIComponent(timeRangeText))
+      }
+      
+      // Chờ một chút để user thấy thông báo rồi chuyển hướng
+      setTimeout(() => {
+        router.push(`/teacher/music/previewactivities?${params.toString()}`)
+      }, 1000)
+    } catch (error: unknown) {
       console.error("Failed to generate dance plan:", error)
-      alert("Failed to generate dance plan. Please try again.")
-      setIsModalOpen(false) // Close modal on error
+      
+      let errorMessage = 'Có lỗi xảy ra. Vui lòng thử lại!'
+      
+      if (error && typeof error === 'object' && 'response' in error) {
+        const httpError = error as { response: { status: number; data?: unknown } }
+        // Server responded with error status
+        const status = httpError.response.status
+        switch (status) {
+          case 413:
+            errorMessage = 'File quá lớn! Vui lòng chọn file nhỏ hơn.'
+            break
+          case 400:
+            errorMessage = 'Dữ liệu không hợp lệ. Vui lòng kiểm tra lại file và thời gian.'
+            break
+          case 401:
+            errorMessage = 'Bạn cần đăng nhập lại.'
+            break
+          case 403:
+            errorMessage = 'Bạn không có quyền thực hiện chức năng này.'
+            break
+          case 500:
+            errorMessage = 'Lỗi server. Vui lòng thử lại sau.'
+            break
+          default:
+            errorMessage = `Lỗi server (${status}). Vui lòng thử lại sau.`
+        }
+      } else if (error && typeof error === 'object' && 'request' in error) {
+        // Network error
+        const networkError = error as { code?: string; message?: string }
+        if (networkError.code === 'ERR_NETWORK') {
+          if (networkError.message?.includes('CORS')) {
+            errorMessage = 'Lỗi CORS: Server chưa cấu hình cho phép truy cập từ localhost. Vui lòng liên hệ admin.'
+          } else {
+            errorMessage = 'Không thể kết nối đến server. Vui lòng kiểm tra kết nối internet hoặc liên hệ admin.'
+          }
+        } else {
+          errorMessage = 'Lỗi kết nối mạng. Vui lòng thử lại.'
+        }
+      }
+      
+      toast.error(errorMessage)
     } finally {
       setIsGeneratingPlan(false)
     }
@@ -239,6 +302,23 @@ export default function MusicPage() {
 
   return (
     <div className="min-h-screen bg-white relative overflow-hidden p-10" suppressHydrationWarning>
+      {/* Full-screen Loading Overlay */}
+      {isGeneratingPlan && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center">
+          <div className="bg-white rounded-2xl p-8 shadow-2xl max-w-md w-full mx-4">
+            <LoadingState message="Đang phân tích âm nhạc và tạo choreography. Quá trình này có thể mất đến 5 phút..." />
+            <div className="mt-4 text-center">
+              <p className="text-sm text-gray-600 mb-2">Alpha Mini đang tạo dance plan cho bạn</p>
+              <div className="flex items-center justify-center space-x-2 text-xs text-gray-500">
+                <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"></div>
+                <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce delay-75"></div>
+                <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce delay-150"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+      
       {/* Background Grid Pattern */}
       <div 
         className="absolute inset-0 opacity-[0.06] pointer-events-none"
@@ -298,19 +378,19 @@ export default function MusicPage() {
           {/* Main Title */}
           <div className="space-y-6">
             <h1 className="text-6xl md:text-7xl font-bold text-gray-900 mb-6 tracking-tight">
-              Music & Dance 
+              Âm Nhạc & Nhảy Múa 
               <span className="block text-gray-700 py-2">
-                Creative Studio
+                Studio Sáng Tạo
               </span>
             </h1>
             
             {/* Enhanced Description */}
             <div className="max-w-3xl mx-auto space-y-4">
               <p className="text-xl md:text-2xl text-gray-600 leading-relaxed font-medium">
-                Transform your music into spectacular dance performances
+                Biến âm nhạc của bạn thành những màn trình diễn nhảy múa tuyệt vời
               </p>
               <p className="text-lg text-gray-500 leading-relaxed">
-                Upload your audio files and watch as our AI creates synchronized choreography for Alpha Mini robots
+                Tải lên file âm thanh và xem AI tạo ra vũ đạo đồng bộ cho robot Alpha Mini
               </p>
             </div>
 
@@ -318,11 +398,11 @@ export default function MusicPage() {
             <div className="flex flex-wrap justify-center gap-4 mt-8">
               <div className="flex items-center gap-2 px-4 py-2 bg-white/80 backdrop-blur-sm border border-gray-200 rounded-xl shadow-sm hover:shadow-md transition-all duration-200">
                 <div className="w-2 h-2 bg-gray-500 rounded-full animate-pulse"></div>
-                <span className="text-sm font-medium text-gray-700">AI-Powered</span>
+                <span className="text-sm font-medium text-gray-700">Hỗ trợ AI</span>
               </div>
               <div className="flex items-center gap-2 px-4 py-2 bg-white/80 backdrop-blur-sm border border-gray-200 rounded-xl shadow-sm hover:shadow-md transition-all duration-200">
                 <div className="w-2 h-2 bg-gray-500 rounded-full animate-pulse delay-300"></div>
-                <span className="text-sm font-medium text-gray-700">Real-time Analysis</span>
+                <span className="text-sm font-medium text-gray-700">Phân tích thời gian thực</span>
               </div>
               <div className="flex items-center gap-2 px-4 py-2 bg-white/80 backdrop-blur-sm border border-gray-200 rounded-xl shadow-sm hover:shadow-md transition-all duration-200">
                 <div className="w-2 h-2 bg-gray-500 rounded-full animate-pulse delay-500"></div>
@@ -379,14 +459,14 @@ export default function MusicPage() {
                   {/* Enhanced Text Content */}
                   <div className="space-y-6 text-center max-w-2xl">
                     <h3 className="text-3xl font-bold text-gray-900 group-hover:text-gray-700 transition-colors duration-300">
-                      Drop Your Music Here
+                      Thả Nhạc Của Bạn Ở Đây
                     </h3>
                     <div className="space-y-3">
                       <p className="text-lg text-gray-600 leading-relaxed">
-                        Drag & drop your audio files or click to browse your computer
+                        Kéo & thả file âm thanh của bạn hoặc nhấp để duyệt máy tính
                       </p>
                       <p className="text-sm text-gray-500">
-                        Supports MP3, WAV, M4A, and other popular audio formats up to 50MB
+                        Hỗ trợ MP3, WAV, M4A và các định dạng âm thanh phổ biến khác lên đến 100MB
                       </p>
                     </div>
                     
@@ -394,15 +474,15 @@ export default function MusicPage() {
                     <div className="flex flex-wrap gap-3 justify-center">
                       <div className="flex items-center gap-2 px-4 py-2 bg-gray-50 border border-gray-200 rounded-full shadow-sm hover:shadow-md transition-all duration-200">
                         <Music className="w-4 h-4 text-gray-600" />
-                        <span className="text-sm font-medium text-gray-700">Audio Analysis</span>
+                        <span className="text-sm font-medium text-gray-700">Phân Tích Âm Thanh</span>
                       </div>
                       <div className="flex items-center gap-2 px-4 py-2 bg-gray-50 border border-gray-200 rounded-full shadow-sm hover:shadow-md transition-all duration-200">
                         <Bot className="w-4 h-4 text-gray-600" />
-                        <span className="text-sm font-medium text-gray-700">AI Choreography</span>
+                        <span className="text-sm font-medium text-gray-700">Vũ Đạo AI</span>
                       </div>
                       <div className="flex items-center gap-2 px-4 py-2 bg-gray-50 border border-gray-200 rounded-full shadow-sm hover:shadow-md transition-all duration-200">
                         <Zap className="w-4 h-4 text-gray-600" />
-                        <span className="text-sm font-medium text-gray-700">Instant Preview</span>
+                        <span className="text-sm font-medium text-gray-700">Xem Trước Ngay Lập Tức</span>
                       </div>
                     </div>
                   </div>
@@ -416,7 +496,7 @@ export default function MusicPage() {
                     >
                       <div className="absolute inset-0 bg-white/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
                       <Upload className="w-6 h-6 mr-3 group-hover:scale-110 transition-transform duration-300" />
-                      Choose Your Music
+                      Chọn Nhạc Của Bạn
                     </Button>
                   </div>
                 </div>
@@ -506,10 +586,10 @@ export default function MusicPage() {
                         <div className="space-y-3">
                           <Badge className="bg-gray-100 text-gray-800 px-4 py-2 font-semibold border border-gray-200 shadow-sm">
                             <Music className="w-4 h-4 mr-2" />
-                            Ready for Analysis
+                            Sẵn Sàng Phân Tích
                           </Badge>
                           <p className="text-base text-gray-700 font-medium">
-                            Alpha Mini Choreography Engine
+                            Hệ Thống Tạo Vũ Đạo Alpha Mini
                           </p>
                         </div>
                       </div>
@@ -553,7 +633,7 @@ export default function MusicPage() {
                     
                     <p className="text-sm text-gray-600 mb-8 p-4 bg-white/60 rounded-xl border border-gray-200">
                       <Sparkles className="w-4 h-4 inline mr-2 text-gray-600" />
-                      Set time range for focused dance generation. Leave empty to analyze the entire audio file.
+                      Đặt khoảng thời gian để tạo ra các bước nhảy tập trung. Bỏ trống để phân tích toàn bộ file âm thanh.
                     </p>
                     
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
@@ -850,17 +930,8 @@ export default function MusicPage() {
                       size="lg"
                       className="bg-gray-600 hover:bg-gray-700 text-white px-8 py-3 rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all duration-300 disabled:opacity-50"
                     >
-                      {isGeneratingPlan ? (
-                        <>
-                          <div className="w-5 h-5 mr-2 animate-spin rounded-full border-2 border-white border-t-transparent" />
-                          Generating...
-                        </>
-                      ) : (
-                        <>
-                          <Sparkles className="w-5 h-5 mr-2" />
-                          Generate Dance Plan
-                        </>
-                      )}
+                      <Sparkles className="w-5 h-5 mr-2" />
+                      {isGeneratingPlan ? "Đang tạo..." : "Tạo Kế Hoạch Nhảy"}
                     </Button>
                   )}
                   
@@ -919,178 +990,6 @@ export default function MusicPage() {
             </CardContent>
           </Card>
         )}
-
-        {/* Enhanced Dance Plan Generation Modal */}
-        <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
-          <DialogContent className="max-w-6xl w-[95vw] max-h-[90vh] overflow-y-auto bg-white/95 backdrop-blur-xl border-0 shadow-2xl">
-            <DialogHeader className="border-b border-gray-200 pb-6">
-              <DialogTitle className="flex items-center space-x-3 text-2xl">
-                <div className="p-2 bg-gray-600 rounded-lg">
-                  <Sparkles className="w-6 h-6 text-white" />
-                </div>
-                <span>Dance Plan Generation</span>
-              </DialogTitle>
-            </DialogHeader>
-
-            <div className="space-y-8 pt-6">
-              {/* Enhanced File Info */}
-              <div className="bg-gray-50 p-6 rounded-2xl border border-gray-200">
-                <div className="flex items-center space-x-4">
-                  <div className="p-3 bg-gray-600 rounded-xl">
-                    <FileAudio className="w-6 h-6 text-white" />
-                  </div>
-                  <div>
-                    <h4 className="text-lg font-bold text-gray-800">{fileName}</h4>
-                    <p className="text-sm text-gray-600">
-                      {startTime && endTime ? (
-                        <>Time Range: {startTime.includes(':') ? startTime : formatTime(parseFloat(startTime))} - {endTime.includes(':') ? endTime : formatTime(parseFloat(endTime))} ({(parseTimeToSeconds(endTime) - parseTimeToSeconds(startTime)).toFixed(1)}s duration)</>
-                      ) : (
-                        <>Processing entire audio file</>
-                      )}
-                    </p>
-                  </div>
-                </div>
-              </div>
-
-              {/* Enhanced Generation Status */}
-              {isGeneratingPlan && (
-                <div className="text-center py-12">
-                  <div className="inline-flex items-center space-x-4 bg-gray-50 px-8 py-6 rounded-2xl border border-gray-200">
-                    <div className="w-10 h-10 border-4 border-gray-500 border-t-transparent rounded-full animate-spin"></div>
-                    <div>
-                      <h3 className="text-lg font-bold text-gray-700">Generating Dance Plan...</h3>
-                      <p className="text-sm text-gray-600">This may take up to 5 minutes. Please wait.</p>
-                    </div>
-                  </div>
-                  <div className="mt-6 flex items-center justify-center space-x-2 text-sm text-gray-500">
-                    <Clock className="w-4 h-4" />
-                    <span>Processing audio and analyzing rhythm patterns</span>
-                  </div>
-                </div>
-              )}
-
-              {/* Enhanced Generation Success */}
-              {!isGeneratingPlan && dancePlan && (
-                <div className="space-y-6">
-                  <div className="bg-white border border-gray-200 rounded-2xl overflow-hidden shadow-sm">
-                    <div className="p-6 border-b border-gray-100 bg-gray-50">
-                      <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 bg-gray-500 rounded-lg flex items-center justify-center">
-                          <Sparkles className="w-5 h-5 text-white" />
-                        </div>
-                        <div>
-                          <h4 className="text-xl font-semibold text-gray-900">Dance Activities</h4>
-                          <p className="text-sm text-gray-600">Generated choreography for this music</p>
-                        </div>
-                      </div>
-                    </div>
-                    <div className="p-6">
-                      {dancePlan?.activity?.actions && Array.isArray(dancePlan.activity.actions) ? (
-                        <div className="space-y-4">
-                          {dancePlan.activity.actions.map((action: ActionActivites, index: number) => (
-                            <div key={index} className="bg-gray-50 border border-gray-200 rounded-xl p-5 hover:bg-gray-100 transition-colors">
-                              <div className="flex items-center justify-between mb-4">
-                                <div className="flex items-center gap-3">
-                                  <span className="w-8 h-8 bg-gray-500 text-white rounded-lg flex items-center justify-center text-sm font-medium">
-                                    {index + 1}
-                                  </span>
-                                  <span className="text-sm font-medium text-gray-700 bg-gray-100 px-3 py-1 rounded-full">
-                                    Activity {index + 1}
-                                  </span>
-                                </div>
-                                <div className="flex items-center gap-2 text-xs text-gray-500 bg-white px-3 py-1 rounded-full border">
-                                  <Clock className="w-3 h-3" />
-                                  {action.start_time}s - {action.start_time + action.duration}s
-                                </div>
-                              </div>
-                              
-                              <div className="space-y-3">
-                                <div className="bg-white p-4 rounded-lg border border-gray-100">
-                                  <h5 className="text-lg font-semibold text-gray-900 mb-1">
-                                    Action ID: {action.action_id}
-                                  </h5>
-                                  {action.action_type && (
-                                    <p className="text-sm text-gray-600 font-medium">
-                                      Type: {action.action_type}
-                                    </p>
-                                  )}
-                                </div>
-                                
-                                {action.color && Array.isArray(action.color) && action.color.length > 0 && (
-                                  <div className="bg-white p-4 rounded-lg border border-gray-100">
-                                    <p className="text-sm font-medium text-gray-700 mb-3">Colors</p>
-                                    <div className="flex flex-wrap gap-2">
-                                      {action.color.map((color: Color, colorIndex: number) => {
-                                        const hexColor = `#${[color.r, color.g, color.b].map(x => x.toString(16).padStart(2, '0')).join('')}`
-                                        return (
-                                        <div key={colorIndex} className="flex items-center gap-2 bg-gray-50 px-3 py-2 rounded-lg border border-gray-200">
-                                          <div 
-                                            className="w-4 h-4 rounded-full border border-gray-300" 
-                                            style={{ backgroundColor: hexColor }}
-                                          ></div>
-                                          <span className="text-sm text-gray-700">
-                                            RGB({color.r}, {color.g}, {color.b})
-                                          </span>
-                                        </div>
-                                        )
-                                      })}
-                                    </div>
-                                  </div>
-                                )}
-                              </div>
-                            </div>
-                          ))}
-                        </div>
-                      ) : (
-                        <div className="text-center py-12">
-                          <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                            <Music className="w-8 h-8 text-gray-400" />
-                          </div>
-                          <p className="text-gray-600 mb-4">No dance activities found</p>
-                          <details className="mt-6 p-4 bg-gray-50 rounded-lg text-left border">
-                            <summary className="text-sm font-medium text-gray-700 cursor-pointer">View raw data</summary>
-                            <pre className="mt-3 text-xs text-gray-600 whitespace-pre-wrap max-h-32 overflow-y-auto">
-                              {JSON.stringify(dancePlan, null, 2)}
-                            </pre>
-                          </details>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-
-                  <div className="flex justify-end gap-3">
-                    <Button
-                      variant="outline"
-                      onClick={() => {
-                        const activitiesText = dancePlan?.activity?.actions
-                          ? dancePlan.activity.actions.map((action: ActionActivites, index: number) => 
-                              `Activity ${index + 1}: Action ID: ${action.action_id}\n` +
-                              `Type: ${action.action_type || 'N/A'}\n` +
-                              `Time: ${action.start_time}s - ${action.start_time + action.duration}s (${action.duration}s)\n` +
-                              `${action.color && action.color.length > 0 ? `Colors: ${action.color.map((c: Color) => `RGB(${c.r}, ${c.g}, ${c.b})`).join(', ')}\n` : ''}\n`
-                            ).join('\n')
-                          : JSON.stringify(dancePlan, null, 2)
-                        
-                        navigator.clipboard.writeText(activitiesText)
-                        alert("Dance activities saved to clipboard!")
-                      }}
-                      className="px-6 py-2 border-gray-300 text-gray-700 hover:bg-gray-50"
-                    >
-                      <Copy className="w-4 h-4 mr-2" />
-                      Copy
-                    </Button>
-                    <Button
-                      onClick={() => setIsModalOpen(false)}
-                      className="px-6 py-2 bg-gray-900 hover:bg-gray-800 text-white"
-                    >
-                      Close
-                    </Button>
-                  </div>
-                </div>
-              )}
-            </div>
-          </DialogContent>
-        </Dialog>
       </div>
     </div>
   )

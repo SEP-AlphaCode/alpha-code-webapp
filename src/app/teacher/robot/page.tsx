@@ -14,6 +14,16 @@ import { ThingsToTrySection } from "@/components/teacher/robot/things-to-try-sec
 
 // Import tĩnh cả hai file ngôn ngữ
 
+// Hardcoded Vietnamese prompts for "Things to Try"
+const thingsToTryPrompts = [
+  "Hãy thử cho robot nhảy một điệu nhạc vui nhộn!",
+  "Yêu cầu robot kể một câu chuyện cho lớp học.",
+  "Hỏi robot về thời tiết hôm nay.",
+  "Cho robot chơi trò chơi đoán hình.",
+  "Hướng dẫn robot chụp ảnh cùng học sinh.",
+  "Thử cho robot hát một bài hát thiếu nhi.",
+  "Yêu cầu robot giải thích một khái niệm khoa học đơn giản."
+];
 
 // Define Robot type to match component expectations - extending Redux Robot type
 interface ExtendedRobot {
@@ -96,17 +106,6 @@ function extendRobotWithMockData(robot: ReturnType<typeof useRobotStore>['robots
 export default function TeacherDashboard() {
   const { robots, selectedRobotSerial, selectRobot, initializeMockData } = useRobotStore();
   const [shuffledPrompts, setShuffledPrompts] = useState<string[]>([]);
-
-  // Hardcoded Vietnamese prompts for "Things to Try"
-  const thingsToTryPrompts = [
-    "Hãy thử cho robot nhảy một điệu nhạc vui nhộn!",
-    "Yêu cầu robot kể một câu chuyện cho lớp học.",
-    "Hỏi robot về thời tiết hôm nay.",
-    "Cho robot chơi trò chơi đoán hình.",
-    "Hướng dẫn robot chụp ảnh cùng học sinh.",
-    "Thử cho robot hát một bài hát thiếu nhi.",
-    "Yêu cầu robot giải thích một khái niệm khoa học đơn giản."
-  ];
 
   useEffect(() => {
     // Initialize mock data if no robots exist
