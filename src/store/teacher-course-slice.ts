@@ -6,7 +6,8 @@ interface CourseState {
     size: number;
   };
   filters: {
-    categoryId: string | null;
+    categoryIds: string[];
+    search: string;
   };
   currentCourse: {
     name: string | null;
@@ -15,45 +16,34 @@ interface CourseState {
 }
 
 const initialState: CourseState = {
-  pagination: {
-    page: 1,
-    size: 12,
-  },
-  filters: {
-    categoryId: null
-  },
-  currentCourse: {
-    name: null,
-    slug: null
-  }
+  pagination: { page: 1, size: 12 },
+  filters: { categoryIds: [], search: "" },
+  currentCourse: { name: null, slug: null }
 };
 
 const teacherCourseSlice = createSlice({
-  name: 'course',
+  name: "course",
   initialState,
   reducers: {
     setPage: (state, action: PayloadAction<number>) => {
       state.pagination.page = action.payload;
     },
-    setCategoryFilter: (state, action: PayloadAction<string | null>) => {
-      state.filters.categoryId = action.payload;
+    setCategoryFilter: (state, action: PayloadAction<string[]>) => {
+      state.filters.categoryIds = action.payload;
+      state.pagination.page = 1;
+    },
+    setSearch: (state, action: PayloadAction<string>) => {
+      console.log("Setting search to:", action.payload);
+      
+      state.filters.search = action.payload;
       state.pagination.page = 1;
     },
     setCurrentCourse: (state, action: PayloadAction<{ name: string; slug: string } | null>) => {
-      if (action.payload) {
-        state.currentCourse = {
-          name: action.payload.name,
-          slug: action.payload.slug
-        };
-      } else {
-        state.currentCourse = {
-          name: null,
-          slug: null
-        };
-      }
-    },
+      state.currentCourse = action.payload ?? { name: null, slug: null };
+    }
   }
 });
 
-export const { setPage, setCategoryFilter, setCurrentCourse } = teacherCourseSlice.actions;
+
+export const { setPage, setCategoryFilter, setCurrentCourse, setSearch } = teacherCourseSlice.actions;
 export default teacherCourseSlice.reducer;

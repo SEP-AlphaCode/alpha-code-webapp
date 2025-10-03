@@ -44,20 +44,24 @@ export function mapDifficulty(d: number) {
     switch (d) {
         case 1: return {
             text: 'Cơ bản',
-            color: 'blue-500'
+            color: 'text-blue-500',
+            bg: 'bg-blue-500/10'
         }
         case 2: return {
             text: 'Trung bình',
-            color: 'green-500'
+            color: 'text-green-500',
+            bg: 'bg-green-500/10'
         }
         case 3: return {
             text: 'Nâng cao',
-            color: 'yellow-500'
+            color: 'text-yellow-500',
+            bg: 'bg-yellow-500/10'
         }
     }
     return {
         text: '',
-        textColor: 'red-500'
+        color: 'text-red-500',
+        bg: 'bg-red-500/10'
     }
 }
 

@@ -1,10 +1,10 @@
 import { Category, Course } from "@/types/courses";
 import { PagedResult } from "@/types/page-result";
-import { springHttp } from "@/utils/http";
+import { coursesHttp } from "@/utils/http";
 
 export const getCategories = async (page: number, size: number, signal?: AbortSignal) => {
     try {
-        const response = await springHttp.get<PagedResult<Category>>('/categories', {
+        const response = await coursesHttp.get<PagedResult<Category>>('/categories', {
             params: {
                 page,
                 size,
@@ -22,7 +22,7 @@ export const getCategories = async (page: number, size: number, signal?: AbortSi
 
 export const getCourses = async (page: number, size: number, search?: string, signal?: AbortSignal) => {
     try {
-        const response = await springHttp.get<PagedResult<Course>>('/courses', {
+        const response = await coursesHttp.get<PagedResult<Course>>('/courses', {
             params: {
                 page,
                 size,
@@ -41,7 +41,7 @@ export const getCourses = async (page: number, size: number, search?: string, si
 
 export const getCourseBySlug = async (slug: string, signal?: AbortSignal) => {
     try {
-        const response = await springHttp.get<Course>('/courses/get-by-slug/' + slug, {
+        const response = await coursesHttp.get<Course>('/courses/get-by-slug/' + slug, {
             signal // Add AbortSignal support
         });
         // Handle different response structures
@@ -55,7 +55,7 @@ export const getCourseBySlug = async (slug: string, signal?: AbortSignal) => {
 
 export const getCategoryBySlug = async (slug: string, signal?: AbortSignal) => {
     try {
-        const response = await springHttp.get<Category>('/categories/get-by-slug/' + slug, {
+        const response = await coursesHttp.get<Category>('/categories/get-by-slug/' + slug, {
             signal // Add AbortSignal support
         });
         // Handle different response structures
