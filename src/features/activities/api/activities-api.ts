@@ -1,10 +1,10 @@
 import { Activity, ActivitiesResponse } from '@/types/activities';
-import { usersHttp } from '@/utils/http';
+import { activitiesHttp } from '@/utils/http';
 import { PagedResult } from '@/types/page-result';
 
 export const getAllActivities = async () => {
   try {
-    const response = await usersHttp.get<PagedResult<Activity>>('/activities');
+    const response = await activitiesHttp.get<PagedResult<Activity>>('/activities');
     return response.data;
   } catch (error) {
     console.error('Error fetching all activities:', error);
@@ -14,7 +14,7 @@ export const getAllActivities = async () => {
 
 export const getPagedActivities = async (page: number, size: number, search?: string, signal?: AbortSignal) => {
   try {
-    const response = await usersHttp.get<ActivitiesResponse>('/activities', {
+    const response = await activitiesHttp.get<ActivitiesResponse>('/activities', {
       params: {
         page,
         size,
@@ -37,21 +37,26 @@ export const getPagedActivities = async (page: number, size: number, search?: st
 };
 
 export const getActivityById = async (id: string) => {
-    const response = await usersHttp.get<Activity>(`/activities/${id}`);
+    const response = await activitiesHttp.get<Activity>(`/activities/${id}`);
     return response.data;
 };
 
 export const createActivity = async (activityData: Omit<Activity, 'id' | 'createdDate' | 'lastUpdate'>) => {
-    const response = await usersHttp.post('/activities', activityData);
+  try {
+    const response = await activitiesHttp.post('/activities', activityData);
     return response.data;
+  } catch (error) {
+    console.error('Error creating activity:', error);
+    throw error;
+  }
 };
 
 export const updateActivity = async (id: string, activityData: Partial<Omit<Activity, 'id' | 'createdDate' | 'lastUpdate'>>) => {
-    const response = await usersHttp.patch(`/activities/${id}`, activityData);
+    const response = await activitiesHttp.patch(`/activities/${id}`, activityData);
     return response.data;
 };
 
 export const deleteActivity = async (id: string) => {
-    const response = await usersHttp.delete(`/activities/${id}`);
+    const response = await activitiesHttp.delete(`/activities/${id}`);
     return response.data;
 };

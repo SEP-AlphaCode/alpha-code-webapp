@@ -1,18 +1,14 @@
 export type Activity = {
-  createdDate: string;
-  data: string;
-  description: string;
   id: string;
-  imageUrl: string;
-  lastUpdate: string;
-  musicId: string;
-  musicName: string;
+  accountId: string;
+  data: any; // Object containing activity and music_info
   name: string;
-  organizationId: string;
-  organizationName: string;
   status: number;
-  statusText: string;
   type: string;
+  createdDate: string;
+  lastUpdate: string;
+  statusText: string;
+  robotModelId: string;
 }
 
 export type ActivitiesResponse = {
