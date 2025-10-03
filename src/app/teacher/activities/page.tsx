@@ -29,13 +29,14 @@ import {
 import { useActivities, useCreateActivity } from "@/features/activities/hooks/use-activities"
 import { useRobotControls } from "@/features/users/hooks/use-websocket"
 import { useRobotStore } from "@/hooks/use-robot-store"
-import { Activity as ActivityType } from "@/types/activities"
+import { Activity as ActivityType, ActivityData } from "@/types/activities"
+import { ActionActivites } from "@/types/action"
 
 export default function ActivitiesPage() {
   const [searchTerm, setSearchTerm] = useState("")
   const [debouncedSearchTerm, setDebouncedSearchTerm] = useState("")
   const [filterType, setFilterType] = useState<string>("all")
-  const [filterStatus, setFilterStatus] = useState<string>("all")
+  const [filterStatus, setFilterStatus] = useState<string>("1") // Mặc định lọc activities đã xuất bản
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false)
   const [currentPage, setCurrentPage] = useState(1)
 
@@ -81,6 +82,8 @@ export default function ActivitiesPage() {
 
   const getTypeIcon = (type: string) => {
     switch (type) {
+      case "dance_with_music":
+        return <Play className="w-4 h-4" />
       case "lesson":
         return <BookOpen className="w-4 h-4" />
       case "game":
@@ -96,6 +99,8 @@ export default function ActivitiesPage() {
 
   const getTypeColor = (type: string) => {
     switch (type) {
+      case "dance_with_music":
+        return "bg-pink-100 text-pink-800"
       case "lesson":
         return "bg-blue-100 text-blue-800"
       case "game":
@@ -136,8 +141,7 @@ export default function ActivitiesPage() {
   }
 
   const filteredActivities = activities.filter(activity => {
-    const matchesSearch = activity.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         activity.description.toLowerCase().includes(searchTerm.toLowerCase())
+    const matchesSearch = activity.name.toLowerCase().includes(searchTerm.toLowerCase())
     
     const matchesType = filterType === "all" || activity.type === filterType
     const matchesStatus = filterStatus === "all" || activity.status.toString() === filterStatus
@@ -194,35 +198,43 @@ export default function ActivitiesPage() {
   const CreateActivityForm = () => {
     const [formData, setFormData] = useState({
       name: "",
-      description: "",
       type: "",
-      data: "",
-      imageUrl: "",
-      musicId: "",
-      musicName: "",
-      organizationId: "default-org-id",
-      organizationName: "Default Organization",
-      status: 0, // Draft status
-      statusText: "Draft"
+      data: "", // JSON string hoặc object
+      status: 1, // Published status
+      statusText: "ACTIVE",
+      accountId: "default-account-id", // Tạm thời dùng default
+      robotModelId: "6e4e14b3-b073-4491-ab2a-2bf315b3259f" // Default robot model
     })
 
     const handleSubmit = (e: React.FormEvent) => {
       e.preventDefault()
-      createActivityMutation.mutate(formData, {
+      
+      // Convert string data to ActivityData object
+      let activityData: ActivityData;
+      try {
+        // Try to parse as JSON first
+        activityData = JSON.parse(formData.data || '{}');
+      } catch {
+        // If not valid JSON, create a simple object
+        activityData = { content: formData.data };
+      }
+      
+      const submitData = {
+        ...formData,
+        data: activityData
+      };
+      
+      createActivityMutation.mutate(submitData, {
         onSuccess: () => {
           setIsCreateModalOpen(false)
           setFormData({
             name: "",
-            description: "",
             type: "",
             data: "",
-            imageUrl: "",
-            musicId: "",
-            musicName: "",
-            organizationId: "default-org-id",
-            organizationName: "Default Organization",
-            status: 0,
-            statusText: "Draft"
+            status: 1,
+            statusText: "ACTIVE",
+            accountId: "default-account-id",
+            robotModelId: "6e4e14b3-b073-4491-ab2a-2bf315b3259f"
           })
         }
       })
@@ -240,17 +252,6 @@ export default function ActivitiesPage() {
           />
         </div>
         
-        <div>
-          <label className="text-sm font-medium text-gray-700 block mb-2">Mô tả</label>
-          <Textarea 
-            placeholder="Mô tả chi tiết hoạt động..." 
-            rows={3}
-            value={formData.description}
-            onChange={(e) => setFormData({...formData, description: e.target.value})}
-            required
-          />
-        </div>
-        
         <div className="grid grid-cols-2 gap-4">
           <div>
             <label className="text-sm font-medium text-gray-700 block mb-2">Loại hoạt động</label>
@@ -259,21 +260,13 @@ export default function ActivitiesPage() {
                 <SelectValue placeholder="Chọn loại" />
               </SelectTrigger>
               <SelectContent>
+                <SelectItem value="dance_with_music">Nhảy với nhạc</SelectItem>
                 <SelectItem value="lesson">Bài học</SelectItem>
                 <SelectItem value="game">Trò chơi</SelectItem>
                 <SelectItem value="exercise">Bài tập</SelectItem>
                 <SelectItem value="project">Dự án</SelectItem>
               </SelectContent>
             </Select>
-          </div>
-          
-          <div>
-            <label className="text-sm font-medium text-gray-700 block mb-2">URL hình ảnh</label>
-            <Input 
-              placeholder="https://example.com/image.jpg" 
-              value={formData.imageUrl}
-              onChange={(e) => setFormData({...formData, imageUrl: e.target.value})}
-            />
           </div>
         </div>
         
@@ -422,6 +415,7 @@ export default function ActivitiesPage() {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">Tất cả loại</SelectItem>
+                <SelectItem value="dance_with_music">Nhảy với nhạc</SelectItem>
                 <SelectItem value="lesson">Bài học</SelectItem>
                 <SelectItem value="game">Trò chơi</SelectItem>
                 <SelectItem value="exercise">Bài tập</SelectItem>
@@ -435,9 +429,10 @@ export default function ActivitiesPage() {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">Tất cả trạng thái</SelectItem>
-                <SelectItem value="published">Đã xuất bản</SelectItem>
-                <SelectItem value="draft">Bản nháp</SelectItem>
-                <SelectItem value="archived">Đã lưu trữ</SelectItem>
+                <SelectItem value="1">Đã xuất bản</SelectItem>
+                <SelectItem value="0">Bản nháp</SelectItem>
+                <SelectItem value="2">Đã lưu trữ</SelectItem>
+                <SelectItem value="dance_with_music">Nhảy với nhạc</SelectItem>
               </SelectContent>
             </Select>
             
@@ -534,11 +529,44 @@ export default function ActivitiesPage() {
                 </CardHeader>
                 
                 <CardContent className="space-y-4">
-                  <p className="text-gray-600 text-sm line-clamp-3">{activity.description}</p>
+                  {/* Hiển thị thông tin cho dance_with_music */}
+                  {activity.type === "dance_with_music" && activity.data && activity.data.activity ? (
+                    <div className="space-y-3">
+                      <div className="text-sm text-gray-600">
+                        <div className="flex items-center gap-2 mb-2">
+                          <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                          <span className="font-medium">Hoạt động nhảy múa với AI</span>
+                        </div>
+                        {activity.data.activity.actions && (
+                          <div className="grid grid-cols-2 gap-4 p-3 bg-gray-50 rounded-lg">
+                            <div>
+                              <span className="text-xs text-gray-500">Số hành động:</span>
+                              <p className="font-semibold text-lg text-blue-600">{activity.data.activity.actions.length}</p>
+                            </div>
+                            <div>
+                              <span className="text-xs text-gray-500">Thời lượng:</span>
+                              <p className="font-semibold text-lg text-green-600">
+                                {activity.data.music_info?.duration || 
+                                 Math.max(...activity.data.activity.actions.map((a: ActionActivites) => a.start_time + a.duration)).toFixed(1)}s
+                              </p>
+                            </div>
+                          </div>
+                        )}
+                        {activity.data.music_info?.name && (
+                          <div className="flex items-center gap-2 mt-2 text-sm text-purple-600 bg-purple-50 p-2 rounded">
+                            <span>🎵</span>
+                            <span className="font-medium">{activity.data.music_info.name}</span>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  ) : (
+                    <p className="text-gray-600 text-sm line-clamp-3">Hoạt động Alpha Mini - {activity.type}</p>
+                  )}
                   
                   <div className="flex flex-wrap gap-2">
                     <Badge variant="outline" className="bg-blue-100 text-blue-800">
-                      {activity.type}
+                      {activity.type === "dance_with_music" ? "Nhảy với nhạc" : activity.type}
                     </Badge>
                     <Badge variant="outline" className={getStatusColor(activity.status)}>
                       {getStatusText(activity.status)}
@@ -549,21 +577,23 @@ export default function ActivitiesPage() {
                     <div className="flex items-center gap-4">
                       <div className="flex items-center gap-1">
                         <Clock className="w-4 h-4" />
-                        30 phút
+                        {activity.type === "dance_with_music" && activity.data?.music_info?.duration 
+                          ? `${activity.data.music_info.duration}s`
+                          : "30 phút"
+                        }
                       </div>
                       <div className="flex items-center gap-1">
-                        <Users className="w-4 h-4" />
-                        0
+                        <Activity className="w-4 h-4" />
+                        {activity.type === "dance_with_music" && activity.data?.activity?.actions?.length 
+                          ? `${activity.data.activity.actions.length} hành động`
+                          : "Hoạt động"
+                        }
                       </div>
                     </div>
-                  </div>
-                  
-                  {/* Show music name if available */}
-                  {activity.musicName && (
-                    <div className="flex items-center gap-2 text-sm text-gray-600 bg-gray-50 p-2 rounded">
-                      <span>🎵 {activity.musicName}</span>
+                    <div className="text-xs text-gray-400">
+                      {formatDate(activity.createdDate)}
                     </div>
-                  )}
+                  </div>
                   
                   <div className="flex gap-2 pt-4">
                     <Button 

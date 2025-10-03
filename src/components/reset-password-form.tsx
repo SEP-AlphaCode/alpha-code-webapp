@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { useQueryString } from "@/utils/utils"
-import { Lock, Eye, EyeOff, ArrowLeft, Shield, CheckCircle, AlertCircle } from "lucide-react"
+import { Lock, Eye, EyeOff, ArrowLeft, Shield, AlertCircle } from "lucide-react"
 import { resetPassword } from "@/features/auth/api/auth-api"
 import { useRouter } from "next/navigation"
 

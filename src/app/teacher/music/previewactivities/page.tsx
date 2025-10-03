@@ -8,7 +8,7 @@ import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
-import { ArrowLeft, Music, Clock, Copy, Sparkles, FileAudio, Download, Play, Save } from "lucide-react"
+import { ArrowLeft, Music, Clock, Copy, Sparkles, FileAudio, Download, Save } from "lucide-react"
 import { DancePlanReposnse } from "@/types/music"
 import { ActionActivites } from "@/types/action"
 import { Color } from "@/types/color"
@@ -18,42 +18,47 @@ import { getUserInfoFromToken } from "@/utils/tokenUtils"
 import { toast } from "sonner"
 
 // Helper function để extract error message từ API response
-const getErrorMessage = (error: any): string => {
-  if (error.response) {
-    const status = error.response.status
-    const responseData = error.response.data
+const getErrorMessage = (error: unknown): string => {
+  if (error && typeof error === 'object' && 'response' in error) {
+    const httpError = error as { response: { status: number; statusText?: string; data?: unknown } }
+    const status = httpError.response.status
+    const responseData = httpError.response.data
     
     // Lấy message chi tiết từ API response nếu có
-    if (responseData?.message) {
-      return responseData.message
-    } else if (responseData?.error) {
-      return responseData.error
-    } else if (responseData?.errors && Array.isArray(responseData.errors)) {
-      // Nếu có nhiều errors, join chúng lại
-      return responseData.errors.join(', ')
-    } else {
-      // Fallback messages theo status code
-      switch (status) {
-        case 400:
-          return 'Dữ liệu không hợp lệ. Vui lòng kiểm tra lại!'
-        case 401:
-          return 'Bạn cần đăng nhập lại!'
-        case 403:
-          return 'Bạn không có quyền lưu activity!'
-        case 422:
-          return 'Dữ liệu không đúng định dạng. Vui lòng thử lại!'
-        case 500:
-          return 'Lỗi server. Vui lòng thử lại sau!'
-        default:
-          return `Lỗi ${status}: ${error.response.statusText || 'Không xác định'}`
+    if (responseData && typeof responseData === 'object') {
+      const errorData = responseData as { message?: string; error?: string; errors?: string[] }
+      if (errorData.message) {
+        return errorData.message
+      } else if (errorData.error) {
+        return errorData.error
+      } else if (errorData.errors && Array.isArray(errorData.errors)) {
+        // Nếu có nhiều errors, join chúng lại
+        return errorData.errors.join(', ')
       }
     }
-  } else if (error.request) {
+    
+    // Fallback messages theo status code
+    switch (status) {
+      case 400:
+        return 'Dữ liệu không hợp lệ. Vui lòng kiểm tra lại!'
+      case 401:
+        return 'Bạn cần đăng nhập lại!'
+      case 403:
+        return 'Bạn không có quyền lưu activity!'
+      case 422:
+        return 'Dữ liệu không đúng định dạng. Vui lòng thử lại!'
+      case 500:
+        return 'Lỗi server. Vui lòng thử lại sau!'
+      default:
+        return `Lỗi ${status}: ${httpError.response.statusText || 'Không xác định'}`
+    }
+  } else if (error && typeof error === 'object' && 'request' in error) {
     // Network error
     return 'Không thể kết nối đến server. Vui lòng kiểm tra mạng!'
   } else {
     // Other errors
-    return error.message || 'Có lỗi không xác định xảy ra!'
+    const genericError = error as { message?: string }
+    return genericError.message || 'Có lỗi không xác định xảy ra!'
   }
 }
 
@@ -160,7 +165,7 @@ export default function PreviewActivitiesPage() {
         name: activityName.trim(),
         status: 1,
         type: "dance_with_music",
-        statusText: "Active",
+        statusText: "ACTIVE",
         robotModelId: "6e4e14b3-b073-4491-ab2a-2bf315b3259f"
       }
 
@@ -172,16 +177,17 @@ export default function PreviewActivitiesPage() {
       // Có thể chuyển hướng về trang activities list
       // router.push('/teacher/activities')
       
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error saving activity:', error)
       
       // Log chi tiết để debug
-      if (error.response) {
+      if (error && typeof error === 'object' && 'response' in error) {
+        const httpError = error as { response: { status: number; statusText?: string; data?: unknown; headers?: unknown } }
         console.error('API Error Details:', {
-          status: error.response.status,
-          statusText: error.response.statusText,
-          data: error.response.data,
-          headers: error.response.headers
+          status: httpError.response.status,
+          statusText: httpError.response.statusText,
+          data: httpError.response.data,
+          headers: httpError.response.headers
         })
       }
       

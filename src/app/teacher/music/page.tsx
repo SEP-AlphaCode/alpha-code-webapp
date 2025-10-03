@@ -6,11 +6,8 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
-import { Upload, Music, Video, X, Play, Pause, Volume2, FileAudio, FileVideo, Sparkles, Clock, Copy, Bot, Zap } from "lucide-react"
+import { Upload, Music, Video, X, Play, Pause, Volume2, FileAudio, FileVideo, Sparkles, Clock, Bot, Zap } from "lucide-react"
 import { getDancePlan } from "@/features/users/api/music-api"
-import { DancePlanReposnse } from "@/types/music"
-import { ActionActivites } from "@/types/action"
-import { Color } from "@/types/color"
 import { toast } from "sonner"
 import LoadingState from "@/components/loading-state"
 
@@ -23,7 +20,6 @@ export default function MusicPage() {
   const [isPlaying, setIsPlaying] = useState<boolean>(false)
   const [isDragOver, setIsDragOver] = useState<boolean>(false)
   const [isGeneratingPlan, setIsGeneratingPlan] = useState<boolean>(false)
-  const [dancePlan, setDancePlan] = useState<DancePlanReposnse | null>(null)
   const [currentFile, setCurrentFile] = useState<File | null>(null)
   const [startTime, setStartTime] = useState<string>("")
   const [endTime, setEndTime] = useState<string>("")
@@ -88,7 +84,6 @@ export default function MusicPage() {
     setFileSize(0)
     setIsPlaying(false)
     setCurrentFile(null)
-    setDancePlan(null)
     setStartTime("")
     setEndTime("")
     setCurrentTime(0)
@@ -227,7 +222,6 @@ export default function MusicPage() {
 
     // Start generation
     setIsGeneratingPlan(true)
-    setDancePlan(null)
 
     try {
       console.log("Generating dance plan for:", currentFile.name)
@@ -236,7 +230,6 @@ export default function MusicPage() {
       }
       
       const result = await getDancePlan(currentFile, startTimeNum, endTimeNum)
-      setDancePlan(result)
       console.log("Dance plan generated:", result)
       
       // Hiển thị thông báo thành công
@@ -256,14 +249,15 @@ export default function MusicPage() {
       setTimeout(() => {
         router.push(`/teacher/music/previewactivities?${params.toString()}`)
       }, 1000)
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Failed to generate dance plan:", error)
       
       let errorMessage = 'Có lỗi xảy ra. Vui lòng thử lại!'
       
-      if (error.response) {
+      if (error && typeof error === 'object' && 'response' in error) {
+        const httpError = error as { response: { status: number; data?: unknown } }
         // Server responded with error status
-        const status = error.response.status
+        const status = httpError.response.status
         switch (status) {
           case 413:
             errorMessage = 'File quá lớn! Vui lòng chọn file nhỏ hơn.'
@@ -283,10 +277,11 @@ export default function MusicPage() {
           default:
             errorMessage = `Lỗi server (${status}). Vui lòng thử lại sau.`
         }
-      } else if (error.request) {
+      } else if (error && typeof error === 'object' && 'request' in error) {
         // Network error
-        if (error.code === 'ERR_NETWORK') {
-          if (error.message?.includes('CORS')) {
+        const networkError = error as { code?: string; message?: string }
+        if (networkError.code === 'ERR_NETWORK') {
+          if (networkError.message?.includes('CORS')) {
             errorMessage = 'Lỗi CORS: Server chưa cấu hình cho phép truy cập từ localhost. Vui lòng liên hệ admin.'
           } else {
             errorMessage = 'Không thể kết nối đến server. Vui lòng kiểm tra kết nối internet hoặc liên hệ admin.'

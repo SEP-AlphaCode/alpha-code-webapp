@@ -25,7 +25,7 @@ export default function RobotActionPage() {
 
   // 👇 Cho phép state nhận cả RobotAction lẫn RobotActionUI
   const [currentAction, setCurrentAction] = useState<RobotAction | RobotActionUI | null>(null);
-  const [direction, setDirection] = useState<number>(0);
+  const direction = 0;
 
   const { selectedRobot, selectedRobotSerial, initializeMockData } = useRobotStore();
 
@@ -33,8 +33,12 @@ export default function RobotActionPage() {
     initializeMockData();
   }, [initializeMockData]);
 
-  const handlePrevAction = () => {};
-  const handleNextAction = () => {};
+  const handlePrevAction = () => {
+    // Logic for previous action (not implemented)
+  };
+  const handleNextAction = () => {
+    // Logic for next action (not implemented)
+  };
 
   const handleSendCommand = async (actionCode: string) => {
     if (!selectedRobotSerial || !selectedRobot) {

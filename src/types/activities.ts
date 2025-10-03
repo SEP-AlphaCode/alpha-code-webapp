@@ -1,7 +1,31 @@
+import { Color } from "./color"
+
+export interface ActionActivites {
+  action_id: string;
+  start_time: number;
+  duration: number;
+  action_type: string;
+  color: Color[];
+}
+
+export interface ActivityData {
+  activity?: {
+    actions?: ActionActivites[];
+    [key: string]: unknown;
+  };
+  music_info?: {
+    name?: string;
+    duration?: number;
+    [key: string]: unknown;
+  };
+  content?: string;
+  [key: string]: unknown;
+}
+
 export type Activity = {
   id: string;
   accountId: string;
-  data: any; // Object containing activity and music_info
+  data: ActivityData; // Object containing activity and music_info
   name: string;
   status: number;
   type: string;
