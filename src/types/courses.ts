@@ -19,7 +19,7 @@ export interface Lesson {
     content?: string; // varchar(255) - nullable
     contentType: string; // varchar(255)
     orderNumber: number; // int4
-    solution?: any; // jsonb - nullable, can be more specific based on your JSON structure
+    solution?: unknown; // jsonb - nullable, can be more specific based on your JSON structure
 }
 
 export interface Course {
