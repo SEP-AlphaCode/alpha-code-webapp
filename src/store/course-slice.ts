@@ -1,3 +1,4 @@
+import { Category } from "@/types/courses";
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 
 interface CourseState {
@@ -6,7 +7,7 @@ interface CourseState {
     size: number;
   };
   filters: {
-    categoryId: string | null;
+    categoryIds: string[];
   };
   currentCourse: {
     name: string | null;
@@ -20,7 +21,7 @@ const initialState: CourseState = {
     size: 12,
   },
   filters: {
-    categoryId: null
+    categoryIds: []
   },
   currentCourse: {
     name: null,
@@ -35,8 +36,8 @@ const courseSlice = createSlice({
     setPage: (state, action: PayloadAction<number>) => {
       state.pagination.page = action.payload;
     },
-    setCategoryFilter: (state, action: PayloadAction<string | null>) => {
-      state.filters.categoryId = action.payload;
+    setCategoryFilter: (state, action: PayloadAction<string[]>) => {
+      state.filters.categoryIds = action.payload;
       state.pagination.page = 1;
     },
     setCurrentCourse: (state, action: PayloadAction<{ name: string; slug: string } | null>) => {

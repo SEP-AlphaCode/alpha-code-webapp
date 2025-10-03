@@ -4,7 +4,6 @@ import { CourseSidebar } from "@/components/course-sidebar"
 import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator } from "@/components/ui/breadcrumb"
 import { Separator } from "@/components/ui/separator"
 import { SidebarInset, SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar"
-import { I18nProvider } from "@/lib/i18n/provider"
 import { RootState } from "@/store/store"
 import { usePathname } from "next/navigation"
 import React from "react"
@@ -51,7 +50,7 @@ function CourseBreadcrumb() {
     breadcrumbItems.push({
       href: pathname,
       // Use the course name from Redux if available, otherwise fall back to formatted slug
-      label: currentCourse?.name || formatPathToDisplayName(courseSlug),
+      label: currentCourse?.name || '',
       isLast: true,
     })
   } else {
@@ -96,8 +95,8 @@ export default function CourseLayout({
     <SidebarProvider
       style={
         {
-          "--sidebar-width": "10rem",
-          "--sidebar-width-mobile": "10rem",
+          "--sidebar-width": "8rem",
+          "--sidebar-width-mobile": "8rem",
         } as React.CSSProperties
       }
     >

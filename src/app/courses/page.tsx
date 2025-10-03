@@ -1,9 +1,9 @@
 "use client"
 import { useCourse } from '@/hooks/use-course';
 import { cn } from '@/lib/utils';
-import { formatPrice, formatTimespan, mapDifficulty } from '@/types/courses';
+import { Category, Course, formatPrice, formatTimespan, mapDifficulty } from '@/types/courses';
 import Link from 'next/link';
-import React, { useState } from 'react'
+import React, { useEffect, useMemo, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux';
 import { setCategoryFilter, setPage } from '@/store/course-slice';
 import { AppDispatch, RootState } from '@/store/store';
@@ -16,22 +16,24 @@ export default function CoursePage() {
   const dispatch = useDispatch<AppDispatch>()
   const { pagination, filters } = useSelector((state: RootState) => state.course)
   const [searchTerm, setSearchTerm] = useState<string>("")
+  const [usedSearchTerm, setUsedSearchTerm] = useState<string>("") // New state to track the search term used for fetching
   const { useGetCategories, useGetCourses } = useCourse()
   const size = 12
+  const [displayedCourses, setDisplayedCourses] = useState<Course[]>([]);
   // categories pagination for dropdown
   const [categoriesPage, setCategoriesPage] = useState(1)
   const categoriesPageSize = 10
-  const [accumulatedCategories, setAccumulatedCategories] = useState<any[]>([])
+  const [accumulatedCategories, setAccumulatedCategories] = useState<Category[]>([])
 
   const [selectedCategories, setSelectedCategories] = useState<string[]>(
-    filters.categoryId ? [filters.categoryId] : []
+    []
   )
 
   // Get categories - using React Query (paginated)
   const { data: categoriesData, isLoading: loadingCategories } = useGetCategories(categoriesPage, categoriesPageSize)
   const fetchedCategories = categoriesData?.data ?? []
   // accumulate pages
-  React.useEffect(() => {
+  useEffect(() => {
     if (!fetchedCategories || fetchedCategories.length === 0) return
 
     setAccumulatedCategories((prev) => {
@@ -51,7 +53,7 @@ export default function CoursePage() {
   const categoriesHasNext = !!categoriesData && (categoriesData.has_next ?? (categoriesData.total_pages ? categoriesPage < categoriesData.total_pages : false))
 
   // new: continuously fetch next pages while the API indicates more pages exist
-  React.useEffect(() => {
+  useEffect(() => {
     if (!categoriesData) return
     const hasNext = categoriesData.has_next ?? (categoriesData.total_pages ? categoriesPage < categoriesData.total_pages : false)
     if (hasNext) {
@@ -64,15 +66,36 @@ export default function CoursePage() {
   const { data: coursesData, isLoading: loadingCourses } = useGetCourses(
     pagination.page,
     size,
-    searchTerm.trim(),
+    usedSearchTerm.trim(),
   )
   const courses = coursesData?.data ?? []
   const total = coursesData?.total_count ?? 0
   const totalPages = Math.ceil(total / size)
 
+  // Update displayedCourses only after successful fetch
+  useEffect(() => {
+    console.log("coursesData changed");
+    if (!loadingCourses && coursesData) {
+      setDisplayedCourses(c => [...courses]); // Update displayed courses when new data is fetched
+    }
+  }, [coursesData?.data]);
+
+  // Memoize displayedCourses to persist previous data during loading
+  const coursesToDisplay = useMemo(() => {
+    return loadingCourses ? displayedCourses : courses;
+  }, [loadingCourses, displayedCourses, courses]);
+
   const handlePageChange = (page: number) => {
     dispatch(setPage(page))
   }
+
+  // Add a handler for pressing Enter to trigger the search
+  const handleSearchKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') {
+      dispatch(setPage(1)); // Reset to the first page
+      setUsedSearchTerm(searchTerm); 
+    }
+  };
 
   return (
     <div className="w-full max-w-full overflow-hidden" suppressHydrationWarning>
@@ -127,13 +150,12 @@ export default function CoursePage() {
                                 const next = [...selectedCategories, cat.id]
                                 setSelectedCategories(next)
                                 dispatch(setPage(1))
-                                dispatch(setCategoryFilter(cat.id))
+                                dispatch(setCategoryFilter(next))
                               } else {
                                 const next = selectedCategories.filter((c) => c !== cat.id)
                                 setSelectedCategories(next)
-                                const newFilter = next.length ? next[next.length - 1] : null
                                 dispatch(setPage(1))
-                                dispatch(setCategoryFilter(newFilter))
+                                dispatch(setCategoryFilter(next))
                               }
                             }}
                           />
@@ -183,13 +205,12 @@ export default function CoursePage() {
                                   const next = [...selectedCategories, cat.id]
                                   setSelectedCategories(next)
                                   dispatch(setPage(1))
-                                  dispatch(setCategoryFilter(cat.id))
+                                  dispatch(setCategoryFilter(next))
                                 } else {
                                   const next = selectedCategories.filter((c) => c !== cat.id)
                                   setSelectedCategories(next)
-                                  const newFilter = next.length ? next[next.length - 1] : null
                                   dispatch(setPage(1))
-                                  dispatch(setCategoryFilter(newFilter))
+                                  dispatch(setCategoryFilter(next))
                                 }
                               }}
                             />
@@ -229,13 +250,14 @@ export default function CoursePage() {
               type="text"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
+              onKeyDown={handleSearchKeyDown} // Trigger search on Enter
               placeholder="Tìm kiếm khóa học và nội dung..."
               className="w-full px-3 py-2 rounded-md border border-slate-200 bg-white text-slate-700 focus:outline-none focus:ring-0 focus:border-slate-200"
             />
           </div>
 
           {/* Courses Grid Section */}
-          {loadingCourses ? (
+          {(loadingCourses && displayedCourses.length === 0) ? (
             <div className="flex justify-center py-12">
               <div className="text-center">
                 <div className="text-4xl md:text-6xl mb-4 animate-bounce">📚</div>
@@ -246,7 +268,7 @@ export default function CoursePage() {
             <>
               <div className="w-full max-w-full">
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6 mb-8 md:mb-10">
-                  {courses.map((course) => {
+                  {coursesToDisplay.map((course) => {
                     const diff = mapDifficulty(course.level)
                     return (
                       <Link
