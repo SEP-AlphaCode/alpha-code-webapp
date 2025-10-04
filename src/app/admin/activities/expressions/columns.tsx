@@ -17,7 +17,7 @@ import {
     DropdownMenuSeparator,
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import { useAdminTranslation } from "@/lib/i18n/hooks/use-translation"
+
 
 // This type is used to define the shape of our data.
 // You can use a Zod schema here if you want.
@@ -29,25 +29,23 @@ export const createColumns = (
   // Note: We can't use hooks directly in this function since it's not a component
   // Instead, we'll create a wrapper component for the action column
   
-  const ActionCell = ({ row }: { row: any }) => {
-    const { t } = useAdminTranslation()
+  const ActionCell = ({ row }: { row: { original: Expression } }) => {
     const expression = row.original
-
     return (
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <Button variant="ghost" className="h-8 w-8 p-0">
-            <span className="sr-only">Open menu</span>
+            <span className="sr-only">Thao tác</span>
             <MoreHorizontal className="h-4 w-4" />
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end">
-          <DropdownMenuLabel>{t('common.actions')}</DropdownMenuLabel>
+          <DropdownMenuLabel>Thao tác</DropdownMenuLabel>
           <DropdownMenuItem
             onClick={() => navigator.clipboard.writeText(expression.id)}
             className="hover:bg-gray-100 transition-colors duration-200 cursor-pointer"
           >
-            {t('common.copyId')}
+            Sao chép ID
           </DropdownMenuItem>
           <DropdownMenuSeparator />
           <DropdownMenuItem 
@@ -55,115 +53,96 @@ export const createColumns = (
             className="hover:bg-green-50 hover:text-green-700 transition-all duration-200 cursor-pointer group"
           >
             <Eye className="mr-2 h-4 w-4 text-gray-600 group-hover:text-green-600 group-hover:scale-110 transition-all duration-200" />
-            {t('common.viewDetails')}
+            Xem chi tiết
           </DropdownMenuItem>
           <DropdownMenuItem 
             onClick={() => onEdit?.(expression)}
             className="hover:bg-blue-50 hover:text-blue-700 transition-all duration-200 cursor-pointer group"
           >
             <Edit className="mr-2 h-4 w-4 text-gray-600 group-hover:text-blue-600 group-hover:scale-110 transition-all duration-200" />
-            {t('common.editItem')}
+            Chỉnh sửa
           </DropdownMenuItem>
           <DropdownMenuItem 
             onClick={() => onDelete?.(expression)}
             className="text-red-600 hover:bg-red-50 hover:text-red-700 transition-all duration-200 cursor-pointer group"
           >
             <Trash2 className="mr-2 h-4 w-4 group-hover:text-red-600 group-hover:scale-110 transition-all duration-200" />
-            {t('common.deleteItem')}
+            Xóa
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
     )
   }
 
-  const HeaderCell = ({ text, translationKey }: { text: string, translationKey?: string }) => {
-    const { t } = useAdminTranslation()
-    return (
-      <span className="flex items-center gap-1 text-gray-700 font-semibold">
-        {translationKey ? t(translationKey) : text}
-      </span>
-    )
-  }
+  const HeaderCell = ({ text }: { text: string }) => (
+    <span className="flex items-center gap-1 text-gray-700 font-semibold">
+      {text}
+    </span>
+  )
 
-  const CodeHeaderCell = () => {
-    const { t } = useAdminTranslation()
-    return (
-      <span className="flex items-center gap-1 text-blue-700 font-semibold">
-        {t('expressionManagement.fields.code')}
-      </span>
-    )
-  }
+  const CodeHeaderCell = () => (
+    <span className="flex items-center gap-1 text-blue-700 font-semibold">
+      Mã biểu cảm
+    </span>
+  )
 
-  const NameHeaderCell = ({ column }: { column: any }) => {
-    const { t } = useAdminTranslation()
-    return (
-      <span className="flex items-center gap-1 text-purple-700 font-semibold">
-        <Button
-          variant="ghost"
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-          className="p-0 h-auto min-w-0 font-semibold"
-        >
-          {t('expressionManagement.fields.name')}
-          <ArrowUpDown className="ml-2 h-4 w-4" />
-        </Button>
-      </span>
-    )
-  }
+  const NameHeaderCell = ({ column }: { column: { toggleSorting: (isAsc: boolean) => void, getIsSorted: () => string | false } }) => (
+    <span className="flex items-center gap-1 text-purple-700 font-semibold">
+      <Button
+        variant="ghost"
+        onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+        className="p-0 h-auto min-w-0 font-semibold"
+      >
+        Tên biểu cảm
+        <ArrowUpDown className="ml-2 h-4 w-4" />
+      </Button>
+    </span>
+  )
 
-  const ImageHeaderCell = () => {
-    const { t } = useAdminTranslation()
-    return (
-      <span className="flex items-center gap-1 text-blue-600 font-semibold">
-        {t('common.image')}
-      </span>
-    )
-  }
+  const ImageHeaderCell = () => (
+    <span className="flex items-center gap-1 text-blue-600 font-semibold">
+      Hình ảnh
+    </span>
+  )
 
-  const StatusHeaderCell = () => {
-    const { t } = useAdminTranslation()
-    return (
-      <span className="flex items-center gap-1 text-green-700 font-semibold">
-        {t('expressionManagement.fields.status')}
-      </span>
-    )
-  }
+  const StatusHeaderCell = () => (
+    <span className="flex items-center gap-1 text-green-700 font-semibold">
+      Trạng thái
+    </span>
+  )
 
-  const ImageCell = ({ row }: { row: any }) => {
-    const { t } = useAdminTranslation()
-    return (
-      <div className="flex items-center gap-1 text-blue-600 font-medium">
-        {row.original.imageUrl ? (
-          <Image 
-            src={row.original.imageUrl} 
-            alt="Expression" 
-            width={60}
-            height={60}
-            className="w-15 h-15 object-cover rounded"
-            onError={(e) => {
-              e.currentTarget.style.display = 'none'
-            }}
-          />
-        ) : (
-          <span className="text-gray-400">{t('common.noImage')}</span>
-        )}
-      </div>
-    )
-  }
+  const ImageCell = ({ row }: { row: { original: Expression } }) => (
+    <div className="flex items-center gap-1 text-blue-600 font-medium">
+      {row.original.imageUrl ? (
+        <Image 
+          src={row.original.imageUrl} 
+          alt="Expression" 
+          width={60}
+          height={60}
+          className="w-15 h-15 object-cover rounded"
+          onError={(e) => {
+            e.currentTarget.style.display = 'none'
+          }}
+        />
+      ) : (
+        <span className="text-gray-400">Không có hình ảnh</span>
+      )}
+    </div>
+  )
 
-  const StatusCell = ({ row }: { row: any }) => {
-    const { t } = useAdminTranslation()
+  const StatusCell = ({ row }: { row: { original: Expression } }) => {
     const status = row.original.status
     let color = "bg-gray-200 text-gray-700"
-    let text = t('common.unknown')
+    let text = "Không xác định"
     let icon = null
     
     if (status === 1) {
       color = "bg-green-100 text-green-700"
-      text = t('common.active')
+      text = "Kích hoạt"
       icon = <svg className="h-4 w-4 text-green-500 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor"><circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="2" fill="currentColor" /></svg>
     } else if (status === 0) {
       color = "bg-red-100 text-red-700"
-      text = t('common.inactive')
+      text = "Không kích hoạt"
       icon = <svg className="h-4 w-4 text-red-500 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor"><circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="2" fill="currentColor" /></svg>
     }
     
@@ -199,8 +178,8 @@ export const createColumns = (
         enableHiding: false,
     },
     {
-        accessorKey: "id",
-        header: () => <HeaderCell text="ID" />,
+  accessorKey: "id",
+  header: () => <HeaderCell text="ID" />,
         cell: ({ row }) => (
             <span className="text-gray-700 font-semibold">
                 {row.original.id.substring(0, 8)}...

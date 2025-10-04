@@ -11,11 +11,14 @@ import {
 } from "recharts"
 import { DashboardStats } from "@/types/dashboard"
 
+
+
 interface UserDistributionChartProps {
-  stats: DashboardStats
-  onlineCount: number
-  isLoading?: boolean
+  stats: DashboardStats;
+  onlineCount: number;
+  isLoading?: boolean;
 }
+
 
 export function UserDistributionChart({ stats, onlineCount, isLoading }: UserDistributionChartProps) {
   if (isLoading) {
@@ -26,39 +29,38 @@ export function UserDistributionChart({ stats, onlineCount, isLoading }: UserDis
           <div className="h-64 bg-muted rounded"></div>
         </div>
       </div>
-    )
+    );
   }
 
   const data = [
     {
-      name: 'Online Users',
+      name: 'Đang hoạt động',
       value: onlineCount,
       color: '#10b981',
       percentage: stats.total > 0 ? ((onlineCount / stats.total) * 100).toFixed(1) : '0'
     },
     {
-      name: 'Offline Users',
+      name: 'Ngoại tuyến',
       value: Math.max(0, stats.total - onlineCount),
       color: '#6b7280',
       percentage: stats.total > 0 ? (((stats.total - onlineCount) / stats.total) * 100).toFixed(1) : '0'
     },
     {
-      name: 'New This Month',
+      name: 'Mới tháng này',
       value: stats.newThisMonth,
       color: '#3b82f6',
       percentage: stats.total > 0 ? ((stats.newThisMonth / stats.total) * 100).toFixed(1) : '0'
     }
-  ]
+  ];
 
   return (
     <div className="rounded-lg border bg-card p-6 shadow-sm">
       <div className="flex items-center justify-between mb-6">
-        <h3 className="text-xl font-semibold">User Distribution</h3>
+        <h3 className="text-xl font-semibold">Phân bố người dùng</h3>
         <div className="text-sm text-muted-foreground">
-          Total: <span className="font-bold text-blue-600">{stats.total}</span>
+          Tổng số: <span className="font-bold text-blue-600">{stats.total}</span>
         </div>
       </div>
-      
       <div className="h-64 mb-4">
         <ResponsiveContainer width="100%" height="100%">
           <PieChart>
@@ -97,8 +99,7 @@ export function UserDistributionChart({ stats, onlineCount, isLoading }: UserDis
           </PieChart>
         </ResponsiveContainer>
       </div>
-
-      {/* Distribution Summary */}
+      {/* Tổng kết phân bố */}
       <div className="grid grid-cols-3 gap-3">
         {data.map((item, index) => (
           <div key={index} className="p-3 bg-gray-50 rounded-lg">
@@ -113,11 +114,11 @@ export function UserDistributionChart({ stats, onlineCount, isLoading }: UserDis
               {item.value}
             </div>
             <div className="text-xs text-gray-500">
-              {item.percentage}% of total
+              {item.percentage}% tổng số
             </div>
           </div>
         ))}
       </div>
     </div>
-  )
+  );
 }

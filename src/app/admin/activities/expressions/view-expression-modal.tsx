@@ -12,7 +12,7 @@ import { Expression } from "@/types/expression"
 import { Badge } from "@/components/ui/badge"
 import { Calendar, FileText, Hash, Settings, Image as ImageIcon } from "lucide-react"
 import Image from "next/image"
-import { useAdminTranslation } from "@/lib/i18n/hooks/use-translation"
+
 
 interface ViewExpressionModalProps {
   isOpen: boolean
@@ -25,27 +25,8 @@ export function ViewExpressionModal({
   onClose, 
   expression
 }: ViewExpressionModalProps) {
-  const { t, isLoading } = useAdminTranslation()
-  
-  if (!expression) return null
 
-  if (isLoading) {
-    return (
-      <Dialog open={isOpen} onOpenChange={onClose}>
-        <DialogContent className="sm:max-w-[600px]">
-          <div className="animate-pulse space-y-4">
-            <div className="h-6 bg-gray-200 rounded w-1/3"></div>
-            <div className="h-4 bg-gray-200 rounded w-2/3"></div>
-            <div className="space-y-3">
-              <div className="h-4 bg-gray-200 rounded w-full"></div>
-              <div className="h-4 bg-gray-200 rounded w-3/4"></div>
-              <div className="h-4 bg-gray-200 rounded w-1/2"></div>
-            </div>
-          </div>
-        </DialogContent>
-      </Dialog>
-    )
-  }
+  if (!expression) return null
 
   const formatDate = (dateString: string) => {
     try {
@@ -68,14 +49,14 @@ export function ViewExpressionModal({
       return (
         <Badge className="bg-green-100 text-green-800 hover:bg-green-100">
           <span className="w-2 h-2 bg-green-500 rounded-full mr-1"></span>
-          {t('common.active')}
+          Hoạt động
         </Badge>
       )
     } else {
       return (
         <Badge className="bg-red-100 text-red-800 hover:bg-red-100">
           <span className="w-2 h-2 bg-red-500 rounded-full mr-1"></span>
-          {t('common.inactive')}
+          Không hoạt động
         </Badge>
       )
     }
@@ -87,17 +68,17 @@ export function ViewExpressionModal({
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2 text-blue-700">
             <FileText className="h-5 w-5" />
-            {t('expressionManagement.viewTitle')}
+            Xem chi tiết biểu cảm
           </DialogTitle>
           <DialogDescription>
-            {t('expressionManagement.viewDescription')}
+            Thông tin chi tiết về biểu cảm này.
           </DialogDescription>
         </DialogHeader>
         
         <div className="space-y-6">
-          {/* Basic Information */}
+          {/* Thông tin cơ bản */}
           <div className="space-y-4">
-            <h3 className="text-lg font-semibold text-gray-800 border-b pb-2">{t('common.basicInformation')}</h3>
+            <h3 className="text-lg font-semibold text-gray-800 border-b pb-2">Thông tin cơ bản</h3>
             
             <div className="grid grid-cols-1 gap-4">
               <div className="flex items-start gap-3">
@@ -113,7 +94,7 @@ export function ViewExpressionModal({
               <div className="flex items-start gap-3">
                 <Hash className="h-4 w-4 text-blue-500 mt-1 flex-shrink-0" />
                 <div className="flex-1">
-                  <label className="text-sm font-medium text-gray-700">{t('expressionManagement.fields.code')}</label>
+                  <label className="text-sm font-medium text-gray-700">Mã biểu cảm</label>
                   <p className="text-sm text-blue-900 font-mono bg-blue-50 p-2 rounded border">
                     {expression.code}
                   </p>
@@ -123,7 +104,7 @@ export function ViewExpressionModal({
               <div className="flex items-start gap-3">
                 <FileText className="h-4 w-4 text-purple-500 mt-1 flex-shrink-0" />
                 <div className="flex-1">
-                  <label className="text-sm font-medium text-gray-700">{t('expressionManagement.fields.name')}</label>
+                  <label className="text-sm font-medium text-gray-700">Tên biểu cảm</label>
                   <p className="text-sm text-gray-900 bg-purple-50 p-2 rounded border">
                     {expression.name}
                   </p>
@@ -132,15 +113,15 @@ export function ViewExpressionModal({
             </div>
           </div>
 
-          {/* Configuration */}
+          {/* Cấu hình */}
           <div className="space-y-4">
-            <h3 className="text-lg font-semibold text-gray-800 border-b pb-2">{t('common.configuration')}</h3>
+            <h3 className="text-lg font-semibold text-gray-800 border-b pb-2">Cấu hình</h3>
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="flex items-start gap-3">
                 <ImageIcon className="h-4 w-4 text-blue-500 mt-1 flex-shrink-0" />
                 <div className="flex-1">
-                  <label className="text-sm font-medium text-gray-700">{t('common.image')}</label>
+                  <label className="text-sm font-medium text-gray-700">Hình ảnh</label>
                   <div className="mt-1">
                     {expression.imageUrl ? (
                       <div className="space-y-2">
@@ -160,7 +141,7 @@ export function ViewExpressionModal({
                       </div>
                     ) : (
                       <p className="text-sm text-gray-400 bg-gray-50 p-2 rounded border">
-                        {t('common.noImageProvided')}
+                        Không có hình ảnh
                       </p>
                     )}
                   </div>
@@ -170,7 +151,7 @@ export function ViewExpressionModal({
               <div className="flex items-start gap-3">
                 <Settings className="h-4 w-4 text-green-500 mt-1 flex-shrink-0" />
                 <div className="flex-1">
-                  <label className="text-sm font-medium text-gray-700">{t('expressionManagement.fields.status')}</label>
+                  <label className="text-sm font-medium text-gray-700">Trạng thái</label>
                   <div className="mt-1">
                     {getStatusBadge(expression.status)}
                   </div>
@@ -179,15 +160,15 @@ export function ViewExpressionModal({
             </div>
           </div>
 
-          {/* Timestamps */}
+          {/* Thời gian */}
           <div className="space-y-4">
-            <h3 className="text-lg font-semibold text-gray-800 border-b pb-2">{t('common.timeline')}</h3>
+            <h3 className="text-lg font-semibold text-gray-800 border-b pb-2">Thời gian</h3>
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="flex items-start gap-3">
                 <Calendar className="h-4 w-4 text-blue-500 mt-1 flex-shrink-0" />
                 <div className="flex-1">
-                  <label className="text-sm font-medium text-gray-700">{t('common.createdDate')}</label>
+                  <label className="text-sm font-medium text-gray-700">Ngày tạo</label>
                   <p className="text-sm text-gray-900 bg-blue-50 p-2 rounded border font-mono">
                     {formatDate(expression.createdDate)}
                   </p>
@@ -197,7 +178,7 @@ export function ViewExpressionModal({
               <div className="flex items-start gap-3">
                 <Calendar className="h-4 w-4 text-orange-500 mt-1 flex-shrink-0" />
                 <div className="flex-1">
-                  <label className="text-sm font-medium text-gray-700">{t('common.lastUpdated')}</label>
+                  <label className="text-sm font-medium text-gray-700">Cập nhật lần cuối</label>
                   <p className="text-sm text-gray-900 bg-orange-50 p-2 rounded border font-mono">
                     {formatDate(expression.lastUpdate)}
                   </p>
@@ -213,7 +194,7 @@ export function ViewExpressionModal({
             variant="outline" 
             onClick={onClose}
           >
-            {t('common.close')}
+            Đóng
           </Button>
         </div>
       </DialogContent>

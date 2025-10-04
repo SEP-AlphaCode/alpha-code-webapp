@@ -3,19 +3,21 @@
 import { createColumns } from "./columns"
 import { DataTable } from "@/components/ui/data-table"
 import { useQuery } from "@tanstack/react-query"
-import { getPagedExpressions } from "@/api/expression-api"
+import { getPagedExpressions } from "@/features/activities/api/expression-api"
 import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { CreateExpressionModal } from "@/app/admin/activities/expressions/expression-modal"
 import { DeleteExpressionModal } from "@/app/admin/activities/expressions/delete-expression-modal"
 import { ViewExpressionModal } from "@/app/admin/activities/expressions/view-expression-modal"
 import { Expression } from "@/types/expression"
-import { useExpression } from "@/hooks/use-expression"
+import { useExpression } from "@/features/activities/hooks/use-expression"
 import { toast } from "sonner"
-import { useAdminTranslation } from "@/lib/i18n/hooks/use-translation"
 
-export default function ExpressionsPage() {
-  const { t, isLoading: translationsLoading } = useAdminTranslation()
+import LoadingGif from "@/components/ui/loading-gif"
+
+
+function ExpressionsPage() {
+  // Đã loại bỏ i18n, chỉ dùng tiếng Việt
   const [page, setPage] = useState(1)
   const [size, setSize] = useState(10)
   const [searchTerm, setSearchTerm] = useState("")
@@ -67,10 +69,7 @@ export default function ExpressionsPage() {
   if (isLoading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
-        <div className="flex flex-col items-center gap-4">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
-          <div className="text-lg text-gray-600">Loading expressions...</div>
-        </div>
+        <LoadingGif size="lg" message="Loading expressions..." />
       </div>
     )
   }
@@ -153,28 +152,16 @@ export default function ExpressionsPage() {
 
   const columns = createColumns(handleEditExpression, handleDeleteExpression, handleViewExpression)
 
-  if (translationsLoading) {
-    return (
-      <div className="container mx-auto py-10">
-        <div className="animate-pulse space-y-4">
-          <div className="h-8 bg-gray-200 rounded w-1/4"></div>
-          <div className="h-10 bg-gray-200 rounded w-full"></div>
-          <div className="h-64 bg-gray-200 rounded w-full"></div>
-        </div>
-      </div>
-    )
-  }
-
   return (
     <div className="container mx-auto py-10">
       <div className="mb-6">
         <div className="flex items-center justify-between mb-4">
-          <h1 className="text-2xl font-bold">{t('expressionManagement.title')}</h1>
+          <h1 className="text-2xl font-bold">Quản lý biểu cảm</h1>
           <Button
             onClick={handleAddExpression}
             variant="outline"
           >
-            {t('expressionManagement.addExpression')}
+            Thêm biểu cảm
           </Button>
         </div>
       </div>
@@ -185,7 +172,7 @@ export default function ExpressionsPage() {
         onSizeChange={handleSizeChange}
         searchValue={searchTerm}
         onSearchChange={setSearchTerm}
-        searchPlaceholder={t('expressionManagement.searchPlaceholder')}
+        searchPlaceholder="Tìm kiếm biểu cảm..."
         pageCount={data?.total_pages || 0}
         page={page}
         onPageChange={handlePageChange}
@@ -215,3 +202,5 @@ export default function ExpressionsPage() {
     </div>
   )
 }
+
+export default ExpressionsPage

@@ -14,6 +14,10 @@ import { Switch } from '@/components/ui/switch';
 import { Separator } from '@/components/ui/separator';
 import { Save, X, Palette, Activity, Music, Zap, Smile } from 'lucide-react';
 import { OsmoCard } from '@/types/osmo-card';
+import { ApiResponse } from '@/types/api-error';
+import { useAction } from '@/features/activities/hooks/use-action';
+import { useExpression } from '@/features/activities/hooks/use-expression';
+import { useDance } from '@/features/activities/hooks/use-dance';
 
 interface EditOsmoCardModalProps {
   isOpen: boolean;
@@ -21,6 +25,7 @@ interface EditOsmoCardModalProps {
   onSave: (cardId: string, updatedData: Partial<OsmoCard>) => void;
   card: OsmoCard | null;
   isLoading?: boolean;
+  apiError?: ApiResponse; // Add API error prop with proper type
 }
 
 interface FormData {
@@ -35,12 +40,25 @@ interface FormData {
   danceName: string;
 }
 
+interface FormErrors {
+  name?: string;
+  color?: string;
+  status?: string;
+  actionId?: string;
+  actionName?: string;
+  expressionId?: string;
+  expressionName?: string;
+  danceId?: string;
+  danceName?: string;
+}
+
 export default function EditOsmoCardModal({ 
   isOpen, 
   onClose, 
   onSave, 
   card, 
-  isLoading = false 
+  isLoading = false,
+  apiError
 }: EditOsmoCardModalProps) {
   const [formData, setFormData] = useState<FormData>({
     name: '',
@@ -54,9 +72,28 @@ export default function EditOsmoCardModal({
     danceName: ''
   });
 
-  const [errors, setErrors] = useState<Partial<FormData>>({});
+  const [errors, setErrors] = useState<FormErrors>({});
 
-  // Available options (trong thực tế, có thể fetch từ API)
+  // Fetch data from APIs
+  const actionHooks = useAction();
+  const expressionHooks = useExpression();
+  const danceHooks = useDance();
+
+  // Fetch actions, expressions, and dances
+  const { data: actionsResponse, isLoading: actionsLoading, error: actionsError } = actionHooks.useGetPagedActions(1, 100); // Get all actions
+  const { data: expressionsResponse, isLoading: expressionsLoading, error: expressionsError } = expressionHooks.useGetPagedExpressions(1, 100); // Get all expressions  
+  const { data: dancesResponse, isLoading: dancesLoading, error: dancesError } = danceHooks.useGetPagedDances(1, 100); // Get all dances
+
+  // Extract data from API responses
+  const actions = actionsResponse?.data || [];
+  const expressions = expressionsResponse?.data || [];
+  const dances = dancesResponse?.data || [];
+
+  // Check if any API is loading
+  const isDataLoading = actionsLoading || expressionsLoading || dancesLoading;
+  const hasApiError = actionsError || expressionsError || dancesError;
+
+  // Available options
   const colorOptions = [
     { value: 'red', label: 'Red' },
     { value: 'blue', label: 'Blue' },
@@ -68,35 +105,13 @@ export default function EditOsmoCardModal({
     { value: 'gray', label: 'Gray' }
   ];
 
-  // Mock data - trong thực tế sẽ fetch từ API
-  const actionOptions = [
-    { id: '1', name: 'Move Forward' },
-    { id: '2', name: 'Turn Left' },
-    { id: '3', name: 'Turn Right' },
-    { id: '4', name: 'Stop' }
-  ];
-
-  const expressionOptions = [
-    { id: '1', name: 'Happy' },
-    { id: '2', name: 'Sad' },
-    { id: '3', name: 'Angry' },
-    { id: '4', name: 'Surprised' }
-  ];
-
-  const danceOptions = [
-    { id: '1', name: 'Robot Dance' },
-    { id: '2', name: 'Wave Dance' },
-    { id: '3', name: 'Spin Dance' },
-    { id: '4', name: 'Happy Dance' }
-  ];
-
   // Initialize form data when card changes
   useEffect(() => {
     if (card) {
       setFormData({
         name: card.name || '',
         color: card.color || '',
-        status: card.status || 1,
+        status: card.status !== undefined ? card.status : 1,
         actionId: card.actionId || '',
         actionName: card.actionName || '',
         expressionId: card.expressionId || '',
@@ -108,6 +123,37 @@ export default function EditOsmoCardModal({
     }
   }, [card]);
 
+  // Handle API validation errors
+  useEffect(() => {
+    if (apiError?.status === 422 && typeof apiError?.message === 'object') {
+      const apiErrors: FormErrors = {};
+      const serverErrors = apiError.message as unknown as Record<string, string[]>; // Type assertion for error object
+      
+      // Map server field names to form field names
+      const fieldMapping: { [key: string]: keyof FormErrors } = {
+        'name': 'name',
+        'color': 'color',
+        'actionId': 'actionId',
+        'actionName': 'actionName',
+        'expressionId': 'expressionId',
+        'expressionName': 'expressionName',
+        'danceId': 'danceId',
+        'danceName': 'danceName',
+      };
+      
+      Object.keys(serverErrors).forEach(serverField => {
+        const formField = fieldMapping[serverField];
+        if (formField && serverErrors[serverField]) {
+          apiErrors[formField] = Array.isArray(serverErrors[serverField]) 
+            ? serverErrors[serverField][0] 
+            : serverErrors[serverField];
+        }
+      });
+      
+      setErrors(apiErrors);
+    }
+  }, [apiError]);
+
   const handleInputChange = (field: keyof FormData, value: string | number) => {
     setFormData(prev => ({
       ...prev,
@@ -115,7 +161,7 @@ export default function EditOsmoCardModal({
     }));
     
     // Clear error when user starts typing
-    if (errors[field]) {
+    if (errors[field as keyof FormErrors]) {
       setErrors(prev => ({
         ...prev,
         [field]: undefined
@@ -124,7 +170,7 @@ export default function EditOsmoCardModal({
   };
 
   const handleActionChange = (actionId: string) => {
-    const selectedAction = actionOptions.find(action => action.id === actionId);
+    const selectedAction = actions.find(action => action.id === actionId);
     setFormData(prev => ({
       ...prev,
       actionId: actionId === 'none' ? '' : actionId,
@@ -133,7 +179,7 @@ export default function EditOsmoCardModal({
   };
 
   const handleExpressionChange = (expressionId: string) => {
-    const selectedExpression = expressionOptions.find(expr => expr.id === expressionId);
+    const selectedExpression = expressions.find(expr => expr.id === expressionId);
     setFormData(prev => ({
       ...prev,
       expressionId: expressionId === 'none' ? '' : expressionId,
@@ -142,7 +188,7 @@ export default function EditOsmoCardModal({
   };
 
   const handleDanceChange = (danceId: string) => {
-    const selectedDance = danceOptions.find(dance => dance.id === danceId);
+    const selectedDance = dances.find(dance => dance.id === danceId);
     setFormData(prev => ({
       ...prev,
       danceId: danceId === 'none' ? '' : danceId,
@@ -151,7 +197,7 @@ export default function EditOsmoCardModal({
   };
 
   const validateForm = (): boolean => {
-    const newErrors: Partial<FormData> = {};
+    const newErrors: FormErrors = {};
 
     if (!formData.name.trim()) {
       newErrors.name = 'Card name is required';
@@ -168,19 +214,45 @@ export default function EditOsmoCardModal({
   const handleSave = () => {
     if (!card || !validateForm()) return;
 
-    const updatedData = {
-      name: formData.name,
-      color: formData.color,
-      status: formData.status,
-      actionId: formData.actionId,
-      actionName: formData.actionName,
-      expressionId: formData.expressionId,
-      expressionName: formData.expressionName,
-      danceId: formData.danceId,
-      danceName: formData.danceName
-    };
+    // For PATCH request, only send changed fields
+    const updatedData: Partial<OsmoCard> = {};
 
-    onSave(card.id, updatedData);
+    // Compare with original card data and only include changed fields
+    if (formData.name !== card.name) {
+      updatedData.name = formData.name;
+    }
+    if (formData.color !== card.color) {
+      updatedData.color = formData.color;
+    }
+    if (formData.status !== card.status) {
+      updatedData.status = formData.status;
+    }
+    if (formData.actionId !== card.actionId) {
+      updatedData.actionId = formData.actionId;
+    }
+    if (formData.actionName !== card.actionName) {
+      updatedData.actionName = formData.actionName;
+    }
+    if (formData.expressionId !== card.expressionId) {
+      updatedData.expressionId = formData.expressionId;
+    }
+    if (formData.expressionName !== card.expressionName) {
+      updatedData.expressionName = formData.expressionName;
+    }
+    if (formData.danceId !== card.danceId) {
+      updatedData.danceId = formData.danceId;
+    }
+    if (formData.danceName !== card.danceName) {
+      updatedData.danceName = formData.danceName;
+    }
+
+    // Only call API if there are actual changes
+    if (Object.keys(updatedData).length > 0) {
+      onSave(card.id, updatedData);
+    } else {
+      // No changes, just close modal
+      handleClose();
+    }
   };
 
   const handleClose = () => {
@@ -204,6 +276,63 @@ export default function EditOsmoCardModal({
   };
 
   if (!card) return null;
+
+  // Show loading state if data is still loading
+  if (isDataLoading) {
+    return (
+      <Dialog open={isOpen} onOpenChange={handleClose}>
+        <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="flex items-center space-x-3">
+              <div className="p-2 rounded-lg bg-blue-500 text-white">
+                <Activity className="h-6 w-6" />
+              </div>
+              <div>
+                <h2 className="text-xl font-semibold">Edit Osmo Card</h2>
+                <p className="text-sm text-gray-500">Loading data...</p>
+              </div>
+            </DialogTitle>
+          </DialogHeader>
+          <div className="flex items-center justify-center py-12">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
+            <span className="ml-2 text-gray-600">Loading actions, expressions, and dances...</span>
+          </div>
+        </DialogContent>
+      </Dialog>
+    );
+  }
+
+  // Show error state if there's an API error
+  if (hasApiError) {
+    return (
+      <Dialog open={isOpen} onOpenChange={handleClose}>
+        <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="flex items-center space-x-3">
+              <div className="p-2 rounded-lg bg-red-500 text-white">
+                <Activity className="h-6 w-6" />
+              </div>
+              <div>
+                <h2 className="text-xl font-semibold">Edit Osmo Card</h2>
+                <p className="text-sm text-red-500">Error loading data</p>
+              </div>
+            </DialogTitle>
+          </DialogHeader>
+          <div className="flex flex-col items-center justify-center py-12 space-y-4">
+            <div className="text-red-500">
+              <X className="h-12 w-12" />
+            </div>
+            <p className="text-gray-600 text-center">
+              Failed to load actions, expressions, or dances. Please try again later.
+            </p>
+            <Button variant="outline" onClick={handleClose}>
+              Close
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+    );
+  }
 
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
@@ -310,7 +439,7 @@ export default function EditOsmoCardModal({
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="none">No Action</SelectItem>
-                    {actionOptions.map((action) => (
+                    {actions.map((action) => (
                       <SelectItem key={action.id} value={action.id}>
                         {action.name}
                       </SelectItem>
@@ -331,7 +460,7 @@ export default function EditOsmoCardModal({
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="none">No Expression</SelectItem>
-                    {expressionOptions.map((expression) => (
+                    {expressions.map((expression) => (
                       <SelectItem key={expression.id} value={expression.id}>
                         {expression.name}
                       </SelectItem>
@@ -352,7 +481,7 @@ export default function EditOsmoCardModal({
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="none">No Dance</SelectItem>
-                    {danceOptions.map((dance) => (
+                    {dances.map((dance) => (
                       <SelectItem key={dance.id} value={dance.id}>
                         {dance.name}
                       </SelectItem>

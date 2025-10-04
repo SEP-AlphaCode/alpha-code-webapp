@@ -12,11 +12,11 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { useDance } from "@/hooks/use-dance"
+import { useDance } from "@/features/activities/hooks/use-dance"
 import { DanceModal, Dance } from "@/types/dance"
 import { useEffect } from "react"
 import { toast } from "sonner"
-import { useAdminTranslation } from "@/lib/i18n/hooks/use-translation"
+
 
 interface CreateDanceModalProps {
   isOpen: boolean
@@ -31,12 +31,10 @@ export function CreateDanceModal({
   editDance = null,
   mode = 'create'
 }: CreateDanceModalProps) {
-  const { t, isLoading } = useAdminTranslation()
+  // Đã loại bỏ i18n, chỉ dùng tiếng Việt
   const { useCreateDance, useUpdateDance } = useDance()
   const createDanceMutation = useCreateDance()
   const updateDanceMutation = useUpdateDance()
-
-  if (isLoading) return null
 
   const isEditMode = mode === 'edit' && editDance
 
@@ -54,6 +52,7 @@ export function CreateDanceModal({
       description: "",
       duration: 60,
       status: 1,
+      icon: "",
     }
   })
 
@@ -66,6 +65,7 @@ export function CreateDanceModal({
         description: editDance.description,
         duration: editDance.duration,
         status: editDance.status,
+        icon: editDance.icon,
       })
     } else {
       reset({
@@ -74,6 +74,7 @@ export function CreateDanceModal({
         description: "",
         duration: 60,
         status: 1,
+        icon: "",
       })
     }
   }, [editDance, isEditMode, reset])
@@ -84,16 +85,16 @@ export function CreateDanceModal({
     try {
       if (isEditMode && editDance) {
         await updateDanceMutation.mutateAsync({ id: editDance.id, data })
-        toast.success(t('common.success'))
+  toast.success('Thành công')
       } else {
         await createDanceMutation.mutateAsync(data)
-        toast.success(t('common.success'))
+  toast.success('Thành công')
       }
       reset()
       onClose()
     } catch (error) {
       console.error("Error saving dance:", error)
-      toast.error(t('common.error'))
+  toast.error('Có lỗi xảy ra')
     }
   }
 
@@ -107,12 +108,12 @@ export function CreateDanceModal({
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            {isEditMode ? t('danceManagement.editTitle') : t('danceManagement.createTitle')}
+            {isEditMode ? 'Chỉnh sửa điệu nhảy' : 'Tạo điệu nhảy mới'}
           </DialogTitle>
           <DialogDescription>
             {isEditMode
-              ? t('danceManagement.editDescription')
-              : t('danceManagement.createDescription')
+              ? 'Cập nhật thông tin điệu nhảy.'
+              : 'Nhập thông tin để tạo điệu nhảy mới.'
             }
           </DialogDescription>
         </DialogHeader>
@@ -120,15 +121,15 @@ export function CreateDanceModal({
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="code" className="text-sm font-medium">
-              {t('danceManagement.fields.code')} *
+              Mã điệu nhảy *
             </Label>
             <Input
               id="code"
               {...register("code", {
-                required: t('validation.codeRequired'),
-                minLength: { value: 2, message: t('validation.codeMinLength') }
+                required: 'Vui lòng nhập mã điệu nhảy',
+                minLength: { value: 2, message: 'Mã điệu nhảy phải có ít nhất 2 ký tự' }
               })}
-              placeholder={t('danceManagement.placeholders.code')}
+              placeholder="Nhập mã điệu nhảy"
               className={errors.code ? "border-red-500" : ""}
             />
             {errors.code && (
@@ -138,15 +139,15 @@ export function CreateDanceModal({
 
           <div className="space-y-2">
             <Label htmlFor="name" className="text-sm font-medium">
-              {t('danceManagement.fields.name')} *
+              Tên điệu nhảy *
             </Label>
             <Input
               id="name"
               {...register("name", {
-                required: t('validation.nameRequired'),
-                minLength: { value: 2, message: t('validation.nameMinLength') }
+                required: 'Vui lòng nhập tên điệu nhảy',
+                minLength: { value: 2, message: 'Tên điệu nhảy phải có ít nhất 2 ký tự' }
               })}
-              placeholder={t('danceManagement.placeholders.name')}
+              placeholder="Nhập tên điệu nhảy"
               className={errors.name ? "border-red-500" : ""}
             />
             {errors.name && (
@@ -156,26 +157,38 @@ export function CreateDanceModal({
 
           <div className="space-y-2">
             <Label htmlFor="description" className="text-sm font-medium">
-              {t('danceManagement.fields.description')}
+              Mô tả
             </Label>
             <Textarea
               id="description"
               {...register("description")}
-              placeholder={t('danceManagement.placeholders.description')}
+              placeholder="Nhập mô tả điệu nhảy"
+              rows={3}
+            />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="icon" className="text-sm font-medium">
+              Icon
+            </Label>
+            <Textarea
+              id="icon"
+              {...register("icon")}
+              placeholder="Nhập đường dẫn icon"
               rows={3}
             />
           </div>
 
           <div className="space-y-2">
             <Label htmlFor="duration" className="text-sm font-medium">
-              {t('danceManagement.fields.duration')} ({t('common.seconds')}) *
+              Thời lượng (giây) *
             </Label>
             <Input
               id="duration"
               type="number"
               {...register("duration", {
-                required: t('validation.durationRequired'),
-                min: { value: 1, message: t('validation.durationMinValue') },
+                required: 'Vui lòng nhập thời lượng',
+                min: { value: 1, message: 'Thời lượng phải lớn hơn 0' },
                 valueAsNumber: true
               })}
               placeholder="60"
@@ -188,26 +201,26 @@ export function CreateDanceModal({
 
           <div className="space-y-2">
             <Label htmlFor="status" className="text-sm font-medium">
-              {t('danceManagement.fields.status')}
+              Trạng thái
             </Label>
             <Select
               value={status.toString()}
               onValueChange={(value) => setValue("status", parseInt(value))}
             >
               <SelectTrigger>
-                <SelectValue placeholder={t('common.selectStatus')} />
+                <SelectValue placeholder="Chọn trạng thái" />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="1">
                   <span className="flex items-center gap-2">
                     <span className="w-2 h-2 bg-green-500 rounded-full"></span>
-                    {t('common.active')}
+                    Kích hoạt
                   </span>
                 </SelectItem>
                 <SelectItem value="0">
                   <span className="flex items-center gap-2">
                     <span className="w-2 h-2 bg-red-500 rounded-full"></span>
-                    {t('common.inactive')}
+                    Không kích hoạt
                   </span>
                 </SelectItem>
               </SelectContent>
@@ -221,7 +234,7 @@ export function CreateDanceModal({
               onClick={handleClose}
               disabled={isSubmitting}
             >
-              {t('common.cancel')}
+              Hủy
             </Button>
             <Button
               type="submit"
@@ -229,8 +242,8 @@ export function CreateDanceModal({
               className="bg-green-600 hover:bg-green-700 text-white"
             >
               {isSubmitting
-                ? (isEditMode ? t('common.updating') : t('common.creating'))
-                : (isEditMode ? t('common.update') : t('common.create'))
+                ? (isEditMode ? 'Đang cập nhật...' : 'Đang tạo...')
+                : (isEditMode ? 'Cập nhật' : 'Tạo mới')
               }
             </Button>
           </DialogFooter>

@@ -9,6 +9,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Badge } from '@/components/ui/badge';
 import { OsmoCard } from '@/types/osmo-card';
+import { toast } from 'sonner';
 
 interface OsmoCardItemProps {
   card: OsmoCard;
@@ -24,34 +25,46 @@ export default function OsmoCardItem({
   onEdit
 }: OsmoCardItemProps) {
   const [isHovered, setIsHovered] = useState(false);
-  // Get color and icon for card display based on type
-  const getCardStyle = (type: string) => {
-    const styleMap: { [key: string]: { bg: string, icon: React.ElementType, borderColor: string, textColor: string } } = {
-      'action': { 
-        bg: 'bg-gradient-to-br from-red-500 to-red-600', 
-        icon: Zap, 
-        borderColor: 'border-red-200',
-        textColor: 'text-red-600'
-      },
-      'expression': { 
-        bg: 'bg-gradient-to-br from-blue-500 to-blue-600', 
-        icon: Smile, 
-        borderColor: 'border-blue-200',
-        textColor: 'text-blue-600'
-      },
-      'dance': { 
-        bg: 'bg-gradient-to-br from-orange-500 to-orange-600', 
-        icon: Music, 
-        borderColor: 'border-orange-200',
-        textColor: 'text-orange-600'
-      },
+  // Get color mapping for background based on card color property
+  const getColorBackground = (color: string) => {
+    const colorMap: { [key: string]: string } = {
+      'red': 'bg-gradient-to-br from-red-500 to-red-600',
+      'blue': 'bg-gradient-to-br from-blue-500 to-blue-600',
+      'green': 'bg-gradient-to-br from-green-500 to-green-600',
+      'yellow': 'bg-gradient-to-br from-yellow-500 to-yellow-600',
+      'purple': 'bg-gradient-to-br from-purple-500 to-purple-600',
+      'pink': 'bg-gradient-to-br from-pink-500 to-pink-600',
+      'orange': 'bg-gradient-to-br from-orange-500 to-orange-600',
+      'gray': 'bg-gradient-to-br from-gray-500 to-gray-600',
     };
-    return styleMap[type.toLowerCase()] || { 
-      bg: 'bg-gradient-to-br from-gray-500 to-gray-600', 
-      icon: CreditCard, 
-      borderColor: 'border-gray-200',
-      textColor: 'text-gray-600'
+    
+    return colorMap[color?.toLowerCase()] || 'bg-gradient-to-br from-gray-500 to-gray-600';
+  };
+
+  // Get border color mapping based on card color property
+  const getColorBorder = (color: string) => {
+    const colorMap: { [key: string]: string } = {
+      'red': 'border-red-200',
+      'blue': 'border-blue-200',
+      'green': 'border-green-200',
+      'yellow': 'border-yellow-200',
+      'purple': 'border-purple-200',
+      'pink': 'border-pink-200',
+      'orange': 'border-orange-200',
+      'gray': 'border-gray-200',
     };
+    
+    return colorMap[color?.toLowerCase()] || 'border-gray-200';
+  };
+
+  // Get icon based on card type
+  const getCardIcon = (type: string) => {
+    const iconMap: { [key: string]: React.ElementType } = {
+      'action': Zap,
+      'expression': Smile,
+      'dance': Music,
+    };
+    return iconMap[type.toLowerCase()] || CreditCard;
   };
 
   // Determine card type based on which activity is assigned
@@ -63,8 +76,9 @@ export default function OsmoCardItem({
   };
 
   const cardType = getCardType(card);
-  const cardStyle = getCardStyle(cardType);
-  const IconComponent = cardStyle.icon;
+  const cardBackground = getColorBackground(card.color);
+  const cardBorder = getColorBorder(card.color);
+  const IconComponent = getCardIcon(cardType);
 
   const getColorDisplay = (color: string) => {
     const colorMap: { [key: string]: string } = {
@@ -82,9 +96,49 @@ export default function OsmoCardItem({
   };
 
   const handleDelete = () => {
-    if (window.confirm('Are you sure you want to delete this Osmo Card?')) {
-      onDelete(card.id);
-    }
+    toast.custom(
+      (t) => (
+        <div className="bg-white border border-gray-200 rounded-lg shadow-lg p-4 min-w-80">
+          <div className="flex items-start space-x-3">
+            <div className="flex-shrink-0">
+              <Trash2 className="h-5 w-5 text-red-500" />
+            </div>
+            <div className="flex-1">
+              <h3 className="text-sm font-medium text-gray-900">
+                Delete Osmo Card
+              </h3>
+              <p className="text-sm text-gray-500 mt-1">
+                Are you sure you want to delete &quot;{card.name}&quot;? This action cannot be undone.
+              </p>
+              <div className="flex space-x-2 mt-3">
+                <Button
+                  size="sm"
+                  variant="destructive"
+                  onClick={() => {
+                    toast.dismiss(t);
+                    onDelete(card.id);
+                    toast.success('Osmo Card deleted successfully');
+                  }}
+                >
+                  Delete
+                </Button>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => toast.dismiss(t)}
+                >
+                  Cancel
+                </Button>
+              </div>
+            </div>
+          </div>
+        </div>
+      ),
+      {
+        duration: Infinity, // Keep it open until user interacts
+        position: 'top-center',
+      }
+    );
   };
 
   const handleView = () => {
@@ -102,7 +156,7 @@ export default function OsmoCardItem({
       onMouseLeave={() => setIsHovered(false)}
     >
       {/* Main Card */}
-      <div className={`relative h-72 ${cardStyle.bg} rounded-2xl p-6 text-white shadow-lg hover:shadow-2xl transition-all duration-300 ${cardStyle.borderColor} border-2`}>
+      <div className={`relative h-72 ${cardBackground} rounded-2xl p-6 text-white shadow-lg hover:shadow-2xl transition-all duration-300 ${cardBorder} border-2`}>
         
         {/* Card Header with Actions */}
         <div className="flex justify-between items-start mb-4">

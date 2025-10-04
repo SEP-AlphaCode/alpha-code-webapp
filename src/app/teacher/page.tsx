@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 
 export default function TeacherDashboard() {
     return (
-        <div className="space-y-8 p-6" suppressHydrationWarning>
+        <div className="space-y-8 p-10" suppressHydrationWarning>
             {/* Top Metrics Row */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6" suppressHydrationWarning>
                 {/* Total Robots */}

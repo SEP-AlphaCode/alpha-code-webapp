@@ -130,7 +130,7 @@ export default function ClassroomPage() {
     const classroomRobots = robots.filter(r => r.classroom === selectedClassroomData?.name);
 
     return (
-        <div className="p-6 space-y-6" suppressHydrationWarning>
+        <div className="space-y-6 p-10" suppressHydrationWarning>
             <div className="flex items-center justify-between">
                 <h1 className="text-2xl font-bold">Classroom Management</h1>
                 <div className="flex space-x-2">

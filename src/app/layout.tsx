@@ -4,7 +4,6 @@ import { Inter } from "next/font/google"
 import "./globals.css"
 import Provider from "./provider"
 import { PublicEnvScript } from "next-runtime-env"
-import { I18nProvider } from "@/lib/i18n/provider"
 import { Toaster } from "sonner"
 
 const inter = Inter({
@@ -39,13 +38,11 @@ export default function RootLayout({
       </head>
       <body className={`${inter.variable} font-sans antialiased`} suppressHydrationWarning>
         <Provider>
-          <I18nProvider page="homepage">
             {children}
             <Toaster
               position="top-right" // top-left, top-center, bottom-left...
               richColors
             />
-          </I18nProvider>
         </Provider>
       </body>
     </html>

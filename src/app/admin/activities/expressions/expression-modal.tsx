@@ -11,11 +11,11 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { useExpression } from "@/hooks/use-expression"
+import { useExpression } from "@/features/activities/hooks/use-expression"
 import { ExpressionModal, Expression } from "@/types/expression"
 import { useEffect } from "react"
 import { toast } from "sonner"
-import { useAdminTranslation } from "@/lib/i18n/hooks/use-translation"
+
 
 interface CreateExpressionModalProps {
   isOpen: boolean
@@ -30,7 +30,7 @@ export function CreateExpressionModal({
   editExpression = null,
   mode = 'create'
 }: CreateExpressionModalProps) {
-  const { t } = useAdminTranslation()
+  // Đã loại bỏ i18n, chỉ dùng tiếng Việt
   const { useCreateExpression, useUpdateExpression } = useExpression()
   const createExpressionMutation = useCreateExpression()
   const updateExpressionMutation = useUpdateExpression()
@@ -78,16 +78,16 @@ export function CreateExpressionModal({
     try {
       if (isEditMode && editExpression) {
         await updateExpressionMutation.mutateAsync({ id: editExpression.id, data })
-        toast.success("Expression updated successfully!")
+  toast.success("Cập nhật biểu cảm thành công!")
       } else {
         await createExpressionMutation.mutateAsync(data)
-        toast.success("Expression created successfully!")
+  toast.success("Tạo biểu cảm thành công!")
       }
       reset()
       onClose()
     } catch (error) {
       console.error("Error saving expression:", error)
-      toast.error(`Failed to ${isEditMode ? 'update' : 'create'} expression. Please try again.`)
+  toast.error(isEditMode ? 'Cập nhật thất bại. Vui lòng thử lại.' : 'Tạo mới thất bại. Vui lòng thử lại.')
     }
   }
 
@@ -101,12 +101,12 @@ export function CreateExpressionModal({
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            {isEditMode ? t('expressionManagement.editTitle') : t('expressionManagement.createTitle')}
+            {isEditMode ? 'Chỉnh sửa biểu cảm' : 'Tạo biểu cảm mới'}
           </DialogTitle>
           <DialogDescription>
             {isEditMode
-              ? t('expressionManagement.editDescription')
-              : t('expressionManagement.createDescription')
+              ? 'Cập nhật thông tin biểu cảm.'
+              : 'Nhập thông tin để tạo biểu cảm mới.'
             }
           </DialogDescription>
         </DialogHeader>
@@ -114,15 +114,15 @@ export function CreateExpressionModal({
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="code" className="text-sm font-medium">
-              {t('expressionManagement.fields.code')} *
+              Mã biểu cảm *
             </Label>
             <Input
               id="code"
               {...register("code", {
-                required: t('validation.codeRequired'),
-                minLength: { value: 2, message: t('validation.codeMinLength') }
+                required: 'Vui lòng nhập mã biểu cảm',
+                minLength: { value: 2, message: 'Mã biểu cảm phải có ít nhất 2 ký tự' }
               })}
-              placeholder={t('expressionManagement.placeholders.code')}
+              placeholder="Nhập mã biểu cảm"
               className={errors.code ? "border-red-500" : ""}
             />
             {errors.code && (
@@ -132,15 +132,15 @@ export function CreateExpressionModal({
 
           <div className="space-y-2">
             <Label htmlFor="name" className="text-sm font-medium">
-              {t('expressionManagement.fields.name')} *
+              Tên biểu cảm *
             </Label>
             <Input
               id="name"
               {...register("name", {
-                required: t('validation.nameRequired'),
-                minLength: { value: 2, message: t('validation.nameMinLength') }
+                required: 'Vui lòng nhập tên biểu cảm',
+                minLength: { value: 2, message: 'Tên biểu cảm phải có ít nhất 2 ký tự' }
               })}
-              placeholder={t('expressionManagement.placeholders.name')}
+              placeholder="Nhập tên biểu cảm"
               className={errors.name ? "border-red-500" : ""}
             />
             {errors.name && (
@@ -150,18 +150,18 @@ export function CreateExpressionModal({
 
           <div className="space-y-2">
             <Label htmlFor="imageUrl" className="text-sm font-medium">
-              {t('common.image')} URL
+              Đường dẫn hình ảnh (URL)
             </Label>
             <Input
               id="imageUrl"
               type="url"
               {...register("imageUrl", {
                 pattern: {
-                  value: /^https?:\/\/.+/,
-                  message: t('validation.invalidUrl')
+                  value: /^https?:\/\/.+/, 
+                  message: 'URL không hợp lệ'
                 }
               })}
-              placeholder={t('expressionManagement.placeholders.imageUrl')}
+              placeholder="Nhập đường dẫn hình ảnh"
               className={errors.imageUrl ? "border-red-500" : ""}
             />
             {errors.imageUrl && (
@@ -171,26 +171,26 @@ export function CreateExpressionModal({
 
           <div className="space-y-2">
             <Label htmlFor="status" className="text-sm font-medium">
-              {t('expressionManagement.fields.status')}
+              Trạng thái
             </Label>
             <Select
               value={status.toString()}
               onValueChange={(value) => setValue("status", parseInt(value))}
             >
               <SelectTrigger>
-                <SelectValue placeholder={t('expressionManagement.placeholders.status')} />
+                <SelectValue placeholder="Chọn trạng thái" />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="1">
                   <span className="flex items-center gap-2">
                     <span className="w-2 h-2 bg-green-500 rounded-full"></span>
-                    {t('common.active')}
+                    Kích hoạt
                   </span>
                 </SelectItem>
                 <SelectItem value="0">
                   <span className="flex items-center gap-2">
                     <span className="w-2 h-2 bg-red-500 rounded-full"></span>
-                    {t('common.inactive')}
+                    Không kích hoạt
                   </span>
                 </SelectItem>
               </SelectContent>
@@ -204,7 +204,7 @@ export function CreateExpressionModal({
               onClick={handleClose}
               disabled={isSubmitting}
             >
-              {t('common.cancel')}
+              Hủy
             </Button>
             <Button
               type="submit"
@@ -212,8 +212,8 @@ export function CreateExpressionModal({
               className="bg-green-600 hover:bg-green-700 text-white"
             >
               {isSubmitting
-                ? (isEditMode ? t('common.updating') : t('common.creating'))
-                : (isEditMode ? t('common.update') : t('common.create'))
+                ? (isEditMode ? 'Đang cập nhật...' : 'Đang tạo...')
+                : (isEditMode ? 'Cập nhật' : 'Tạo mới')
               }
             </Button>
           </DialogFooter>

@@ -11,7 +11,7 @@ import { Button } from "@/components/ui/button"
 import { Dance } from "@/types/dance"
 import { Badge } from "@/components/ui/badge"
 import { Calendar, Clock, FileText, Hash, Settings } from "lucide-react"
-import { useAdminTranslation } from "@/lib/i18n/hooks/use-translation"
+
 
 interface ViewDanceModalProps {
   isOpen: boolean
@@ -24,8 +24,6 @@ export function ViewDanceModal({
   onClose, 
   dance
 }: ViewDanceModalProps) {
-  const { t, isLoading } = useAdminTranslation()
-  if (isLoading) return null
   if (!dance) return null
 
   const formatDate = (dateString: string) => {
@@ -49,14 +47,14 @@ export function ViewDanceModal({
       return (
         <Badge className="bg-green-100 text-green-800 hover:bg-green-100">
           <span className="w-2 h-2 bg-green-500 rounded-full mr-1"></span>
-          {t('common.active')}
+          Kích hoạt
         </Badge>
       )
     } else {
       return (
         <Badge className="bg-red-100 text-red-800 hover:bg-red-100">
           <span className="w-2 h-2 bg-red-500 rounded-full mr-1"></span>
-          {t('common.inactive')}
+          Không kích hoạt
         </Badge>
       )
     }
@@ -68,17 +66,17 @@ export function ViewDanceModal({
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2 text-blue-700">
             <FileText className="h-5 w-5" />
-            {t('danceManagement.viewTitle')}
+            Xem chi tiết điệu nhảy
           </DialogTitle>
           <DialogDescription>
-            {t('danceManagement.viewDescription')}
+            Thông tin chi tiết về điệu nhảy này
           </DialogDescription>
         </DialogHeader>
         
         <div className="space-y-6">
           {/* Basic Information */}
           <div className="space-y-4">
-            <h3 className="text-lg font-semibold text-gray-800 border-b pb-2">{t('common.basicInformation')}</h3>
+            <h3 className="text-lg font-semibold text-gray-800 border-b pb-2">Thông tin cơ bản</h3>
 
             <div className="grid grid-cols-1 gap-4">
               <div className="flex items-start gap-3">
@@ -94,7 +92,7 @@ export function ViewDanceModal({
               <div className="flex items-start gap-3">
                 <Hash className="h-4 w-4 text-blue-500 mt-1 flex-shrink-0" />
                 <div className="flex-1">
-                  <label className="text-sm font-medium text-gray-700">{t('danceManagement.fields.code')}</label>
+                  <label className="text-sm font-medium text-gray-700">Mã điệu nhảy</label>
                   <p className="text-sm text-blue-900 font-mono bg-blue-50 p-2 rounded border">
                     {dance.code}
                   </p>
@@ -104,7 +102,7 @@ export function ViewDanceModal({
               <div className="flex items-start gap-3">
                 <FileText className="h-4 w-4 text-purple-500 mt-1 flex-shrink-0" />
                   <div className="flex-1">
-                    <label className="text-sm font-medium text-gray-700">{t('danceManagement.fields.name')}</label>
+                    <label className="text-sm font-medium text-gray-700">Tên điệu nhảy</label>
                   <p className="text-sm text-gray-900 bg-purple-50 p-2 rounded border">
                     {dance.name}
                   </p>
@@ -114,9 +112,19 @@ export function ViewDanceModal({
               <div className="flex items-start gap-3">
                 <FileText className="h-4 w-4 text-yellow-500 mt-1 flex-shrink-0" />
                 <div className="flex-1">
-                  <label className="text-sm font-medium text-gray-700">{t('danceManagement.fields.description')}</label>
+                  <label className="text-sm font-medium text-gray-700">Mô tả</label>
                   <p className="text-sm text-gray-900 bg-yellow-50 p-2 rounded border min-h-[40px]">
-                    {dance.description || t('common.noImageProvided')}
+                    {dance.description || 'Không có mô tả'}
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex items-start gap-3">
+                <FileText className="h-4 w-4 text-red-500 mt-1 flex-shrink-0" />
+                <div className="flex-1">
+                  <label className="text-sm font-medium text-gray-700">Icon</label>
+                  <p className="text-sm text-gray-900 bg-red-50 p-2 rounded border">
+                    {dance.icon || 'Không có icon'}
                   </p>
                 </div>
               </div>
@@ -125,15 +133,15 @@ export function ViewDanceModal({
 
           {/* Configuration */}
           <div className="space-y-4">
-            <h3 className="text-lg font-semibold text-gray-800 border-b pb-2">{t('common.configuration')}</h3>
+            <h3 className="text-lg font-semibold text-gray-800 border-b pb-2">Cấu hình</h3>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="flex items-start gap-3">
                 <Clock className="h-4 w-4 text-blue-500 mt-1 flex-shrink-0" />
                 <div className="flex-1">
-                  <label className="text-sm font-medium text-gray-700">{t('danceManagement.fields.duration')}</label>
+                  <label className="text-sm font-medium text-gray-700">Thời lượng</label>
                   <p className="text-sm text-blue-600 bg-blue-50 p-2 rounded border font-medium">
-                    {dance.duration} {t('common.seconds')}
+                    {dance.duration} giây
                   </p>
                 </div>
               </div>
@@ -141,7 +149,7 @@ export function ViewDanceModal({
               <div className="flex items-start gap-3">
                 <Settings className="h-4 w-4 text-green-500 mt-1 flex-shrink-0" />
                 <div className="flex-1">
-                  <label className="text-sm font-medium text-gray-700">{t('danceManagement.fields.status')}</label>
+                  <label className="text-sm font-medium text-gray-700">Trạng thái</label>
                   <div className="mt-1">
                     {getStatusBadge(dance.status)}
                   </div>
@@ -152,13 +160,13 @@ export function ViewDanceModal({
 
           {/* Timestamps */}
           <div className="space-y-4">
-            <h3 className="text-lg font-semibold text-gray-800 border-b pb-2">{t('common.timeline')}</h3>
+            <h3 className="text-lg font-semibold text-gray-800 border-b pb-2">Thời gian</h3>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="flex items-start gap-3">
                 <Calendar className="h-4 w-4 text-blue-500 mt-1 flex-shrink-0" />
                 <div className="flex-1">
-                  <label className="text-sm font-medium text-gray-700">{t('common.createdDate')}</label>
+                  <label className="text-sm font-medium text-gray-700">Ngày tạo</label>
                   <p className="text-sm text-gray-900 bg-blue-50 p-2 rounded border font-mono">
                     {formatDate(dance.createdDate)}
                   </p>
@@ -168,7 +176,7 @@ export function ViewDanceModal({
               <div className="flex items-start gap-3">
                 <Calendar className="h-4 w-4 text-orange-500 mt-1 flex-shrink-0" />
                 <div className="flex-1">
-                  <label className="text-sm font-medium text-gray-700">{t('common.lastUpdated')}</label>
+                  <label className="text-sm font-medium text-gray-700">Cập nhật lần cuối</label>
                   <p className="text-sm text-gray-900 bg-orange-50 p-2 rounded border font-mono">
                     {formatDate(dance.lastUpdate)}
                   </p>
@@ -184,7 +192,7 @@ export function ViewDanceModal({
             variant="outline" 
             onClick={onClose}
           >
-            {t('common.close')}
+            Đóng
           </Button>
         </div>
       </DialogContent>

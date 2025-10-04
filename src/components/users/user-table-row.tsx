@@ -31,16 +31,27 @@ export default function UserTableRow({
   getStatusColor
 }: UserTableRowProps) {
   return (
-    <tr className="border-b border-gray-200 hover:bg-gray-50">
+    <tr 
+      className="border-b border-gray-200 hover:bg-blue-50 hover:shadow-sm transition-all duration-200 ease-in-out cursor-pointer group"
+      style={{
+        '--hover-bg': 'rgb(239 246 255)', // blue-50 fallback
+      } as React.CSSProperties}
+      onMouseEnter={(e) => {
+        e.currentTarget.style.backgroundColor = 'rgb(239 246 255)';
+      }}
+      onMouseLeave={(e) => {
+        e.currentTarget.style.backgroundColor = '';
+      }}
+    >
       <td className="p-4">
         <div className="flex items-center space-x-3">
-          <div className="bg-gray-200 rounded-full h-10 w-10 flex items-center justify-center">
-            <span className="text-sm font-medium text-gray-600">
+          <div className="bg-gray-200 group-hover:bg-blue-200 rounded-full h-10 w-10 flex items-center justify-center transition-colors duration-200">
+            <span className="text-sm font-medium text-gray-600 group-hover:text-blue-700">
               {user.fullName.charAt(0).toUpperCase()}
             </span>
           </div>
           <div>
-            <div className="font-medium text-gray-900">{user.fullName}</div>
+            <div className="font-medium text-gray-900 group-hover:text-blue-900">{user.fullName}</div>
             <div className="text-sm text-gray-500">{user.email}</div>
             <div className="text-sm text-gray-500">@{user.username}</div>
           </div>

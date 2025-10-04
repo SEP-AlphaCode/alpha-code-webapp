@@ -7,13 +7,13 @@ import {
   CreditCard,
   Home,
   LifeBuoy,
-  School,
   Send,
   Settings2,
   SquareTerminal,
   Users,
   BookMarkedIcon,
-  QrCode
+  QrCode,
+  School
 } from "lucide-react"
 
 import { NavMain } from "@/components/nav-main"
@@ -33,61 +33,57 @@ import logo1 from '../../public/logo1.png';
 import logo2 from '../../public/logo2.png';
 import Image from "next/image"
 import { getTokenPayload } from "@/utils/tokenUtils"
-import { useAdminTranslation } from "@/lib/i18n/hooks/use-translation"
-import { LanguageSwitcher } from "@/components/language-switcher"
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
-  const { t, isLoading } = useAdminTranslation()
   const [userData, setUserData] = React.useState({
     name: "Admin",
     email: "",
     avatar: "/avatars/default.jpg",
   });
 
-  // Create projects array with translations - must be called before any early returns
+  // Dự án (Projects) - tiếng Việt
   const projects = React.useMemo(() => [
     {
-      name: t('navigation.dashboard'),
+      name: "Bảng điều khiển",
       url: "/admin",
       icon: Home,
     },
     {
-      name: t('navigation.users'),
+      name: "Người dùng",
       url: "/admin/users",
       icon: Users,
     },
     {
-      name: t('navigation.systemAnalytics'),
+      name: "Phân tích hệ thống",
       url: "/admin/analytics",
       icon: BarChart3,
     },
     {
-      name: t('navigation.robots'),
+      name: "Robot",
       url: "/admin/robots",
       icon: Bot,
     },
     {
-      name: t('navigation.classrooms'),
+      name: "Lớp học",
       url: "/admin/classrooms",
       icon: School,
     },
     {
-      name: t('navigation.qrcodes'),
+      name: "Mã QR",
       url: "/admin/qrcodes",
-      icon: QrCode
+      icon: QrCode,
     },
     {
-      name: t('navigation.osmoCards'),
+      name: "Thẻ Osmo",
       url: "/admin/osmo-cards",
-      icon: CreditCard
+      icon: CreditCard,
     },
     {
-      name: t('navigation.markers'),
+      name: "Dấu đánh dấu",
       url: "/admin/markers",
-      icon: BookMarkedIcon
-    }
-  ], [t]);
-
+      icon: BookMarkedIcon,
+    },
+  ], []);
   React.useEffect(() => {
     const accessToken = sessionStorage.getItem('accessToken');
     if (accessToken) {
@@ -102,78 +98,48 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
     }
   }, []);
 
-  // Don't render sidebar while translations are loading to prevent flickering
-  if (isLoading) {
-    return (
-      <Sidebar variant="inset" {...props}>
-        <SidebarHeader>
-          <SidebarMenu>
-            <SidebarMenuItem>
-              <SidebarMenuButton size="lg" asChild>
-                <a href="#">
-                  <div className="text-sidebar-primary-foreground flex aspect-square size-30 items-center justify-center rounded-lg">
-                    <Image src={logo1} alt="Logo" className="object-contain w-30 h-30"/>
-                  </div>
-                </a>
-              </SidebarMenuButton>
-            </SidebarMenuItem>
-          </SidebarMenu>
-        </SidebarHeader>
-        <SidebarContent>
-          <div className="p-4 space-y-2">
-            <div className="animate-pulse space-y-2">
-              <div className="h-4 bg-gray-200 rounded w-3/4"></div>
-              <div className="h-4 bg-gray-200 rounded w-1/2"></div>
-              <div className="h-4 bg-gray-200 rounded w-5/6"></div>
-            </div>
-          </div>
-        </SidebarContent>
-      </Sidebar>
-    )
-  }
-
   const data = {
     user: userData,
     navMain: [
       {
-        title: t('navigation.activities'),
-        url: "/admin",
-        icon: SquareTerminal,
+  title: "Hoạt động",
+  url: "/admin",
+  icon: SquareTerminal,
         isActive: true,
         items: [
           {
-            title: t('activities.action'),
+            title: "Hành động",
             url: "/admin/activities/actions",
           },
           {
-            title: t('activities.dance'),
+            title: "Điệu nhảy",
             url: "/admin/activities/dances",
           },
           {
-            title: t('activities.expression'),
+            title: "Biểu cảm",
             url: "/admin/activities/expressions",
           },
         ],
       },
       {
-        title: t('navigation.settings'),
+        title: "Cài đặt",
         url: "#",
         icon: Settings2,
         items: [
           {
-            title: t('settings.robots'),
+            title: "Robot",
             url: "/admin/settings",
           },
           {
-            title: t('settings.team'),
+            title: "Nhóm",
             url: "#",
           },
           {
-            title: t('settings.billing'),
+            title: "Thanh toán",
             url: "#",
           },
           {
-            title: t('settings.limits'),
+            title: "Giới hạn",
             url: "#",
           },
         ],
@@ -181,12 +147,12 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
     ],
     navSecondary: [
       {
-        title: t('navigation.support'),
+        title: "Hỗ trợ",
         url: "#",
         icon: LifeBuoy,
       },
       {
-        title: t('navigation.feedback'),
+        title: "Góp ý",
         url: "#",
         icon: Send,
       },
@@ -209,9 +175,6 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
           </SidebarMenuItem>
         </SidebarMenu>
       </SidebarHeader>
-      <div className="p-2">
-        <LanguageSwitcher variant="minimal" />
-      </div>
       <SidebarContent>
         <NavProjects projects={data.projects} />
         <NavMain items={data.navMain} />

@@ -14,11 +14,10 @@ import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Switch } from "@/components/ui/switch"
-import { useAction } from "@/hooks/use-action"
+import { useAction } from "@/features/activities/hooks/use-action"
 import { ActionModal, Action } from "@/types/action"
 import { useEffect } from "react"
 import { toast } from "sonner"
-import { useAdminTranslation } from "@/lib/i18n/hooks/use-translation"
 
 interface CreateActionModalProps {
   isOpen: boolean
@@ -33,16 +32,11 @@ export function CreateActionModal({
   editAction = null,
   mode = 'create'
 }: CreateActionModalProps) {
-  const { t, isLoading: translationsLoading } = useAdminTranslation()
   const { useCreateAction, useUpdateAction } = useAction()
   const createActionMutation = useCreateAction()
   const updateActionMutation = useUpdateAction()
 
   const isEditMode = mode === 'edit' && editAction
-
-  if (translationsLoading) {
-    return null
-  }
 
   const {
     register,
@@ -59,6 +53,7 @@ export function CreateActionModal({
       duration: 60,
       status: 1,
       canInterrupt: true,
+      icon: ""
     }
   })
 
@@ -72,6 +67,7 @@ export function CreateActionModal({
         duration: editAction.duration,
         status: editAction.status,
         canInterrupt: editAction.canInterrupt,
+        icon: editAction.icon
       })
     } else {
       reset({
@@ -81,6 +77,7 @@ export function CreateActionModal({
         duration: 60,
         status: 1,
         canInterrupt: true,
+        icon: ""
       })
     }
   }, [editAction, isEditMode, reset])
@@ -115,28 +112,28 @@ export function CreateActionModal({
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            {isEditMode ? t('actionManagement.editTitle') : t('actionManagement.createTitle')}
+            {isEditMode ? 'Chỉnh sửa hành động' : 'Tạo hành động mới'}
           </DialogTitle>
           <DialogDescription>
             {isEditMode
-              ? t('actionManagement.editDescription')
-              : t('actionManagement.createDescription')
+              ? 'Cập nhật thông tin cho hành động.'
+              : 'Nhập thông tin để tạo hành động mới.'
             }
           </DialogDescription>
         </DialogHeader>
 
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-        <div className="space-y-2">
+          <div className="space-y-2">
             <Label htmlFor="code" className="text-sm font-medium">
-              {t('actionManagement.fields.code')} *
+              Mã hành động *
             </Label>
             <Input
               id="code"
               {...register("code", {
-                required: t('validation.codeRequired'),
-                minLength: { value: 2, message: t('validation.codeMinLength') }
+                required: "Vui lòng nhập mã hành động",
+                minLength: { value: 2, message: "Mã hành động phải có ít nhất 2 ký tự" }
               })}
-              placeholder={t('actionManagement.placeholders.code')}
+              placeholder="Nhập mã hành động"
               className={errors.code ? "border-red-500" : ""}
             />
             {errors.code && (
@@ -145,15 +142,15 @@ export function CreateActionModal({
           </div>
           <div className="space-y-2">
             <Label htmlFor="name" className="text-sm font-medium">
-              {t('actionManagement.fields.name')} *
+              Tên hành động *
             </Label>
             <Input
               id="name"
               {...register("name", {
-                required: t('validation.nameRequired'),
-                minLength: { value: 2, message: t('validation.nameMinLength') }
+                required: "Vui lòng nhập tên hành động",
+                minLength: { value: 2, message: "Tên hành động phải có ít nhất 2 ký tự" }
               })}
-              placeholder={t('actionManagement.placeholders.name')}
+              placeholder="Nhập tên hành động"
               className={errors.name ? "border-red-500" : ""}
             />
             {errors.name && (
@@ -163,26 +160,38 @@ export function CreateActionModal({
 
           <div className="space-y-2">
             <Label htmlFor="description" className="text-sm font-medium">
-              {t('actionManagement.fields.description')}
+              Mô tả
             </Label>
             <Textarea
               id="description"
               {...register("description")}
-              placeholder={t('actionManagement.placeholders.description')}
+              placeholder="Nhập mô tả cho hành động"
+              rows={3}
+            />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="icon" className="text-sm font-medium">
+              Icon
+            </Label>
+            <Textarea
+              id="icon"
+              {...register("icon")}
+              placeholder="Nhập icon (nếu có)"
               rows={3}
             />
           </div>
 
           <div className="space-y-2">
             <Label htmlFor="duration" className="text-sm font-medium">
-              Duration (seconds) *
+              Thời lượng (giây) *
             </Label>
             <Input
               id="duration"
               type="number"
               {...register("duration", {
-                required: "Duration is required",
-                min: { value: 1, message: "Duration must be at least 1 second" },
+                required: "Vui lòng nhập thời lượng",
+                min: { value: 1, message: "Thời lượng tối thiểu là 1 giây" },
                 valueAsNumber: true
               })}
               placeholder="60"
@@ -195,26 +204,26 @@ export function CreateActionModal({
 
           <div className="space-y-2">
             <Label htmlFor="status" className="text-sm font-medium">
-              Status
+              Trạng thái
             </Label>
             <Select
               value={status.toString()}
               onValueChange={(value) => setValue("status", parseInt(value))}
             >
               <SelectTrigger>
-                <SelectValue placeholder={t('common.selectStatus')} />
+                <SelectValue placeholder="Chọn trạng thái" />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="1">
                   <span className="flex items-center gap-2">
                     <span className="w-2 h-2 bg-green-500 rounded-full"></span>
-                    {t('common.active')}
+                    Kích hoạt
                   </span>
                 </SelectItem>
                 <SelectItem value="0">
                   <span className="flex items-center gap-2">
                     <span className="w-2 h-2 bg-red-500 rounded-full"></span>
-                    {t('common.inactive')}
+                    Không kích hoạt
                   </span>
                 </SelectItem>
               </SelectContent>
@@ -232,7 +241,7 @@ export function CreateActionModal({
               htmlFor="canInterrupt"
               className="text-sm font-medium cursor-pointer select-none"
             >
-              {t('actionManagement.fields.canInterrupt')}
+              Có thể ngắt giữa chừng
             </Label>
           </div>
 
@@ -243,7 +252,7 @@ export function CreateActionModal({
               onClick={handleClose}
               disabled={isSubmitting}
             >
-              {t('common.close')}
+              Đóng
             </Button>
             <Button
               type="submit"
@@ -251,8 +260,8 @@ export function CreateActionModal({
               className="bg-green-600 hover:bg-green-700 text-white"
             >
               {isSubmitting
-                ? (isEditMode ? t('common.updating') : t('common.creating'))
-                : (isEditMode ? t('common.update') : t('common.create'))
+                ? (isEditMode ? 'Đang cập nhật...' : 'Đang tạo...')
+                : (isEditMode ? 'Cập nhật' : 'Tạo mới')
               }
             </Button>
           </DialogFooter>

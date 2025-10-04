@@ -17,7 +17,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { useRoles } from '@/hooks/use-roles';
+import { useRoles } from '@/features/users/hooks/use-roles';
 import { Role } from '@/types/role';
 
 interface CreateUserData {
@@ -535,13 +535,13 @@ export default function CreateUserModal({
           <div className="flex justify-end space-x-2 pt-4">
             <Button
               type="button"
-              variant="outline"
+              variant="destructive"
               onClick={onClose}
               disabled={isLoading}
             >
               Cancel
             </Button>
-            <Button type="submit" disabled={isLoading}>
+            <Button variant="outline" type="submit" disabled={isLoading}>
               {isLoading ? 'Creating...' : 'Create User'}
             </Button>
           </div>

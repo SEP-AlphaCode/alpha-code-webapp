@@ -3,19 +3,19 @@
 import { createColumns } from "./columns"
 import { DataTable } from "@/components/ui/data-table"
 import { useQuery } from "@tanstack/react-query"
-import { getPagedActions } from "@/api/action-api"
+import { getPagedActions } from "@/features/activities/api/action-api"
 import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { CreateActionModal } from "@/app/admin/activities/actions/action-modal"
 import { DeleteActionModal } from "@/app/admin/activities/actions/delete-action-modal"
 import { ViewActionModal } from "@/app/admin/activities/actions/view-action-modal"
 import { Action } from "@/types/action"
-import { useAction } from "@/hooks/use-action"
+import { useAction } from "@/features/activities/hooks/use-action"
 import { toast } from "sonner"
-import { useAdminTranslation } from "@/lib/i18n/hooks/use-translation"
+import LoadingGif from "@/components/ui/loading-gif"
 
 export default function ActionsPage() {
-  const { t, isLoading: translationsLoading } = useAdminTranslation()
+  // Removed i18n translation logic
   const [page, setPage] = useState(1)
   const [size, setSize] = useState(10)
   const [searchTerm, setSearchTerm] = useState("")
@@ -67,10 +67,7 @@ export default function ActionsPage() {
   if (isLoading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
-        <div className="flex flex-col items-center gap-4">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
-          <div className="text-lg text-gray-600">Loading actions...</div>
-        </div>
+        <LoadingGif size="xl" />
       </div>
     )
   }
@@ -153,28 +150,18 @@ export default function ActionsPage() {
 
   const columns = createColumns(handleEditAction, handleDeleteAction, handleViewAction)
 
-  if (translationsLoading) {
-    return (
-      <div className="container mx-auto py-10">
-        <div className="animate-pulse space-y-4">
-          <div className="h-8 bg-gray-200 rounded w-1/4"></div>
-          <div className="h-10 bg-gray-200 rounded w-full"></div>
-          <div className="h-64 bg-gray-200 rounded w-full"></div>
-        </div>
-      </div>
-    )
-  }
+  // Removed loading state for translations
 
   return (
     <div className="container mx-auto py-10">
       <div className="mb-6">
         <div className="flex items-center justify-between mb-4">
-          <h1 className="text-2xl font-bold">{t('actionManagement.title')}</h1>
+          <h1 className="text-2xl font-bold">Quản lý hành động</h1>
           <Button
             onClick={handleAddAction}
             variant="outline"
           >
-            {t('actionManagement.addAction')}
+            Thêm hành động
           </Button>
         </div>
       </div>
@@ -185,7 +172,7 @@ export default function ActionsPage() {
         onSizeChange={handleSizeChange}
         searchValue={searchTerm}
         onSearchChange={setSearchTerm}
-        searchPlaceholder={t('actionManagement.searchPlaceholder')}
+  searchPlaceholder="Tìm kiếm hành động..."
         pageCount={data?.total_pages || 0}
         page={page}
         onPageChange={handlePageChange}
