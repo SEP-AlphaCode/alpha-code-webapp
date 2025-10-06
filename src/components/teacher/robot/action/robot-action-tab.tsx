@@ -100,7 +100,7 @@ export function RobotActionTab({
                           <span className="text-2xl">🎬</span>
                         )}
                       </button>
-                      <span className="text-xs font-medium text-gray-700 mt-2 text-center max-w-16 truncate">
+                      <span className="text-xs font-medium text-gray-700 mt-2 text-center max-w-30 truncate">
                         {actionItem.name}
                       </span>
                     </div>
