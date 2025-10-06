@@ -9,7 +9,7 @@ import { Badge } from "@/components/ui/badge"
 import { Upload, Music, Video, X, Play, Pause, Volume2, FileAudio, FileVideo, Sparkles, Clock, Bot, Zap } from "lucide-react"
 import { getDancePlan } from "@/features/users/api/music-api"
 import { toast } from "sonner"
-import LoadingState from "@/components/loading-state"
+import UpLoadingState from "@/components/uploading-state"
 
 export default function MusicPage() {
   const router = useRouter()
@@ -306,9 +306,8 @@ export default function MusicPage() {
       {isGeneratingPlan && (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center">
           <div className="bg-white rounded-2xl p-8 shadow-2xl max-w-md w-full mx-4">
-            <LoadingState message="Đang phân tích âm nhạc và tạo choreography. Quá trình này có thể mất đến 5 phút..." />
+            <UpLoadingState message="Đang phân tích âm nhạc và tạo động tác nhảy. Quá trình này có thể mất đến 5 phút..." />
             <div className="mt-4 text-center">
-              <p className="text-sm text-gray-600 mb-2">Alpha Mini đang tạo dance plan cho bạn</p>
               <div className="flex items-center justify-center space-x-2 text-xs text-gray-500">
                 <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"></div>
                 <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce delay-75"></div>

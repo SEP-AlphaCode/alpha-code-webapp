@@ -17,7 +17,7 @@ export function RobotActionGrid({
   sendCommandToBackend,
   onActionSelect,
 }: {
-  sendCommandToBackend: (actionCode: string) => Promise<unknown>
+  sendCommandToBackend: (actionCode: string, type: "action" | "expression") => Promise<unknown>
   onActionSelect: (action: RobotActionUI) => void
 }) {
   const [selectedTab, setSelectedTab] = useState<"action" | "dance" | "expression">("action")
@@ -103,7 +103,12 @@ export function RobotActionGrid({
         actions={tabData.actions}
         currentActionIndex={currentActionIndex}
         setCurrentActionIndex={setCurrentActionIndex}
-        sendCommandToBackend={sendCommandToBackend}
+        sendCommandToBackend={(code) =>
+          sendCommandToBackend(
+            code,
+            selectedTab === "expression" ? "expression" : "action"
+          )
+        }
         onActionSelect={onActionSelect}
         pageSize={pageSize}
         currentPage={tabData.currentPage}

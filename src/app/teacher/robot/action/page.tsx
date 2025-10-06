@@ -40,7 +40,10 @@ export default function RobotActionPage() {
     // Logic for next action (not implemented)
   };
 
-  const handleSendCommand = async (actionCode: string) => {
+  const handleSendCommand = async (
+    actionCode: string,
+    type: "action" | "expression" = "action"
+  ) => {
     if (!selectedRobotSerial || !selectedRobot) {
       setNotify("Bạn chưa chọn robot!", "error");
       return Promise.resolve();
@@ -49,7 +52,7 @@ export default function RobotActionPage() {
       setNotify(`Robot ${selectedRobot.name} đang offline!`, "error");
       return Promise.resolve();
     }
-    await sendCommandToBackend(actionCode, selectedRobotSerial);
+    await sendCommandToBackend(actionCode, selectedRobotSerial, type);
   };
 
   return (
@@ -57,46 +60,10 @@ export default function RobotActionPage() {
       <div className="max-w-6xl mx-auto">
         <RobotActionHeader />
 
-        {/* Robot Selector */}
-        <div className="mb-6 flex justify-between items-center">
-          <RobotSelector className="" />
-          {selectedRobot && (
-            <div className="text-sm text-gray-600 flex items-center gap-2">
-              <span>Robot hiện tại:</span>
-              <span className="font-medium">{selectedRobot.name}</span>
-              <span
-                className={`px-2 py-1 rounded-full text-xs ${
-                  selectedRobot.status === "online"
-                    ? "bg-green-100 text-green-800"
-                    : selectedRobot.status === "busy"
-                    ? "bg-yellow-100 text-yellow-800"
-                    : "bg-gray-100 text-gray-800"
-                }`}
-              >
-                {selectedRobot.status}
-              </span>
-              {selectedRobot.battery && (
-                <span className="text-xs">🔋 {selectedRobot.battery}%</span>
-              )}
-            </div>
-          )}
-        </div>
-
         {/* Nếu có action đang chọn thì show detail */}
         {currentAction ? (
           <div className="relative">
-            <button
-              onClick={handlePrevAction}
-              className="absolute -left-12 top-1/2 -translate-y-1/2 p-3 rounded-full bg-white shadow-lg hover:bg-gray-100 transition z-20"
-            >
-              <ChevronLeft size={36} className="text-gray-700" />
-            </button>
-            <button
-              onClick={handleNextAction}
-              className="absolute -right-12 top-1/2 -translate-y-1/2 p-3 rounded-full bg-white shadow-lg hover:bg-gray-100 transition z-20"
-            >
-              <ChevronRight size={36} className="text-gray-700" />
-            </button>
+           
             <AnimatePresence mode="wait" initial={false} custom={direction}>
               <motion.div
                 key={currentAction.id}
@@ -146,7 +113,9 @@ export default function RobotActionPage() {
 
         {/* Grid hiển thị actions */}
         <RobotActionGrid
-          sendCommandToBackend={handleSendCommand}
+          sendCommandToBackend={(actionCode, type) =>
+          handleSendCommand(actionCode, type)
+        }
           onActionSelect={(action) => setCurrentAction(action)}
         />
       </div>

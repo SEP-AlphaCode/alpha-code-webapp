@@ -2,7 +2,7 @@
 "use client"
 
 import { useQuery } from "@tanstack/react-query"
-import { springHttp } from "@/utils/http"
+import { activitiesHttp } from "@/utils/http"
 import type { RobotActionResponse } from "@/types/robot"
 
 export function useDances(page: number, size: number, search = "") {
@@ -14,7 +14,7 @@ export function useDances(page: number, size: number, search = "") {
       const controller = new AbortController()
       setTimeout(() => controller.abort(), 10000)
 
-      const res = await springHttp.get<RobotActionResponse>(
+      const res = await activitiesHttp.get<RobotActionResponse>(
         `/dances?page=${currentPage}&size=${currentSize}&search=${currentSearch}`,
         { signal: controller.signal, headers: { accept: "*/*" } }
       )

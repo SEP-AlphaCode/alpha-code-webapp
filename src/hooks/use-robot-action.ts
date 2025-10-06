@@ -2,7 +2,7 @@
 "use client"
 
 import { useQuery } from "@tanstack/react-query"
-import { springHttp } from "@/utils/http"
+import { activitiesHttp } from "@/utils/http"
 import type { RobotActionResponse } from "@/types/robot"
 
 export function useRobotActions(page: number, size: number, search = "") {
@@ -10,7 +10,7 @@ export function useRobotActions(page: number, size: number, search = "") {
     queryKey: ["robotActions", page, size, search],
     queryFn: async ({ queryKey }) => {
       const [, currentPage, currentSize, currentSearch] = queryKey
-      const res = await springHttp.get<RobotActionResponse>(
+      const res = await activitiesHttp.get<RobotActionResponse>(
         `/actions?page=${currentPage}&size=${currentSize}&search=${currentSearch}`,
         { headers: { accept: "*/*" } }
       )

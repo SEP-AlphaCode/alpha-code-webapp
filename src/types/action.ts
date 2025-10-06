@@ -14,6 +14,7 @@ export type Action = {
 }
 
 export type ActionModal = {
+    robotModelId?: string
     name: string
     code: string
     description: string
