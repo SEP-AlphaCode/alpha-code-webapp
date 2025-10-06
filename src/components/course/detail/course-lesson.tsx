@@ -1,13 +1,12 @@
 import { formatTimespan, Lesson } from "@/types/courses";
 
-export function CourseLessons({ lessons }: { lessons: Lesson[] }) {
+export function CourseLessons({ lessons, lessonCount, totalDuration }: { lessons: Lesson[], lessonCount: number, totalDuration: number }) {
   return (
     <section className="bg-white rounded-xl shadow-md border border-slate-200 overflow-hidden">
       <div className="p-6 bg-slate-50 border-b border-slate-200">
         <h2 className="text-2xl font-bold text-slate-800">Nội dung khóa học</h2>
         <p className="text-slate-600 mt-2 text-sm">
-          {lessons.length} bài • Tổng cộng{" "}
-          {formatTimespan(lessons.reduce((t, l) => t + l.duration, 0))}
+          {lessonCount} bài • Tổng cộng {formatTimespan(totalDuration)}
         </p>
       </div>
       <div className="divide-y divide-slate-100">

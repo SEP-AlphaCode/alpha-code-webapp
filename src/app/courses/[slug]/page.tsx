@@ -38,7 +38,7 @@ export default function CoursePage() {
           <CourseHeader data={data} />
           <CourseDescription data={data} />
           {/* <CourseHighlights data={data} /> */}
-          <CourseLessons lessons={data.lessons ?? []} />
+          <CourseLessons lessons={data.lessons ?? []} lessonCount={data.totalLessons} totalDuration={data.totalDuration} />
         </div>
 
         {/* Sidebar */}

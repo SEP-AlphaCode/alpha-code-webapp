@@ -82,20 +82,20 @@ export function formatTimespan(seconds: number): string {
 
     if (days > 0) {
         if (hours >= 12) {
-            return `${days}d ${hours}h`;
+            return `${days} ngày ${hours} giờ`;
         }
-        return `${days}d`;
+        return `${days} ngày`;
     }
     if (hours > 0) {
         if (minutes >= 15) {
-            return `${hours}h ${minutes}m`;
+            return `${hours} giờ ${minutes} phút`;
         }
-        return `${hours}h`;
+        return `${hours} phút`;
     }
     if (minutes > 0) {
-        return `${minutes}m`;
+        return `${minutes} phút`;
     }
-    return `${remainingSeconds}s`;
+    return `${remainingSeconds} giây`;
 }
 
 export function formatPrice(price: number): string {
