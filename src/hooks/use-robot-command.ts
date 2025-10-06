@@ -8,35 +8,46 @@ export function useRobotCommand(
   const sendCommandToBackend = async (
     actionCode: string,
     robotSerial: string,
-    type: "action" | "expression" = "action" // 👈 mặc định là action
+    type: "action" | "expression" = "action"
   ) => {
-    // 👇 Tạo body linh hoạt theo loại command
-    const body =
-      type === "expression"
-        ? {
-            type,
-            data: {
-              code: actionCode, // 👈 backend có thể yêu cầu key này
-            },
-          }
-        : {
-            type,
-            data: {
-              code: actionCode, // 👈 action & dance dùng code
-            },
-          };
+    const body = {
+      type,
+      data: {
+        code: actionCode,
+      },
+    };
 
     try {
-      await pythonHttp.post(`/websocket/command/${robotSerial}`, body, {
+      const res = await pythonHttp.post(`/websocket/command/${robotSerial}`, body, {
         headers: {
           Accept: "application/json",
           "Content-Type": "application/json",
         },
       });
-      setNotify("✅ Gửi lệnh thành công!", "success");
+
+      // 👇 Đọc response body
+      const data = res.data as {
+        status: "sent" | "failed";
+        to: string;
+        command: {
+          type: string;
+          data: { code: string };
+        };
+        active_clients: number;
+      };
+
+      console.log("📨 Robot response:", data);
+
+      if (data.status === "sent") {
+        setNotify("✅ Gửi lệnh thành công!", "success");
+      } else if (data.status === "failed") {
+        setNotify("❌ Gửi lệnh thất bại!", "error");
+      } else {
+        setNotify("⚠️ Phản hồi không xác định từ robot.", "error");
+      }
     } catch (err) {
-      console.error("Lỗi khi gửi lệnh:", err);
-      setNotify("❌ Gửi lệnh thất bại!", "error");
+      console.error("🚨 Lỗi khi gửi lệnh:", err);
+      setNotify("❌ Gửi lệnh thất bại! Không thể kết nối đến robot.", "error");
     }
   };
 
