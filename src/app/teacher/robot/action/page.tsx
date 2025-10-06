@@ -40,7 +40,10 @@ export default function RobotActionPage() {
     // Logic for next action (not implemented)
   };
 
-  const handleSendCommand = async (actionCode: string) => {
+  const handleSendCommand = async (
+    actionCode: string,
+    type: "action" | "expression" = "action"
+  ) => {
     if (!selectedRobotSerial || !selectedRobot) {
       setNotify("Bạn chưa chọn robot!", "error");
       return Promise.resolve();
@@ -49,7 +52,7 @@ export default function RobotActionPage() {
       setNotify(`Robot ${selectedRobot.name} đang offline!`, "error");
       return Promise.resolve();
     }
-    await sendCommandToBackend(actionCode, selectedRobotSerial);
+    await sendCommandToBackend(actionCode, selectedRobotSerial, type);
   };
 
   return (
@@ -146,7 +149,9 @@ export default function RobotActionPage() {
 
         {/* Grid hiển thị actions */}
         <RobotActionGrid
-          sendCommandToBackend={handleSendCommand}
+          sendCommandToBackend={(actionCode, type) =>
+          handleSendCommand(actionCode, type)
+        }
           onActionSelect={(action) => setCurrentAction(action)}
         />
       </div>

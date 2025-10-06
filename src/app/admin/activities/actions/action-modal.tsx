@@ -61,6 +61,7 @@ export function CreateActionModal({
   useEffect(() => {
     if (isEditMode && editAction) {
       reset({
+        robotModelId: "6e4e14b3-b073-4491-ab2a-2bf315b3259f",
         code: editAction.code,
         name: editAction.name,
         description: editAction.description,
