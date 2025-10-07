@@ -2,7 +2,8 @@
 
 import React, { useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { getRobotModels, createRobot } from "@/features/activities/api/robot-model-api";
+import { getAllRobotModels } from "@/features/robots/api/robot-model-api";
+import { createRobot } from "@/features/robots/api/robot-api";
 import { getAllAccounts } from "@/features/users/api/account-api";
 import { Account } from "@/types/account";
 import {
@@ -107,8 +108,8 @@ export const RobotModal: React.FC<RobotModalProps> = ({ open, onClose }) => {
   const { data: models, isLoading: loadingModels } = useQuery<RobotModel[]>({
   queryKey: ["robotModels"],
   queryFn: async () => {
-    const res = await getRobotModels();
-    return res; // nếu API trả về RobotModel[]
+    const res = await getAllRobotModels();
+    return res.robotModels || []; // assuming API returns { robotModels: RobotModel[] }
   },
 });
 
@@ -141,11 +142,20 @@ export const RobotModal: React.FC<RobotModalProps> = ({ open, onClose }) => {
         return;
     }
 
+    // Find robot model name from the selected model
+    const selectedModel = models?.find(model => model.id === robotModelId);
+    const robotModelName = selectedModel?.name || "";
+
+    if (!robotModelName) {
+        toast.error("Không tìm thấy thông tin model robot.");
+        return;
+    }
+
     createNewRobot({
       accountId: userId,
       robotModelId,
+      robotModelName,
       serialNumber,
-      status,
     });
   };
 
