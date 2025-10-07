@@ -6,7 +6,7 @@ import { useRobotActions } from "@/hooks/use-robot-action"
 import { useDances } from "@/hooks/use-robot-dance"
 import { useExpression } from "@/features/activities/hooks/use-expression"
 import { TabData } from "@/types/tab-data"
-import { useSkills } from "@/hooks/use-skills"
+import { useSkill } from "@/features/activities/hooks/use-skills"
 // TODO: Implement useExtendedActions hook if not available
 // import { useExtendedActions } from "@/hooks/use-extended-actions"
 

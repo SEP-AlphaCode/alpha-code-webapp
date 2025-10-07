@@ -11,31 +11,35 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { useExpression } from "@/features/activities/hooks/use-expression"
-import { ExpressionModal, Expression } from "@/types/expression"
+import { useSkill } from "@/features/activities/hooks/use-skills"
+
+import { SkillModal, Skill } from "@/types/skills"
 import { useEffect } from "react"
 import { toast } from "sonner"
 
 
-interface CreateExpressionModalProps {
+interface CreateSkillModalProps { // Đã đổi tên props interface
   isOpen: boolean
   onClose: () => void
-  editExpression?: Expression | null
+  editSkill?: Skill | null // Đã đổi tên prop
   mode?: 'create' | 'edit'
 }
 
-export function CreateExpressionModal({
+const { useCreateSkill } = useSkill();
+const { useUpdateSkill } = useSkill();
+
+export function CreateSkillModal({ // Đã đổi tên component
   isOpen,
   onClose,
-  editExpression = null,
+  editSkill = null, // Đã đổi tên prop
   mode = 'create'
-}: CreateExpressionModalProps) {
+}: CreateSkillModalProps) {
   // Đã loại bỏ i18n, chỉ dùng tiếng Việt
-  const { useCreateExpression, useUpdateExpression } = useExpression()
-  const createExpressionMutation = useCreateExpression()
-  const updateExpressionMutation = useUpdateExpression()
+  const createSkillMutation = useCreateSkill() // Đã đổi tên mutation
+  const updateSkillMutation = useUpdateSkill() // Đã đổi tên mutation
+  const skillsQuery = useSkill() // Lấy danh sách kỹ năng nếu cần
 
-  const isEditMode = mode === 'edit' && editExpression
+  const isEditMode = mode === 'edit' && editSkill // Đã đổi tên biến
 
   const {
     register,
@@ -44,7 +48,7 @@ export function CreateExpressionModal({
     setValue,
     watch,
     formState: { errors, isSubmitting }
-  } = useForm<ExpressionModal>({
+  } = useForm<SkillModal>({ // Đã đổi tên type
     defaultValues: {
       code: "",
       name: "",
@@ -53,14 +57,14 @@ export function CreateExpressionModal({
     }
   })
 
-  // Update form when editExpression changes
+  // Update form when editSkill changes
   useEffect(() => {
-    if (isEditMode && editExpression) {
+    if (isEditMode && editSkill) {
       reset({
-        code: editExpression.code,
-        name: editExpression.name,
-        imageUrl: editExpression.imageUrl,
-        status: editExpression.status,
+        code: editSkill.code,
+        name: editSkill.name,
+        imageUrl: editSkill.imageUrl,
+        status: editSkill.status,
       })
     } else {
       reset({
@@ -70,24 +74,24 @@ export function CreateExpressionModal({
         status: 1,
       })
     }
-  }, [editExpression, isEditMode, reset])
+  }, [editSkill, isEditMode, reset]) // Đã đổi tên dependency
 
   const status = watch("status")
 
-  const onSubmit = async (data: ExpressionModal) => {
+  const onSubmit = async (data: SkillModal) => { // Đã đổi tên type
     try {
-      if (isEditMode && editExpression) {
-        await updateExpressionMutation.mutateAsync({ id: editExpression.id, data })
-  toast.success("Cập nhật biểu cảm thành công!")
+      if (isEditMode && editSkill) {
+        await updateSkillMutation.mutateAsync({ id: editSkill.id, data })
+        toast.success("Cập nhật **kỹ năng** thành công!") // Đã đổi nội dung toast
       } else {
-        await createExpressionMutation.mutateAsync(data)
-  toast.success("Tạo biểu cảm thành công!")
+        await createSkillMutation.mutateAsync(data)
+        toast.success("Tạo **kỹ năng** thành công!") // Đã đổi nội dung toast
       }
       reset()
       onClose()
     } catch (error) {
-      console.error("Error saving expression:", error)
-  toast.error(isEditMode ? 'Cập nhật thất bại. Vui lòng thử lại.' : 'Tạo mới thất bại. Vui lòng thử lại.')
+      console.error("Error saving skill:", error) // Đã đổi tên log
+      toast.error(isEditMode ? 'Cập nhật thất bại. Vui lòng thử lại.' : 'Tạo mới thất bại. Vui lòng thử lại.')
     }
   }
 
@@ -101,12 +105,12 @@ export function CreateExpressionModal({
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            {isEditMode ? 'Chỉnh sửa biểu cảm' : 'Tạo biểu cảm mới'}
+            {isEditMode ? 'Chỉnh sửa kỹ năng' : 'Tạo kỹ năng mới'} {/* Đã đổi tên tiêu đề */}
           </DialogTitle>
           <DialogDescription>
             {isEditMode
-              ? 'Cập nhật thông tin biểu cảm.'
-              : 'Nhập thông tin để tạo biểu cảm mới.'
+              ? 'Cập nhật thông tin kỹ năng.' // Đã đổi tên mô tả
+              : 'Nhập thông tin để tạo kỹ năng mới.' // Đã đổi tên mô tả
             }
           </DialogDescription>
         </DialogHeader>
@@ -114,15 +118,15 @@ export function CreateExpressionModal({
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="code" className="text-sm font-medium">
-              Mã biểu cảm *
+              Mã kỹ năng * {/* Đã đổi tên label */}
             </Label>
             <Input
               id="code"
               {...register("code", {
-                required: 'Vui lòng nhập mã biểu cảm',
-                minLength: { value: 2, message: 'Mã biểu cảm phải có ít nhất 2 ký tự' }
+                required: 'Vui lòng nhập mã kỹ năng', // Đã đổi nội dung lỗi
+                minLength: { value: 2, message: 'Mã kỹ năng phải có ít nhất 2 ký tự' } // Đã đổi nội dung lỗi
               })}
-              placeholder="Nhập mã biểu cảm"
+              placeholder="Nhập mã kỹ năng" // Đã đổi placeholder
               className={errors.code ? "border-red-500" : ""}
             />
             {errors.code && (
@@ -132,15 +136,15 @@ export function CreateExpressionModal({
 
           <div className="space-y-2">
             <Label htmlFor="name" className="text-sm font-medium">
-              Tên biểu cảm *
+              Tên kỹ năng * {/* Đã đổi tên label */}
             </Label>
             <Input
               id="name"
               {...register("name", {
-                required: 'Vui lòng nhập tên biểu cảm',
-                minLength: { value: 2, message: 'Tên biểu cảm phải có ít nhất 2 ký tự' }
+                required: 'Vui lòng nhập tên kỹ năng', // Đã đổi nội dung lỗi
+                minLength: { value: 2, message: 'Tên kỹ năng phải có ít nhất 2 ký tự' } // Đã đổi nội dung lỗi
               })}
-              placeholder="Nhập tên biểu cảm"
+              placeholder="Nhập tên kỹ năng" // Đã đổi placeholder
               className={errors.name ? "border-red-500" : ""}
             />
             {errors.name && (
