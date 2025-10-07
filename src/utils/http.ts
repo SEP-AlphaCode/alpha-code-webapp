@@ -1,4 +1,4 @@
-import { apiActivitiesUrl, apiCoursesUrl, apiPythonUrl, apiRobotsUrl, apiSpringUrl, apiUsersUrl } from '@/app/constants/constants'
+import { apiActivitiesUrl, apiCoursesUrl, apiPythonUrl, apiRobotsUrl, apiUsersUrl } from '@/app/constants/constants'
 import axios, { AxiosInstance } from 'axios'
 import { refreshToken as callRefreshToken } from "@/features/auth/api/auth-api";
 
@@ -74,7 +74,6 @@ class Http {
   }
 }
 
-export const springHttp = new Http(apiSpringUrl).instance
 export const pythonHttp = new Http(apiPythonUrl).instance
 export const coursesHttp = new Http(apiCoursesUrl).instance
 export const usersHttp = new Http(apiUsersUrl).instance

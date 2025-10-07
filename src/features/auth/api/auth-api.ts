@@ -1,5 +1,5 @@
 import { LoginRequest, TokenResponse } from '@/types/login';
-import { springHttp, usersHttp } from '@/utils/http';
+import { usersHttp } from '@/utils/http';
 import axios from 'axios';
 
 // Note: avoid UI side-effects (toasts) inside API functions; handle UI in hooks/components
@@ -39,7 +39,7 @@ export const refreshToken = async (): Promise<{ accessToken: string; refreshToke
     }
 
     // Use http instance (be careful about interceptor loops)
-    const response = await springHttp.post('/auth/refresh-new-token', refreshTokenValue, {
+    const response = await usersHttp.post('/auth/refresh-new-token', refreshTokenValue, {
     headers: { 'Content-Type': 'text/plain' }
     });
 
@@ -66,7 +66,7 @@ export const refreshToken = async (): Promise<{ accessToken: string; refreshToke
 export const logout = async (): Promise<void> => {
   try {
     const token = sessionStorage.getItem('refreshToken');
-    await springHttp.post('/auth/logout', token, {
+    await usersHttp.post('/auth/logout', token, {
       headers: { "Content-Type": "text/plain" }
     });
 
@@ -77,7 +77,7 @@ export const logout = async (): Promise<void> => {
 
 export const googleLogin = async (idToken: string): Promise<TokenResponse> => {
   try {
-    const response = await springHttp.post('/auth/google-login', idToken, {
+    const response = await usersHttp.post('/auth/google-login', idToken, {
       headers: { "Content-Type": "text/plain" }
     });
     return response.data;
