@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from 'react';
 import React from 'react';
 import { 
   Bot, 
@@ -14,10 +15,12 @@ import {
   Clock,
   MapPin,
   Edit,
+  Plus,
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { RobotModal } from './robot-modal';
 
 interface Robot {
   id: string;
@@ -37,9 +40,9 @@ interface Robot {
 
 export default function RobotManagement() {
   // const [selectedRobot, setSelectedRobot] = useState<string | null>(null);
-  // const [showAddModal, setShowAddModal] = useState(false);
-
-  // Mock data - replace with real API calls
+  const [showAddModal, setShowAddModal] = useState(false)
+  const accountId = "3fa85f64-5717-4562-b3fc-2c963f66afa6" // 👈 TODO: lấy từ user hiện tại
+  
   const robots: Robot[] = [
     {
       id: '1',
@@ -157,10 +160,10 @@ export default function RobotManagement() {
           <h1 className="text-3xl font-bold text-gray-900">Robot Management</h1>
           <p className="text-gray-600">Monitor and manage Alpha Mini robots</p>
         </div>
-        {/* <Button onClick={() => setShowAddModal(true)}>
+        <Button onClick={() => setShowAddModal(true)}>
           <Plus className="mr-2 h-4 w-4" />
           Add New Robot
-        </Button> */}
+        </Button>
       </div>
 
       {/* Statistics Cards */}
@@ -420,6 +423,8 @@ export default function RobotManagement() {
           </div>
         </CardContent>
       </Card>
+      {/* Modal */}
+      <RobotModal open={showAddModal} onClose={() => setShowAddModal(false)} />
     </div>
   );
 }
