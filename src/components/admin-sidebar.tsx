@@ -119,6 +119,14 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
             title: "Biểu cảm",
             url: "/admin/activities/expressions",
           },
+          {
+            title: "Kĩ năng",
+            url: "/admin/activities/skills",
+          },
+          {
+            title: "Hành động nâng cao",
+            url: "/admin/activities/extended-actions",
+          },
         ],
       },
       {

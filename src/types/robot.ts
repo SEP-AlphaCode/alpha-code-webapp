@@ -1,3 +1,17 @@
+export interface RobotAction {
+  id: string;
+  createdDate: string;
+  lastUpdate: string;
+  name: string;
+  code: string;
+  description: string;
+  duration: number; // đơn vị ms
+  icon: string | null;
+  status: number;
+  canInterrupt?: boolean;
+  statusText: string;
+}
+
 export type Robot = {
   id: string
   serialNumber: string

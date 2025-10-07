@@ -31,7 +31,6 @@ interface ExtendedRobot {
   name: string;
   status: "online" | "offline" | "charging";
   battery: number;
-  location: string;
   lastSeen: string;
   version: string;
   students: number;
@@ -41,6 +40,7 @@ interface ExtendedRobot {
   temperature: number;
   image: string;
   serialNumber: string;
+  robotmodel: string;
 }
 
 // Hàm xáo trộn mảng ngẫu nhiên
@@ -57,7 +57,6 @@ function shuffleArray(array: string[]) {
 function extendRobotWithMockData(robot: ReturnType<typeof useRobotStore>['robots'][0], index: number): ExtendedRobot {
   const mockData = [
     {
-      location: "Classroom A",
       lastSeen: "2 minutes ago",
       version: "v2.1.3",
       students: 6,
@@ -68,7 +67,6 @@ function extendRobotWithMockData(robot: ReturnType<typeof useRobotStore>['robots
       image: "/alpha-mini-2.webp",
     },
     {
-      location: "Classroom B",
       lastSeen: "1 minute ago", 
       version: "v2.1.3",
       students: 4,
@@ -79,7 +77,6 @@ function extendRobotWithMockData(robot: ReturnType<typeof useRobotStore>['robots
       image: "/alpha-mini-2.webp",
     },
     {
-      location: "Classroom C",
       lastSeen: "5 minutes ago",
       version: "v2.1.2",
       students: 2,
@@ -160,19 +157,19 @@ export default function TeacherDashboard() {
               title: "Thông tin hệ thống",
               firmware: "Phiên bản phần mềm",
               temperature: "Nhiệt độ",
+              robotmodel: "Mẫu robot",
             },
             currentStatus: {
               title: "Trạng thái hiện tại",
               status: "Trạng thái",
               task: "Nhiệm vụ",
               battery: "Pin",
-              location: "Vị trí",
             },
             quickActions: {
               title: "Tác vụ nhanh",
-              restart: "Khởi động lại",
+              restart: "Tắt nguồn - Khởi động lại",
               settings: "Cài đặt",
-              updateFirmware: "Cập nhật phần mềm",
+              forceStop: "Dừng hành động",
             },
             statusTexts: {
               online: "Đang hoạt động",

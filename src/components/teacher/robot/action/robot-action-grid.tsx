@@ -6,6 +6,14 @@ import { useRobotActions } from "@/hooks/use-robot-action"
 import { useDances } from "@/hooks/use-robot-dance"
 import { useExpression } from "@/features/activities/hooks/use-expression"
 import { TabData } from "@/types/tab-data"
+import { useSkills } from "@/hooks/use-skills"
+// TODO: Implement useExtendedActions hook if not available
+// import { useExtendedActions } from "@/hooks/use-extended-actions"
+
+interface RobotActionGridProps {
+  sendCommandToBackend: (actionCode: string, type: "action" | "expression" | "skills_helper" | "extended_action") => Promise<unknown>;
+  onActionSelect: (action: RobotActionUI) => void;
+}
 import {
   RobotActionUI,
   mapActionToUI,
@@ -16,16 +24,36 @@ import {
 export function RobotActionGrid({
   sendCommandToBackend,
   onActionSelect,
-}: {
-  sendCommandToBackend: (actionCode: string, type: "action" | "expression") => Promise<unknown>
-  onActionSelect: (action: RobotActionUI) => void
-}) {
-  const [selectedTab, setSelectedTab] = useState<"action" | "dance" | "expression">("action")
+}: RobotActionGridProps) {
+  const [selectedTab, setSelectedTab] = useState<"action" | "dance" | "expression" | "skills" | "extended_actions">("action")
   const [currentActionIndex, setCurrentActionIndex] = useState<number | null>(null)
 
   const [actionPage, setActionPage] = useState(1)
   const [dancePage, setDancePage] = useState(1)
   const [expressionPage, setExpressionPage] = useState(1)
+  const [skillsPage, setSkillsPage] = useState(1)
+  const [extendedActionsPage, setExtendedActionsPage] = useState(1)
+  // --- Extended Actions ---
+  // TODO: Replace with real hook when available
+  // const { data: extendedActionsData, isLoading: extendedActionsLoading, error: extendedActionsError } =
+  //   useExtendedActions(extendedActionsPage, pageSize, "")
+  // const extendedActionsTab: TabData<RobotActionUI> = {
+  //   actions: (extendedActionsData?.data ?? []).map(mapActionToUI),
+  //   totalPages: extendedActionsData?.total_pages ?? 1,
+  //   currentPage: extendedActionsPage,
+  //   setCurrentPage: setExtendedActionsPage,
+  //   loading: extendedActionsLoading,
+  //   error: extendedActionsError ? String(extendedActionsError) : null,
+  // }
+  // Temporary placeholder:
+  const extendedActionsTab: TabData<RobotActionUI> = {
+    actions: [],
+    totalPages: 1,
+    currentPage: extendedActionsPage,
+    setCurrentPage: setExtendedActionsPage,
+    loading: false,
+    error: null,
+  }
 
   const pageSize = 8
 
@@ -63,21 +91,56 @@ export function RobotActionGrid({
     setCurrentPage: setExpressionPage,
     loading: expLoading,
     error: expError ? String(expError) : null,
+// (removed duplicate misplaced interface and function definition)
+  }
+
+  // --- Skills ---
+  const { data: skillsData, isLoading: skillsLoading, error: skillsError } =
+    useSkills(skillsPage, pageSize, "")
+  const skillsTab: TabData<RobotActionUI> = {
+    actions: (skillsData?.data ?? []).map(mapActionToUI),
+    totalPages: skillsData?.total_pages ?? 1,
+    currentPage: skillsPage,
+    setCurrentPage: setSkillsPage,
+    loading: skillsLoading,
+    error: skillsError ? String(skillsError) : null,
   }
 
   // chọn tab
   let tabData: TabData<RobotActionUI>
-  if (selectedTab === "action") tabData = actionTab
-  else if (selectedTab === "dance") tabData = danceTab
-  else tabData = expressionTab
+  let tabType: "action" | "expression" | "skills_helper" | "extended_action"
+  if (selectedTab === "action") {
+    tabData = actionTab
+    tabType = "action"
+  } else if (selectedTab === "dance") {
+    tabData = danceTab
+    tabType = "action"
+  } else if (selectedTab === "expression") {
+    tabData = expressionTab
+    tabType = "expression"
+  } else if (selectedTab === "skills") {
+    tabData = skillsTab
+    tabType = "skills_helper"
+  } else {
+    tabData = extendedActionsTab
+    tabType = "extended_action"
+  }
 
   return (
     <div className="flex flex-col items-center mb-4 w-full">
       {/* Tabs */}
       <div className="flex justify-center space-x-4 mb-6">
-        {(["action", "dance", "expression"] as const).map((tab) => {
+        {(["action", "dance", "expression", "skills", "extended_actions"] as const).map((tab) => {
           const label =
-            tab === "action" ? "Hành động" : tab === "dance" ? "Nhảy múa" : "Biểu cảm"
+            tab === "action"
+              ? "Hành động"
+              : tab === "dance"
+              ? "Nhảy múa"
+              : tab === "expression"
+              ? "Biểu cảm"
+              : tab === "skills"
+              ? "Kỹ năng"
+              : "Hành động nâng cao"
 
           return (
             <button
@@ -106,7 +169,7 @@ export function RobotActionGrid({
         sendCommandToBackend={(code) =>
           sendCommandToBackend(
             code,
-            selectedTab === "expression" ? "expression" : "action"
+            tabType
           )
         }
         onActionSelect={onActionSelect}

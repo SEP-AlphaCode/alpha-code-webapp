@@ -57,7 +57,7 @@ export default function RobotActionPage() {
 
   return (
     <div className="min-h-screen">
-      <div className="max-w-6xl mx-auto">
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 pb-20">
         <RobotActionHeader />
 
         {/* Nếu có action đang chọn thì show detail */}
