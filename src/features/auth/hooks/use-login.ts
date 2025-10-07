@@ -13,21 +13,21 @@ export const useLogin = () => {
     onSuccess: async (data) => {
       // Check for empty response
       if (!data || Object.keys(data).length === 0) {
-        toast.error('Error: Server returned empty response. Please check the API endpoint.');
+        toast.error('Lỗi: Máy chủ trả về phản hồi trống. Vui lòng kiểm tra API endpoint.');
         return;
       }
       
       // Check if accessToken exists in the response
       const accessToken = data.accessToken;
       if (!accessToken) {
-        toast.error('Error: No access token received from server.');
+        toast.error('Lỗi: Không nhận được access token từ máy chủ.');
         return;
       }
 
       // Check if refreshToken exists in the response
       const refreshToken = data.refreshToken;
       if (!refreshToken) {
-        toast.error('Error: No refresh token received from server.');
+        toast.error('Lỗi: Không nhận được refresh token từ máy chủ.');
         return;
       }
       // Save tokens to sessionStorage
@@ -37,10 +37,10 @@ export const useLogin = () => {
       const accountData = getTokenPayload(accessToken);
       
       if (!accountData) {
-        toast.error('Error: Unable to get account information from token');
+        toast.error('Lỗi: Không thể lấy thông tin tài khoản từ token');
         return;
       }
-      toast.success(`Welcome ${accountData.fullName}!`);
+      toast.success(`Chào mừng ${accountData.fullName}!`);
       
       // Redirect based on role from account data
       const roleNameLower = accountData.roleName.toLowerCase();
@@ -65,20 +65,20 @@ export const useLogin = () => {
       };
       if (err.response) {
         if (err.response.status === 404) {
-          toast.error('API endpoint does not exist. Please check server configuration.');
+          toast.error('API endpoint không tồn tại. Vui lòng kiểm tra cấu hình máy chủ.');
         } else if (err.response.status === 401) {
-          toast.error('Incorrect username or password.');
+          toast.error('Tên đăng nhập hoặc mật khẩu không chính xác.');
         } else if (err.response.status >= 500) {
-          toast.error('Server error. Please try again later.');
+          toast.error('Lỗi máy chủ. Vui lòng thử lại sau.');
         } else {
-          toast.error(`API Error: ${err.response.status}`);
+          toast.error(`Lỗi API: ${err.response.status}`);
         }
       } else if (err.request) {
         // Network error
-        toast.error('Unable to connect to server. Please check your network connection.');
+        toast.error('Không thể kết nối đến máy chủ. Vui lòng kiểm tra kết nối mạng.');
       } else {
         // Other error
-        toast.error('Login failed. Please check your information again!');
+        toast.error('Đăng nhập thất bại. Vui lòng kiểm tra lại thông tin!');
       }
     }
   });
@@ -91,17 +91,17 @@ export const useGoogleLogin = () => {
     mutationFn: googleLogin, // Nhận vào idToken (string)
     onSuccess: (data) => {
       if (!data || Object.keys(data).length === 0) {
-        toast.error('Error: Server returned empty response. Please check the API endpoint.');
+        toast.error('Lỗi: Máy chủ trả về phản hồi trống. Vui lòng kiểm tra API endpoint.');
         return;
       }
       const accessToken = data.accessToken;
       if (!accessToken) {
-        toast.error('Error: No access token received from server.');
+        toast.error('Lỗi: Không nhận được access token từ máy chủ.');
         return;
       }
       const refreshToken = data.refreshToken;
       if (!refreshToken) {
-        toast.error('Error: No refresh token received from server.');
+        toast.error('Lỗi: Không nhận được refresh token từ máy chủ.');
         return;
       }
       sessionStorage.setItem('accessToken', accessToken);
@@ -110,10 +110,10 @@ export const useGoogleLogin = () => {
       const accountData = getTokenPayload(accessToken);
 
       if (!accountData) {
-        toast.error('Error: Unable to get account information from token');
+        toast.error('Lỗi: Không thể lấy thông tin tài khoản từ token');
         return;
       }
-      toast.success(`Welcome ${accountData.fullName}! Login successful.`);
+      toast.success(`Chào mừng ${accountData.fullName}! Đăng nhập thành công.`);
       const roleNameLower = accountData.roleName.toLowerCase();
       if (roleNameLower === 'admin') {
         router.push('/admin');
@@ -124,7 +124,7 @@ export const useGoogleLogin = () => {
       }
     },
     onError: (error) => {
-      toast.error(error.message || 'Google login failed');
+      toast.error(error.message || 'Đăng nhập Google thất bại');
     }
   });
 };
