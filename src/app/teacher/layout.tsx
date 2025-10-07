@@ -42,6 +42,7 @@ export default function TeacherLayout({ children }: TeacherLayoutProps) {
   const navigationItems = [
     { name: "Dashboard", href: "/teacher", icon: "📊" },
     { name: "Robots", href: "/teacher/robot", icon: "🤖" },
+    { name: "Joysticks Control", href: "/teacher/joystick", icon: "🕹️" },
     { name: "Students", href: "/teacher/student", icon: "👥" },
     { name: "Programming", href: "/teacher/programming", icon: "💻" },
     { name: "Classroom", href: "/teacher/classroom", icon: "🏫" },
