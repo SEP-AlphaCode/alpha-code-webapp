@@ -1,21 +1,21 @@
-export type Skill = {
-    code: string
-    createdDate: string
-    icon: string
+export type RobotCommand = {
     id: string
-    lastUpdate: string
+    code: string
+    icon: string
     name: string
     robotModelId: string
     status: number
     statusText: string
+    createdDate: string
+    lastUpdate: string
 }
 
-export type SkillResponse = {
-    skills: Skill[]
+export type RobotCommandResponse = {
+    RobotCommands: RobotCommand[]
     has_next: boolean
     has_previous: boolean
     page: number
     per_page: number
+    total_count: number
     total_pages: number
-    total_items: number
 }

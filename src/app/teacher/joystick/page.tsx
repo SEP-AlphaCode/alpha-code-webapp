@@ -362,9 +362,9 @@ export default function JoystickPage() {
                         {/* Action descriptions */}
                         <div className="text-xs text-gray-300 text-center space-y-1">
                           <div>🟡 A: Ngồi xuống</div>
-                          <div>🔴 B: Ngồi xổm</div>
-                          <div>🔵 X: Đứng lên</div>
-                          <div>🟢 Y: Vẫy tay</div>
+                          <div>🔴 B: Nhảy</div>
+                          <div>🔵 X: Vẫy tay</div>
+                          <div>🟢 Y: Đứng lêny</div>
                         </div>
                       </div>
 
