@@ -96,6 +96,7 @@ function extendRobotWithMockData(robot: ReturnType<typeof useRobotStore>['robots
     status: robot.status === 'busy' ? 'charging' : robot.status,
     battery: robot.battery || 0, // Use battery from Redux, fallback to 0
     serialNumber: robot.serial,
+    robotmodel: "AlphaMini", // Add robotmodel, fallback to "AlphaMini"
     ...mockInfo,
   };
 }

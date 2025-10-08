@@ -9,7 +9,7 @@ import {
     DialogTitle,
 } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
-import { Skill } from "@/types/skills"
+import { Skill } from "@/types/skill"
 import { AlertTriangle } from "lucide-react"
 
 

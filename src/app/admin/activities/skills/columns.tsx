@@ -1,36 +1,40 @@
 "use client"
 
-import { Skill } from "@/types/skills"
-import { ColumnDef } from "@tanstack/react-table"
+import { Skill } from "@/types/skill"
+import { Column, ColumnDef } from "@tanstack/react-table"
 import { Checkbox } from "@/components/ui/checkbox"
 import Image from "next/image"
-
-import { ArrowUpDown } from "lucide-react"
-import { MoreHorizontal, Edit, Trash2, Eye } from "lucide-react"
-
+import { ArrowUpDown, MoreHorizontal, Edit, Trash2, Eye } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import {
-    DropdownMenu,
-    DropdownMenuContent,
-    DropdownMenuItem,
-    DropdownMenuLabel,
-    DropdownMenuSeparator,
-    DropdownMenuTrigger,
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
+import { RobotModel } from "@/types/robot-model"
 
-
-// This type is used to define the shape of our data.
-// You can use a Zod schema here if you want.
+// ===========================================
+// Cột hiển thị cho bảng danh sách kỹ năng
+// ===========================================
 export const createColumns = (
-  onEdit?: (skills: Skill) => void, 
-  onDelete?: (skills: Skill) => void,
-  onView?: (skills: Skill) => void
+  onEdit?: (skill: Skill) => void,
+  onDelete?: (skill: Skill) => void,
+  onView?: (skill: Skill) => void,
+  robotModels: RobotModel[] = []
 ): ColumnDef<Skill>[] => {
-  // Note: We can't use hooks directly in this function since it's not a component
-  // Instead, we'll create a wrapper component for the action column
-  
+  // ✅ Lấy tên model theo id
+  const getModelName = (id?: string) => {
+    if (!id) return "Không có"
+    const model = robotModels.find((r) => r.id === id)
+    return model ? model.name : `${id.substring(0, 8)}...`
+  }
+
+  // ✅ Action cell (dropdown menu)
   const ActionCell = ({ row }: { row: { original: Skill } }) => {
-    const expression = row.original
+    const skill = row.original
     return (
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
@@ -41,177 +45,178 @@ export const createColumns = (
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end">
           <DropdownMenuLabel>Thao tác</DropdownMenuLabel>
-          <DropdownMenuItem
-            onClick={() => navigator.clipboard.writeText(expression.id)}
-            className="hover:bg-gray-100 transition-colors duration-200 cursor-pointer"
-          >
+          <DropdownMenuItem onClick={() => navigator.clipboard.writeText(skill.id)}>
             Sao chép ID
           </DropdownMenuItem>
           <DropdownMenuSeparator />
-          <DropdownMenuItem 
-            onClick={() => onView?.(expression)}
-            className="hover:bg-green-50 hover:text-green-700 transition-all duration-200 cursor-pointer group"
-          >
-            <Eye className="mr-2 h-4 w-4 text-gray-600 group-hover:text-green-600 group-hover:scale-110 transition-all duration-200" />
-            Xem chi tiết
+          <DropdownMenuItem onClick={() => onView?.(skill)}>
+            <Eye className="mr-2 h-4 w-4 text-green-600" /> Xem chi tiết
           </DropdownMenuItem>
-          <DropdownMenuItem 
-            onClick={() => onEdit?.(expression)}
-            className="hover:bg-blue-50 hover:text-blue-700 transition-all duration-200 cursor-pointer group"
-          >
-            <Edit className="mr-2 h-4 w-4 text-gray-600 group-hover:text-blue-600 group-hover:scale-110 transition-all duration-200" />
-            Chỉnh sửa
+          <DropdownMenuItem onClick={() => onEdit?.(skill)}>
+            <Edit className="mr-2 h-4 w-4 text-blue-600" /> Chỉnh sửa
           </DropdownMenuItem>
-          <DropdownMenuItem 
-            onClick={() => onDelete?.(expression)}
-            className="text-red-600 hover:bg-red-50 hover:text-red-700 transition-all duration-200 cursor-pointer group"
+          <DropdownMenuItem
+            onClick={() => onDelete?.(skill)}
+            className="text-red-600"
           >
-            <Trash2 className="mr-2 h-4 w-4 group-hover:text-red-600 group-hover:scale-110 transition-all duration-200" />
-            Xóa
+            <Trash2 className="mr-2 h-4 w-4 text-red-600" /> Xóa
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
     )
   }
 
+  // ✅ Header cell đơn giản
   const HeaderCell = ({ text }: { text: string }) => (
-    <span className="flex items-center gap-1 text-gray-700 font-semibold">
+    <span className="font-semibold text-gray-700">{text}</span>
+  )
+
+  // ✅ Header có thể sắp xếp
+    const SortableHeader = ({
+    column,
+    text,
+  }: {
+    column: Column<Skill, unknown>
+    text: string
+  }) => (
+    <Button
+      variant="ghost"
+      onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+      className="p-0 h-auto min-w-0 font-semibold text-purple-700"
+    >
       {text}
-    </span>
+      <ArrowUpDown className="ml-2 h-4 w-4" />
+    </Button>
   )
 
-  const CodeHeaderCell = () => (
-    <span className="flex items-center gap-1 text-blue-700 font-semibold">
-      Mã biểu cảm
-    </span>
-  )
+  // ✅ Icon / hình ảnh
+  const IconCell = ({ row }: { row: { original: Skill } }) => {
+    const icon = row.original.icon
+    const isUrl = typeof icon === "string" && icon.startsWith("http")
 
-  const NameHeaderCell = ({ column }: { column: { toggleSorting: (isAsc: boolean) => void, getIsSorted: () => string | false } }) => (
-    <span className="flex items-center gap-1 text-purple-700 font-semibold">
-      <Button
-        variant="ghost"
-        onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-        className="p-0 h-auto min-w-0 font-semibold"
-      >
-        Tên biểu cảm
-        <ArrowUpDown className="ml-2 h-4 w-4" />
-      </Button>
-    </span>
-  )
-
-  const ImageHeaderCell = () => (
-    <span className="flex items-center gap-1 text-blue-600 font-semibold">
-      Hình ảnh
-    </span>
-  )
-
-  const StatusHeaderCell = () => (
-    <span className="flex items-center gap-1 text-green-700 font-semibold">
-      Trạng thái
-    </span>
-  )
-
-  const ImageCell = ({ row }: { row: { original: Skill } }) => (
-    <div className="flex items-center gap-1 text-blue-600 font-medium">
-      {row.original.imageUrl ? (
-        <Image 
-          src={row.original.imageUrl} 
-          alt="Expression" 
-          width={60}
-          height={60}
-          className="w-15 h-15 object-cover rounded"
-          onError={(e) => {
-            e.currentTarget.style.display = 'none'
-          }}
-        />
-      ) : (
-        <span className="text-gray-400">Không có hình ảnh</span>
-      )}
-    </div>
-  )
-
-  const StatusCell = ({ row }: { row: { original: Skill } }) => {
-    const status = row.original.status
-    let color = "bg-gray-200 text-gray-700"
-    let text = "Không xác định"
-    let icon = null
-    
-    if (status === 1) {
-      color = "bg-green-100 text-green-700"
-      text = "Kích hoạt"
-      icon = <svg className="h-4 w-4 text-green-500 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor"><circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="2" fill="currentColor" /></svg>
-    } else if (status === 0) {
-      color = "bg-red-100 text-red-700"
-      text = "Không kích hoạt"
-      icon = <svg className="h-4 w-4 text-red-500 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor"><circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="2" fill="currentColor" /></svg>
-    }
-    
     return (
-      <span className={`inline-flex items-center px-2 py-1 rounded ${color} font-semibold text-xs`}>
-        {icon}
-        {text}
+      <div className="flex items-center justify-center">
+        {isUrl ? (
+          <Image
+            src={icon}
+            alt="Skill icon"
+            width={48}
+            height={48}
+            className="rounded object-cover"
+            onError={(e) => (e.currentTarget.style.display = "none")}
+          />
+        ) : icon ? (
+          <span className="text-2xl">{icon}</span>
+        ) : (
+          <span className="text-gray-400 text-sm">Không có</span>
+        )}
+      </div>
+    )
+  }
+
+  // ✅ Trạng thái (status)
+  const StatusCell = ({ row }: { row: { original: Skill } }) => {
+    const { status } = row.original
+    const active = status === 1
+    return (
+      <span
+        className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-semibold ${
+          active ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"
+        }`}
+      >
+        <span
+          className={`w-2 h-2 mr-2 rounded-full ${
+            active ? "bg-green-500" : "bg-red-500"
+          }`}
+        ></span>
+        {active ? "Kích hoạt" : "Không kích hoạt"}
       </span>
     )
   }
 
   return [
+    // ✅ Checkbox
     {
-        id: "select",
-        header: ({ table }) => (
-            <Checkbox
-                checked={
-                    table.getIsAllPageRowsSelected() ||
-                    (table.getIsSomePageRowsSelected() && "indeterminate")
-                }
-                onCheckedChange={(value: boolean) => table.toggleAllPageRowsSelected(!!value)}
-                aria-label="Select all"
-            />
-        ),
-        cell: ({ row }) => (
-            <Checkbox
-                checked={row.getIsSelected()}
-                onCheckedChange={(value: boolean) => row.toggleSelected(!!value)}
-                aria-label="Select row"
-            />
-        ),
-        enableSorting: false,
-        enableHiding: false,
+      id: "select",
+      header: ({ table }) => (
+        <Checkbox
+          checked={
+            table.getIsAllPageRowsSelected() ||
+            (table.getIsSomePageRowsSelected() && "indeterminate")
+          }
+          onCheckedChange={(value: boolean) => table.toggleAllPageRowsSelected(!!value)}
+          aria-label="Select all"
+        />
+      ),
+      cell: ({ row }) => (
+        <Checkbox
+          checked={row.getIsSelected()}
+          onCheckedChange={(value: boolean) => row.toggleSelected(!!value)}
+          aria-label="Select row"
+        />
+      ),
+      enableSorting: false,
+      enableHiding: false,
     },
+
+    // ✅ ID
     {
-  accessorKey: "id",
-  header: () => <HeaderCell text="ID" />,
-        cell: ({ row }) => (
-            <span className="text-gray-700 font-semibold">
-                {row.original.id.substring(0, 8)}...
-            </span>
-        ),
+      accessorKey: "id",
+      header: () => <HeaderCell text="ID" />,
+      cell: ({ row }) => (
+        <span className="font-mono text-gray-600">{row.original.id.substring(0, 8)}...</span>
+      ),
     },
+
+    // ✅ Code
     {
-        accessorKey: "code",
-        header: CodeHeaderCell,
-        cell: ({ row }) => (
-            <span className="text-blue-700 font-mono bg-blue-50 px-2 py-1 rounded text-sm">
-                {row.original.code}
-            </span>
-        ),
+      accessorKey: "code",
+      header: () => <HeaderCell text="Mã kỹ năng" />,
+      cell: ({ row }) => (
+        <span className="text-blue-700 font-mono bg-blue-50 px-2 py-1 rounded text-sm">
+          {row.original.code}
+        </span>
+      ),
     },
+
+    // ✅ Name
     {
-        accessorKey: "name",
-        header: NameHeaderCell,
+      accessorKey: "name",
+      header: ({ column }) => <SortableHeader column={column} text="Tên kỹ năng" />,
+      cell: ({ row }) => (
+        <span className="font-semibold text-gray-800">{row.original.name}</span>
+      ),
     },
+
+    // ✅ Icon
     {
-        accessorKey: "imageUrl",
-        header: ImageHeaderCell,
-        cell: ImageCell,
+      accessorKey: "icon",
+      header: () => <HeaderCell text="Icon / Hình ảnh" />,
+      cell: IconCell,
     },
+
+    // ✅ Status
     {
-        accessorKey: "status",
-        header: StatusHeaderCell,
-        cell: StatusCell,
+      accessorKey: "status",
+      header: () => <HeaderCell text="Trạng thái" />,
+      cell: StatusCell,
     },
+
+    // ✅ Robot Model
     {
-        id: "actions",
-        cell: ActionCell,
+      accessorKey: "robotModelId",
+      header: () => <HeaderCell text="Robot Model" />,
+      cell: ({ row }) => (
+        <span className="text-gray-700 font-medium">
+          {getModelName(row.original.robotModelId)}
+        </span>
+      ),
     },
-  ]
+
+    // ✅ Actions
+    {
+      id: "actions",
+      cell: ActionCell,
+    },
+  ] satisfies ColumnDef<Skill>[]
 }

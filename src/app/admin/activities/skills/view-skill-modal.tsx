@@ -8,7 +8,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
-import { Skill } from "@/types/skills"
+import { Skill } from "@/types/skill"
 import { Badge } from "@/components/ui/badge"
 import { Calendar, FileText, Hash, Settings, Image as ImageIcon } from "lucide-react"
 import Image from "next/image"
@@ -28,7 +28,8 @@ export function ViewSkillModal({ // Đã đổi tên component
 
   if (!skill) return null // Đã đổi tên prop
 
-  const formatDate = (dateString: string) => {
+  const formatDate = (dateString: string | null) => {
+    if (!dateString) return "N/A"
     try {
       const date = new Date(dateString)
       return date.toLocaleString('vi-VN', {
@@ -123,10 +124,10 @@ export function ViewSkillModal({ // Đã đổi tên component
                 <div className="flex-1">
                   <label className="text-sm font-medium text-gray-700">Hình ảnh</label>
                   <div className="mt-1">
-                    {skill.imageUrl ? ( // Đã đổi tên prop
+                    {skill.icon ? ( // Đã đổi tên prop
                       <div className="space-y-2">
                         <Image 
-                          src={skill.imageUrl} // Đã đổi tên prop
+                          src={skill.icon} // Đã đổi tên prop
                           alt="Skill" // Đã đổi alt text
                           width={96}
                           height={96}
@@ -136,7 +137,7 @@ export function ViewSkillModal({ // Đã đổi tên component
                           }}
                         />
                         <p className="text-xs text-blue-600 bg-blue-50 p-2 rounded border break-all">
-                          {skill.imageUrl} {/* Đã đổi tên prop */}
+                          {skill.icon} {/* Đã đổi tên prop */}
                         </p>
                       </div>
                     ) : (
@@ -180,7 +181,7 @@ export function ViewSkillModal({ // Đã đổi tên component
                 <div className="flex-1">
                   <label className="text-sm font-medium text-gray-700">Cập nhật lần cuối</label>
                   <p className="text-sm text-gray-900 bg-orange-50 p-2 rounded border font-mono">
-                    {formatDate(skill.lastUpdate)} {/* Đã đổi tên prop */}
+                    {formatDate(skill.lastUpdated)} {/* Đã đổi tên prop */}
                   </p>
                 </div>
               </div>

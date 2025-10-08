@@ -1,21 +1,32 @@
 export type Skill = {
-    code: string
-    createdDate: string
-    icon: string
-    id: string
-    lastUpdate: string
-    name: string
-    robotModelId: string
-    status: number
-    statusText: string
+  id: string
+  name: string
+  code: string
+  icon: string
+  createdDate: string
+  lastUpdated: string | null
+  robotModelId?: string
+  status: number
+  statusText: string
 }
 
 export type SkillResponse = {
-    skills: Skill[]
-    has_next: boolean
-    has_previous: boolean
-    page: number
-    per_page: number
-    total_pages: number
-    total_items: number
+  data: Skill[]
+  page: number
+  total_count: number
+  per_page: number
+  total_pages: number
+  has_next: boolean
+  has_previous: boolean
+}
+
+export type SkillModal = {
+    robotModelId?: string
+    name: string
+    code: string
+    description: string
+    duration: number
+    status: number
+    canInterrupt: boolean
+    icon: string
 }
