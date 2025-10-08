@@ -4,15 +4,13 @@ import { activitiesHttp } from "@/utils/http";
 // GET /api/v1/skills - Get all extended actions with pagination and optional filters
 export const getAllSkills = async (page?: number, size?: number, search?: string, robotModelId?: string, signal?: AbortSignal) => {
   try {
-    const params: any = {};
     
-    if (page !== undefined) params.page = page;
-    if (size !== undefined) params.size = size;
-    if (search) params.search = search;
-    if (robotModelId) params.robotModelId = robotModelId;
+    if (page !== undefined) page = page;
+    if (size !== undefined) size = size;
+    if (search) search = search;
+    if (robotModelId) robotModelId = robotModelId;
 
     const response = await activitiesHttp.get<SkillResponse>('/skills', {
-      params,
       signal
     });
     return response.data;
@@ -58,13 +56,12 @@ export const getSkillByName = async (name: string) => {
 // GET /api/v1/skills/robot-model - Get extended action by robot model id
 export const getSkillsByRobotModel = async (robotModelId: string, page?: number, size?: number, signal?: AbortSignal) => {
   try {
-    const params: any = { robotModelId };
     
-    if (page !== undefined) params.page = page;
-    if (size !== undefined) params.size = size;
+    if (page !== undefined) page = page;
+    if (size !== undefined) size = size;
 
     const response = await activitiesHttp.get<SkillResponse>('/skills/robot-model', {
-      params,
+      params: { robotModelId, page, size } ,
       signal
     });
     return response.data;
