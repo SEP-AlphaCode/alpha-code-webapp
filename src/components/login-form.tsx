@@ -101,7 +101,7 @@ export function LoginForm({
                     onClick={() => {router.push('/')}}
                   />
                 </div>
-                <h1 className="text-2xl font-bold">Đăng nhập vào Alpha Mini Code</h1>
+                <h1 className="text-2xl font-bold">Đăng nhập vào Alpha Code</h1>
                 <p className="text-muted-foreground text-balance">
                   Nền tảng lập trình và điều khiển robot giáo dục thông minh.
                 </p>
