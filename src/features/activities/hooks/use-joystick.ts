@@ -11,13 +11,29 @@ import { Joystick, JoystickResponse } from "@/types/joystick";
 export const useJoystick = () => {
     const queryClient = useQueryClient();
 
-    // Get joystick by account and robot (with Redis cache)
     const useGetJoystickByAccountRobot = (accountId: string, robotId: string) => {
         return useQuery<JoystickResponse>({
             queryKey: ["joysticks", "by-account-robot", accountId, robotId],
-            queryFn: () => getJoystickByAccountRobot(accountId, robotId),
+            queryFn: () => {
+                return getJoystickByAccountRobot(accountId, robotId);
+            },
             enabled: !!accountId && !!robotId,
-            staleTime: 1000 * 60 * 5, // 5 minutes cache
+            staleTime: 1000 * 60, // Reduced to 1 minute for debugging
+            gcTime: 1000 * 60 * 5, // Reduced to 5 minutes
+            refetchOnWindowFocus: false,
+            refetchOnMount: true, // Changed to true for debugging
+            refetchOnReconnect: false,
+            retry: (failureCount, error: any) => {
+                if (error?.response?.status === 429) {
+                    return false;
+                }
+                // Retry other errors max 2 times
+                return failureCount < 2;
+            },
+            retryDelay: (attemptIndex) => {
+                // Exponential backoff: 1s, 2s, 4s
+                return Math.min(1000 * 2 ** attemptIndex, 10000);
+            },
         });
     };
 
@@ -26,7 +42,14 @@ export const useJoystick = () => {
         return useMutation({
             mutationFn: createJoystick,
             onSuccess: () => {
+                console.log('✅ Create joystick success - invalidating queries');
+                // Invalidate all joystick queries
                 queryClient.invalidateQueries({ queryKey: ["joysticks"] });
+                // Force refetch specific account-robot queries
+                queryClient.invalidateQueries({ 
+                    queryKey: ["joysticks", "by-account-robot"], 
+                    exact: false 
+                });
             },
         });
     };
@@ -40,6 +63,10 @@ export const useJoystick = () => {
             }) => updateJoystick(id, joystickData),
             onSuccess: () => {
                 queryClient.invalidateQueries({ queryKey: ["joysticks"] });
+                queryClient.invalidateQueries({ 
+                    queryKey: ["joysticks", "by-account-robot"], 
+                    exact: false 
+                });
             },
         });
     };

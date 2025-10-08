@@ -1,12 +1,15 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useMemo } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { useRobotCommand } from '@/hooks/use-robot-command';
 import { useRobotStore } from '@/hooks/use-robot-store';
 import { RobotSelector } from '@/components/teacher/robot-selector';
+import JoystickConfigurationModal from '@/components/teacher/joystick/joystick-configuration-modal';
+import { useJoystick } from '@/features/activities/hooks/use-joystick';
+import { getUserInfoFromToken } from '@/utils/tokenUtils';
 
 interface JoystickPosition {
   x: number;
@@ -39,6 +42,7 @@ export default function JoystickPage() {
 
   // Robot control setup
   const [notify, setNotifyState] = useState<{ msg: string; type: "success" | "error" } | null>(null);
+  const [isConfigModalOpen, setIsConfigModalOpen] = useState(false);
   const setNotify = (msg: string, type: "success" | "error") => {
     setNotifyState({ msg, type });
     setTimeout(() => setNotifyState(null), 3000);
@@ -46,25 +50,161 @@ export default function JoystickPage() {
 
   const { sendCommandToBackend } = useRobotCommand(setNotify);
   const { selectedRobot, selectedRobotSerial, initializeMockData } = useRobotStore();
+  const { useGetJoystickByAccountRobot } = useJoystick();
 
-  // Action codes for ABXY buttons - specific robot actions
-  const actionCodes = {
-    A: '027',           // Ngồi xuống
-    B: 'dance_0001en',             // Ngồi xổm
-    X: '007',           // Đứng lên
-    Y: '015',         // Vẫy tay
-  };
+  // Fixed robotId for joystick configuration  
+  const robotId = '7754417e-e9a4-48e4-8f72-164a612403e0';
+  
+  // Memoize accountId to prevent unnecessary re-computations
+  const accountId = useMemo(() => {
+    if (typeof window !== 'undefined') {
+      const accessToken = sessionStorage.getItem('accessToken');
+      if (accessToken) {
+        const userInfo = getUserInfoFromToken(accessToken);
+        const id = userInfo?.id || '';
+        return id;
+      }
+    }
+    return '';
+  }, []); // Empty dependency array - only compute once when component mounts
+  
+  // Fetch joystick configurations with fallback to localStorage
+  const { data: joystickData, refetch: refetchJoystickData, error: joystickError, isLoading } = useGetJoystickByAccountRobot(
+    accountId,
+    robotId
+  );
 
-  const actionDescriptions = {
-    A: { name: 'Ngồi xuống', category: 'action' as const },
-    B: { name: 'Nhảy', category: 'action' as const },
-    X: { name: 'Đứng lên', category: 'action' as const },
-    Y: { name: 'Vẫy tay', category: 'action' as const },
+  // Fallback to localStorage if API fails - memoized to prevent infinite re-renders
+  const effectiveJoystickData = useMemo(() => {
+    if (joystickData) {
+      // Save to localStorage when API succeeds
+      const cacheKey = `joystick_${accountId}_${robotId}`;
+      localStorage.setItem(cacheKey, JSON.stringify(joystickData));
+      return joystickData;
+    }
+    
+    // If API failed (like 429), try to use cached data
+    if (joystickError) {
+      const cacheKey = `joystick_${accountId}_${robotId}`;
+      const cachedData = localStorage.getItem(cacheKey);
+      if (cachedData) {
+        try {
+          const parsed = JSON.parse(cachedData);
+          return parsed;
+        } catch (e) {
+          // Invalid cached data, ignore
+        }
+      }
+    }
+    
+    return joystickData;
+  }, [joystickData, joystickError, accountId, robotId]);
+  
+  // Temporary mock data for testing if API data is not working - memoized to prevent re-renders
+  const mockJoystickData = useMemo(() => ({
+    joysticks: [
+      {
+        buttonCode: "A",
+        danceId: "dee9a7a3-bb8a-4ca2-a562-ba9384614bc9",
+        danceName: "Dance 2", 
+        danceCode: "dance_0002en",
+        actionId: null,
+        actionName: null,
+        actionCode: null
+      },
+      {
+        buttonCode: "B", 
+        actionId: "89145fc0-7871-456b-96c5-ce23a285c612",
+        actionName: "Squat",
+        actionCode: "031",
+        danceId: null,
+        danceName: null,
+        danceCode: null
+      }
+    ]
+  }), []);
+  
+  // Use mock data if API data is null or doesn't have joysticks array for debugging
+  const finalJoystickData = useMemo(() => {
+    return (effectiveJoystickData?.joysticks && effectiveJoystickData.joysticks.length > 0) 
+      ? effectiveJoystickData 
+      : mockJoystickData;
+  }, [effectiveJoystickData]);
+
+  // Dynamic action codes and descriptions based on joystick configuration
+  const [actionCodes, setActionCodes] = useState<Record<string, string>>({});
+  const [actionDescriptions, setActionDescriptions] = useState<{
+    [key: string]: { name: string; category: 'action' | 'dance' | 'expression' }
+  }>({});
+
+  // Update action codes when joystick data changes
+  useEffect(() => {
+    if (finalJoystickData?.joysticks && finalJoystickData.joysticks.length > 0) {
+      const newActionCodes: Record<string, string> = {};
+      const newActionDescriptions: Record<string, { name: string; category: 'action' | 'dance' | 'expression' }> = {};
+
+      finalJoystickData.joysticks.forEach((joystick: any) => {
+        const buttonName = joystick.buttonCode as 'A' | 'B' | 'X' | 'Y';
+        
+        if (['A', 'B', 'X', 'Y'].includes(buttonName)) {
+          let actionCode = '';
+          let actionName = '';
+          let category: 'action' | 'dance' | 'expression' = 'action';
+
+          // Check which ID field has data to determine the action type
+          if (joystick.actionId && joystick.actionName && joystick.actionCode) {
+            actionCode = joystick.actionCode;
+            actionName = joystick.actionName;
+            category = 'action';
+          } else if (joystick.danceId && joystick.danceName && joystick.danceCode) {
+            actionCode = joystick.danceCode;
+            actionName = joystick.danceName;
+            category = 'dance';
+          } else if (joystick.expressionId && joystick.expressionName && joystick.expressionCode) {
+            actionCode = joystick.expressionCode;
+            actionName = joystick.expressionName;
+            category = 'expression';
+          } else if (joystick.skillId && joystick.skillName && joystick.skillCode) {
+            actionCode = joystick.skillCode;
+            actionName = joystick.skillName;
+            category = 'action';
+          } else if (joystick.extendedActionId && joystick.extendedActionName && joystick.extendedActionCode) {
+            actionCode = joystick.extendedActionCode;
+            actionName = joystick.extendedActionName;
+            category = 'action';
+          }
+
+          if (actionCode && actionName) {
+            newActionCodes[buttonName] = actionCode;
+            newActionDescriptions[buttonName] = {
+              name: actionName,
+              category: category,
+            };
+          }
+        }
+      });
+      
+      setActionCodes(newActionCodes);
+      setActionDescriptions(newActionDescriptions);
+    } else {
+      setActionCodes({});
+      setActionDescriptions({});
+    }
+  }, [finalJoystickData]); // Only depend on finalJoystickData since it's memoized
+
+  // Refresh joystick data when modal is closed (only if save was successful)
+  const handleConfigModalClose = () => {
+    setIsConfigModalOpen(false);
+    // React Query will automatically refetch when data becomes stale
+    // No need to manually refetch here
   };
 
   useEffect(() => {
     initializeMockData();
   }, [initializeMockData]);
+
+  // React Query will automatically fetch data when accountId/robotId change
+  // No need for manual refetch due to proper caching configuration
 
   const leftJoystickRef = useRef<HTMLDivElement>(null);
   const rightJoystickRef = useRef<HTMLDivElement>(null);
@@ -146,8 +286,18 @@ export default function JoystickPage() {
       setButtons(prev => ({ ...prev, [buttonName]: false }));
     }, 150);
 
-    // Send robot command - all are action type now
-    await handleSendCommand(actionCodes[buttonName], 'action');
+    // Check if button has been configured
+    if (!actionCodes[buttonName]) {
+      setNotify(`Nút ${buttonName} chưa được cấu hình!`, "error");
+      return;
+    }
+
+    // Get the action category from configuration
+    const actionCategory = actionDescriptions[buttonName]?.category || 'action';
+    const actionType = actionCategory === 'expression' ? 'expression' : 'action';
+
+    // Send robot command with dynamic type
+    await handleSendCommand(actionCodes[buttonName], actionType);
   };
 
   const handleSendCommand = async (actionCode: string, type: "action" | "expression" = "action") => {
@@ -179,8 +329,17 @@ export default function JoystickPage() {
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <h3 className="text-lg font-semibold text-white">Chọn Robot</h3>
-              <div className="flex-1 max-w-md ml-4">
-                <RobotSelector />
+              <div className="flex items-center gap-4">
+                <div className="flex-1 max-w-md">
+                  <RobotSelector />
+                </div>
+                <Button
+                  onClick={() => setIsConfigModalOpen(true)}
+                  variant="outline"
+                  className="bg-blue-600 hover:bg-blue-700 text-white border-blue-500"
+                >
+                  ⚙️ Cấu hình Joystick
+                </Button>
               </div>
             </div>
             {selectedRobot && (
@@ -322,7 +481,7 @@ export default function JoystickPage() {
                               size="sm"
                               className="h-8 w-8 p-0 rounded-full bg-green-600 hover:bg-green-700 text-white font-bold"
                               onClick={() => handleActionButtonPress('Y')}
-                              title="Đứng lên"
+                              title={actionDescriptions.Y?.name || 'Y Button'}
                             >
                               Y
                             </Button>
@@ -332,7 +491,7 @@ export default function JoystickPage() {
                               size="sm"
                               className="h-8 w-8 p-0 rounded-full bg-blue-600 hover:bg-blue-700 text-white font-bold"
                               onClick={() => handleActionButtonPress('X')}
-                              title="Vẫy tay"
+                              title={actionDescriptions.X?.name || 'X Button'}
                             >
                               X
                             </Button>
@@ -342,7 +501,7 @@ export default function JoystickPage() {
                               size="sm"
                               className="h-8 w-8 p-0 rounded-full bg-red-600 hover:bg-red-700 text-white font-bold"
                               onClick={() => handleActionButtonPress('B')}
-                              title="Nhảy"
+                              title={actionDescriptions.B?.name || 'B Button'}
                             >
                               B
                             </Button>
@@ -352,7 +511,7 @@ export default function JoystickPage() {
                               size="sm"
                               className="h-8 w-8 p-0 rounded-full bg-yellow-600 hover:bg-yellow-700 text-white font-bold"
                               onClick={() => handleActionButtonPress('A')}
-                              title="Ngồi xuống"
+                              title={actionDescriptions.A?.name || 'A Button'}
                             >
                               A
                             </Button>
@@ -361,10 +520,10 @@ export default function JoystickPage() {
                         </div>
                         {/* Action descriptions */}
                         <div className="text-xs text-gray-300 text-center space-y-1">
-                          <div>🟡 A: Ngồi xuống</div>
-                          <div>🔴 B: Nhảy</div>
-                          <div>🔵 X: Vẫy tay</div>
-                          <div>🟢 Y: Đứng lêny</div>
+                          <div>🟡 A: {actionDescriptions.A?.name || 'Chưa cấu hình'}</div>
+                          <div>🔴 B: {actionDescriptions.B?.name || 'Chưa cấu hình'}</div>
+                          <div>🔵 X: {actionDescriptions.X?.name || 'Chưa cấu hình'}</div>
+                          <div>🟢 Y: {actionDescriptions.Y?.name || 'Chưa cấu hình'}</div>
                         </div>
                       </div>
 
@@ -480,10 +639,10 @@ export default function JoystickPage() {
               <div className="space-y-2">
                 <h4 className="font-medium text-purple-300">Robot Actions</h4>
                 <div className="text-sm text-gray-300 space-y-1">
-                  <div>🟡 A: Ngồi xuống (sitdown)</div>
-                  <div>🔴 B: Ngồi xổm (squat)</div>
-                  <div>🔵 X: Đứng lên (standup)</div>
-                  <div>🟢 Y: Vẫy tay (wave_hand)</div>
+                  <div>🟡 A: {actionDescriptions.A?.name || 'Chưa cấu hình'}</div>
+                  <div>🔴 B: {actionDescriptions.B?.name || 'Chưa cấu hình'}</div>
+                  <div>🔵 X: {actionDescriptions.X?.name || 'Chưa cấu hình'}</div>
+                  <div>🟢 Y: {actionDescriptions.Y?.name || 'Chưa cấu hình'}</div>
                 </div>
               </div>
 
@@ -512,6 +671,18 @@ export default function JoystickPage() {
           {notify.msg}
         </div>
       )}
+
+      {/* Joystick Configuration Modal */}
+      <JoystickConfigurationModal
+        isOpen={isConfigModalOpen}
+        onClose={handleConfigModalClose}
+        existingJoysticks={finalJoystickData?.joysticks || []}
+        onSuccess={() => {
+          setNotify("Cấu hình joystick đã được lưu thành công!", "success");
+          // React Query will automatically invalidate cache and refetch when mutations complete
+          // No need to manually refetch here
+        }}
+      />
     </div>
   );
 }

@@ -11,6 +11,8 @@ export type Action = {
     createdDate: string
     lastUpdate: string
     canInterrupt: boolean
+    robotModelId: string
+    statusText?: string
 }
 
 export type ActionModal = {
