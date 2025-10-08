@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Power, Settings, RefreshCw } from "lucide-react";
+import { Power, Settings, RefreshCw, StopCircleIcon } from "lucide-react";
 import { useRobotStatus } from "@/hooks/use-robot-status"; // 👈 thêm hook realtime
 
 interface Robot {
@@ -10,7 +10,6 @@ interface Robot {
   name: string;
   status: "online" | "offline" | "charging";
   battery: number;
-  location: string;
   lastSeen: string;
   version: string;
   students: number;
@@ -20,6 +19,7 @@ interface Robot {
   temperature: number;
   image: string;
   serialNumber: string;
+  robotmodel: string;
 }
 
 interface RobotDetailsProps {
@@ -29,19 +29,19 @@ interface RobotDetailsProps {
       title: string;
       firmware: string;
       temperature: string;
+      robotmodel: string;
     };
     currentStatus: {
       title: string;
       status: string;
       task: string;
       battery: string;
-      location: string;
     };
     quickActions: {
       title: string;
       restart: string;
       settings: string;
-      updateFirmware: string;
+      forceStop: string;
     };
     statusTexts: {
       online: string;
@@ -121,8 +121,8 @@ export function RobotDetails({ robot, translations }: RobotDetailsProps) {
               </span>
             </div>
             <div className="flex justify-between">
-              <span className="text-gray-400">IP:</span>
-              <span className="text-gray-900 font-medium">{displayRobot.ip}</span>
+              <span className="text-gray-400">{translations.systemInfo.robotmodel}:</span>
+              <span className="text-gray-900 font-medium">{displayRobot.robotmodel}</span>
             </div>
             <div className="flex justify-between">
               <span className="text-gray-400">{translations.systemInfo.temperature}:</span>
@@ -163,10 +163,6 @@ export function RobotDetails({ robot, translations }: RobotDetailsProps) {
                 style={{ width: `${displayRobot.battery}%` }}
               ></div>
             </div>
-            <div className="flex justify-between">
-              <span className="text-gray-400">{translations.currentStatus.location}:</span>
-              <span className="text-gray-900 font-medium">{displayRobot.location}</span>
-            </div>
           </div>
           {error && <p className="text-red-500 text-xs mt-2">⚠️ {error}</p>}
         </div>
@@ -186,8 +182,8 @@ export function RobotDetails({ robot, translations }: RobotDetailsProps) {
               {translations.quickActions.settings}
             </Button>
             <Button className="w-full text-base py-3" variant="outline">
-              <RefreshCw className="h-5 w-5 mr-2" />
-              {translations.quickActions.updateFirmware}
+              <StopCircleIcon className="h-5 w-5 mr-2" />
+              {translations.quickActions.forceStop}
             </Button>
           </div>
         </div>
