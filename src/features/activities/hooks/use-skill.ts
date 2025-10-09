@@ -10,67 +10,38 @@ import {
   deleteSkill,
   changeSkillStatus
 } from "@/features/activities/api/skill-api"
-import { getAllRobotModels } from "@/features/robots/api/robot-model-api"
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { Skill, SkillResponse } from "@/types/skill"
 
 export const useSkill = () => {
-  // 🔹 Lấy danh sách robot models
-  const useGetRobotModels = () => {
-    return useQuery({
-      queryKey: ["robotModels"],
-      queryFn: getAllRobotModels,
-      staleTime: 1000 * 60 * 10, // 10 phút
-    })
-  }
-
   // 🔹 Lấy tất cả skills (phân trang + lọc)
   const useGetAllSkills = (page?: number, size?: number, search?: string, robotModelId?: string) => {
     return useQuery<SkillResponse>({
       queryKey: ["skills", page, size, search, robotModelId],
       queryFn: () =>
         getAllSkills({
-            page,
-            size,
-            search,
-            robotModelId,
+          page,
+          size,
+          search,
+          robotModelId,
         }),
       staleTime: 1000 * 60 * 5,
     })
   }
 
-  // 🔹 Lấy skill theo trang và gộp robot models
+  // 🔹 Lấy skill theo trang (KHÔNG gộp robot models nữa)
   const useGetPagedSkills = (page: number, size: number, search?: string) => {
-    const skillsQuery = useQuery<SkillResponse>({
+    return useQuery<SkillResponse>({
       queryKey: ["skills", "paged", page, size, search],
       queryFn: () =>
         getAllSkills({
-            page,
-            size,
-            search,
+          page,
+          size,
+          search,
         }),
       staleTime: 0,
       enabled: true,
     })
-
-    const robotModelsQuery = useGetRobotModels()
-
-    // ✅ Trả về kết hợp cả hai
-    return {
-      data: skillsQuery.data
-        ? {
-            ...skillsQuery.data,
-            robotModels: robotModelsQuery.data?.data || [],
-            skills: skillsQuery.data.data || [],
-          }
-        : undefined,
-      isLoading: skillsQuery.isLoading || robotModelsQuery.isLoading,
-      error: skillsQuery.error || robotModelsQuery.error,
-      refetch: () => {
-        skillsQuery.refetch()
-        robotModelsQuery.refetch()
-      },
-    }
   }
 
   // 🔹 Lấy skill theo code
@@ -113,6 +84,7 @@ export const useSkill = () => {
     })
   }
 
+  // 🔹 Tạo skill mới
   const useCreateSkill = () => {
     const queryClient = useQueryClient()
     return useMutation({
@@ -123,6 +95,7 @@ export const useSkill = () => {
     })
   }
 
+  // 🔹 Cập nhật skill
   const useUpdateSkill = () => {
     const queryClient = useQueryClient()
     return useMutation({
@@ -135,6 +108,7 @@ export const useSkill = () => {
     })
   }
 
+  // 🔹 Patch skill
   const usePatchSkill = () => {
     const queryClient = useQueryClient()
     return useMutation({
@@ -147,6 +121,7 @@ export const useSkill = () => {
     })
   }
 
+  // 🔹 Xóa skill
   const useDeleteSkill = () => {
     const queryClient = useQueryClient()
     return useMutation({
@@ -157,6 +132,7 @@ export const useSkill = () => {
     })
   }
 
+  // 🔹 Đổi trạng thái skill
   const useChangeSkillStatus = () => {
     const queryClient = useQueryClient()
     return useMutation({
@@ -176,7 +152,6 @@ export const useSkill = () => {
     useGetSkillByName,
     useGetSkillsByRobotModel,
     useGetSkillById,
-    useGetRobotModels,
 
     // Mutations
     useCreateSkill,
