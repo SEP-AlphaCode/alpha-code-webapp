@@ -96,7 +96,7 @@ export default function TeacherLayout({ children }: TeacherLayoutProps) {
 
         {/* Main Content */}
         <main
-          className={`transition-all duration-300 ease-in-out pt-16 ${
+          className={`transition-all duration-300 ease-in-out pt-13 ${
             isSidebarOpen ? "ml-64" : "ml-16"
           }`}
         >
