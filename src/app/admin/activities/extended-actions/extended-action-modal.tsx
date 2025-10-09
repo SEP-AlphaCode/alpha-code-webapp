@@ -11,31 +11,37 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { useExpression } from "@/features/activities/hooks/use-expression"
-import { ExpressionModal, Expression } from "@/types/expression"
-import { useEffect } from "react"
+import { getAllRobotModels } from "@/features/robots/api/robot-model-api"
+import { useExtendedActions } from "@/features/activities/hooks/use-extended-actions"
+import { ExtendedActionModal, ExtendedAction } from "@/types/extended-action"
+import { useEffect, useState } from "react"
 import { toast } from "sonner"
 
 
-interface CreateExpressionModalProps {
+interface CreateExtendedActionModalProps {
   isOpen: boolean
   onClose: () => void
-  editExpression?: Expression | null
+  editExtendedAction?: ExtendedAction | null
   mode?: 'create' | 'edit'
 }
 
-export function CreateExpressionModal({
+export function CreateExtendedActionModal({
   isOpen,
   onClose,
-  editExpression = null,
+  editExtendedAction = null,
   mode = 'create'
-}: CreateExpressionModalProps) {
+}: CreateExtendedActionModalProps) {
   // Đã loại bỏ i18n, chỉ dùng tiếng Việt
-  const { useCreateExpression, useUpdateExpression } = useExpression()
-  const createExpressionMutation = useCreateExpression()
-  const updateExpressionMutation = useUpdateExpression()
+  const { useCreateExtendedAction, useUpdateExtendedAction } = useExtendedActions()
+  const createExtendedActionMutation = useCreateExtendedAction()
+  const updateExtendedActionMutation = useUpdateExtendedAction()
 
-  const isEditMode = mode === 'edit' && editExpression
+  // State for robot models
+  const [robotModels, setRobotModels] = useState<{ id: string; name: string }[]>([])
+  const [loadingModels, setLoadingModels] = useState(false)
+  const [modelsError, setModelsError] = useState<string | null>(null)
+
+  const isEditMode = mode === 'edit' && editExtendedAction
 
   const {
     register,
@@ -44,52 +50,86 @@ export function CreateExpressionModal({
     setValue,
     watch,
     formState: { errors, isSubmitting }
-  } = useForm<ExpressionModal>({
+  } = useForm<ExtendedActionModal>({
     defaultValues: {
       code: "",
       name: "",
-      imageUrl: "",
+      icon: "",
       status: 1,
+      robotModelId: "",
     }
   })
 
-  // Update form when editExpression changes
+
   useEffect(() => {
-    if (isEditMode && editExpression) {
+  setLoadingModels(true)
+  getAllRobotModels()
+    .then((data) => {
+      setRobotModels(
+        (data?.data || []).map((m: { id: string; name: string }) => ({
+          id: m.id,
+          name: m.name,
+        }))
+      )
+      setModelsError(null)
+    })
+    .catch(() => {
+      setModelsError("Không thể tải danh sách robot model")
+    })
+    .finally(() => setLoadingModels(false))
+}, [])
+
+  
+  useEffect(() => {
+    if (isEditMode && editExtendedAction) {
       reset({
-        code: editExpression.code,
-        name: editExpression.name,
-        imageUrl: editExpression.imageUrl,
-        status: editExpression.status,
+        code: editExtendedAction.code,
+        name: editExtendedAction.name,
+        icon: editExtendedAction.icon,
+        status: editExtendedAction.status,
+        robotModelId: editExtendedAction.robotModelId,
       })
     } else {
       reset({
         code: "",
         name: "",
-        imageUrl: "",
+        icon: "",
         status: 1,
+        robotModelId: "",
       })
     }
-  }, [editExpression, isEditMode, reset])
+  }, [editExtendedAction, isEditMode, reset])
 
   const status = watch("status")
+  const robotModelId = watch("robotModelId")
 
-  const onSubmit = async (data: ExpressionModal) => {
-    try {
-      if (isEditMode && editExpression) {
-        await updateExpressionMutation.mutateAsync({ id: editExpression.id, data })
-  toast.success("Cập nhật biểu cảm thành công!")
-      } else {
-        await createExpressionMutation.mutateAsync(data)
-  toast.success("Tạo biểu cảm thành công!")
-      }
-      reset()
-      onClose()
-    } catch (error) {
-      console.error("Error saving expression:", error)
-  toast.error(isEditMode ? 'Cập nhật thất bại. Vui lòng thử lại.' : 'Tạo mới thất bại. Vui lòng thử lại.')
+  const onSubmit = async (data: ExtendedActionModal) => {
+  try {
+    const submitData = { ...data, robotModelId }
+
+    if (isEditMode && editExtendedAction) {
+      await updateExtendedActionMutation.mutateAsync({
+        id: editExtendedAction.id,
+        actionData: submitData,
+      })
+      toast.success("Cập nhật biểu cảm thành công!")
+    } else {
+      await createExtendedActionMutation.mutateAsync(submitData)
+      toast.success("Tạo biểu cảm thành công!")
     }
+
+    reset()
+    onClose()
+  } catch (error) {
+    console.error("Error saving ExtendedAction:", error)
+    toast.error(
+      isEditMode
+        ? "Cập nhật thất bại. Vui lòng thử lại."
+        : "Tạo mới thất bại. Vui lòng thử lại."
+    )
   }
+}
+
 
   const handleClose = () => {
     reset()
@@ -112,6 +152,28 @@ export function CreateExpressionModal({
         </DialogHeader>
 
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+          <div className="space-y-2">
+            <Label htmlFor="robotModelId">Chọn Robot Model</Label>
+            <Select
+              value={robotModelId || ""}
+              onValueChange={(value) => setValue("robotModelId", value)}
+              disabled={loadingModels}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder={loadingModels ? "Đang tải..." : "Chọn model"} />
+              </SelectTrigger>
+              <SelectContent>
+                {robotModels.map((model) => (
+                  <SelectItem key={model.id} value={model.id}>
+                    {model.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            {modelsError && <p className="text-sm text-red-500">{modelsError}</p>}
+          </div>
+
+
           <div className="space-y-2">
             <Label htmlFor="code" className="text-sm font-medium">
               Mã biểu cảm *
@@ -153,19 +215,15 @@ export function CreateExpressionModal({
               Đường dẫn hình ảnh (URL)
             </Label>
             <Input
-              id="imageUrl"
-              type="url"
-              {...register("imageUrl", {
-                pattern: {
-                  value: /^https?:\/\/.+/, 
-                  message: 'URL không hợp lệ'
-                }
+              id="icon"
+              type="string"
+              {...register("icon", {
               })}
               placeholder="Nhập đường dẫn hình ảnh"
-              className={errors.imageUrl ? "border-red-500" : ""}
+              className={errors.icon ? "border-red-500" : ""}
             />
-            {errors.imageUrl && (
-              <p className="text-sm text-red-500">{errors.imageUrl.message}</p>
+            {errors.icon && (
+              <p className="text-sm text-red-500">{errors.icon.message}</p>
             )}
           </div>
 

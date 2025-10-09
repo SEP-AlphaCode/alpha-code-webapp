@@ -1,6 +1,6 @@
 "use client"
 
-import { Expression } from "@/types/expression"
+import { ExtendedAction } from "@/types/extended-action"
 import { ColumnDef } from "@tanstack/react-table"
 import { Checkbox } from "@/components/ui/checkbox"
 import Image from "next/image"
@@ -22,15 +22,15 @@ import {
 // This type is used to define the shape of our data.
 // You can use a Zod schema here if you want.
 export const createColumns = (
-  onEdit?: (expression: Expression) => void, 
-  onDelete?: (expression: Expression) => void,
-  onView?: (expression: Expression) => void
-): ColumnDef<Expression>[] => {
+  onEdit?: (extended_action: ExtendedAction) => void, 
+  onDelete?: (extended_action: ExtendedAction) => void,
+  onView?: (extended_action: ExtendedAction) => void
+): ColumnDef<ExtendedAction>[] => {
   // Note: We can't use hooks directly in this function since it's not a component
   // Instead, we'll create a wrapper component for the action column
   
-  const ActionCell = ({ row }: { row: { original: Expression } }) => {
-    const expression = row.original
+  const ActionCell = ({ row }: { row: { original: ExtendedAction } }) => {
+    const extended_action = row.original
     return (
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
@@ -42,28 +42,28 @@ export const createColumns = (
         <DropdownMenuContent align="end">
           <DropdownMenuLabel>Thao tác</DropdownMenuLabel>
           <DropdownMenuItem
-            onClick={() => navigator.clipboard.writeText(expression.id)}
+            onClick={() => navigator.clipboard.writeText(extended_action.id)}
             className="hover:bg-gray-100 transition-colors duration-200 cursor-pointer"
           >
             Sao chép ID
           </DropdownMenuItem>
           <DropdownMenuSeparator />
           <DropdownMenuItem 
-            onClick={() => onView?.(expression)}
+            onClick={() => onView?.(extended_action)}
             className="hover:bg-green-50 hover:text-green-700 transition-all duration-200 cursor-pointer group"
           >
             <Eye className="mr-2 h-4 w-4 text-gray-600 group-hover:text-green-600 group-hover:scale-110 transition-all duration-200" />
             Xem chi tiết
           </DropdownMenuItem>
           <DropdownMenuItem 
-            onClick={() => onEdit?.(expression)}
+            onClick={() => onEdit?.(extended_action)}
             className="hover:bg-blue-50 hover:text-blue-700 transition-all duration-200 cursor-pointer group"
           >
             <Edit className="mr-2 h-4 w-4 text-gray-600 group-hover:text-blue-600 group-hover:scale-110 transition-all duration-200" />
             Chỉnh sửa
           </DropdownMenuItem>
           <DropdownMenuItem 
-            onClick={() => onDelete?.(expression)}
+            onClick={() => onDelete?.(extended_action)}
             className="text-red-600 hover:bg-red-50 hover:text-red-700 transition-all duration-200 cursor-pointer group"
           >
             <Trash2 className="mr-2 h-4 w-4 group-hover:text-red-600 group-hover:scale-110 transition-all duration-200" />
@@ -111,26 +111,29 @@ export const createColumns = (
     </span>
   )
 
-  const ImageCell = ({ row }: { row: { original: Expression } }) => (
-    <div className="flex items-center gap-1 text-blue-600 font-medium">
-      {row.original.imageUrl ? (
-        <Image 
-          src={row.original.imageUrl} 
-          alt="Expression" 
-          width={60}
-          height={60}
-          className="w-15 h-15 object-cover rounded"
-          onError={(e) => {
-            e.currentTarget.style.display = 'none'
-          }}
-        />
-      ) : (
-        <span className="text-gray-400">Không có hình ảnh</span>
-      )}
-    </div>
-  )
+  const ImageCell = ({ row }: { row: { original: ExtendedAction } }) => {
+    const icon = row.original.icon
+    const isUrl = icon?.startsWith("http")
 
-  const StatusCell = ({ row }: { row: { original: Expression } }) => {
+    return (
+      <div className="flex items-center justify-center">
+        {isUrl ? (
+          <Image
+            src={icon}
+            alt="icon"
+            width={40}
+            height={40}
+            className="rounded object-cover"
+            onError={(e) => (e.currentTarget.style.display = "none")}
+          />
+        ) : (
+          <span className="text-2xl">{icon || "Không có icon"}</span>
+        )}
+      </div>
+    )
+  }
+
+  const StatusCell = ({ row }: { row: { original: ExtendedAction } }) => {
     const status = row.original.status
     let color = "bg-gray-200 text-gray-700"
     let text = "Không xác định"
@@ -200,7 +203,7 @@ export const createColumns = (
         header: NameHeaderCell,
     },
     {
-        accessorKey: "imageUrl",
+        accessorKey: "icon",
         header: ImageHeaderCell,
         cell: ImageCell,
     },

@@ -3,34 +3,36 @@
 import { createColumns } from "./columns"
 import { DataTable } from "@/components/ui/data-table"
 import { useQuery } from "@tanstack/react-query"
-import { getPagedExpressions } from "@/features/activities/api/expression-api"
+import { getPagedExtendedActions } from "@/features/activities/api/extended-action-api"
 import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { CreateExpressionModal } from "@/app/admin/activities/expressions/expression-modal"
-import { DeleteExpressionModal } from "@/app/admin/activities/expressions/delete-expression-modal"
+import { DeleteExtendedActionModal } from "./delete-extended-action-modal"
 import { ViewExpressionModal } from "@/app/admin/activities/expressions/view-expression-modal"
-import { Expression } from "@/types/expression"
-import { useExpression } from "@/features/activities/hooks/use-expression"
+import { ExtendedAction } from "@/types/extended-action"
+import { useExtendedActions } from "@/features/activities/hooks/use-extended-actions"
 import { toast } from "sonner"
 
 import LoadingGif from "@/components/ui/loading-gif"
+import { CreateExtendedActionModal } from "./extended-action-modal"
+import { ViewExtendedActionModal } from "./view-extended-action-modal"
 
 
-function ExpressionsPage() {
+function ExtendedActionPage() {
   // Đã loại bỏ i18n, chỉ dùng tiếng Việt
   const [page, setPage] = useState(1)
   const [size, setSize] = useState(10)
   const [searchTerm, setSearchTerm] = useState("")
   const [debouncedSearchTerm, setDebouncedSearchTerm] = useState("")
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false)
-  const [editExpression, setEditExpression] = useState<Expression | null>(null)
+  const [editExtendedAction, setEditExtendedAction] = useState<ExtendedAction | null>(null)
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false)
-  const [deleteExpression, setDeleteExpression] = useState<Expression | null>(null)
+  const [deleteExtendedAction, setDeleteExtendedAction] = useState<ExtendedAction | null>(null)
   const [isViewModalOpen, setIsViewModalOpen] = useState(false)
-  const [viewExpression, setViewExpression] = useState<Expression | null>(null)
+  const [viewExtendedAction, setViewExtendedAction] = useState<ExtendedAction | null>(null)
 
-  const { useDeleteExpression } = useExpression()
-  const deleteExpressionMutation = useDeleteExpression()
+  const { useDeleteExtendedAction } = useExtendedActions()
+  const deleteExtendedActionMutation = useDeleteExtendedAction()
 
   // Debounce search term
   useEffect(() => {
@@ -42,7 +44,7 @@ function ExpressionsPage() {
   }, [searchTerm])
 
   const { data, isLoading, error, refetch } = useQuery({
-    queryKey: ["expressions", page, size, debouncedSearchTerm],
+    queryKey: ["extended_actions", page, size, debouncedSearchTerm],
     queryFn: async ({ queryKey }) => {
       const controller = new AbortController()
       setTimeout(() => {
@@ -52,14 +54,14 @@ function ExpressionsPage() {
       const [, currentPage, currentSize, search] = queryKey
 
       try {
-        return await getPagedExpressions(
+        return await getPagedExtendedActions(
           currentPage as number,
           currentSize as number,
           search as string,
           controller.signal
         )
       } catch (error) {
-        console.error("Failed to fetch expressions:", error)
+        console.error("Failed to fetch extended actions:", error)
       }
     },
     retry: 2,
@@ -69,7 +71,7 @@ function ExpressionsPage() {
   if (isLoading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
-        <LoadingGif size="lg" message="Loading expressions..." />
+        <LoadingGif size="lg" message="Loading extended actions..." />
       </div>
     )
   }
@@ -78,7 +80,7 @@ function ExpressionsPage() {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <div className="text-center">
-          <div className="text-lg text-red-600 mb-4">Error loading expressions</div>
+          <div className="text-lg text-red-600 mb-4">Error loading extended actions</div>
           <button
             onClick={() => refetch()}
             className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors"
@@ -90,7 +92,7 @@ function ExpressionsPage() {
     )
   }
 
-  const expressions = data?.data || []
+  const extended_actions = data?.data || []
 
   const handleSizeChange = (newSize: number) => {
     setSize(newSize)
@@ -101,56 +103,56 @@ function ExpressionsPage() {
     setPage(newPage)
   }
 
-  const handleAddExpression = () => {
-    setEditExpression(null)
+  const handleAddExtendedAction = () => {
+    setEditExtendedAction(null)
     setIsCreateModalOpen(true)
   }
 
-  const handleEditExpression = (expression: Expression) => {
-    setEditExpression(expression)
+  const handleEditExtendedAction = (extended_actions: ExtendedAction) => {
+    setEditExtendedAction(extended_actions)
     setIsCreateModalOpen(true)
   }
 
-  const handleViewExpression = (expression: Expression) => {
-    setViewExpression(expression)
+  const handleViewExtendedAction = (extended_actions: ExtendedAction) => {
+    setViewExtendedAction(extended_actions)
     setIsViewModalOpen(true)
   }
 
-  const handleDeleteExpression = (expression: Expression) => {
-    setDeleteExpression(expression)
+  const handleDeleteExtendedAction = (extended_actions: ExtendedAction) => {
+    setDeleteExtendedAction(extended_actions)
     setIsDeleteModalOpen(true)
   }
 
   const handleConfirmDelete = async () => {
-    if (!deleteExpression) return
+    if (!deleteExtendedAction) return
 
     try {
-      await deleteExpressionMutation.mutateAsync(deleteExpression.id)
-      toast.success("Expression deleted successfully!")
+      await deleteExtendedActionMutation.mutateAsync(deleteExtendedAction.id)
+      toast.success("Extended action deleted successfully!")
       setIsDeleteModalOpen(false)
-      setDeleteExpression(null)
+      setDeleteExtendedAction(null)
     } catch (error) {
-      console.error("Error deleting expression:", error)
-      toast.error("Failed to delete expression. Please try again.")
+      console.error("Error deleting extended action:", error)
+      toast.error("Failed to delete extended action. Please try again.")
     }
   }
 
   const handleCloseDeleteModal = () => {
     setIsDeleteModalOpen(false)
-    setDeleteExpression(null)
+    setDeleteExtendedAction(null)
   }
 
   const handleCloseViewModal = () => {
     setIsViewModalOpen(false)
-    setViewExpression(null)
+    setViewExtendedAction(null)
   }
 
   const handleCloseModal = () => {
     setIsCreateModalOpen(false)
-    setEditExpression(null)
+    setEditExtendedAction(null)
   }
 
-  const columns = createColumns(handleEditExpression, handleDeleteExpression, handleViewExpression)
+  const columns = createColumns(handleEditExtendedAction, handleDeleteExtendedAction, handleViewExtendedAction)
 
   return (
     <div className="container mx-auto py-10">
@@ -158,7 +160,7 @@ function ExpressionsPage() {
         <div className="flex items-center justify-between mb-4">
           <h1 className="text-2xl font-bold">Quản lý biểu cảm</h1>
           <Button
-            onClick={handleAddExpression}
+            onClick={handleAddExtendedAction}
             variant="outline"
           >
             Thêm biểu cảm
@@ -168,7 +170,7 @@ function ExpressionsPage() {
       <DataTable
         columns={columns}
         size={size}
-        data={expressions}
+        data={extended_actions}
         onSizeChange={handleSizeChange}
         searchValue={searchTerm}
         onSearchChange={setSearchTerm}
@@ -179,28 +181,28 @@ function ExpressionsPage() {
         total={data?.total_count || 0}
       />
       
-      <CreateExpressionModal
+      <CreateExtendedActionModal
         isOpen={isCreateModalOpen}
         onClose={handleCloseModal}
-        editExpression={editExpression}
-        mode={editExpression ? 'edit' : 'create'}
+        editExtendedAction={editExtendedAction}
+        mode={editExtendedAction ? 'edit' : 'create'}
       />
       
-      <ViewExpressionModal
+      <ViewExtendedActionModal
         isOpen={isViewModalOpen}
         onClose={handleCloseViewModal}
-        expression={viewExpression}
+        extended_actions={viewExtendedAction}
       />
       
-      <DeleteExpressionModal
+      <DeleteExtendedActionModal
         isOpen={isDeleteModalOpen}
         onClose={handleCloseDeleteModal}
         onConfirm={handleConfirmDelete}
-        expression={deleteExpression}
-        isDeleting={deleteExpressionMutation.isPending}
+        extended_action={deleteExtendedAction}
+        isDeleting={deleteExtendedActionMutation.isPending}
       />
     </div>
   )
 }
 
-export default ExpressionsPage
+export default ExtendedActionPage

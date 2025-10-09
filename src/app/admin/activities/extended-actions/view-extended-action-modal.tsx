@@ -8,25 +8,25 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
-import { Expression } from "@/types/expression"
+import { ExtendedAction } from "@/types/extended-action"
 import { Badge } from "@/components/ui/badge"
 import { Calendar, FileText, Hash, Settings, Image as ImageIcon } from "lucide-react"
 import Image from "next/image"
 
 
-interface ViewExpressionModalProps {
+interface ViewExtendedActionModalProps {
   isOpen: boolean
   onClose: () => void
-  expression: Expression | null
+  extended_actions: ExtendedAction | null
 }
 
-export function ViewExpressionModal({ 
+export function ViewExtendedActionModal({ 
   isOpen, 
   onClose, 
-  expression
-}: ViewExpressionModalProps) {
+  extended_actions
+}: ViewExtendedActionModalProps) {
 
-  if (!expression) return null
+  if (!extended_actions) return null
 
   const formatDate = (dateString: string) => {
     try {
@@ -86,7 +86,7 @@ export function ViewExpressionModal({
                 <div className="flex-1">
                   <label className="text-sm font-medium text-gray-700">ID</label>
                   <p className="text-sm text-gray-900 font-mono bg-gray-50 p-2 rounded border break-all">
-                    {expression.id}
+                    {extended_actions.id}
                   </p>
                 </div>
               </div>
@@ -94,9 +94,9 @@ export function ViewExpressionModal({
               <div className="flex items-start gap-3">
                 <Hash className="h-4 w-4 text-blue-500 mt-1 flex-shrink-0" />
                 <div className="flex-1">
-                  <label className="text-sm font-medium text-gray-700">Mã biểu cảm</label>
+                  <label className="text-sm font-medium text-gray-700">Mã hành động nâng cao</label>
                   <p className="text-sm text-blue-900 font-mono bg-blue-50 p-2 rounded border">
-                    {expression.code}
+                    {extended_actions.code}
                   </p>
                 </div>
               </div>
@@ -104,9 +104,9 @@ export function ViewExpressionModal({
               <div className="flex items-start gap-3">
                 <FileText className="h-4 w-4 text-purple-500 mt-1 flex-shrink-0" />
                 <div className="flex-1">
-                  <label className="text-sm font-medium text-gray-700">Tên biểu cảm</label>
+                  <label className="text-sm font-medium text-gray-700">Tên hành động nâng cao</label>
                   <p className="text-sm text-gray-900 bg-purple-50 p-2 rounded border">
-                    {expression.name}
+                    {extended_actions.name}
                   </p>
                 </div>
               </div>
@@ -117,34 +117,13 @@ export function ViewExpressionModal({
           <div className="space-y-4">
             <h3 className="text-lg font-semibold text-gray-800 border-b pb-2">Cấu hình</h3>
             
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="flex items-start gap-3">
-                <ImageIcon className="h-4 w-4 text-blue-500 mt-1 flex-shrink-0" />
+            <div className="flex items-start gap-3">
+                <FileText className="h-4 w-4 text-red-500 mt-1 flex-shrink-0" />
                 <div className="flex-1">
-                  <label className="text-sm font-medium text-gray-700">Hình ảnh</label>
-                  <div className="mt-1">
-                    {expression.imageUrl ? (
-                      <div className="space-y-2">
-                        <Image 
-                          src={expression.imageUrl} 
-                          alt="Expression" 
-                          width={96}
-                          height={96}
-                          className="w-24 h-24 object-cover rounded border"
-                          onError={(e) => {
-                            e.currentTarget.style.display = 'none';
-                          }}
-                        />
-                        <p className="text-xs text-blue-600 bg-blue-50 p-2 rounded border break-all">
-                          {expression.imageUrl}
-                        </p>
-                      </div>
-                    ) : (
-                      <p className="text-sm text-gray-400 bg-gray-50 p-2 rounded border">
-                        Không có hình ảnh
-                      </p>
-                    )}
-                  </div>
+                  <label className="text-sm font-medium text-gray-700">Icon</label>
+                  <p className="text-sm text-gray-900 bg-red-50 p-2 rounded border">
+                    {extended_actions.icon || 'Không có icon'}
+                  </p>
                 </div>
               </div>
               
@@ -153,7 +132,7 @@ export function ViewExpressionModal({
                 <div className="flex-1">
                   <label className="text-sm font-medium text-gray-700">Trạng thái</label>
                   <div className="mt-1">
-                    {getStatusBadge(expression.status)}
+                    {getStatusBadge(extended_actions.status)}
                   </div>
                 </div>
               </div>
@@ -170,7 +149,7 @@ export function ViewExpressionModal({
                 <div className="flex-1">
                   <label className="text-sm font-medium text-gray-700">Ngày tạo</label>
                   <p className="text-sm text-gray-900 bg-blue-50 p-2 rounded border font-mono">
-                    {formatDate(expression.createdDate)}
+                    {formatDate(extended_actions.createdDate)}
                   </p>
                 </div>
               </div>
@@ -180,13 +159,12 @@ export function ViewExpressionModal({
                 <div className="flex-1">
                   <label className="text-sm font-medium text-gray-700">Cập nhật lần cuối</label>
                   <p className="text-sm text-gray-900 bg-orange-50 p-2 rounded border font-mono">
-                    {formatDate(expression.lastUpdate)}
+                    {formatDate(extended_actions.lastUpdate)}
                   </p>
                 </div>
               </div>
             </div>
           </div>
-        </div>
 
         <div className="flex justify-end pt-4 border-t">
           <Button 
