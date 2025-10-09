@@ -9,26 +9,26 @@ import {
     DialogTitle,
 } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
-import { Expression } from "@/types/expression"
+import { ExtendedAction } from "@/types/extended-action"
 import { AlertTriangle } from "lucide-react"
 
 
-interface DeleteExpressionModalProps {
+interface DeleteExtendedActionModalProps {
     isOpen: boolean
     onClose: () => void
     onConfirm: () => void
-    expression: Expression | null
+    extended_action: ExtendedAction | null
     isDeleting?: boolean
 }
 
-export function DeleteExpressionModal({
+export function DeleteExtendedActionModal({
     isOpen,
     onClose,
     onConfirm,
-    expression,
+    extended_action,
     isDeleting = false
-}: DeleteExpressionModalProps) {
-    if (!expression) return null
+}: DeleteExtendedActionModalProps) {
+    if (!extended_action) return null
 
     return (
         <Dialog open={isOpen} onOpenChange={onClose}>
@@ -36,21 +36,21 @@ export function DeleteExpressionModal({
                 <DialogHeader>
                     <DialogTitle className="flex items-center gap-2 text-red-600">
                         <AlertTriangle className="h-5 w-5" />
-                        Xóa biểu cảm
+                        Xóa hành động nâng cao
                     </DialogTitle>
                     <DialogDescription className="text-left">
-                        Bạn có chắc chắn muốn xóa biểu cảm này không?
+                        Bạn có chắc chắn muốn xóa hành động nâng cao này không?
                     </DialogDescription>
                 </DialogHeader>
 
                 <div className="bg-gray-50 p-4 rounded-md space-y-2">
                     <div className="text-sm">
                         <span className="font-medium text-gray-700">ID:</span>
-                        <span className="ml-2 text-gray-900">{expression.id}</span>
+                        <span className="ml-2 text-gray-900">{extended_action.id}</span>
                     </div>
                     <div className="text-sm">
-                        <span className="font-medium text-gray-700">Tên biểu cảm:</span>
-                        <span className="ml-2 text-gray-900">{expression.name}</span>
+                        <span className="font-medium text-gray-700">Tên hành động nâng cao:</span>
+                        <span className="ml-2 text-gray-900">{extended_action.name}</span>
                     </div>
                 </div>
 
