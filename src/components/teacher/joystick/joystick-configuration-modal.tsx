@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import Image from 'next/image';
 import {
   Dialog,
   DialogContent,
@@ -349,18 +350,20 @@ export default function JoystickConfigurationModal({
             {/* Icon from API field */}
             <div className="text-3xl flex items-center justify-center">
               {type === 'expression' 
-                ? (item as any).imageUrl 
-                  ? <img 
-                      src={(item as any).imageUrl} 
+                ? (item as Expression).imageUrl 
+                  ? <Image 
+                      src={(item as Expression).imageUrl} 
                       alt={item.name}
+                      width={48}
+                      height={48}
                       className="w-12 h-12 object-cover rounded-full"
                     />
                   : '😊'
                 : type === 'skill'
-                ? (item as any).icon || '🎯'
+                ? (item as Skill).icon || '🎯'
                 : type === 'extendedaction' 
-                ? (item as any).icon || '⚡'
-                : (item as any).icon || (type === 'action' ? '🎯' : '')
+                ? (item as ExtendedAction).icon || '⚡'
+                : (item as Action).icon || (type === 'action' ? '🎯' : '')
               }
             </div>
             

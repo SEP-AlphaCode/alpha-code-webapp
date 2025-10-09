@@ -7,7 +7,6 @@ import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { useRobotCommand } from '@/hooks/use-robot-command';
 import { useRobotStore } from '@/hooks/use-robot-store';
-import { RobotSelector } from '@/components/teacher/robot-selector';
 import JoystickConfigurationModal from '@/components/teacher/joystick/joystick-configuration-modal';
 import { useJoystick } from '@/features/activities/hooks/use-joystick';
 import { Joystick } from '@/types/joystick';
@@ -32,10 +31,10 @@ export default function JoystickPage() {
     Y: false,
     START: false,
     SELECT: false,
-    UP: false,
-    DOWN: false,
-    LEFT: false,
-    RIGHT: false,
+    up: false,
+    down: false,
+    left: false,
+    right: false,
   });
 
   const [notify, setNotifyState] = useState<{ msg: string; type: 'success' | 'error' } | null>(null);
@@ -67,7 +66,7 @@ export default function JoystickPage() {
   }, []);
 
   // fetch joystick config
-  const { data: joystickData, refetch: refetchJoystickData, error: joystickError, isLoading } =
+  const { data: joystickData, error: joystickError } =
     useGetJoystickByAccountRobot(accountId, robotId);
 
   // caching fallback
@@ -76,7 +75,7 @@ export default function JoystickPage() {
       const cacheKey = `joystick_${accountId}_${robotId}`;
       try {
         localStorage.setItem(cacheKey, JSON.stringify(joystickData));
-      } catch (e) {
+      } catch (_e) {
         // ignore localStorage error
       }
       return joystickData;
@@ -88,7 +87,7 @@ export default function JoystickPage() {
       if (cachedData) {
         try {
           return JSON.parse(cachedData);
-        } catch (e) {
+        } catch (_e) {
           // ignore
         }
       }
@@ -249,7 +248,6 @@ export default function JoystickPage() {
 
     // first position
     if (leftJoystickRef.current) {
-      const rect = leftJoystickRef.current.getBoundingClientRect();
       const pos = computePositionFromPointer(e.clientX, e.clientY, leftJoystickRef.current);
       setLeftJoystick(pos);
     }
@@ -305,6 +303,25 @@ export default function JoystickPage() {
     await handleSendCommand(actionCodes[buttonName], actionType);
   };
 
+  // Handler for D-pad buttons with fixed movement commands
+  const handleDPadButtonPress = async (direction: 'up' | 'down' | 'left' | 'right') => {
+    setButtons(prev => ({ ...prev, [direction]: true }));
+    setTimeout(() => {
+      setButtons(prev => ({ ...prev, [direction]: false }));
+    }, 150);
+
+    // Fixed command mapping for D-pad
+    const commandMap = {
+      'up': 'walk_forward',     // Tiến lên
+      'down': 'walk_backward',  // Lùi lại  
+      'left': 'turn_left',      // Quay trái
+      'right': 'turn_right'     // Quay phải
+    };
+
+    const actionCode = commandMap[direction];
+    await handleSendCommand(actionCode, 'action');
+  };
+
   const handleSendCommand = async (actionCode: string, type: 'action' | 'expression' = 'action') => {
     if (!selectedRobotSerial || !selectedRobot) {
       setNotify('Bạn chưa chọn robot!', 'error');
@@ -315,10 +332,6 @@ export default function JoystickPage() {
       return Promise.resolve();
     }
     await sendCommandToBackend(actionCode, selectedRobotSerial, type);
-  };
-
-  const handleButtonHold = (buttonName: string, isPressed: boolean) => {
-    setButtons(prev => ({ ...prev, [buttonName]: isPressed }));
   };
 
   // --- UI ---
@@ -332,9 +345,6 @@ export default function JoystickPage() {
           </div>
 
           <div className="flex items-center gap-4">
-            <div className="w-80">
-              <RobotSelector />
-            </div>
             <Button
               onClick={() => setIsConfigModalOpen(true)}
               variant="ghost"
@@ -358,7 +368,7 @@ export default function JoystickPage() {
                     <Badge variant="secondary" className="mb-2 bg-gray-200 text-gray-700">Left Stick</Badge>
 
                     <div
-                      ref={leftJoystickRef as any}
+                      ref={leftJoystickRef as React.RefObject<HTMLDivElement>}
                       onPointerDown={handlePointerDown}
                       // To support touch initial capture: onPointerDown handles pointer
                       className="relative w-28 h-28 rounded-full bg-gradient-to-br from-gray-200 to-gray-300 border-4 border-gray-400 flex items-center justify-center shadow-inner cursor-grab active:cursor-grabbing"
@@ -384,45 +394,37 @@ export default function JoystickPage() {
                       <div className="mt-3 grid grid-cols-3 gap-1 w-32 h-32">
                         <div />
                         <Button
-                          variant={buttons.UP ? 'default' : 'outline'}
+                          variant={buttons.up ? 'default' : 'outline'}
                           size="sm"
                           className="h-10 w-10 p-0 rounded-sm text-base font-bold"
-                          onPointerDown={() => handleButtonHold('UP', true)}
-                          onPointerUp={() => handleButtonHold('UP', false)}
-                          onPointerLeave={() => handleButtonHold('UP', false)}
+                          onClick={() => handleDPadButtonPress('up')}
                         >
                           ↑
                         </Button>
                         <div />
                         <Button
-                          variant={buttons.LEFT ? 'default' : 'outline'}
+                          variant={buttons.left ? 'default' : 'outline'}
                           size="sm"
                           className="h-10 w-10 p-0 rounded-sm text-base font-bold"
-                          onPointerDown={() => handleButtonHold('LEFT', true)}
-                          onPointerUp={() => handleButtonHold('LEFT', false)}
-                          onPointerLeave={() => handleButtonHold('LEFT', false)}
+                          onClick={() => handleDPadButtonPress('left')}
                         >
                           ←
                         </Button>
                         <div className="w-10 h-10 bg-gray-300 rounded-sm" />
                         <Button
-                          variant={buttons.RIGHT ? 'default' : 'outline'}
+                          variant={buttons.right ? 'default' : 'outline'}
                           size="sm"
                           className="h-10 w-10 p-0 rounded-sm text-base font-bold"
-                          onPointerDown={() => handleButtonHold('RIGHT', true)}
-                          onPointerUp={() => handleButtonHold('RIGHT', false)}
-                          onPointerLeave={() => handleButtonHold('RIGHT', false)}
+                          onClick={() => handleDPadButtonPress('right')}
                         >
                           →
                         </Button>
                         <div />
                         <Button
-                          variant={buttons.DOWN ? 'default' : 'outline'}
+                          variant={buttons.down ? 'default' : 'outline'}
                           size="sm"
                           className="h-10 w-10 p-0 rounded-sm text-base font-bold"
-                          onPointerDown={() => handleButtonHold('DOWN', true)}
-                          onPointerUp={() => handleButtonHold('DOWN', false)}
-                          onPointerLeave={() => handleButtonHold('DOWN', false)}
+                          onClick={() => handleDPadButtonPress('down')}
                         >
                           ↓
                         </Button>
@@ -544,7 +546,7 @@ export default function JoystickPage() {
                     </div>
 
                     {/* action labels */}
-                    <div className="text-sm text-gray-700 text-center space-y-1 mt-2 bg-white/60 p-3 rounded-lg w-full ml-47">
+                    <div className="text-sm text-gray-700 text-center space-y-1 mt-2 w-full ml-47">
                       <div className="flex items-center gap-2"><span>🟡 A:</span><span className="font-medium">{actionDescriptions.A?.name || 'Chưa cấu hình'}</span></div>
                       <div className="flex items-center gap-2"><span>🔴 B:</span><span className="font-medium">{actionDescriptions.B?.name || 'Chưa cấu hình'}</span></div>
                       <div className="flex items-center gap-2"><span>🔵 X:</span><span className="font-medium">{actionDescriptions.X?.name || 'Chưa cấu hình'}</span></div>
