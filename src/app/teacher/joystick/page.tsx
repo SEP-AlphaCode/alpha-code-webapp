@@ -1,8 +1,9 @@
 'use client';
 
 import { useState, useEffect, useRef, useMemo, useCallback } from 'react';
+import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
+import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { useRobotCommand } from '@/hooks/use-robot-command';
 import { useRobotStore } from '@/hooks/use-robot-store';
@@ -22,17 +23,13 @@ interface ButtonState {
 }
 
 export default function JoystickPage() {
+  // --- State ---
   const [leftJoystick, setLeftJoystick] = useState<JoystickPosition>({ x: 0, y: 0 });
-  const [rightJoystick, setRightJoystick] = useState<JoystickPosition>({ x: 0, y: 0 });
   const [buttons, setButtons] = useState<ButtonState>({
     A: false,
     B: false,
     X: false,
     Y: false,
-    L1: false,
-    L2: false,
-    R1: false,
-    R2: false,
     START: false,
     SELECT: false,
     UP: false,
@@ -41,22 +38,22 @@ export default function JoystickPage() {
     RIGHT: false,
   });
 
-  // Robot control setup
-  const [notify, setNotifyState] = useState<{ msg: string; type: "success" | "error" } | null>(null);
+  const [notify, setNotifyState] = useState<{ msg: string; type: 'success' | 'error' } | null>(null);
   const [isConfigModalOpen, setIsConfigModalOpen] = useState(false);
-  const setNotify = (msg: string, type: "success" | "error") => {
+  const setNotify = (msg: string, type: 'success' | 'error') => {
     setNotifyState({ msg, type });
     setTimeout(() => setNotifyState(null), 3000);
   };
 
+  // hooks and stores
   const { sendCommandToBackend } = useRobotCommand(setNotify);
   const { selectedRobot, selectedRobotSerial, initializeMockData } = useRobotStore();
   const { useGetJoystickByAccountRobot } = useJoystick();
 
-  // Fixed robotId for joystick configuration  
+  // fixed robotId example (you had this)
   const robotId = '7754417e-e9a4-48e4-8f72-164a612403e0';
-  
-  // Memoize accountId to prevent unnecessary re-computations
+
+  // accountId derivation (memoized)
   const accountId = useMemo(() => {
     if (typeof window !== 'undefined') {
       const accessToken = sessionStorage.getItem('accessToken');
@@ -67,92 +64,90 @@ export default function JoystickPage() {
       }
     }
     return '';
-  }, []); // Empty dependency array - only compute once when component mounts
-  
-  // Fetch joystick configurations with fallback to localStorage
-  const { data: joystickData, error: joystickError } = useGetJoystickByAccountRobot(
-    accountId,
-    robotId
-  );
+  }, []);
 
-  // Fallback to localStorage if API fails - memoized to prevent infinite re-renders
+  // fetch joystick config
+  const { data: joystickData, refetch: refetchJoystickData, error: joystickError, isLoading } =
+    useGetJoystickByAccountRobot(accountId, robotId);
+
+  // caching fallback
   const effectiveJoystickData = useMemo(() => {
     if (joystickData) {
-      // Save to localStorage when API succeeds
       const cacheKey = `joystick_${accountId}_${robotId}`;
-      localStorage.setItem(cacheKey, JSON.stringify(joystickData));
+      try {
+        localStorage.setItem(cacheKey, JSON.stringify(joystickData));
+      } catch (e) {
+        // ignore localStorage error
+      }
       return joystickData;
     }
-    
-    // If API failed (like 429), try to use cached data
+
     if (joystickError) {
       const cacheKey = `joystick_${accountId}_${robotId}`;
       const cachedData = localStorage.getItem(cacheKey);
       if (cachedData) {
         try {
-          const parsed = JSON.parse(cachedData);
-          return parsed;
-        } catch {
-          // Invalid cached data, ignore
+          return JSON.parse(cachedData);
+        } catch (e) {
+          // ignore
         }
       }
     }
-    
+
     return joystickData;
   }, [joystickData, joystickError, accountId, robotId]);
-  
-  // Temporary mock data for testing if API data is not working - memoized to prevent re-renders
-  const mockJoystickData = useMemo(() => ({
-    joysticks: [
-      {
-        buttonCode: "A",
-        danceId: "dee9a7a3-bb8a-4ca2-a562-ba9384614bc9",
-        danceName: "Dance 2", 
-        danceCode: "dance_0002en",
-        actionId: null,
-        actionName: null,
-        actionCode: null
-      },
-      {
-        buttonCode: "B", 
-        actionId: "89145fc0-7871-456b-96c5-ce23a285c612",
-        actionName: "Squat",
-        actionCode: "031",
-        danceId: null,
-        danceName: null,
-        danceCode: null
-      }
-    ]
-  }), []);
-  
-  // Use mock data if API data is null or doesn't have joysticks array for debugging
+
+  const mockJoystickData = useMemo(
+    () => ({
+      joysticks: [
+        {
+          buttonCode: 'A',
+          danceId: 'dee9a7a3-bb8a-4ca2-a562-ba9384614bc9',
+          danceName: 'Dance 2',
+          danceCode: 'dance_0002en',
+          actionId: null,
+          actionName: null,
+          actionCode: null,
+        },
+        {
+          buttonCode: 'B',
+          actionId: '89145fc0-7871-456b-96c5-ce23a285c612',
+          actionName: 'Squat',
+          actionCode: '031',
+          danceId: null,
+          danceName: null,
+          danceCode: null,
+        },
+      ],
+    }),
+    []
+  );
+
   const finalJoystickData = useMemo(() => {
-    return (effectiveJoystickData?.joysticks && effectiveJoystickData.joysticks.length > 0) 
-      ? effectiveJoystickData 
+    return effectiveJoystickData?.joysticks && effectiveJoystickData.joysticks.length > 0
+      ? effectiveJoystickData
       : mockJoystickData;
   }, [effectiveJoystickData, mockJoystickData]);
 
-  // Dynamic action codes and descriptions based on joystick configuration
   const [actionCodes, setActionCodes] = useState<Record<string, string>>({});
   const [actionDescriptions, setActionDescriptions] = useState<{
-    [key: string]: { name: string; category: 'action' | 'dance' | 'expression' }
+    [key: string]: { name: string; category: 'action' | 'dance' | 'expression' };
   }>({});
 
-  // Update action codes when joystick data changes
   useEffect(() => {
     if (finalJoystickData?.joysticks && finalJoystickData.joysticks.length > 0) {
       const newActionCodes: Record<string, string> = {};
-      const newActionDescriptions: Record<string, { name: string; category: 'action' | 'dance' | 'expression' }> = {};
+      const newActionDescriptions: Record<string, { name: string; category: 'action' | 'dance' | 'expression' }> =
+        {};
 
       finalJoystickData.joysticks.forEach((joystick: Joystick) => {
         const buttonName = joystick.buttonCode as 'A' | 'B' | 'X' | 'Y';
-        
+
         if (['A', 'B', 'X', 'Y'].includes(buttonName)) {
           let actionCode = '';
           let actionName = '';
           let category: 'action' | 'dance' | 'expression' = 'action';
 
-          // Check which ID field has data to determine the action type
           if (joystick.actionId && joystick.actionName && joystick.actionCode) {
             actionCode = joystick.actionCode;
             actionName = joystick.actionName;
@@ -161,15 +156,19 @@ export default function JoystickPage() {
             actionCode = joystick.danceCode;
             actionName = joystick.danceName;
             category = 'dance';
-          } else if (joystick.expresstionId && joystick.expresstionName && joystick.expresstionCode) {
-            actionCode = joystick.expresstionCode;
-            actionName = joystick.expresstionName;
+          } else if (joystick.expressionId && joystick.expressionName && joystick.expressionCode) {
+            actionCode = joystick.expressionCode;
+            actionName = joystick.expressionName;
             category = 'expression';
           } else if (joystick.skillId && joystick.skillName && joystick.skillCode) {
             actionCode = joystick.skillCode;
             actionName = joystick.skillName;
             category = 'action';
-          } else if (joystick.extendedActionId && joystick.extendedActionName && joystick.extendedActionCode) {
+          } else if (
+            joystick.extendedActionId &&
+            joystick.extendedActionName &&
+            joystick.extendedActionCode
+          ) {
             actionCode = joystick.extendedActionCode;
             actionName = joystick.extendedActionName;
             category = 'action';
@@ -179,100 +178,109 @@ export default function JoystickPage() {
             newActionCodes[buttonName] = actionCode;
             newActionDescriptions[buttonName] = {
               name: actionName,
-              category: category,
+              category,
             };
           }
         }
       });
-      
+
       setActionCodes(newActionCodes);
       setActionDescriptions(newActionDescriptions);
     } else {
       setActionCodes({});
       setActionDescriptions({});
     }
-  }, [finalJoystickData]); // Only depend on finalJoystickData since it's memoized
+  }, [finalJoystickData]);
 
-  // Refresh joystick data when modal is closed (only if save was successful)
-  const handleConfigModalClose = () => {
-    setIsConfigModalOpen(false);
-    // React Query will automatically refetch when data becomes stale
-    // No need to manually refetch here
-  };
-
+  // initialize mock data if needed
   useEffect(() => {
     initializeMockData();
   }, [initializeMockData]);
 
-  // React Query will automatically fetch data when accountId/robotId change
-  // No need for manual refetch due to proper caching configuration
+  // --- Joystick interaction (support mouse + touch) ---
+  const leftJoystickRef = useRef<HTMLDivElement | null>(null);
+  const draggingRef = useRef(false);
 
-  const leftJoystickRef = useRef<HTMLDivElement>(null);
-  const rightJoystickRef = useRef<HTMLDivElement>(null);
-  const isDraggingLeft = useRef(false);
-  const isDraggingRight = useRef(false);
+  const computePositionFromPointer = useCallback(
+    (clientX: number, clientY: number, el: HTMLDivElement) => {
+      const rect = el.getBoundingClientRect();
+      const centerX = rect.width / 2;
+      const centerY = rect.height / 2;
+      const maxRadius = centerX - 16; // padding
 
-  // Joystick drag handlers
-  const handleJoystickMouseDown = (isLeft: boolean) => {
-    if (isLeft) {
-      isDraggingLeft.current = true;
-    } else {
-      isDraggingRight.current = true;
-    }
-  };
+      const x = clientX - rect.left - centerX;
+      const y = clientY - rect.top - centerY;
+      const distance = Math.sqrt(x * x + y * y);
+      const limitedDistance = Math.min(distance, maxRadius);
+      const angle = Math.atan2(y, x);
+      const limitedX = Math.cos(angle) * limitedDistance;
+      const limitedY = Math.sin(angle) * limitedDistance;
 
-  const handleJoystickMouseMove = useCallback((e: MouseEvent) => {
-    if (isDraggingLeft.current && leftJoystickRef.current) {
-      updateJoystickPosition(e, leftJoystickRef.current, setLeftJoystick);
-    }
-    if (isDraggingRight.current && rightJoystickRef.current) {
-      updateJoystickPosition(e, rightJoystickRef.current, setRightJoystick);
-    }
-  }, []);
+      return {
+        x: limitedX / maxRadius,
+        y: limitedY / maxRadius,
+      };
+    },
+    []
+  );
 
-  const handleJoystickMouseUp = () => {
-    isDraggingLeft.current = false;
-    isDraggingRight.current = false;
+  const onPointerMove = useCallback(
+    (e: PointerEvent) => {
+      if (!draggingRef.current || !leftJoystickRef.current) return;
+      const pos = computePositionFromPointer(e.clientX, e.clientY, leftJoystickRef.current);
+      setLeftJoystick(pos);
+    },
+    [computePositionFromPointer]
+  );
+
+  const onPointerUp = useCallback(() => {
+    draggingRef.current = false;
     setLeftJoystick({ x: 0, y: 0 });
-    setRightJoystick({ x: 0, y: 0 });
+    window.removeEventListener('pointermove', onPointerMove);
+    window.removeEventListener('pointerup', onPointerUp);
+  }, [onPointerMove]);
+
+  const handlePointerDown = (e: React.PointerEvent) => {
+    // capture pointer for consistent events
+    (e.target as Element).setPointerCapture?.(e.pointerId);
+    draggingRef.current = true;
+    window.addEventListener('pointermove', onPointerMove);
+    window.addEventListener('pointerup', onPointerUp);
+
+    // first position
+    if (leftJoystickRef.current) {
+      const rect = leftJoystickRef.current.getBoundingClientRect();
+      const pos = computePositionFromPointer(e.clientX, e.clientY, leftJoystickRef.current);
+      setLeftJoystick(pos);
+    }
   };
 
-  const updateJoystickPosition = (
-    e: MouseEvent,
-    joystickElement: HTMLDivElement,
-    setPosition: React.Dispatch<React.SetStateAction<JoystickPosition>>
-  ) => {
-    const rect = joystickElement.getBoundingClientRect();
-    const centerX = rect.width / 2;
-    const centerY = rect.height / 2;
-    const maxRadius = centerX - 20;
-
-    const x = e.clientX - rect.left - centerX;
-    const y = e.clientY - rect.top - centerY;
-
-    const distance = Math.sqrt(x * x + y * y);
-    const limitedDistance = Math.min(distance, maxRadius);
-
-    const angle = Math.atan2(y, x);
-    const limitedX = Math.cos(angle) * limitedDistance;
-    const limitedY = Math.sin(angle) * limitedDistance;
-
-    setPosition({
-      x: limitedX / maxRadius,
-      y: limitedY / maxRadius,
-    });
-  };
-
+  // For older browsers / fallback, also support touch events
   useEffect(() => {
-    document.addEventListener('mousemove', handleJoystickMouseMove);
-    document.addEventListener('mouseup', handleJoystickMouseUp);
+    const touchMove = (ev: TouchEvent) => {
+      if (!draggingRef.current || !leftJoystickRef.current) return;
+      const t = ev.touches[0];
+      if (!t) return;
+      const pos = computePositionFromPointer(t.clientX, t.clientY, leftJoystickRef.current);
+      setLeftJoystick(pos);
+    };
+    const handleTouchEnd = () => {
+      draggingRef.current = false;
+      setLeftJoystick({ x: 0, y: 0 });
+    };
+
+    window.addEventListener('touchmove', touchMove, { passive: true });
+    window.addEventListener('touchend', handleTouchEnd);
+    window.addEventListener('touchcancel', handleTouchEnd);
 
     return () => {
-      document.removeEventListener('mousemove', handleJoystickMouseMove);
-      document.removeEventListener('mouseup', handleJoystickMouseUp);
+      window.removeEventListener('touchmove', touchMove);
+      window.removeEventListener('touchend', handleTouchEnd);
+      window.removeEventListener('touchcancel', handleTouchEnd);
     };
-  }, [handleJoystickMouseMove]);
+  }, [computePositionFromPointer]);
 
+  // --- Button handlers ---
   const handleButtonPress = (buttonName: string) => {
     setButtons(prev => ({ ...prev, [buttonName]: !prev[buttonName] }));
     setTimeout(() => {
@@ -281,33 +289,29 @@ export default function JoystickPage() {
   };
 
   const handleActionButtonPress = async (buttonName: 'A' | 'B' | 'X' | 'Y') => {
-    // Set button visual state
     setButtons(prev => ({ ...prev, [buttonName]: true }));
     setTimeout(() => {
       setButtons(prev => ({ ...prev, [buttonName]: false }));
     }, 150);
 
-    // Check if button has been configured
     if (!actionCodes[buttonName]) {
-      setNotify(`Nút ${buttonName} chưa được cấu hình!`, "error");
+      setNotify(`Nút ${buttonName} chưa được cấu hình!`, 'error');
       return;
     }
 
-    // Get the action category from configuration
     const actionCategory = actionDescriptions[buttonName]?.category || 'action';
     const actionType = actionCategory === 'expression' ? 'expression' : 'action';
 
-    // Send robot command with dynamic type
     await handleSendCommand(actionCodes[buttonName], actionType);
   };
 
-  const handleSendCommand = async (actionCode: string, type: "action" | "expression" = "action") => {
+  const handleSendCommand = async (actionCode: string, type: 'action' | 'expression' = 'action') => {
     if (!selectedRobotSerial || !selectedRobot) {
-      setNotify("Bạn chưa chọn robot!", "error");
+      setNotify('Bạn chưa chọn robot!', 'error');
       return Promise.resolve();
     }
-    if (selectedRobot.status === "offline") {
-      setNotify(`Robot ${selectedRobot.name} đang offline!`, "error");
+    if (selectedRobot.status === 'offline') {
+      setNotify(`Robot ${selectedRobot.name} đang offline!`, 'error');
       return Promise.resolve();
     }
     await sendCommandToBackend(actionCode, selectedRobotSerial, type);
@@ -317,329 +321,265 @@ export default function JoystickPage() {
     setButtons(prev => ({ ...prev, [buttonName]: isPressed }));
   };
 
+  // --- UI ---
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900 p-4">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-gray-100 to-slate-200 p-6">
       <div className="max-w-6xl mx-auto">
-        <div className="text-center mb-8">
-          <h1 className="text-4xl font-bold text-white mb-2">🎮 Game Controller Simulator</h1>
-          <p className="text-blue-200">Giả lập tay cầm chơi game với đầy đủ chức năng</p>
-        </div>
+        <header className="flex items-center justify-between mb-6">
+          <div>
+            <h1 className="text-3xl md:text-4xl font-extrabold text-gray-900">🎮 Controller Studio</h1>
+            <p className="text-sm text-gray-600">Simulator • Interactive preview • Map buttons to robot actions</p>
+          </div>
 
-        {/* Robot Selector */}
-        <Card className="bg-gray-800/50 border-gray-600 backdrop-blur-sm mb-6">
-          <CardContent className="p-4">
-            <div className="flex items-center justify-between">
-              <h3 className="text-lg font-semibold text-white">Chọn Robot</h3>
-              <div className="flex items-center gap-4">
-                <div className="flex-1 max-w-md">
-                  <RobotSelector />
-                </div>
-                <Button
-                  onClick={() => setIsConfigModalOpen(true)}
-                  variant="outline"
-                  className="bg-blue-600 hover:bg-blue-700 text-white border-blue-500"
-                >
-                  ⚙️ Cấu hình Joystick
-                </Button>
-              </div>
+          <div className="flex items-center gap-4">
+            <div className="w-80">
+              <RobotSelector />
             </div>
-            {selectedRobot && (
-              <div className="mt-2 text-sm text-gray-300">
-                Đã chọn: <span className="text-blue-400">{selectedRobot.name}</span>
-                <Badge 
-                  variant={selectedRobot.status === 'online' ? 'default' : 'destructive'} 
-                  className="ml-2"
-                >
-                  {selectedRobot.status}
-                </Badge>
-              </div>
-            )}
-          </CardContent>
-        </Card>
+            <Button
+              onClick={() => setIsConfigModalOpen(true)}
+              variant="ghost"
+              className="bg-gradient-to-r from-blue-600 to-blue-700 text-white hover:from-blue-700 hover:to-blue-800 shadow-lg"
+            >
+              ⚙️ Cấu hình Joystick
+            </Button>
+          </div>
+        </header>
 
-        {/* Controller Display */}
-        <Card className="bg-gray-800/50 border-gray-600 backdrop-blur-sm mb-6">
-          <CardContent className="p-8">
-            <div className="flex justify-center items-center">
-              <div className="relative w-full max-w-4xl">
-                {/* Controller Body */}
-                <div className="bg-gradient-to-b from-gray-700 to-gray-900 rounded-3xl p-8 border-4 border-gray-600 shadow-2xl">
-                  <div className="grid grid-cols-3 gap-8 items-center">
-                    
-                    {/* Left Side - Left Joystick + D-Pad */}
-                    <div className="space-y-6">
-                      {/* Left Joystick */}
-                      <div className="flex flex-col items-center space-y-2">
-                        <Badge variant="secondary" className="text-xs">Left Stick</Badge>
-                        <div
-                          ref={leftJoystickRef}
-                          className="relative w-24 h-24 bg-gray-900 rounded-full border-4 border-gray-500 cursor-pointer"
-                          onMouseDown={() => handleJoystickMouseDown(true)}
-                        >
-                          <div
-                            className="absolute w-6 h-6 bg-blue-400 rounded-full shadow-lg transition-all duration-100"
-                            style={{
-                              left: `calc(50% + ${leftJoystick.x * 30}px - 12px)`,
-                              top: `calc(50% + ${leftJoystick.y * 30}px - 12px)`,
-                            }}
-                          />
-                        </div>
-                        <div className="text-xs text-gray-300 text-center">
-                          X: {(leftJoystick.x * 100).toFixed(0)}%<br/>
-                          Y: {(leftJoystick.y * 100).toFixed(0)}%
-                        </div>
-                      </div>
+        {/* Controller */}
+        <div className="relative rounded-[3rem] overflow-visible mb-6">
+          {/* soft shadow */}
+          <div className="absolute inset-x-6 -bottom-8 h-24 blur-3xl opacity-20 rounded-3xl bg-gray-500/60" />
 
-                      {/* D-Pad */}
-                      <div className="flex flex-col items-center space-y-2">
-                        <Badge variant="secondary" className="text-xs">D-Pad</Badge>
-                        <div className="relative">
-                          <div className="grid grid-cols-3 gap-1 w-24 h-24">
-                            <div></div>
-                            <Button
-                              variant={buttons.UP ? "default" : "outline"}
-                              size="sm"
-                              className="h-6 w-6 p-0 rounded-sm"
-                              onMouseDown={() => handleButtonHold('UP', true)}
-                              onMouseUp={() => handleButtonHold('UP', false)}
-                              onMouseLeave={() => handleButtonHold('UP', false)}
-                            >
-                              ↑
-                            </Button>
-                            <div></div>
-                            <Button
-                              variant={buttons.LEFT ? "default" : "outline"}
-                              size="sm"
-                              className="h-6 w-6 p-0 rounded-sm"
-                              onMouseDown={() => handleButtonHold('LEFT', true)}
-                              onMouseUp={() => handleButtonHold('LEFT', false)}
-                              onMouseLeave={() => handleButtonHold('LEFT', false)}
-                            >
-                              ←
-                            </Button>
-                            <div className="w-6 h-6 bg-gray-600 rounded-sm"></div>
-                            <Button
-                              variant={buttons.RIGHT ? "default" : "outline"}
-                              size="sm"
-                              className="h-6 w-6 p-0 rounded-sm"
-                              onMouseDown={() => handleButtonHold('RIGHT', true)}
-                              onMouseUp={() => handleButtonHold('RIGHT', false)}
-                              onMouseLeave={() => handleButtonHold('RIGHT', false)}
-                            >
-                              →
-                            </Button>
-                            <div></div>
-                            <Button
-                              variant={buttons.DOWN ? "default" : "outline"}
-                              size="sm"
-                              className="h-6 w-6 p-0 rounded-sm"
-                              onMouseDown={() => handleButtonHold('DOWN', true)}
-                              onMouseUp={() => handleButtonHold('DOWN', false)}
-                              onMouseLeave={() => handleButtonHold('DOWN', false)}
-                            >
-                              ↓
-                            </Button>
-                            <div></div>
-                          </div>
-                        </div>
-                      </div>
+          {/* Controller body */}
+          <div className="relative z-10 mx-auto bg-gradient-to-br from-gray-100 via-gray-50 to-white rounded-[2.5rem] border border-gray-300 shadow-2xl p-8">
+                <div className="flex flex-col md:flex-row items-center gap-8 md:gap-16">
+                  {/* Left Grip: joystick + DPad */}
+                  <div className="flex flex-col items-center gap-6 w-full md:w-1/3">
+                    <Badge variant="secondary" className="mb-2 bg-gray-200 text-gray-700">Left Stick</Badge>
+
+                    <div
+                      ref={leftJoystickRef as any}
+                      onPointerDown={handlePointerDown}
+                      // To support touch initial capture: onPointerDown handles pointer
+                      className="relative w-28 h-28 rounded-full bg-gradient-to-br from-gray-200 to-gray-300 border-4 border-gray-400 flex items-center justify-center shadow-inner cursor-grab active:cursor-grabbing"
+                      style={{ touchAction: 'none' }}
+                    >
+                      {/* subtle ring */}
+                      <div className="absolute -inset-1 rounded-full opacity-30 blur-sm bg-gradient-to-br from-blue-500 to-blue-600" />
+
+                      <motion.div
+                        animate={{ x: leftJoystick.x * 28, y: leftJoystick.y * 28 }}
+                        transition={{ type: 'spring', damping: 18, stiffness: 300 }}
+                        className="w-10 h-10 bg-gradient-to-br from-blue-100 to-blue-200 rounded-full border-2 border-blue-400 shadow-lg"
+                      />
                     </div>
 
-                    {/* Center - Start/Select + Logo */}
-                    <div className="flex flex-col items-center space-y-6">
-                      <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-2xl">
+                    <div className="text-xs text-gray-600 font-mono text-center">
+                      X: {(leftJoystick.x * 100).toFixed(0)} • Y: {(leftJoystick.y * 100).toFixed(0)}
+                    </div>
+
+                    {/* D-Pad */}
+                    <div className="mt-4">
+                      <Badge variant="secondary" className="bg-gray-200 text-gray-700">D-Pad</Badge>
+                      <div className="mt-3 grid grid-cols-3 gap-1 w-32 h-32">
+                        <div />
+                        <Button
+                          variant={buttons.UP ? 'default' : 'outline'}
+                          size="sm"
+                          className="h-10 w-10 p-0 rounded-sm text-base font-bold"
+                          onPointerDown={() => handleButtonHold('UP', true)}
+                          onPointerUp={() => handleButtonHold('UP', false)}
+                          onPointerLeave={() => handleButtonHold('UP', false)}
+                        >
+                          ↑
+                        </Button>
+                        <div />
+                        <Button
+                          variant={buttons.LEFT ? 'default' : 'outline'}
+                          size="sm"
+                          className="h-10 w-10 p-0 rounded-sm text-base font-bold"
+                          onPointerDown={() => handleButtonHold('LEFT', true)}
+                          onPointerUp={() => handleButtonHold('LEFT', false)}
+                          onPointerLeave={() => handleButtonHold('LEFT', false)}
+                        >
+                          ←
+                        </Button>
+                        <div className="w-10 h-10 bg-gray-300 rounded-sm" />
+                        <Button
+                          variant={buttons.RIGHT ? 'default' : 'outline'}
+                          size="sm"
+                          className="h-10 w-10 p-0 rounded-sm text-base font-bold"
+                          onPointerDown={() => handleButtonHold('RIGHT', true)}
+                          onPointerUp={() => handleButtonHold('RIGHT', false)}
+                          onPointerLeave={() => handleButtonHold('RIGHT', false)}
+                        >
+                          →
+                        </Button>
+                        <div />
+                        <Button
+                          variant={buttons.DOWN ? 'default' : 'outline'}
+                          size="sm"
+                          className="h-10 w-10 p-0 rounded-sm text-base font-bold"
+                          onPointerDown={() => handleButtonHold('DOWN', true)}
+                          onPointerUp={() => handleButtonHold('DOWN', false)}
+                          onPointerLeave={() => handleButtonHold('DOWN', false)}
+                        >
+                          ↓
+                        </Button>
+                        <div />
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Center Logo + Start/Select */}
+                  <div className="flex flex-col items-center gap-6 w-full md:w-1/3">
+                    <div className="relative">
+                      <div
+                        className={`w-28 h-28 rounded-full flex items-center justify-center text-3xl shadow-2xl
+                          ${selectedRobot?.status === 'online' ? 'ring-4 ring-blue-500/40' : 'ring-0'}`}
+                        style={{
+                          background:
+                            'radial-gradient(circle at 30% 20%, rgba(59,130,246,0.8), rgba(96,165,250,0.7) 40%, rgba(147,197,253,0.5) 100%)',
+                        }}
+                      >
                         🎮
                       </div>
-                      
-                      <div className="flex space-x-4">
-                        <Button
-                          variant={buttons.SELECT ? "default" : "outline"}
-                          size="sm"
-                          onClick={() => handleButtonPress('SELECT')}
-                        >
-                          SELECT
-                        </Button>
-                        <Button
-                          variant={buttons.START ? "default" : "outline"}
-                          size="sm"
-                          onClick={() => handleButtonPress('START')}
-                        >
-                          START
-                        </Button>
-                      </div>
+                      {/* <div className="absolute -bottom-5 left-1/2 -translate-x-1/2 text-xs text-gray-600 bg-white/80 px-3 py-1 rounded-full">
+                        {selectedRobot ? (
+                          <span>
+                            {selectedRobot.name} • <span className="font-semibold">{selectedRobot.status}</span>
+                          </span>
+                        ) : (
+                          'Chưa chọn robot'
+                        )}
+                      </div> */}
                     </div>
 
-                    {/* Right Side - Action Buttons + Right Joystick */}
-                    <div className="space-y-6">
-                      {/* Action Buttons (ABXY) */}
-                      <div className="flex flex-col items-center space-y-2">
-                        <Badge variant="secondary" className="text-xs">Action Buttons</Badge>
-                        <div className="relative">
-                          <div className="grid grid-cols-3 gap-1 w-24 h-24">
-                            <div></div>
-                            <Button
-                              variant={buttons.Y ? "default" : "outline"}
-                              size="sm"
-                              className="h-8 w-8 p-0 rounded-full bg-green-600 hover:bg-green-700 text-white font-bold"
-                              onClick={() => handleActionButtonPress('Y')}
-                              title={actionDescriptions.Y?.name || 'Y Button'}
-                            >
-                              Y
-                            </Button>
-                            <div></div>
-                            <Button
-                              variant={buttons.X ? "default" : "outline"}
-                              size="sm"
-                              className="h-8 w-8 p-0 rounded-full bg-blue-600 hover:bg-blue-700 text-white font-bold"
-                              onClick={() => handleActionButtonPress('X')}
-                              title={actionDescriptions.X?.name || 'X Button'}
-                            >
-                              X
-                            </Button>
-                            <div className="w-8 h-8"></div>
-                            <Button
-                              variant={buttons.B ? "default" : "outline"}
-                              size="sm"
-                              className="h-8 w-8 p-0 rounded-full bg-red-600 hover:bg-red-700 text-white font-bold"
-                              onClick={() => handleActionButtonPress('B')}
-                              title={actionDescriptions.B?.name || 'B Button'}
-                            >
-                              B
-                            </Button>
-                            <div></div>
-                            <Button
-                              variant={buttons.A ? "default" : "outline"}
-                              size="sm"
-                              className="h-8 w-8 p-0 rounded-full bg-yellow-600 hover:bg-yellow-700 text-white font-bold"
-                              onClick={() => handleActionButtonPress('A')}
-                              title={actionDescriptions.A?.name || 'A Button'}
-                            >
-                              A
-                            </Button>
-                            <div></div>
-                          </div>
-                        </div>
-                        {/* Action descriptions */}
-                        <div className="text-xs text-gray-300 text-center space-y-1">
-                          <div>🟡 A: {actionDescriptions.A?.name || 'Chưa cấu hình'}</div>
-                          <div>🔴 B: {actionDescriptions.B?.name || 'Chưa cấu hình'}</div>
-                          <div>🔵 X: {actionDescriptions.X?.name || 'Chưa cấu hình'}</div>
-                          <div>🟢 Y: {actionDescriptions.Y?.name || 'Chưa cấu hình'}</div>
-                        </div>
-                      </div>
-
-                      {/* Right Joystick */}
-                      <div className="flex flex-col items-center space-y-2">
-                        <Badge variant="secondary" className="text-xs">Right Stick</Badge>
-                        <div
-                          ref={rightJoystickRef}
-                          className="relative w-24 h-24 bg-gray-900 rounded-full border-4 border-gray-500 cursor-pointer"
-                          onMouseDown={() => handleJoystickMouseDown(false)}
-                        >
-                          <div
-                            className="absolute w-6 h-6 bg-red-400 rounded-full shadow-lg transition-all duration-100"
-                            style={{
-                              left: `calc(50% + ${rightJoystick.x * 30}px - 12px)`,
-                              top: `calc(50% + ${rightJoystick.y * 30}px - 12px)`,
-                            }}
-                          />
-                        </div>
-                        <div className="text-xs text-gray-300 text-center">
-                          X: {(rightJoystick.x * 100).toFixed(0)}%<br/>
-                          Y: {(rightJoystick.y * 100).toFixed(0)}%
-                        </div>
-                      </div>
+                    <div className="flex gap-3">
+                      <Button
+                        variant={buttons.SELECT ? 'default' : 'outline'}
+                        size="lg"
+                        onClick={() => handleButtonPress('SELECT')}
+                        className="px-4 py-2 font-semibold"
+                      >
+                        SELECT
+                      </Button>
+                      <Button
+                        variant={buttons.START ? 'default' : 'outline'}
+                        size="lg"
+                        onClick={() => handleButtonPress('START')}
+                        className="px-4 py-2 font-semibold"
+                      >
+                        START
+                      </Button>
                     </div>
                   </div>
 
-                  {/* Shoulder Buttons */}
-                  <div className="flex justify-between mt-4 px-8">
-                    <div className="flex space-x-2">
-                      <Button
-                        variant={buttons.L1 ? "default" : "outline"}
-                        size="sm"
-                        onMouseDown={() => handleButtonHold('L1', true)}
-                        onMouseUp={() => handleButtonHold('L1', false)}
-                        onMouseLeave={() => handleButtonHold('L1', false)}
-                        className="bg-gray-600 hover:bg-gray-700"
+                  {/* Right Grip: ABXY */}
+                  <div className="flex flex-col items-center gap-6 w-full md:w-1/3">
+                    <Badge variant="secondary">Action Buttons</Badge>
+
+                    <div className="relative grid grid-cols-3 gap-3 w-44 h-44">
+                      {/* Y */}
+                      <motion.button
+                        whileTap={{ scale: 0.9 }}
+                        onClick={() => handleActionButtonPress('Y')}
+                        title={actionDescriptions.Y?.name || 'Y Button'}
+                        className={`col-start-2 row-start-1 w-12 h-12 rounded-full font-bold text-lg text-white shadow-lg ${
+                          buttons.Y ? 'scale-95' : ''
+                        }`}
+                        style={{
+                          background:
+                            'linear-gradient(180deg, rgba(34,197,94,1), rgba(16,185,129,1))',
+                        }}
                       >
-                        L1
-                      </Button>
-                      <Button
-                        variant={buttons.L2 ? "default" : "outline"}
-                        size="sm"
-                        onMouseDown={() => handleButtonHold('L2', true)}
-                        onMouseUp={() => handleButtonHold('L2', false)}
-                        onMouseLeave={() => handleButtonHold('L2', false)}
-                        className="bg-gray-600 hover:bg-gray-700"
+                        Y
+                      </motion.button>
+
+                      {/* X */}
+                      <motion.button
+                        whileTap={{ scale: 0.9 }}
+                        onClick={() => handleActionButtonPress('X')}
+                        title={actionDescriptions.X?.name || 'X Button'}
+                        className="col-start-1 row-start-2 w-12 h-12 rounded-full font-bold text-lg text-white shadow-lg"
+                        style={{
+                          background:
+                            'linear-gradient(180deg, rgba(37,99,235,1), rgba(59,130,246,1))',
+                        }}
                       >
-                        L2
-                      </Button>
+                        X
+                      </motion.button>
+
+                      <div className="w-12 h-12" />
+
+                      {/* B */}
+                      <motion.button
+                        whileTap={{ scale: 0.9 }}
+                        onClick={() => handleActionButtonPress('B')}
+                        title={actionDescriptions.B?.name || 'B Button'}
+                        className="col-start-3 row-start-2 w-12 h-12 rounded-full font-bold text-lg text-white shadow-lg"
+                        style={{
+                          background:
+                            'linear-gradient(180deg, rgba(239,68,68,1), rgba(220,38,38,1))',
+                        }}
+                      >
+                        B
+                      </motion.button>
+
+                      <div />
+
+                      {/* A */}
+                      <motion.button
+                        whileTap={{ scale: 0.9 }}
+                        onClick={() => handleActionButtonPress('A')}
+                        title={actionDescriptions.A?.name || 'A Button'}
+                        className="col-start-2 row-start-3 w-12 h-12 rounded-full font-bold text-lg text-white shadow-lg"
+                        style={{
+                          background:
+                            'linear-gradient(180deg, rgba(245,158,11,1), rgba(234,88,12,1))',
+                        }}
+                      >
+                        A
+                      </motion.button>
                     </div>
-                    <div className="flex space-x-2">
-                      <Button
-                        variant={buttons.R1 ? "default" : "outline"}
-                        size="sm"
-                        onMouseDown={() => handleButtonHold('R1', true)}
-                        onMouseUp={() => handleButtonHold('R1', false)}
-                        onMouseLeave={() => handleButtonHold('R1', false)}
-                        className="bg-gray-600 hover:bg-gray-700"
-                      >
-                        R1
-                      </Button>
-                      <Button
-                        variant={buttons.R2 ? "default" : "outline"}
-                        size="sm"
-                        onMouseDown={() => handleButtonHold('R2', true)}
-                        onMouseUp={() => handleButtonHold('R2', false)}
-                        onMouseLeave={() => handleButtonHold('R2', false)}
-                        className="bg-gray-600 hover:bg-gray-700"
-                      >
-                        R2
-                      </Button>
+
+                    {/* action labels */}
+                    <div className="text-sm text-gray-700 text-center space-y-1 mt-2 bg-white/60 p-3 rounded-lg w-full ml-47">
+                      <div className="flex items-center gap-2"><span>🟡 A:</span><span className="font-medium">{actionDescriptions.A?.name || 'Chưa cấu hình'}</span></div>
+                      <div className="flex items-center gap-2"><span>🔴 B:</span><span className="font-medium">{actionDescriptions.B?.name || 'Chưa cấu hình'}</span></div>
+                      <div className="flex items-center gap-2"><span>🔵 X:</span><span className="font-medium">{actionDescriptions.X?.name || 'Chưa cấu hình'}</span></div>
+                      <div className="flex items-center gap-2"><span>🟢 Y:</span><span className="font-medium">{actionDescriptions.Y?.name || 'Chưa cấu hình'}</span></div>
                     </div>
                   </div>
                 </div>
               </div>
             </div>
-          </CardContent>
-        </Card>
 
-        {/* Status Panel */}
-        <Card className="bg-gray-800/50 border-gray-600 backdrop-blur-sm">
-          <CardContent className="p-6">
-            <h3 className="text-xl font-semibold text-white mb-4">Controller Status</h3>
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-              
-              {/* Joystick Values */}
-              <div className="space-y-2">
-                <h4 className="font-medium text-blue-300">Joystick Values</h4>
-                <div className="text-sm text-gray-300 space-y-1">
-                  <div>Left Stick: ({(leftJoystick.x * 100).toFixed(1)}, {(leftJoystick.y * 100).toFixed(1)})</div>
-                  <div>Right Stick: ({(rightJoystick.x * 100).toFixed(1)}, {(rightJoystick.y * 100).toFixed(1)})</div>
-                </div>
+        {/* Bottom status panel */}
+        <Card className="bg-white/70 backdrop-blur-sm border border-gray-200 shadow-lg p-6">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+              {/* Joystick status */}
+              <div>
+                <h4 className="text-sm font-semibold text-gray-800 mb-2">🕹️ Joystick</h4>
+                <div className="text-xs text-gray-600">Left: ({(leftJoystick.x * 100).toFixed(1)}, {(leftJoystick.y * 100).toFixed(1)})</div>
               </div>
 
-              {/* Button States */}
-              <div className="space-y-2">
-                <h4 className="font-medium text-green-300">Button States</h4>
-                <div className="grid grid-cols-4 gap-1 text-xs">
-                  {Object.entries(buttons).map(([button, pressed]) => (
-                    <Badge
-                      key={button}
-                      variant={pressed ? "default" : "outline"}
-                      className={`text-center ${pressed ? 'bg-green-600' : 'bg-gray-600'}`}
-                    >
-                      {button}
+              {/* Buttons */}
+              <div>
+                <h4 className="text-sm font-semibold text-gray-800 mb-2">🎛️ Buttons</h4>
+                <div className="flex flex-wrap gap-2">
+                  {Object.entries(buttons).map(([btn, pressed]) => (
+                    <Badge key={btn} variant={pressed ? 'default' : 'outline'} className={`px-3 py-1 ${pressed ? 'bg-blue-500 text-white' : 'bg-gray-100 text-gray-700'}`}>
+                      {btn}
                     </Badge>
                   ))}
                 </div>
               </div>
 
-              {/* Robot Actions */}
-              <div className="space-y-2">
-                <h4 className="font-medium text-purple-300">Robot Actions</h4>
-                <div className="text-sm text-gray-300 space-y-1">
+              {/* Robot actions */}
+              <div>
+                <h4 className="text-sm font-semibold text-gray-800 mb-2">🎯 Mapped Actions</h4>
+                <div className="text-xs text-gray-600 space-y-1">
                   <div>🟡 A: {actionDescriptions.A?.name || 'Chưa cấu hình'}</div>
                   <div>🔴 B: {actionDescriptions.B?.name || 'Chưa cấu hình'}</div>
                   <div>🔵 X: {actionDescriptions.X?.name || 'Chưa cấu hình'}</div>
@@ -648,40 +588,40 @@ export default function JoystickPage() {
               </div>
 
               {/* Instructions */}
-              <div className="space-y-2">
-                <h4 className="font-medium text-orange-300">Instructions</h4>
-                <div className="text-sm text-gray-300 space-y-1">
-                  <div>• Kéo thả joystick để di chuyển</div>
-                  <div>• Click ABXY để thực hiện hành động</div>
+              <div>
+                <h4 className="text-sm font-semibold text-gray-800 mb-2">📋 Instructions</h4>
+                <div className="text-xs text-gray-600 space-y-1">
+                  <div>• Kéo/nhấn joystick để di chuyển</div>
+                  <div>• Nhấn ABXY để gửi lệnh đến robot</div>
                   <div>• Chọn robot trước khi điều khiển</div>
-                  <div>• Xem các hành động cụ thể ở trên</div>
+                  <div>• Mở cấu hình để map nút</div>
                 </div>
               </div>
             </div>
-          </CardContent>
         </Card>
       </div>
 
       {/* Notification */}
       {notify && (
         <div
-          className={`fixed top-6 left-1/2 -translate-x-1/2 z-50 px-6 py-3 rounded-xl shadow-lg text-white font-semibold transition-all duration-300 ${
-            notify.type === "success" ? "bg-green-500" : "bg-red-500"
+          className={`fixed top-6 left-1/2 -translate-x-1/2 z-50 px-6 py-3 rounded-xl shadow-lg text-white font-semibold ${
+            notify.type === 'success' ? 'bg-green-500' : 'bg-red-500'
           }`}
         >
           {notify.msg}
         </div>
       )}
 
-      {/* Joystick Configuration Modal */}
+      {/* Config modal */}
       <JoystickConfigurationModal
         isOpen={isConfigModalOpen}
-        onClose={handleConfigModalClose}
+        onClose={() => {
+          setIsConfigModalOpen(false);
+          // react-query will handle refetch if needed
+        }}
         existingJoysticks={finalJoystickData?.joysticks || []}
         onSuccess={() => {
-          setNotify("Cấu hình joystick đã được lưu thành công!", "success");
-          // React Query will automatically invalidate cache and refetch when mutations complete
-          // No need to manually refetch here
+          // Modal already shows toast notification, no need for duplicate
         }}
       />
     </div>
