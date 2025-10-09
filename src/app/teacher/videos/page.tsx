@@ -49,71 +49,131 @@ export default function VideoPage() {
   }, [mode]);
 
   // ---------------- Robot Camera ----------------
+// ---------------- Robot Camera ----------------
 useEffect(() => {
   if (mode !== "robot" || !selectedRobotSerial) return;
+
+  console.log("🎬 Robot mode activated for", selectedRobotSerial);
 
   setIsLoading(true);
   setRobotError(null);
 
-  const pc = new RTCPeerConnection();
-  const ws = new WebSocket(`${socketUrl}/signaling/${selectedRobotSerial}/web`);
-
+  let pc: RTCPeerConnection | null = null;
+  let ws: WebSocket | null = null;
   let isClosed = false;
 
-  pc.ontrack = (event) => {
-    if (robotVideoRef.current) {
-      robotVideoRef.current.srcObject = event.streams[0];
-      setIsLoading(false);
-    }
-  };
+  try {
+    pc = new RTCPeerConnection();
 
-  pc.onicecandidate = (event) => {
-    if (event.candidate && ws.readyState === WebSocket.OPEN) {
-      ws.send(JSON.stringify({ type: "ice", candidate: event.candidate.toJSON() }));
-    }
-  };
+    // 🧠 Debug signaling state
+    pc.onsignalingstatechange = () => {
+      console.log("🔄 Signaling state:", pc?.signalingState);
+    };
 
-  ws.onmessage = async (event) => {
-    try {
-      const data = JSON.parse(event.data);
-
-      if (data.type === "offer") {
-        // 👉 Robot gửi offer trước
-        await pc.setRemoteDescription({ type: "offer", sdp: data.sdp });
-
-        const answer = await pc.createAnswer();
-        await pc.setLocalDescription(answer);
-
-        ws.send(JSON.stringify({ type: "answer", sdp: answer.sdp }));
-      } else if (data.type === "answer") {
-        // trong trường hợp robot yêu cầu web tạo offer thì mới cần, nhưng hiện tại không cần
-        await pc.setRemoteDescription({ type: "answer", sdp: data.sdp });
-      } else if (data.type === "ice") {
-        await pc.addIceCandidate(data.candidate);
+    // Khi robot gửi video track
+    pc.ontrack = (event) => {
+      console.log("📡 Received track from robot");
+      if (robotVideoRef.current) {
+        robotVideoRef.current.srcObject = event.streams[0];
+        setIsLoading(false);
       }
-    } catch (err) {
-      console.error("WebRTC error:", err);
-      setRobotError("Không thể nhận dữ liệu từ robot");
+    };
+
+    // Khi browser có ICE candidate mới → gửi sang robot qua WebSocket
+    pc.onicecandidate = (event) => {
+      if (event.candidate && ws?.readyState === WebSocket.OPEN) {
+        ws.send(JSON.stringify({ type: "ice", candidate: event.candidate.toJSON() }));
+      }
+    };
+
+    // 🔌 Tạo WebSocket
+    ws = new WebSocket(`${socketUrl}/signaling/${selectedRobotSerial}/web`);
+
+    ws.onopen = () => {
+      console.log("✅ WebSocket connected to robot");
+    };
+
+    ws.onmessage = async (event) => {
+      if (isClosed) return;
+      try {
+        const data = JSON.parse(event.data);
+        // ----------- OFFER từ robot -----------
+        if (data.type === "offer") {
+          console.log("📨 Received offer from robot");
+          if (!pc || pc.signalingState !== "stable") {
+            console.warn("⚠️ Ignoring offer, state:", pc?.signalingState);
+            return;
+          }
+
+          await pc.setRemoteDescription({ type: "offer", sdp: data.sdp });
+          const answer = await pc.createAnswer();
+          await pc.setLocalDescription(answer);
+          ws?.send(JSON.stringify({ type: "answer", sdp: answer.sdp }));
+
+          console.log("✅ Sent answer to robot");
+        }
+        // ----------- ANSWER (ít khi dùng, nhưng để dự phòng) -----------
+        else if (data.type === "answer") {
+          console.log("📨 Received answer from robot");
+          if (pc?.signalingState === "have-local-offer") {
+            await pc.setRemoteDescription({ type: "answer", sdp: data.sdp });
+          }
+        }
+        // ----------- ICE candidate -----------
+        else if (data.type === "ice" && data.candidate) {
+          try {
+            if (pc) {
+              await pc.addIceCandidate(data.candidate);
+            } else {
+              console.warn("⚠️ Cannot add ICE candidate: pc is null");
+            }
+          } catch (iceErr) {
+            console.warn("⚠️ Failed to add ICE candidate:", iceErr);
+          }
+        }
+      } catch (err) {
+        console.error("💥 WebRTC handle error:", err);
+        setRobotError("Lỗi xử lý dữ liệu WebRTC");
+        setIsLoading(false);
+      }
+    };
+
+    ws.onerror = (err) => {
+      console.error("❌ WebSocket error:", err);
+      setRobotError("Không thể kết nối WebSocket tới robot");
       setIsLoading(false);
-    }
-  };
+    };
 
-  ws.onerror = () => {
-    console.error("WebSocket error");
-    setRobotError("Không thể kết nối WebSocket tới robot");
+    ws.onclose = () => {
+      console.warn("⚠️ WebSocket closed");
+      isClosed = true;
+      if (!robotError) setRobotError("Kết nối WebSocket đã đóng");
+    };
+  } catch (err) {
+    console.error("💥 Lỗi khi khởi tạo WebRTC/WebSocket:", err);
+    setRobotError("Không thể khởi tạo kết nối tới robot");
     setIsLoading(false);
-  };
+  }
 
-  ws.onclose = () => {
-    isClosed = true;
-  };
-
+  // 🧹 Cleanup khi đổi mode hoặc unmount
   return () => {
-    if (!isClosed && ws.readyState === WebSocket.OPEN) ws.close();
-    pc.close();
+    console.log("🧹 Cleanup robot video connection");
+    isClosed = true;
+    try {
+      if (ws && ws.readyState === WebSocket.OPEN) ws.close();
+    } catch (e) {
+      console.warn("⚠️ Cleanup WS error:", e);
+    }
+    try {
+      pc?.close();
+    } catch (e) {
+      console.warn("⚠️ Cleanup PC error:", e);
+    }
     setIsLoading(false);
   };
 }, [mode, selectedRobotSerial]);
+
+
 
 
   // ---------------- Fullscreen ----------------
