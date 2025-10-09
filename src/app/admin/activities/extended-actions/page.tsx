@@ -44,7 +44,7 @@ function ExtendedActionPage() {
   }, [searchTerm])
 
   const { data, isLoading, error, refetch } = useQuery({
-    queryKey: ["extended_actions", page, size, debouncedSearchTerm],
+    queryKey: ["extended-actions", page, size, debouncedSearchTerm],
     queryFn: async ({ queryKey }) => {
       const controller = new AbortController()
       setTimeout(() => {
@@ -158,12 +158,12 @@ function ExtendedActionPage() {
     <div className="container mx-auto py-10">
       <div className="mb-6">
         <div className="flex items-center justify-between mb-4">
-          <h1 className="text-2xl font-bold">Quản lý biểu cảm</h1>
+          <h1 className="text-2xl font-bold">Quản lý hành động nâng cao</h1>
           <Button
             onClick={handleAddExtendedAction}
             variant="outline"
           >
-            Thêm biểu cảm
+            Thêm hành động nâng cao
           </Button>
         </div>
       </div>
@@ -174,7 +174,7 @@ function ExtendedActionPage() {
         onSizeChange={handleSizeChange}
         searchValue={searchTerm}
         onSearchChange={setSearchTerm}
-        searchPlaceholder="Tìm kiếm biểu cảm..."
+        searchPlaceholder="Tìm kiếm hành động nâng cao..."
         pageCount={data?.total_pages || 0}
         page={page}
         onPageChange={handlePageChange}

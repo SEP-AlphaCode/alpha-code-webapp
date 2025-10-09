@@ -30,7 +30,6 @@ export default function SkillsPage() {
 
   // 🧠 Lấy robotModels từ response
   const skills = data?.data || []
-  const robotModels = data?.data || []
 
   // Debounce search term
   useEffect(() => {
