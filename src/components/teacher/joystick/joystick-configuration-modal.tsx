@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import {
   Dialog,
   DialogContent,
@@ -76,6 +76,73 @@ export default function JoystickConfigurationModal({
   const actions = actionsData?.data || [];
   const dances = dancesData?.data || [];
   const expressions = expressionsData?.data || [];
+
+  // Sync existing joystick configurations with local state when modal opens
+  useEffect(() => {
+    if (isOpen && existingJoysticks.length > 0) {
+      const configs: Record<ButtonName, ButtonConfig | null> = {
+        A: null,
+        B: null,
+        X: null,
+        Y: null,
+      };
+
+      existingJoysticks.forEach(joystick => {
+        const buttonCode = joystick.buttonCode as ButtonName;
+        if (buttonCode in configs) {
+          // Determine action type and create config
+          let actionType: ActionType;
+          let actionId: string;
+          let actionCode: string;
+          let actionName: string;
+
+          if (joystick.actionId && joystick.actionCode && joystick.actionName) {
+            actionType = 'action';
+            actionId = joystick.actionId;
+            actionCode = joystick.actionCode;
+            actionName = joystick.actionName;
+          } else if (joystick.danceId && joystick.danceCode && joystick.danceName) {
+            actionType = 'dance';
+            actionId = joystick.danceId;
+            actionCode = joystick.danceCode;
+            actionName = joystick.danceName;
+          } else if (joystick.expresstionId && joystick.expresstionCode && joystick.expresstionName) {
+            actionType = 'expression';
+            actionId = joystick.expresstionId;
+            actionCode = joystick.expresstionCode;
+            actionName = joystick.expresstionName;
+          } else {
+            return; // Skip if no valid action found
+          }
+
+          configs[buttonCode] = {
+            buttonCode,
+            actionType,
+            actionId,
+            actionCode,
+            actionName,
+          };
+        }
+      });
+
+      setButtonConfigs(configs);
+    } else if (isOpen) {
+      // Reset configs when modal opens with no existing data
+      setButtonConfigs({
+        A: null,
+        B: null,
+        X: null,
+        Y: null,
+      });
+    }
+
+    // Reset search and selected button when modal opens
+    if (isOpen) {
+      setSelectedButton('A');
+      setSearchTerm('');
+      setActiveTab('action');
+    }
+  }, [isOpen, existingJoysticks]);
 
   const buttonLabels: Record<ButtonName, { icon: string; label: string; color: string }> = {
     A: { icon: '🟡', label: 'A Button', color: 'bg-yellow-500' },
@@ -269,7 +336,7 @@ export default function JoystickConfigurationModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-5xl h-[90vh] w-full flex flex-col">
+      <DialogContent className="max-w-6xl w-full h-[90vh] flex flex-col">
         <DialogHeader className="pb-4 border-b flex-shrink-0">
           <DialogTitle className="flex items-center gap-2 text-xl">
             <div className="p-2 bg-blue-100 rounded-lg">
