@@ -7,7 +7,6 @@ interface Robot {
   name: string;
   status: "online" | "offline" | "charging";
   battery: number;
-  location: string;
   lastSeen: string;
   version: string;
   students: number;
@@ -121,8 +120,6 @@ export function RobotGrid({
               </div>
             </div>
             <div className="flex items-center gap-2">
-              <MapPin className="h-4 w-4 text-blue-400" />
-              <span className="text-sm text-gray-600">{robot.location}</span>
             </div>
           </div>
         ))}

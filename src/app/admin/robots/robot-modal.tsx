@@ -109,7 +109,7 @@ export const RobotModal: React.FC<RobotModalProps> = ({ open, onClose }) => {
   queryKey: ["robotModels"],
   queryFn: async () => {
     const res = await getAllRobotModels();
-    return res.robotModels || []; // assuming API returns { robotModels: RobotModel[] }
+    return res.data || []; // assuming API returns { robotModels: RobotModel[] }
   },
 });
 
