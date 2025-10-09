@@ -14,7 +14,6 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import { RobotModel } from "@/types/robot-model"
 
 // ===========================================
 // Cột hiển thị cho bảng danh sách kỹ năng
@@ -22,16 +21,8 @@ import { RobotModel } from "@/types/robot-model"
 export const createColumns = (
   onEdit?: (skill: Skill) => void,
   onDelete?: (skill: Skill) => void,
-  onView?: (skill: Skill) => void,
-  robotModels: RobotModel[] = []
+  onView?: (skill: Skill) => void
 ): ColumnDef<Skill>[] => {
-  // ✅ Lấy tên model theo id
-  const getModelName = (id?: string) => {
-    if (!id) return "Không có"
-    const model = robotModels.find((r) => r.id === id)
-    return model ? model.name : `${id.substring(0, 8)}...`
-  }
-
   // ✅ Action cell (dropdown menu)
   const ActionCell = ({ row }: { row: { original: Skill } }) => {
     const skill = row.original
@@ -72,7 +63,7 @@ export const createColumns = (
   )
 
   // ✅ Header có thể sắp xếp
-    const SortableHeader = ({
+  const SortableHeader = ({
     column,
     text,
   }: {
@@ -202,13 +193,13 @@ export const createColumns = (
       cell: StatusCell,
     },
 
-    // ✅ Robot Model
+    // ✅ Robot Model Name (dùng trực tiếp từ Skill)
     {
-      accessorKey: "robotModelId",
+      accessorKey: "robotModelName",
       header: () => <HeaderCell text="Robot Model" />,
       cell: ({ row }) => (
         <span className="text-gray-700 font-medium">
-          {getModelName(row.original.robotModelId)}
+          {row.original.robotModelName || "Không có"}
         </span>
       ),
     },

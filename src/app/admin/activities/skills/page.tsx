@@ -29,8 +29,8 @@ export default function SkillsPage() {
   const { data, isLoading, error, refetch } = useGetPagedSkills(page, size, debouncedSearchTerm)
 
   // 🧠 Lấy robotModels từ response
-  const skills = data?.skills || []
-  const robotModels = data?.robotModels || []
+  const skills = data?.data || []
+  const robotModels = data?.data || []
 
   // Debounce search term
   useEffect(() => {
@@ -122,7 +122,7 @@ export default function SkillsPage() {
   }
 
   // ✅ Truyền robotModels vào columns
-  const columns = createColumns(handleEditSkill, handleDeleteSkill, handleViewSkill, robotModels)
+  const columns = createColumns(handleEditSkill, handleDeleteSkill, handleViewSkill)
 
   return (
     <div className="container mx-auto py-10">
