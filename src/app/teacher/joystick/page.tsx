@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef, useMemo } from 'react';
+import { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -9,6 +9,7 @@ import { useRobotStore } from '@/hooks/use-robot-store';
 import { RobotSelector } from '@/components/teacher/robot-selector';
 import JoystickConfigurationModal from '@/components/teacher/joystick/joystick-configuration-modal';
 import { useJoystick } from '@/features/activities/hooks/use-joystick';
+import { Joystick } from '@/types/joystick';
 import { getUserInfoFromToken } from '@/utils/tokenUtils';
 
 interface JoystickPosition {
@@ -69,7 +70,7 @@ export default function JoystickPage() {
   }, []); // Empty dependency array - only compute once when component mounts
   
   // Fetch joystick configurations with fallback to localStorage
-  const { data: joystickData, refetch: refetchJoystickData, error: joystickError, isLoading } = useGetJoystickByAccountRobot(
+  const { data: joystickData, error: joystickError } = useGetJoystickByAccountRobot(
     accountId,
     robotId
   );
@@ -91,7 +92,7 @@ export default function JoystickPage() {
         try {
           const parsed = JSON.parse(cachedData);
           return parsed;
-        } catch (e) {
+        } catch {
           // Invalid cached data, ignore
         }
       }
@@ -129,7 +130,7 @@ export default function JoystickPage() {
     return (effectiveJoystickData?.joysticks && effectiveJoystickData.joysticks.length > 0) 
       ? effectiveJoystickData 
       : mockJoystickData;
-  }, [effectiveJoystickData]);
+  }, [effectiveJoystickData, mockJoystickData]);
 
   // Dynamic action codes and descriptions based on joystick configuration
   const [actionCodes, setActionCodes] = useState<Record<string, string>>({});
@@ -143,7 +144,7 @@ export default function JoystickPage() {
       const newActionCodes: Record<string, string> = {};
       const newActionDescriptions: Record<string, { name: string; category: 'action' | 'dance' | 'expression' }> = {};
 
-      finalJoystickData.joysticks.forEach((joystick: any) => {
+      finalJoystickData.joysticks.forEach((joystick: Joystick) => {
         const buttonName = joystick.buttonCode as 'A' | 'B' | 'X' | 'Y';
         
         if (['A', 'B', 'X', 'Y'].includes(buttonName)) {
@@ -160,9 +161,9 @@ export default function JoystickPage() {
             actionCode = joystick.danceCode;
             actionName = joystick.danceName;
             category = 'dance';
-          } else if (joystick.expressionId && joystick.expressionName && joystick.expressionCode) {
-            actionCode = joystick.expressionCode;
-            actionName = joystick.expressionName;
+          } else if (joystick.expresstionId && joystick.expresstionName && joystick.expresstionCode) {
+            actionCode = joystick.expresstionCode;
+            actionName = joystick.expresstionName;
             category = 'expression';
           } else if (joystick.skillId && joystick.skillName && joystick.skillCode) {
             actionCode = joystick.skillCode;
@@ -220,14 +221,14 @@ export default function JoystickPage() {
     }
   };
 
-  const handleJoystickMouseMove = (e: MouseEvent) => {
+  const handleJoystickMouseMove = useCallback((e: MouseEvent) => {
     if (isDraggingLeft.current && leftJoystickRef.current) {
       updateJoystickPosition(e, leftJoystickRef.current, setLeftJoystick);
     }
     if (isDraggingRight.current && rightJoystickRef.current) {
       updateJoystickPosition(e, rightJoystickRef.current, setRightJoystick);
     }
-  };
+  }, []);
 
   const handleJoystickMouseUp = () => {
     isDraggingLeft.current = false;
@@ -270,7 +271,7 @@ export default function JoystickPage() {
       document.removeEventListener('mousemove', handleJoystickMouseMove);
       document.removeEventListener('mouseup', handleJoystickMouseUp);
     };
-  }, []);
+  }, [handleJoystickMouseMove]);
 
   const handleButtonPress = (buttonName: string) => {
     setButtons(prev => ({ ...prev, [buttonName]: !prev[buttonName] }));

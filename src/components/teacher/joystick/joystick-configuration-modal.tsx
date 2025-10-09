@@ -10,9 +10,9 @@ import {
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
-import { Search, Save, Gamepad2, Settings, Hash } from 'lucide-react';
+import { Search, Save, Gamepad2, Settings } from 'lucide-react';
 import { useAction } from '@/features/activities/hooks/use-action';
 import { useDance } from '@/features/activities/hooks/use-dance';
 import { useExpression } from '@/features/activities/hooks/use-expression';
@@ -268,7 +268,12 @@ export default function JoystickConfigurationModal({
       let errorMessage = 'Có lỗi xảy ra khi lưu cấu hình!';
       
       if (error && typeof error === 'object' && 'response' in error) {
-        const axiosError = error as any;
+        const axiosError = error as { 
+          response?: { 
+            status?: number;
+            data?: { message?: string };
+          } 
+        };
         
         if (axiosError.response?.status === 400) {
           errorMessage = 'Dữ liệu không hợp lệ. Vui lòng kiểm tra lại thông tin!';
