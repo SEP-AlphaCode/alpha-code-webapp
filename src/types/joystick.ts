@@ -1,25 +1,25 @@
 export type Joystick = {
     accountId: string
-    actionCode: string
-    actionId: string
-    actionName: string
+    actionCode: string | null
+    actionId: string | null
+    actionName: string | null
     buttonCode: string
     createdDate: string
-    danceCode: string
-    danceId: string
-    danceName: string
-    expresstionCode: string
-    expresstionId: string
-    expresstionName: string
-    extendedActionCode: string
-    extendedActionId: string
-    extendedActionName: string
+    danceCode: string | null
+    danceId: string | null
+    danceName: string | null
+    expresstionCode: string | null
+    expresstionId: string | null
+    expresstionName: string | null
+    extendedActionCode: string | null
+    extendedActionId: string | null
+    extendedActionName: string | null
     id: string
-    lastUpdate: string
+    lastUpdate: string | null
     robotId: string
-    skillCode: string
-    skillId: string
-    skillName: string
+    skillCode: string | null
+    skillId: string | null
+    skillName: string | null
     status: number
     type: string
 }

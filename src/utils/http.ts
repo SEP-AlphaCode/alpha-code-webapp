@@ -23,11 +23,25 @@ class Http {
       return config
     })
     
-    // Response interceptor with auto token refresh
+    // Response interceptor with auto token refresh and rate limiting
     this.instance.interceptors.response.use(
       (response) => response,
       async (error) => {
         const originalRequest = error.config;
+
+        // Handle 429 (Too Many Requests) errors with exponential backoff
+        if (error.response?.status === 429 && !originalRequest._rateLimitRetry) {
+          originalRequest._rateLimitRetry = true;
+          
+          // Extract retry-after header if available, otherwise use default delay
+          const retryAfter = error.response.headers['retry-after'];
+          const delay = retryAfter ? parseInt(retryAfter) * 1000 : 5000; // 5 seconds default
+          
+          // Wait before retrying
+          await new Promise(resolve => setTimeout(resolve, Math.min(delay, 30000))); // Max 30 seconds
+          
+          return this.instance(originalRequest);
+        }
 
         // Check if it's a 401 error and we have a refresh token
         if (
@@ -49,7 +63,6 @@ class Http {
           } catch (refreshError) {
             // If refresh token fails, clear storage and redirect to login
             sessionStorage.clear();
-            console.error("Refresh token failed:", refreshError);
             
             // Only redirect if we're not already on login page
             if (typeof window !== 'undefined' && window.location.pathname !== '/login') {

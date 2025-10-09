@@ -1,4 +1,4 @@
-export type RobotCommand = {
+export type ExtendedAction = {
     id: string
     code: string
     icon: string
@@ -10,12 +10,20 @@ export type RobotCommand = {
     lastUpdate: string
 }
 
-export type RobotCommandResponse = {
-    RobotCommands: RobotCommand[]
-    has_next: boolean
-    has_previous: boolean
-    page: number
-    per_page: number
-    total_count: number
-    total_pages: number
+export type ExtendedActionModal = {
+    code: string
+    name: string
+    icon: string
+    status: number
+    robotModelId: string
+}
+
+export type ExtendedActionResponse = {
+  data: ExtendedAction[]
+  has_next: boolean
+  has_previous: boolean
+  page: number
+  per_page: number
+  total_count: number
+  total_pages: number
 }
