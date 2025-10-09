@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import Image from 'next/image';
 import {
   Dialog,
   DialogContent,
@@ -10,22 +11,27 @@ import {
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
-import { Search, Save, Gamepad2, Settings, Hash } from 'lucide-react';
+import { Search, Save, Gamepad2, Settings } from 'lucide-react';
+import { toast } from 'sonner';
 import { useAction } from '@/features/activities/hooks/use-action';
 import { useDance } from '@/features/activities/hooks/use-dance';
 import { useExpression } from '@/features/activities/hooks/use-expression';
+import { useSkill } from '@/features/activities/hooks/use-skill';
+import { useExtendedActions } from '@/features/activities/hooks/use-extended-actions';
 import { useJoystick } from '@/features/activities/hooks/use-joystick';
 import { Joystick } from '@/types/joystick';
 import { Action } from '@/types/action';
 import { Dance } from '@/types/dance';
 import { Expression } from '@/types/expression';
+import { Skill } from '@/types/skill';
+import { ExtendedAction } from '@/types/extended-action';
 import { getUserInfoFromToken } from '@/utils/tokenUtils';
 
 type ButtonName = 'A' | 'B' | 'X' | 'Y';
 
-type ActionType = 'action' | 'dance' | 'expression';
+type ActionType = 'action' | 'dance' | 'expression' | 'skill' | 'extendedaction';
 
 interface JoystickConfigurationModalProps {
   isOpen: boolean;
@@ -50,7 +56,7 @@ export default function JoystickConfigurationModal({
 }: JoystickConfigurationModalProps) {
   const [selectedButton, setSelectedButton] = useState<ButtonName>('A');
   const [searchTerm, setSearchTerm] = useState('');
-  const [activeTab, setActiveTab] = useState<'action' | 'dance' | 'expression'>('action');
+  const [activeTab, setActiveTab] = useState<ActionType>('action');
   const [isSaving, setIsSaving] = useState(false); // Add saving state to prevent multiple calls
   const [buttonConfigs, setButtonConfigs] = useState<Record<ButtonName, ButtonConfig | null>>({
     A: null,
@@ -63,6 +69,8 @@ export default function JoystickConfigurationModal({
   const { useGetPagedActions } = useAction();
   const { useGetPagedDances } = useDance();
   const { useGetPagedExpressions } = useExpression();
+  const { useGetPagedSkills } = useSkill();
+  const { useGetPagedExtendedActions } = useExtendedActions();
   const { useCreateJoystick, useUpdateJoystick } = useJoystick();
 
   // React Query mutations
@@ -72,10 +80,14 @@ export default function JoystickConfigurationModal({
   const { data: actionsData } = useGetPagedActions(1, 100, searchTerm);
   const { data: dancesData } = useGetPagedDances(1, 100, searchTerm);
   const { data: expressionsData } = useGetPagedExpressions(1, 100, searchTerm);
+  const { data: skillsData } = useGetPagedSkills(1, 100, searchTerm);
+  const { data: extendedActionsData } = useGetPagedExtendedActions(1, 100, searchTerm);
 
   const actions = actionsData?.data || [];
   const dances = dancesData?.data || [];
   const expressions = expressionsData?.data || [];
+  const skills = skillsData?.data || [];
+  const extendedActions = extendedActionsData?.data || [];
 
   // Sync existing joystick configurations with local state when modal opens
   useEffect(() => {
@@ -106,11 +118,21 @@ export default function JoystickConfigurationModal({
             actionId = joystick.danceId;
             actionCode = joystick.danceCode;
             actionName = joystick.danceName;
-          } else if (joystick.expresstionId && joystick.expresstionCode && joystick.expresstionName) {
+          } else if (joystick.expressionId && joystick.expressionCode && joystick.expressionName) {
             actionType = 'expression';
-            actionId = joystick.expresstionId;
-            actionCode = joystick.expresstionCode;
-            actionName = joystick.expresstionName;
+            actionId = joystick.expressionId;
+            actionCode = joystick.expressionCode;
+            actionName = joystick.expressionName;
+          } else if (joystick.skillId && joystick.skillCode && joystick.skillName) {
+            actionType = 'skill';
+            actionId = joystick.skillId;
+            actionCode = joystick.skillCode;
+            actionName = joystick.skillName;
+          } else if (joystick.extendedActionId && joystick.extendedActionCode && joystick.extendedActionName) {
+            actionType = 'extendedaction';
+            actionId = joystick.extendedActionId;
+            actionCode = joystick.extendedActionCode;
+            actionName = joystick.extendedActionName;
           } else {
             return; // Skip if no valid action found
           }
@@ -163,7 +185,7 @@ export default function JoystickConfigurationModal({
     return '';
   };
 
-  const handleAssignAction = (item: Action | Dance | Expression, type: ActionType) => {
+  const handleAssignAction = (item: Action | Dance | Expression | Skill | ExtendedAction, type: ActionType) => {
     const config: ButtonConfig = {
       buttonCode: selectedButton,
       actionType: type,
@@ -185,7 +207,7 @@ export default function JoystickConfigurationModal({
     const accountId = getCurrentUserAccountId();
     
     if (!accountId) {
-      alert('Không thể lấy thông tin tài khoản. Vui lòng đăng nhập lại!');
+      toast.error('Không thể lấy thông tin tài khoản. Vui lòng đăng nhập lại!');
       setIsSaving(false);
       return;
     }
@@ -194,7 +216,7 @@ export default function JoystickConfigurationModal({
       const configs = Object.values(buttonConfigs).filter(Boolean) as ButtonConfig[];
       
       if (configs.length === 0) {
-        alert('Vui lòng gán ít nhất một hành động cho nút!');
+        console.warn('No actions assigned to buttons');
         setIsSaving(false);
         return;
       }
@@ -202,7 +224,7 @@ export default function JoystickConfigurationModal({
       // Validate each config before sending
       for (const config of configs) {
         if (!config.actionId || !config.actionCode || !config.actionName) {
-          alert(`Cấu hình cho nút ${config.buttonCode} không hợp lệ!`);
+          console.error(`Invalid config for button ${config.buttonCode}:`, config);
           setIsSaving(false);
           return;
         }
@@ -213,11 +235,28 @@ export default function JoystickConfigurationModal({
       for (const config of configs) {
         console.log('🎮 Processing config:', config);
         
+        // Map action type to correct backend type
+        const getBackendType = (actionType: ActionType): string => {
+          switch (actionType) {
+            case 'action':
+            case 'dance':
+              return 'action';
+            case 'expression':
+              return 'expression';
+            case 'skill':
+              return 'skill_helper';
+            case 'extendedaction':
+              return 'extended_action';
+            default:
+              return 'action';
+          }
+        };
+        
         const joystickData: Omit<Joystick, 'id' | 'createdDate' | 'lastUpdate'> = {
           accountId: accountId,
           robotId: robotId,
           buttonCode: config.buttonCode.toString(),
-          type: config.actionType,
+          type: getBackendType(config.actionType),
           status: 1,
           
           // Action fields
@@ -231,19 +270,19 @@ export default function JoystickConfigurationModal({
           danceName: config.actionType === 'dance' ? config.actionName : null,
           
           // Expression fields
-          expresstionId: config.actionType === 'expression' ? config.actionId : null,
-          expresstionCode: config.actionType === 'expression' ? config.actionCode : null,
-          expresstionName: config.actionType === 'expression' ? config.actionName : null,
+          expressionId: config.actionType === 'expression' ? config.actionId : null,
+          expressionCode: config.actionType === 'expression' ? config.actionCode : null,
+          expressionName: config.actionType === 'expression' ? config.actionName : null,
           
           // Extended action fields
-          extendedActionId: null,
-          extendedActionCode: null,
-          extendedActionName: null,
+          extendedActionId: config.actionType === 'extendedaction' ? config.actionId : null,
+          extendedActionCode: config.actionType === 'extendedaction' ? config.actionCode : null,
+          extendedActionName: config.actionType === 'extendedaction' ? config.actionName : null,
           
           // Skill fields
-          skillId: null,
-          skillCode: null,
-          skillName: null,
+          skillId: config.actionType === 'skill' ? config.actionId : null,
+          skillCode: config.actionType === 'skill' ? config.actionCode : null,
+          skillName: config.actionType === 'skill' ? config.actionName : null,
         };
 
         const existingConfig = existingJoysticks.find(
@@ -261,14 +300,19 @@ export default function JoystickConfigurationModal({
         }
       }
 
-      alert('Cấu hình joystick đã được lưu thành công!');
+      toast.success('Cấu hình joystick đã được lưu thành công!');
       onSuccess?.();
       onClose();
     } catch (error) {
       let errorMessage = 'Có lỗi xảy ra khi lưu cấu hình!';
       
       if (error && typeof error === 'object' && 'response' in error) {
-        const axiosError = error as any;
+        const axiosError = error as { 
+          response?: { 
+            status?: number;
+            data?: { message?: string };
+          } 
+        };
         
         if (axiosError.response?.status === 400) {
           errorMessage = 'Dữ liệu không hợp lệ. Vui lòng kiểm tra lại thông tin!';
@@ -288,26 +332,39 @@ export default function JoystickConfigurationModal({
         }
       }
       
-      alert(errorMessage);
+      toast.error(errorMessage);
     } finally {
       setIsSaving(false);
     }
   };
 
-  const renderActionGrid = (items: (Action | Dance | Expression)[], type: ActionType) => (
-    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 max-h-[400px] overflow-y-auto p-2">
+  const renderActionGrid = (items: (Action | Dance | Expression | Skill | ExtendedAction)[], type: ActionType) => (
+    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 max-h-[400px] overflow-y-auto scrollbar-hide p-2">
       {items.map((item) => (
         <Card 
           key={item.id} 
           className="cursor-pointer hover:shadow-lg transition-all duration-200 border-2 hover:border-blue-400 hover:scale-105 group min-h-[100px] flex flex-col items-center justify-center p-4"
           onClick={() => handleAssignAction(item, type)}
         >
-          <div className="flex flex-col items-center gap-3 text-center">
-            {/* Icon based on type */}
-            <div className="text-3xl">
-              {type === 'action' && '🎯'}
-              {type === 'dance' && '💃'}
-              {type === 'expression' && '😊'}
+          <div className="max-w-[70vh] flex flex-col items-center gap-3 text-center">
+            {/* Icon from API field */}
+            <div className="text-3xl flex items-center justify-center">
+              {type === 'expression' 
+                ? (item as Expression).imageUrl 
+                  ? <Image 
+                      src={(item as Expression).imageUrl} 
+                      alt={item.name}
+                      width={48}
+                      height={48}
+                      className="w-12 h-12 object-cover rounded-full"
+                    />
+                  : '😊'
+                : type === 'skill'
+                ? (item as Skill).icon || '🎯'
+                : type === 'extendedaction' 
+                ? (item as ExtendedAction).icon || '⚡'
+                : (item as Action).icon || (type === 'action' ? '🎯' : '')
+              }
             </div>
             
             <div className="text-sm font-bold text-gray-800 group-hover:text-blue-600 transition-colors line-clamp-2">
@@ -327,6 +384,10 @@ export default function JoystickConfigurationModal({
         return { items: dances, type: 'dance' as ActionType };
       case 'expression':
         return { items: expressions, type: 'expression' as ActionType };
+      case 'skill':
+        return { items: skills, type: 'skill' as ActionType };
+      case 'extendedaction':
+        return { items: extendedActions, type: 'extendedaction' as ActionType };
       default:
         return { items: actions, type: 'action' as ActionType };
     }
@@ -336,7 +397,7 @@ export default function JoystickConfigurationModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-6xl w-full h-[90vh] flex flex-col">
+      <DialogContent className=" !w-[70vw] !max-w-none h-[90vh] flex flex-col scrollbar-hide">
         <DialogHeader className="pb-4 border-b flex-shrink-0">
           <DialogTitle className="flex items-center gap-2 text-xl">
             <div className="p-2 bg-blue-100 rounded-lg">
@@ -349,7 +410,7 @@ export default function JoystickConfigurationModal({
           </DialogDescription>
         </DialogHeader>
 
-        <div className="flex-1 overflow-y-auto">
+        <div className="flex-1 overflow-y-auto scrollbar-hide">
           <div className="space-y-6 p-6">
             {/* Top Row - Current Button Selection */}
             <div className="flex items-center justify-between">
@@ -445,10 +506,12 @@ export default function JoystickConfigurationModal({
                   { key: 'action', label: 'Hành động', icon: '🎯', count: actions.length },
                   { key: 'dance', label: 'Điệu nhảy', icon: '💃', count: dances.length },
                   { key: 'expression', label: 'Biểu cảm', icon: '😊', count: expressions.length },
+                  { key: 'skill', label: 'Kỹ năng', icon: '🎯', count: skills.length },
+                  { key: 'extendedaction', label: 'Hành động mở rộng', icon: '⚡', count: extendedActions.length },
                 ].map((tab) => (
                   <button
                     key={tab.key}
-                    onClick={() => setActiveTab(tab.key as 'action' | 'dance' | 'expression')}
+                    onClick={() => setActiveTab(tab.key as ActionType)}
                     className={`flex-1 px-4 py-2 rounded-lg font-semibold text-sm transition-all duration-200 flex items-center justify-center gap-2 ${
                       activeTab === tab.key
                         ? 'bg-white text-blue-600 shadow-md ring-1 ring-blue-200'
@@ -471,7 +534,13 @@ export default function JoystickConfigurationModal({
                   <div className="text-center py-12">
                     <div className="text-5xl mb-4">🔍</div>
                     <h3 className="text-lg font-semibold text-gray-600 mb-2">
-                      Không tìm thấy {activeTab === 'action' ? 'hành động' : activeTab === 'dance' ? 'điệu nhảy' : 'biểu cảm'} nào
+                      Không tìm thấy {
+                        activeTab === 'action' ? 'hành động' : 
+                        activeTab === 'dance' ? 'điệu nhảy' : 
+                        activeTab === 'expression' ? 'biểu cảm' :
+                        activeTab === 'skill' ? 'kỹ năng' :
+                        'hành động mở rộng'
+                      } nào
                     </h3>
                     <p className="text-gray-500 text-sm">Thử thay đổi từ khóa tìm kiếm</p>
                   </div>

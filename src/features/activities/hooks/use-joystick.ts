@@ -23,8 +23,9 @@ export const useJoystick = () => {
             refetchOnWindowFocus: false,
             refetchOnMount: true, // Changed to true for debugging
             refetchOnReconnect: false,
-            retry: (failureCount, error: any) => {
-                if (error?.response?.status === 429) {
+            retry: (failureCount, error: unknown) => {
+                const apiError = error as { response?: { status?: number } };
+                if (apiError?.response?.status === 429) {
                     return false;
                 }
                 // Retry other errors max 2 times

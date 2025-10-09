@@ -8,9 +8,9 @@ export type Joystick = {
     danceCode: string | null
     danceId: string | null
     danceName: string | null
-    expresstionCode: string | null
-    expresstionId: string | null
-    expresstionName: string | null
+    expressionCode: string | null
+    expressionId: string | null
+    expressionName: string | null
     extendedActionCode: string | null
     extendedActionId: string | null
     extendedActionName: string | null
