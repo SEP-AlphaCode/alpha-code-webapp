@@ -27,7 +27,7 @@ export function RobotActionGrid({
   onActionSelect,
 }: RobotActionGridProps) {
   const [selectedTab, setSelectedTab] = useState<
-    "action" | "dance" | "expression" | "skills" | "extended_actions"
+    "action" | "dance" | "expression" | "skills" | "extended-actions"
   >("action")
   const [currentActionIndex, setCurrentActionIndex] = useState<number | null>(null)
 
@@ -131,7 +131,7 @@ export function RobotActionGrid({
     <div className="flex flex-col items-center mb-4 w-full">
       {/* Tabs */}
       <div className="flex justify-center space-x-4 mb-6">
-        {(["action", "dance", "expression", "skills", "extended_actions"] as const).map(
+        {(["action", "dance", "expression", "skills", "extended-actions"] as const).map(
           (tab) => {
             const label =
               tab === "action"
