@@ -12,20 +12,20 @@ import {
   changeExtendedActionStatus 
 } from "@/features/activities/api/extended-action-api";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { RobotCommand, RobotCommandResponse } from "@/types/extended-action";
+import { ExtendedAction, ExtendedActionResponse } from "@/types/extended-action";
 
 export const useExtendedActions = () => {
     const queryClient = useQueryClient();
 
     const useGetAllExtendedActions = () => {
-        return useQuery<RobotCommandResponse>({
+        return useQuery<ExtendedActionResponse>({
             queryKey: ["extended-actions"],
             queryFn: getAllExtendedActions
         });
     };
 
     const useGetPagedExtendedActions = (page: number, size: number, search?: string) => {
-        return useQuery<RobotCommandResponse>({
+        return useQuery<ExtendedActionResponse>({
             queryKey: ['extended-actions', 'paged', page, size, search],
             queryFn: ({ signal }) => getPagedExtendedActions(page, size, search, signal),
             staleTime: 0,
@@ -34,7 +34,7 @@ export const useExtendedActions = () => {
     };
 
     const useGetExtendedActionById = (id: string) => {
-        return useQuery<RobotCommand>({
+        return useQuery<ExtendedAction>({
             queryKey: ["extended-actions", id],
             queryFn: () => getExtendedActionById(id),
             enabled: !!id,
@@ -42,7 +42,7 @@ export const useExtendedActions = () => {
     };
 
     const useGetExtendedActionByCode = (code: string) => {
-        return useQuery<RobotCommand>({
+        return useQuery<ExtendedAction>({
             queryKey: ["extended-actions", "code", code],
             queryFn: () => getExtendedActionByCode(code),
             enabled: !!code,
@@ -50,7 +50,7 @@ export const useExtendedActions = () => {
     };
 
     const useGetExtendedActionByName = (name: string) => {
-        return useQuery<RobotCommand>({
+        return useQuery<ExtendedAction>({
             queryKey: ["extended-actions", "name", name],
             queryFn: () => getExtendedActionByName(name),
             enabled: !!name,
@@ -58,7 +58,7 @@ export const useExtendedActions = () => {
     };
 
     const useGetExtendedActionsByRobotModel = (robotModelId: string) => {
-        return useQuery<RobotCommandResponse>({
+        return useQuery<ExtendedActionResponse>({
             queryKey: ["extended-actions", "robot-model", robotModelId],
             queryFn: () => getExtendedActionsByRobotModel(robotModelId),
             enabled: !!robotModelId,
@@ -78,7 +78,7 @@ export const useExtendedActions = () => {
         return useMutation({
             mutationFn: ({ id, actionData }: { 
                 id: string; 
-                actionData: Partial<Omit<RobotCommand, 'id' | 'createdDate' | 'lastUpdate'>> 
+                actionData: Partial<Omit<ExtendedAction, 'id' | 'createdDate' | 'lastUpdate'>> 
             }) => updateExtendedAction(id, actionData),
             onSuccess: () => {
                 queryClient.invalidateQueries({ queryKey: ["extended-actions"] });
@@ -90,7 +90,7 @@ export const useExtendedActions = () => {
         return useMutation({
             mutationFn: ({ id, actionData }: { 
                 id: string; 
-                actionData: Partial<Omit<RobotCommand, 'id' | 'createdDate' | 'lastUpdate'>> 
+                actionData: Partial<Omit<ExtendedAction, 'id' | 'createdDate' | 'lastUpdate'>> 
             }) => patchExtendedAction(id, actionData),
             onSuccess: () => {
                 queryClient.invalidateQueries({ queryKey: ["extended-actions"] });
