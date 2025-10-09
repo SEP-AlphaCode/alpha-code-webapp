@@ -8,7 +8,7 @@ export function useRobotCommand(
   const sendCommandToBackend = async (
     actionCode: string,
     robotSerial: string,
-    type: "action" | "expression" = "action"
+    type: "action" | "expression" | "skill_helper" | "extended_action" = "action"
   ) => {
     const body = {
       type,

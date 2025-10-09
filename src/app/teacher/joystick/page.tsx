@@ -130,13 +130,13 @@ export default function JoystickPage() {
 
   const [actionCodes, setActionCodes] = useState<Record<string, string>>({});
   const [actionDescriptions, setActionDescriptions] = useState<{
-    [key: string]: { name: string; category: 'action' | 'dance' | 'expression' };
+    [key: string]: { name: string; category: 'action' | 'dance' | 'expression' | 'skill' | 'extended_action' };
   }>({});
 
   useEffect(() => {
     if (finalJoystickData?.joysticks && finalJoystickData.joysticks.length > 0) {
       const newActionCodes: Record<string, string> = {};
-      const newActionDescriptions: Record<string, { name: string; category: 'action' | 'dance' | 'expression' }> =
+      const newActionDescriptions: Record<string, { name: string; category: 'action' | 'dance' | 'expression' | 'skill' | 'extended_action' }> =
         {};
 
       finalJoystickData.joysticks.forEach((joystick: Joystick) => {
@@ -145,7 +145,7 @@ export default function JoystickPage() {
         if (['A', 'B', 'X', 'Y'].includes(buttonName)) {
           let actionCode = '';
           let actionName = '';
-          let category: 'action' | 'dance' | 'expression' = 'action';
+          let category: 'action' | 'dance' | 'expression' | 'skill' | 'extended_action' = 'action';
 
           if (joystick.actionId && joystick.actionName && joystick.actionCode) {
             actionCode = joystick.actionCode;
@@ -162,7 +162,7 @@ export default function JoystickPage() {
           } else if (joystick.skillId && joystick.skillName && joystick.skillCode) {
             actionCode = joystick.skillCode;
             actionName = joystick.skillName;
-            category = 'action';
+            category = 'skill';
           } else if (
             joystick.extendedActionId &&
             joystick.extendedActionName &&
@@ -170,7 +170,7 @@ export default function JoystickPage() {
           ) {
             actionCode = joystick.extendedActionCode;
             actionName = joystick.extendedActionName;
-            category = 'action';
+            category = 'extended_action';
           }
 
           if (actionCode && actionName) {
@@ -298,7 +298,24 @@ export default function JoystickPage() {
     }
 
     const actionCategory = actionDescriptions[buttonName]?.category || 'action';
-    const actionType = actionCategory === 'expression' ? 'expression' : 'action';
+    let actionType: 'action' | 'expression' | 'skill_helper' | 'extended_action';
+    
+    switch (actionCategory) {
+      case 'expression':
+        actionType = 'expression';
+        break;
+      case 'skill':
+        actionType = 'skill_helper';
+        break;
+      case 'extended_action':
+        actionType = 'extended_action';
+        break;
+      case 'action':
+      case 'dance':
+      default:
+        actionType = 'action';
+        break;
+    }
 
     await handleSendCommand(actionCodes[buttonName], actionType);
   };
@@ -312,17 +329,18 @@ export default function JoystickPage() {
 
     // Fixed command mapping for D-pad
     const commandMap = {
-      'up': 'walk_forward',     // Tiến lên
-      'down': 'walk_backward',  // Lùi lại  
-      'left': 'turn_left',      // Quay trái
-      'right': 'turn_right'     // Quay phải
+      'up': 'Keep_moving_forward',     // Tiến lên
+      'down': 'Keep_going_backwards',  // Lùi lại  
+      'left': 'Keep_turning_left',      // Quay trái
+      'right': 'Keep_turning_right'     // Quay phải
     };
 
+    // D-pad commands are extended actions
     const actionCode = commandMap[direction];
-    await handleSendCommand(actionCode, 'action');
+    await handleSendCommand(actionCode, 'skill_helper');
   };
 
-  const handleSendCommand = async (actionCode: string, type: 'action' | 'expression' = 'action') => {
+  const handleSendCommand = async (actionCode: string, type: 'action' | 'expression' | 'skill_helper' | 'extended_action' = 'action') => {
     if (!selectedRobotSerial || !selectedRobot) {
       setNotify('Bạn chưa chọn robot!', 'error');
       return Promise.resolve();
