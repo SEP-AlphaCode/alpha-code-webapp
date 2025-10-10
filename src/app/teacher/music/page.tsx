@@ -10,6 +10,7 @@ import BackgroundDecorations from "@/components/teacher/music/background-decorat
 import LoadingOverlay from "@/components/teacher/music/loading-overlay"
 import MediaPreview from "@/components/teacher/music/media-preview"
 import ProTips from "@/components/teacher/music/pro-tips"
+import { navigateToPreviewActivities } from "@/utils/preview-navigation"
 
 export default function MusicPage() {
   const router = useRouter()
@@ -203,17 +204,19 @@ export default function MusicPage() {
       
       toast.success("Tạo dance plan thành công! Đang chuyển hướng...")
       
-      const params = new URLSearchParams()
-      params.set('data', encodeURIComponent(JSON.stringify(result)))
-      params.set('file', encodeURIComponent(currentFile.name))
-      
+      // Prepare time range text
+      let timeRangeText = ""
       if (startTime && endTime) {
-        const timeRangeText = `${startTime.includes(':') ? startTime : formatTime(parseFloat(startTime))} - ${endTime.includes(':') ? endTime : formatTime(parseFloat(endTime))} (${(parseTimeToSeconds(endTime) - parseTimeToSeconds(startTime)).toFixed(1)}s)`
-        params.set('range', encodeURIComponent(timeRangeText))
+        timeRangeText = `${startTime.includes(':') ? startTime : formatTime(parseFloat(startTime))} - ${endTime.includes(':') ? endTime : formatTime(parseFloat(endTime))} (${(parseTimeToSeconds(endTime) - parseTimeToSeconds(startTime)).toFixed(1)}s)`
       }
       
+      // Use sessionStorage navigation instead of URL params
       setTimeout(() => {
-        router.push(`/teacher/music/previewactivities?${params.toString()}`)
+        navigateToPreviewActivities(router, {
+          dancePlan: result,
+          fileName: currentFile.name,
+          timeRange: timeRangeText
+        })
       }, 1000)
     } catch (error: unknown) {
       let errorMessage = 'Có lỗi xảy ra. Vui lòng thử lại!'

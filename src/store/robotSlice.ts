@@ -29,21 +29,12 @@ const mockRobots: Robot[] = [
   },
   {
     id: '2', 
-    serial: 'EAA007UBT10000342',
+    serial: '030006KFK18081800461',
     name: 'Alpha Mini #2',
     status: 'offline',
     lastConnected: new Date(Date.now() - 3600000).toISOString(),
     isSelected: false,
     battery: 45
-  },
-  {
-    id: '3',
-    serial: 'EAA007UBT10000343', 
-    name: 'Alpha Mini #3',
-    status: 'busy',
-    lastConnected: new Date(Date.now() - 1800000).toISOString(),
-    isSelected: false,
-    battery: 12
   }
 ]
 

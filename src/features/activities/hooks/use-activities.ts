@@ -45,20 +45,25 @@ export const useActivity = (id: string) => {
   });
 };
 
-export const useCreateActivity = () => {
+export const useCreateActivity = (options?: { showToast?: boolean }) => {
   const queryClient = useQueryClient();
+  const showToast = options?.showToast ?? true;
 
   return useMutation({
     mutationFn: createActivity,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['activities'] });
-      toast.success('Activity created successfully!');
+      if (showToast) {
+        toast.success('Activity created successfully!');
+      }
     },
     onError: (error: unknown) => {
-      const errorMessage = error && typeof error === 'object' && 'message' in error 
-        ? (error as { message: string }).message 
-        : 'Failed to create activity';
-      toast.error(errorMessage);
+      if (showToast) {
+        const errorMessage = error && typeof error === 'object' && 'message' in error 
+          ? (error as { message: string }).message 
+          : 'Failed to create activity';
+        toast.error(errorMessage);
+      }
     },
   });
 };

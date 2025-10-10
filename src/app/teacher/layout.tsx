@@ -48,6 +48,7 @@ export default function TeacherLayout({ children }: TeacherLayoutProps) {
     { name: "Classroom", href: "/teacher/classroom", icon: "🏫" },
     { name: "Activities", href: "/teacher/activities", icon: "🎯" },
     { name: "Music", href: "/teacher/music", icon: "🎵" },
+    { name: "Videos", href: "/teacher/videos", icon: "🎬" },
   ];
 
   const isActiveRoute = (href: string) => {
@@ -95,7 +96,7 @@ export default function TeacherLayout({ children }: TeacherLayoutProps) {
 
         {/* Main Content */}
         <main
-          className={`transition-all duration-300 ease-in-out pt-16 ${
+          className={`transition-all duration-300 ease-in-out pt-13 ${
             isSidebarOpen ? "ml-64" : "ml-16"
           }`}
         >
