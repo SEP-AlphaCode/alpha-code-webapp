@@ -41,7 +41,7 @@ export default function CoursePage() {
   return (
     <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
       {/* Categories */}
-      <div className="lg:col-span-1">
+      {/* <div className="lg:col-span-1">
         <div className="lg:hidden mb-4">
           <Button variant="outline" className="w-full flex justify-between"
             onClick={() => setIsCategoriesModalOpen(true)}>
@@ -63,15 +63,15 @@ export default function CoursePage() {
             </div>
           </DialogContent>
         </Dialog>
-      </div>
+      </div> */}
 
       {/* Courses */}
-      <div className="lg:col-span-3">
+      <div className="lg:col-span-4">
         {loadingCourses ? (
           <div className="py-12 text-center text-slate-600">Đang tải các khóa học...</div>
         ) : (
           <>
-            <CourseGrid courses={courses} />
+            <CourseGrid courses={courses} showProgress/>
             {totalPages > 1 && (
               <Pagination page={pagination.page} totalPages={totalPages} onPageChange={(p) => dispatch(setPage(p))} />
             )}

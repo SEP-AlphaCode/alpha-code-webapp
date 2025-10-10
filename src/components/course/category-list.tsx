@@ -73,7 +73,7 @@ export function CourseFilter({ selected, onChange, size = 20, currentSearchTerm,
                     {hasNextPage && (
                         <div className="px-2 py-1">
                             <Button
-                                variant="outline"
+                                // variant="outline"
                                 size="sm"
                                 className="w-full"
                                 onClick={(e) => {
