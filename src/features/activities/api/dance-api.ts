@@ -2,21 +2,28 @@ import { Dance, DanceModal } from "@/types/dance";
 import { PagedResult } from "@/types/page-result";
 import { activitiesHttp } from "@/utils/http";
 
-export const getPagedDances = async (page: number, size: number, search?: string, signal?: AbortSignal) => {
+export const getPagedDances = async (
+  page: number,
+  size: number,
+  search?: string,
+  robotModelId?: string,
+  signal?: AbortSignal,
+) => {
   try {
-    const response = await activitiesHttp.get<PagedResult<Dance>>('/dances', {
-      params: {
-        page,
-        size,
-        search
-      },
-      signal // Add AbortSignal support
-    });
-    // Handle different response structures
-    return response.data;
+    // Chỉ thêm param khi có giá trị (tránh gửi undefined lên server)
+    const params: Record<string, any> = { page, size };
 
+    if (search && search.trim() !== "") params.search = search.trim();
+    if (robotModelId && robotModelId.trim() !== "") params.robotModelId = robotModelId.trim();
+
+    const response = await activitiesHttp.get<PagedResult<Dance>>("/dances", {
+      params,
+      signal,
+    });
+
+    return response.data;
   } catch (error) {
-    console.error("API Error in getPagedDances:", error);
+    console.error("❌ API Error in getPagedDances:", error);
     throw error;
   }
 };
