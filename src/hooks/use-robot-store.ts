@@ -8,13 +8,15 @@ import {
   updateRobotInfo,
   updateRobotBattery,
   clearAllRobots,
-  initializeMockData,
+  resetError,
+  fetchRobotsByAccount,
+  fetchRobotsFromToken,
   Robot 
 } from '@/store/robotSlice'
 
 export const useRobotStore = () => {
   const dispatch = useAppDispatch()
-  const { robots, selectedRobotSerial, isConnected } = useAppSelector(state => state.robot)
+  const { robots, selectedRobotSerial, isConnected, isLoading, error, accountId } = useAppSelector(state => state.robot)
   
   const selectedRobot = robots.find(robot => robot.serial === selectedRobotSerial)
 
@@ -24,6 +26,9 @@ export const useRobotStore = () => {
     selectedRobotSerial,
     selectedRobot,
     isConnected,
+    isLoading,
+    error,
+    accountId,
     
     // Actions
     addRobot: (robot: Robot) => dispatch(addRobot(robot)),
@@ -37,6 +42,13 @@ export const useRobotStore = () => {
     updateRobotBattery: (serial: string, battery: number) =>
       dispatch(updateRobotBattery({ serial, battery })),
     clearAllRobots: () => dispatch(clearAllRobots()),
-    initializeMockData: () => dispatch(initializeMockData())
+    resetError: () => dispatch(resetError()),
+    
+    // Async Actions
+    fetchRobotsByAccount: (accountId: string) => dispatch(fetchRobotsByAccount(accountId)),
+    fetchRobotsFromToken: () => dispatch(fetchRobotsFromToken()),
+    
+    // Legacy compatibility
+    initializeMockData: () => dispatch(fetchRobotsFromToken())
   }
 }

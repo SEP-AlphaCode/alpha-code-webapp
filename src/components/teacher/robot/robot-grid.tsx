@@ -5,7 +5,7 @@ import { Battery, MapPin, CheckCircle, WifiOff, Zap, Activity } from "lucide-rea
 interface Robot {
   id: string;
   name: string;
-  status: "online" | "offline" | "charging";
+  status: "online" | "offline" | "charging" | "busy";
   battery: number;
   lastSeen: string;
   version: string;
@@ -27,6 +27,7 @@ interface RobotGridProps {
     online: string;
     offline: string;
     charging: string;
+    busy?: string;
   };
 }
 
