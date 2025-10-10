@@ -29,7 +29,7 @@ const thingsToTryPrompts = [
 interface ExtendedRobot {
   id: string;
   name: string;
-  status: "online" | "offline" | "charging";
+  status: "online" | "offline" | "charging" | "busy";
   battery: number;
   lastSeen: string;
   version: string;
@@ -93,7 +93,7 @@ function extendRobotWithMockData(robot: ReturnType<typeof useRobotStore>['robots
   return {
     id: robot.id,
     name: robot.name,
-    status: robot.status === 'busy' ? 'charging' : robot.status,
+    status: robot.status === 'offline' ? 'charging' : robot.status,
     battery: robot.battery || 0, // Use battery from Redux, fallback to 0
     serialNumber: robot.serial,
     robotmodel: "AlphaMini", // Add robotmodel, fallback to "AlphaMini"

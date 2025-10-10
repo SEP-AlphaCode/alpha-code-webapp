@@ -1,4 +1,7 @@
-import { createSlice, PayloadAction } from '@reduxjs/toolkit'
+import { createSlice, PayloadAction, createAsyncThunk } from '@reduxjs/toolkit'
+import { getRobotsByAccountId } from '@/features/robots/api/robot-api'
+import { Robot as ApiRobot } from '@/types/robot'
+import { getUserIdFromToken } from '@/utils/tokenUtils'
 
 export interface Robot {
   id: string
@@ -8,41 +11,69 @@ export interface Robot {
   lastConnected?: string
   isSelected?: boolean
   battery?: number
+  robotModelId?: string
+  robotModelName?: string
+  accountId?: string
 }
 
 interface RobotState {
   robots: Robot[]
   selectedRobotSerial: string | null
   isConnected: boolean
+  isLoading: boolean
+  error: string | null
+  accountId: string | null
 }
 
-// Mock data cho robots (từ header)
-const mockRobots: Robot[] = [
-  {
-    id: '1',
-    serial: 'EAA007UBT10000341',
-    name: 'Alpha Mini #1',
-    status: 'online',
-    lastConnected: new Date().toISOString(),
-    isSelected: true,
-    battery: 85
-  },
-  {
-    id: '2', 
-    serial: '030006KFK18081800461',
-    name: 'Alpha Mini #2',
-    status: 'offline',
-    lastConnected: new Date(Date.now() - 3600000).toISOString(),
-    isSelected: false,
-    battery: 45
+// Async thunk để fetch robots từ API
+export const fetchRobotsByAccount = createAsyncThunk(
+  'robots/fetchByAccount',
+  async (accountId: string) => {
+    const response = await getRobotsByAccountId(accountId);
+    return response.data || [];
   }
-]
+);
+
+// Async thunk để auto-fetch robots dựa trên token
+export const fetchRobotsFromToken = createAsyncThunk(
+  'robots/fetchFromToken',
+  async () => {
+    if (typeof window !== 'undefined') {
+      const accessToken = sessionStorage.getItem('accessToken');
+      if (accessToken) {
+        const accountId = getUserIdFromToken(accessToken);
+        if (accountId) {
+          const response = await getRobotsByAccountId(accountId);
+          return { robots: response.data || [], accountId };
+        }
+      }
+    }
+    throw new Error('No valid token found');
+  }
+);
 
 const initialState: RobotState = {
-  robots: mockRobots,
-  selectedRobotSerial: 'EAA007UBT10000341', // Default selected robot
-  isConnected: false
+  robots: [],
+  selectedRobotSerial: null,
+  isConnected: false,
+  isLoading: false,
+  error: null,
+  accountId: null
 }
+
+// Helper function để convert API robot sang Redux robot
+const convertApiRobotToReduxRobot = (apiRobot: ApiRobot): Robot => ({
+  id: apiRobot.id,
+  serial: apiRobot.serialNumber,
+  name: apiRobot.robotModelName || 'Unknown Robot',
+  status: apiRobot.status === 1 ? 'online' : 'offline',
+  lastConnected: apiRobot.lastUpdate || new Date().toISOString(),
+  isSelected: false,
+  battery: Math.floor(Math.random() * 100), // Tạm thời random vì API chưa có battery
+  robotModelId: apiRobot.robotModelId,
+  robotModelName: apiRobot.robotModelName,
+  accountId: apiRobot.accountId
+});
 
 const robotSlice = createSlice({
   name: 'robot',
@@ -57,7 +88,6 @@ const robotSlice = createSlice({
     removeRobot: (state, action: PayloadAction<string>) => {
       state.robots = state.robots.filter(robot => robot.serial !== action.payload)
       if (state.selectedRobotSerial === action.payload) {
-        // Select first available robot if current one is removed
         state.selectedRobotSerial = state.robots.length > 0 ? state.robots[0].serial : null
       }
     },
@@ -70,7 +100,6 @@ const robotSlice = createSlice({
     },
     selectRobot: (state, action: PayloadAction<string>) => {
       state.selectedRobotSerial = action.payload
-      // Update selected status for all robots
       state.robots.forEach(robot => {
         robot.isSelected = robot.serial === action.payload
       })
@@ -94,13 +123,51 @@ const robotSlice = createSlice({
       state.robots = []
       state.selectedRobotSerial = null
       state.isConnected = false
+      state.accountId = null
     },
-    initializeMockData: (state) => {
-      if (state.robots.length === 0) {
-        state.robots = mockRobots
-        state.selectedRobotSerial = 'EAA007UBT10000341'
-      }
+    resetError: (state) => {
+      state.error = null
     }
+  },
+  extraReducers: (builder) => {
+    builder
+      // fetchRobotsByAccount
+      .addCase(fetchRobotsByAccount.pending, (state) => {
+        state.isLoading = true
+        state.error = null
+      })
+      .addCase(fetchRobotsByAccount.fulfilled, (state, action) => {
+        state.isLoading = false
+        state.robots = action.payload.map(convertApiRobotToReduxRobot)
+        // Auto-select first robot if none selected
+        if (state.robots.length > 0 && !state.selectedRobotSerial) {
+          state.selectedRobotSerial = state.robots[0].serial
+          state.robots[0].isSelected = true
+        }
+      })
+      .addCase(fetchRobotsByAccount.rejected, (state, action) => {
+        state.isLoading = false
+        state.error = action.error.message || 'Failed to fetch robots'
+      })
+      // fetchRobotsFromToken
+      .addCase(fetchRobotsFromToken.pending, (state) => {
+        state.isLoading = true
+        state.error = null
+      })
+      .addCase(fetchRobotsFromToken.fulfilled, (state, action) => {
+        state.isLoading = false
+        state.robots = action.payload.robots.map(convertApiRobotToReduxRobot)
+        state.accountId = action.payload.accountId
+        // Auto-select first robot if none selected
+        if (state.robots.length > 0 && !state.selectedRobotSerial) {
+          state.selectedRobotSerial = state.robots[0].serial
+          state.robots[0].isSelected = true
+        }
+      })
+      .addCase(fetchRobotsFromToken.rejected, (state, action) => {
+        state.isLoading = false
+        state.error = action.error.message || 'Failed to fetch robots from token'
+      })
   }
 })
 
@@ -113,7 +180,7 @@ export const {
   updateRobotInfo,
   updateRobotBattery,
   clearAllRobots,
-  initializeMockData
+  resetError
 } = robotSlice.actions
 
 export default robotSlice.reducer
