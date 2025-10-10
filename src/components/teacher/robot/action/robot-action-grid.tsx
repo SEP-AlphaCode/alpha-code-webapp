@@ -6,18 +6,21 @@ import { useRobotActions } from "@/hooks/use-robot-action"
 import { useDances } from "@/hooks/use-robot-dance"
 import { useExpression } from "@/features/activities/hooks/use-expression"
 import { useSkill } from "@/features/activities/hooks/use-skill"
+import { useExtendedActions } from "@/features/activities/hooks/use-extended-actions"
 import { TabData } from "@/types/tab-data"
 import {
   RobotActionUI,
   mapActionToUI,
   mapDanceToUI,
   mapExpressionToUI,
+  mapSkillToUI,
+  mapExtendedActionToUI,
 } from "@/types/robot-ui"
 
 interface RobotActionGridProps {
   sendCommandToBackend: (
     actionCode: string,
-    type: "action" | "expression" | "skills_helper" | "extended_action"
+    type: "action" | "expression" | "skill_helper" | "extended_action"
   ) => Promise<unknown>
   onActionSelect: (action: RobotActionUI) => void
 }
@@ -82,28 +85,34 @@ export function RobotActionGrid({
     isLoading: skillsLoading,
     error: skillsError,
   } = useGetPagedSkills(skillsPage, pageSize, "")
-  // const skillsTab: TabData<RobotActionUI> = {
-  //   actions: (skillsData?.skills ?? []).map(mapActionToUI),
-  //   totalPages: skillsData?.total_pages ?? 1,
-  //   currentPage: skillsPage,
-  //   setCurrentPage: setSkillsPage,
-  //   loading: skillsLoading,
-  //   error: skillsError ? String(skillsError) : null,
-  // }
-
-  // --- Extended Actions (placeholder) ---
-  const extendedActionsTab: TabData<RobotActionUI> = {
-    actions: [],
-    totalPages: 1,
-    currentPage: extendedActionsPage,
-    setCurrentPage: setExtendedActionsPage,
-    loading: false,
-    error: null,
+  const skillsTab: TabData<RobotActionUI> = {
+    actions: (skillsData?.data ?? []).map(mapSkillToUI),
+    totalPages: skillsData?.total_pages ?? 1,
+    currentPage: skillsPage,
+    setCurrentPage: setSkillsPage,
+    loading: skillsLoading,
+    error: skillsError ? String(skillsError) : null,
   }
 
-  // --- Xác định tab hiện tại ---
+  // --- Extended Actions ---
+  const { useGetPagedExtendedActions } = useExtendedActions()
+  const {
+    data: extendedData,
+    isLoading: extendedLoading,
+    error: extendedError,
+  } = useGetPagedExtendedActions(extendedActionsPage, pageSize, "")
+  const extendedActionsTab: TabData<RobotActionUI> = {
+    actions: (extendedData?.data ?? []).map(mapExtendedActionToUI),
+    totalPages: extendedData?.total_pages ?? 1,
+    currentPage: extendedActionsPage,
+    setCurrentPage: setExtendedActionsPage,
+    loading: extendedLoading,
+    error: extendedError ? String(extendedError) : null,
+  }
+
+  // --- Chọn tab hiện tại ---
   let tabData: TabData<RobotActionUI>
-  let tabType: "action" | "expression" | "skills_helper" | "extended_action"
+  let tabType: "action" | "expression" | "skill_helper" | "extended_action"
 
   switch (selectedTab) {
     case "action":
@@ -118,10 +127,10 @@ export function RobotActionGrid({
       tabData = expressionTab
       tabType = "expression"
       break
-    // case "skills":
-    //   tabData = skillsTab
-    //   tabType = "skills_helper"
-    //   break
+    case "skills":
+      tabData = skillsTab
+      tabType = "skill_helper"
+      break
     default:
       tabData = extendedActionsTab
       tabType = "extended_action"
