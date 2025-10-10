@@ -11,6 +11,7 @@ export type Expression = {
 }
 
 export type ExpressionModal = {
+    robotModelId?: string
     code: string
     name: string
     imageUrl: string
