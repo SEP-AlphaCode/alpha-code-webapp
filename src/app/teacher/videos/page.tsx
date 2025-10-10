@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { socketUrl } from "@/app/constants/constants";
 import { useRobotStore } from "@/hooks/use-robot-store";
+import { useRobotCommand } from "@/hooks/use-robot-command";
 import { 
   Video, 
   Bot, 
@@ -15,13 +16,16 @@ import {
   Loader2, 
   AlertCircle,
   Radio,
-  Monitor
+  Monitor,
+  Play,
+  Square
 } from "lucide-react";
 
 export default function VideoPage() {
   const [mode, setMode] = useState<"webcam" | "robot">("webcam");
   const [isLoading, setIsLoading] = useState(false);
   const [robotError, setRobotError] = useState<string | null>(null);
+  const [isWebRTCStarted, setIsWebRTCStarted] = useState(false);
 
   const webcamRef = useRef<HTMLVideoElement>(null);
   const robotVideoRef = useRef<HTMLVideoElement>(null);
@@ -30,8 +34,208 @@ export default function VideoPage() {
   const robotContainerRef = useRef<HTMLDivElement>(null);
 
   const [isFullscreen, setIsFullscreen] = useState(false);
+  
+  // Refs để lưu WebSocket và PeerConnection cho control
+  const wsRef = useRef<WebSocket | null>(null);
+  const pcRef = useRef<RTCPeerConnection | null>(null);
 
   const { selectedRobotSerial } = useRobotStore();
+
+  // Toast notification system
+  const setNotify = (msg: string, type: "success" | "error") => {
+    console.log(`${type === "success" ? "✅" : "❌"} ${msg}`);
+    // You can replace this with actual toast notification system later
+  };
+
+  // 🤖 Robot Command Hook for WebRTC
+  const { sendWebRTCCommand } = useRobotCommand(setNotify);
+
+  // WebRTC Control Functions - Updated to handle signaling connection
+  const sendWebRTCStart = async () => {
+    if (!selectedRobotSerial || isLoading || isWebRTCStarted) return;
+    
+    console.log("📤 Starting WebRTC for robot:", selectedRobotSerial);
+    setIsLoading(true);
+    setRobotError(null);
+    
+    try {
+      // 1. Gửi start command qua HTTP API trước
+      await sendWebRTCCommand(selectedRobotSerial, "webrtc_start");
+      
+      // 2. Sau đó khởi tạo WebSocket signaling connection
+      initializeWebRTCConnection();
+      
+    } catch (error) {
+      console.error("❌ Failed to send webrtc_start:", error);
+      setRobotError("Không thể bắt đầu WebRTC");
+      setIsLoading(false);
+    }
+  };
+
+  const sendWebRTCStop = async () => {
+    if (!selectedRobotSerial || isLoading || !isWebRTCStarted) return;
+    
+    console.log("📤 Stopping WebRTC for robot:", selectedRobotSerial);
+    setIsLoading(true);
+    
+    try {
+      // 1. Gửi stop command qua HTTP API
+      await sendWebRTCCommand(selectedRobotSerial, "webrtc_stop");
+      
+      // 2. Đóng signaling connection
+      cleanupWebRTCConnection();
+      
+    } catch (error) {
+      console.error("❌ Failed to send webrtc_stop:", error);
+      setRobotError("Không thể dừng WebRTC");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Hàm khởi tạo WebRTC connection (chỉ gọi khi cần)
+  const initializeWebRTCConnection = () => {
+    if (!selectedRobotSerial) return;
+
+    console.log("🔗 Initializing WebRTC signaling connection");
+
+    let pc: RTCPeerConnection | null = null;
+    let ws: WebSocket | null = null;
+    let isClosed = false;
+
+    try {
+      pc = new RTCPeerConnection();
+      pcRef.current = pc;
+
+      // Debug signaling state
+      pc.onsignalingstatechange = () => {
+        console.log("🔄 Signaling state:", pc?.signalingState);
+      };
+
+      // Khi robot gửi video track
+      pc.ontrack = (event) => {
+        console.log("📹 Received video track from robot");
+        if (robotVideoRef.current) {
+          robotVideoRef.current.srcObject = event.streams[0];
+          setIsLoading(false);
+        }
+      };
+
+      // Khi browser có ICE candidate mới
+      pc.onicecandidate = (event) => {
+        if (event.candidate && ws?.readyState === WebSocket.OPEN) {
+          ws.send(JSON.stringify({ type: "ice", candidate: event.candidate.toJSON() }));
+        }
+      };
+
+      // Tạo WebSocket signaling
+      ws = new WebSocket(`${socketUrl}/signaling/${selectedRobotSerial}/web`);
+      wsRef.current = ws;
+
+      ws.onopen = () => {
+        console.log("✅ WebSocket signaling connected");
+      };
+
+      ws.onmessage = async (event) => {
+        if (isClosed) return;
+        try {
+          const data = JSON.parse(event.data);
+          
+          if (data.type === "webrtc_start_response") {
+            console.log("📨 Robot confirmed WebRTC start");
+            setIsWebRTCStarted(true);
+            setIsLoading(false);
+            setRobotError(null);
+          }
+          else if (data.type === "webrtc_stop_response") {
+            console.log("📨 Robot confirmed WebRTC stop");
+            setIsWebRTCStarted(false);
+            setIsLoading(false);
+          }
+          else if (data.type === "offer") {
+            console.log("📨 Received offer from robot");
+            if (!pc || pc.signalingState !== "stable") {
+              console.warn("⚠️ Ignoring offer, state:", pc?.signalingState);
+              return;
+            }
+
+            await pc.setRemoteDescription({ type: "offer", sdp: data.sdp });
+            const answer = await pc.createAnswer();
+            await pc.setLocalDescription(answer);
+            ws?.send(JSON.stringify({ type: "answer", sdp: answer.sdp }));
+          }
+          else if (data.type === "answer") {
+            console.log("📨 Received answer from robot");
+            if (pc?.signalingState === "have-local-offer") {
+              await pc.setRemoteDescription({ type: "answer", sdp: data.sdp });
+            }
+          }
+          else if (data.type === "ice" && data.candidate) {
+            try {
+              if (pc) {
+                await pc.addIceCandidate(data.candidate);
+              }
+            } catch (iceErr) {
+              console.warn("⚠️ Failed to add ICE candidate:", iceErr);
+            }
+          }
+        } catch (err) {
+          console.error("💥 WebRTC signaling error:", err);
+          setRobotError("Lỗi xử lý signaling");
+          setIsLoading(false);
+        }
+      };
+
+      ws.onerror = (err) => {
+        console.error("❌ WebSocket signaling error:", err);
+        setRobotError("Lỗi kết nối signaling");
+        setIsLoading(false);
+      };
+
+      ws.onclose = () => {
+        console.warn("⚠️ WebSocket signaling closed");
+        isClosed = true;
+        setIsWebRTCStarted(false);
+      };
+
+    } catch (err) {
+      console.error("💥 Failed to initialize WebRTC:", err);
+      setRobotError("Không thể khởi tạo WebRTC");
+      setIsLoading(false);
+    }
+  };
+
+  // Hàm cleanup WebRTC connection
+  const cleanupWebRTCConnection = () => {
+    console.log("🧹 Cleaning up WebRTC connection");
+    
+    setIsWebRTCStarted(false);
+    
+    // Clear video
+    if (robotVideoRef.current) {
+      robotVideoRef.current.srcObject = null;
+    }
+    
+    // Close WebSocket
+    try {
+      if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
+        wsRef.current.close();
+      }
+      wsRef.current = null;
+    } catch (e) {
+      console.warn("⚠️ Error closing WebSocket:", e);
+    }
+    
+    // Close PeerConnection
+    try {
+      if (pcRef.current) {
+        pcRef.current.close();
+      }
+      pcRef.current = null;
+    } catch (e) {
+      console.warn("⚠️ Error closing PeerConnection:", e);
+    }
+  };
 
   // ---------------- Webcam ----------------
   useEffect(() => {
@@ -60,127 +264,37 @@ export default function VideoPage() {
     };
   }, [mode]);
 
-  // Robot Camera
+  // Robot Mode Effect - Chỉ setup UI, KHÔNG tự động kết nối
   useEffect(() => {
-    if (mode !== "robot" || !selectedRobotSerial) return;
-
-    console.log("Robot mode activated for", selectedRobotSerial);
-
-    setIsLoading(true);
-    setRobotError(null);
-
-    let pc: RTCPeerConnection | null = null;
-    let ws: WebSocket | null = null;
-    let isClosed = false;
-
-    try {
-      pc = new RTCPeerConnection();
-
-      // Debug signaling state
-      pc.onsignalingstatechange = () => {
-        console.log("Signaling state:", pc?.signalingState);
-      };
-
-      // Khi robot gửi video track
-      pc.ontrack = (event) => {
-        console.log("Received track from robot");
-        if (robotVideoRef.current) {
-          robotVideoRef.current.srcObject = event.streams[0];
-          setIsLoading(false);
-        }
-      };
-
-      // Khi browser có ICE candidate mới → gửi sang robot qua WebSocket
-      pc.onicecandidate = (event) => {
-        if (event.candidate && ws?.readyState === WebSocket.OPEN) {
-          ws.send(JSON.stringify({ type: "ice", candidate: event.candidate.toJSON() }));
-        }
-      };
-
-      // Tạo WebSocket
-      ws = new WebSocket(`${socketUrl}/signaling/${selectedRobotSerial}/web`);
-
-      ws.onopen = () => {
-        console.log("WebSocket connected to robot");
-      };
-
-      ws.onmessage = async (event) => {
-        if (isClosed) return;
-        try {
-          const data = JSON.parse(event.data);
-          // OFFER từ robot
-          if (data.type === "offer") {
-            console.log("Received offer from robot");
-            if (!pc || pc.signalingState !== "stable") {
-              console.warn("Ignoring offer, state:", pc?.signalingState);
-              return;
-            }
-
-            await pc.setRemoteDescription({ type: "offer", sdp: data.sdp });
-            const answer = await pc.createAnswer();
-            await pc.setLocalDescription(answer);
-            ws?.send(JSON.stringify({ type: "answer", sdp: answer.sdp }));
-
-            console.log("Sent answer to robot");
-          }
-          // ANSWER (ít khi dùng, nhưng để dự phòng)
-          else if (data.type === "answer") {
-            console.log("Received answer from robot");
-            if (pc?.signalingState === "have-local-offer") {
-              await pc.setRemoteDescription({ type: "answer", sdp: data.sdp });
-            }
-          }
-          // ICE candidate
-          else if (data.type === "ice" && data.candidate) {
-            try {
-              if (pc) {
-                await pc.addIceCandidate(data.candidate);
-              } else {
-                console.warn("Cannot add ICE candidate: pc is null");
-              }
-            } catch (iceErr) {
-              console.warn("Failed to add ICE candidate:", iceErr);
-            }
-          }
-        } catch (err) {
-          console.error("WebRTC handle error:", err);
-          setRobotError("Lỗi xử lý dữ liệu WebRTC");
-          setIsLoading(false);
-        }
-      };
-
-      ws.onerror = (err) => {
-        console.error("WebSocket error:", err);
-        setRobotError("Không thể kết nối WebSocket tới robot");
-        setIsLoading(false);
-      };
-
-      ws.onclose = () => {
-        console.warn("WebSocket closed");
-        isClosed = true;
-        if (!robotError) setRobotError("Kết nối WebSocket đã đóng");
-      };
-    } catch (err) {
-      console.error("Lỗi khi khởi tạo WebRTC/WebSocket:", err);
-      setRobotError("Không thể khởi tạo kết nối tới robot");
-      setIsLoading(false);
+    if (mode !== "robot" || !selectedRobotSerial) {
+      // Cleanup khi rời robot mode
+      if (mode !== "robot") {
+        cleanupWebRTCConnection();
+      }
+      return;
     }
 
-    // Cleanup khi đổi mode hoặc unmount
+    console.log("🤖 Robot mode activated for", selectedRobotSerial);
+    console.log("� Ready to connect. Click 'Start' to begin WebRTC.");
+    
+    setIsLoading(false);
+    setRobotError(null);
+    setIsWebRTCStarted(false);
+
+    // Cleanup function
     return () => {
-      console.log("Cleanup robot video connection");
-      isClosed = true;
-      try {
-        if (ws && ws.readyState === WebSocket.OPEN) ws.close();
-      } catch (e) {
-        console.warn("Cleanup WS error:", e);
+      console.log("🧹 Robot mode cleanup");
+      
+      // Gửi stop command nếu đang active
+      if (isWebRTCStarted && selectedRobotSerial) {
+        try {
+          sendWebRTCCommand(selectedRobotSerial, "webrtc_stop");
+        } catch (e) {
+          console.warn("⚠️ Error sending stop during cleanup:", e);
+        }
       }
-      try {
-        pc?.close();
-      } catch (e) {
-        console.warn("Cleanup PC error:", e);
-      }
-      setIsLoading(false);
+      
+      cleanupWebRTCConnection();
     };
   }, [mode, selectedRobotSerial]);
 
@@ -239,7 +353,7 @@ export default function VideoPage() {
 
                 {/* Status Badge */}
                 <Badge 
-                  variant={isLoading ? "secondary" : robotError ? "destructive" : "default"}
+                  variant={isLoading ? "secondary" : robotError ? "destructive" : isWebRTCStarted ? "default" : "outline"}
                   className="px-4 py-2 text-sm font-medium"
                 >
                   <div className="flex items-center gap-2">
@@ -247,8 +361,10 @@ export default function VideoPage() {
                       <Loader2 className="w-4 h-4 animate-spin" />
                     ) : robotError ? (
                       <AlertCircle className="w-4 h-4" />
-                    ) : (
+                    ) : isWebRTCStarted ? (
                       <Radio className="w-4 h-4" />
+                    ) : (
+                      <Radio className="w-4 h-4 opacity-50" />
                     )}
                     <span>
                       {mode === "webcam"
@@ -256,13 +372,42 @@ export default function VideoPage() {
                           ? "Khởi động Webcam..."
                           : "Webcam hoạt động"
                         : isLoading
-                          ? "Kết nối Robot..."
+                          ? "Đang kết nối Robot..."
                           : robotError
                             ? robotError
-                            : "Robot hoạt động"}
+                            : isWebRTCStarted
+                              ? "Robot Camera hoạt động"
+                              : "Robot Camera chưa bắt đầu"}
                     </span>
                   </div>
                 </Badge>
+
+                {/* WebRTC Controls - Chỉ hiện khi ở robot mode */}
+                {mode === "robot" && selectedRobotSerial && (
+                  <div className="flex items-center gap-2">
+                    <Button
+                      onClick={sendWebRTCStart}
+                      disabled={isLoading || isWebRTCStarted}
+                      size="sm"
+                      variant="default"
+                      className="gap-2"
+                    >
+                      <Play className="w-4 h-4" />
+                      Start
+                    </Button>
+                    
+                    <Button
+                      onClick={sendWebRTCStop}
+                      disabled={isLoading || !isWebRTCStarted}
+                      size="sm"
+                      variant="destructive"
+                      className="gap-2"
+                    >
+                      <Square className="w-4 h-4" />
+                      Stop
+                    </Button>
+                  </div>
+                )}
               </div>
 
               <TabsContent value="webcam" className="mt-0">
