@@ -336,8 +336,8 @@ export default function QRCodesPage() {
             Manage and monitor QR code cards for activities and learning materials
           </p>
         </div>
-        <Button onClick={() => setIsCreateModalOpen(true)} className="bg-blue-600 hover:bg-blue-700">
-          <Plus className="h-4 w-4 mr-2" />
+        <Button onClick={() => setIsCreateModalOpen(true)} className="bg-blue-600 hover:bg-blue-700 text-white">
+          <Plus className="h-4 w-4 mr-2 stroke-white stroke-3" />
           Create QR Code Card
         </Button>
       </div>

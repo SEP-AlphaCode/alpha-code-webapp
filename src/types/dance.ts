@@ -16,6 +16,7 @@ export type DanceModal = {
     code: string
     name: string
     description: string
+    robotModelId: string
     duration: number
     status: number
     icon: string

@@ -15,7 +15,7 @@ import { useExpression } from "@/features/activities/hooks/use-expression"
 import { ExpressionModal, Expression } from "@/types/expression"
 import { useEffect } from "react"
 import { toast } from "sonner"
-
+import { useRobotModel } from "@/features/robots/hooks/use-robot-model"
 
 interface CreateExpressionModalProps {
   isOpen: boolean
@@ -30,10 +30,11 @@ export function CreateExpressionModal({
   editExpression = null,
   mode = 'create'
 }: CreateExpressionModalProps) {
-  // Đã loại bỏ i18n, chỉ dùng tiếng Việt
   const { useCreateExpression, useUpdateExpression } = useExpression()
   const createExpressionMutation = useCreateExpression()
   const updateExpressionMutation = useUpdateExpression()
+  const { useGetAllRobotModels } = useRobotModel()
+  const { data: robotModels } = useGetAllRobotModels()
 
   const isEditMode = mode === 'edit' && editExpression
 
@@ -50,10 +51,10 @@ export function CreateExpressionModal({
       name: "",
       imageUrl: "",
       status: 1,
+      robotModelId: "",
     }
   })
 
-  // Update form when editExpression changes
   useEffect(() => {
     if (isEditMode && editExpression) {
       reset({
@@ -61,6 +62,7 @@ export function CreateExpressionModal({
         name: editExpression.name,
         imageUrl: editExpression.imageUrl,
         status: editExpression.status,
+        robotModelId: editExpression.robotModelId || "",
       })
     } else {
       reset({
@@ -68,6 +70,7 @@ export function CreateExpressionModal({
         name: "",
         imageUrl: "",
         status: 1,
+        robotModelId: "",
       })
     }
   }, [editExpression, isEditMode, reset])
@@ -78,16 +81,16 @@ export function CreateExpressionModal({
     try {
       if (isEditMode && editExpression) {
         await updateExpressionMutation.mutateAsync({ id: editExpression.id, data })
-  toast.success("Cập nhật biểu cảm thành công!")
+        toast.success("Cập nhật biểu cảm thành công!")
       } else {
         await createExpressionMutation.mutateAsync(data)
-  toast.success("Tạo biểu cảm thành công!")
+        toast.success("Tạo biểu cảm thành công!")
       }
       reset()
       onClose()
     } catch (error) {
       console.error("Error saving expression:", error)
-  toast.error(isEditMode ? 'Cập nhật thất bại. Vui lòng thử lại.' : 'Tạo mới thất bại. Vui lòng thử lại.')
+      toast.error(isEditMode ? 'Cập nhật thất bại. Vui lòng thử lại.' : 'Tạo mới thất bại. Vui lòng thử lại.')
     }
   }
 
@@ -112,6 +115,31 @@ export function CreateExpressionModal({
         </DialogHeader>
 
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+          {/* Mẫu robot */}
+          <div className="space-y-2">
+            <Label htmlFor="robotModelId" className="text-sm font-medium">
+              Mẫu robot *
+            </Label>
+            <Select
+              value={watch("robotModelId")}
+              onValueChange={(value) => setValue("robotModelId", value)}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Chọn mẫu robot" />
+              </SelectTrigger>
+              <SelectContent>
+                {robotModels?.data?.map((model) => (
+                  <SelectItem key={model.id} value={model.id}>
+                    {model.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            {errors.robotModelId && (
+              <p className="text-sm text-red-500">{errors.robotModelId.message}</p>
+            )}
+          </div>
+
           <div className="space-y-2">
             <Label htmlFor="code" className="text-sm font-medium">
               Mã biểu cảm *
@@ -157,7 +185,7 @@ export function CreateExpressionModal({
               type="url"
               {...register("imageUrl", {
                 pattern: {
-                  value: /^https?:\/\/.+/, 
+                  value: /^https?:\/\/.+/,
                   message: 'URL không hợp lệ'
                 }
               })}
