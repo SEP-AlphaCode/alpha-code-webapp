@@ -164,7 +164,7 @@ export function Header({ currentSection, onNavigate }: HeaderProps) {
             </>
           ) : (
             <Link href="/login">
-              <Button className="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded-lg font-semibold flex items-center gap-2 shadow-md hover:shadow-lg transition-all">
+              <Button className="modern-button bg-blue-500 hover:bg-blue-600 text-white px-6 py-2 rounded-full shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-300 group">
                 Đăng nhập
                 <ArrowRight className="w-4 h-4" />
               </Button>

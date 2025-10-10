@@ -1279,6 +1279,20 @@
     "@radix-ui/react-use-previous" "1.1.1"
     "@radix-ui/react-use-size" "1.1.1"
 
+"@radix-ui/react-tabs@^1.1.13":
+  version "1.1.13"
+  resolved "https://registry.yarnpkg.com/@radix-ui/react-tabs/-/react-tabs-1.1.13.tgz#3537ce379d7e7ff4eeb6b67a0973e139c2ac1f15"
+  integrity sha512-7xdcatg7/U+7+Udyoj2zodtI9H/IIopqo+YOIcZOq1nJwXWBZ9p8xiu5llXlekDbZkca79a/fozEYQXIA4sW6A==
+  dependencies:
+    "@radix-ui/primitive" "1.1.3"
+    "@radix-ui/react-context" "1.1.2"
+    "@radix-ui/react-direction" "1.1.1"
+    "@radix-ui/react-id" "1.1.1"
+    "@radix-ui/react-presence" "1.1.5"
+    "@radix-ui/react-primitive" "2.1.3"
+    "@radix-ui/react-roving-focus" "1.1.11"
+    "@radix-ui/react-use-controllable-state" "1.2.2"
+
 "@radix-ui/react-tooltip@^1.2.8":
   version "1.2.8"
   resolved "https://registry.yarnpkg.com/@radix-ui/react-tooltip/-/react-tooltip-1.2.8.tgz#3f50267e25bccfc9e20bb3036bfd9ab4c2c30c2c"
@@ -3131,12 +3145,12 @@ formdata-polyfill@^4.0.10:
   dependencies:
     fetch-blob "^3.1.2"
 
-framer-motion@^12.23.13:
-  version "12.23.13"
-  resolved "https://registry.yarnpkg.com/framer-motion/-/framer-motion-12.23.13.tgz#146ffad7710172359b9274c46f75c677068f1092"
-  integrity sha512-OMF57Xh0fuTXfJQPtCieYGeU9Fam4SxqPLVz78YI7ATRFrfz8SARtqr1+qv56cX45kPFcIEfkUorVfxlOsjcUg==
+framer-motion@^12.23.22:
+  version "12.23.22"
+  resolved "https://registry.yarnpkg.com/framer-motion/-/framer-motion-12.23.22.tgz#798333fdcc5cd65fabfc450985b7236bbdbf5d64"
+  integrity sha512-ZgGvdxXCw55ZYvhoZChTlG6pUuehecgvEAJz0BHoC5pQKW1EC5xf1Mul1ej5+ai+pVY0pylyFfdl45qnM1/GsA==
   dependencies:
-    motion-dom "^12.23.12"
+    motion-dom "^12.23.21"
     motion-utils "^12.23.6"
     tslib "^2.4.0"
 
@@ -3992,10 +4006,10 @@ mkdirp@^3.0.1:
   resolved "https://registry.npmjs.org/mkdirp/-/mkdirp-3.0.1.tgz"
   integrity sha512-+NsyUUAZDmo6YVHzL/stxSu3t9YS1iljliy3BSDrXJ/dkn1KYdmtZODGGjLcc9XLgVVpH4KshHB8XmZgMhaBXg==
 
-motion-dom@^12.23.12:
-  version "12.23.12"
-  resolved "https://registry.yarnpkg.com/motion-dom/-/motion-dom-12.23.12.tgz#87974046e7e61bc4932f36d35e8eab6bb6f3e434"
-  integrity sha512-RcR4fvMCTESQBD/uKQe49D5RUeDOokkGRmz4ceaJKDBgHYtZtntC/s2vLvY38gqGaytinij/yi3hMcWVcEF5Kw==
+motion-dom@^12.23.21:
+  version "12.23.21"
+  resolved "https://registry.yarnpkg.com/motion-dom/-/motion-dom-12.23.21.tgz#1efe2d1bdda31875f0ee56d06f02be7b562a0bdd"
+  integrity sha512-5xDXx/AbhrfgsQmSE7YESMn4Dpo6x5/DTZ4Iyy4xqDvVHWvFVoV+V2Ri2S/ksx+D40wrZ7gPYiMWshkdoqNgNQ==
   dependencies:
     motion-utils "^12.23.6"
 
@@ -4400,6 +4414,11 @@ react-is@^19.1.1:
   version "19.1.1"
   resolved "https://registry.yarnpkg.com/react-is/-/react-is-19.1.1.tgz#038ebe313cf18e1fd1235d51c87360eb87f7c36a"
   integrity sha512-tr41fA15Vn8p4X9ntI+yCyeGSf1TlYaY5vlTZfQmeLBrFo3psOPX6HhTDnFNL9uj3EhP0KAQ80cugCl4b4BERA==
+
+react-joystick-component@^6.2.1:
+  version "6.2.1"
+  resolved "https://registry.yarnpkg.com/react-joystick-component/-/react-joystick-component-6.2.1.tgz#3efed68fa3da03afb7e45d0d6e9d58f9b0c0cca0"
+  integrity sha512-0G5Y5aX4hNuXB3xJCwz6Q+nYQOtC6kprNGKmZxmfoPvhepNYUiid0DbLEGZxmr/UKip3S/LUbcQUobtRCuB8IQ==
 
 react-player@^3.3.2:
   version "3.3.2"
