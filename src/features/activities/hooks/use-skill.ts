@@ -29,15 +29,16 @@ export const useSkill = () => {
     })
   }
 
-  // 🔹 Lấy skill theo trang (KHÔNG gộp robot models nữa)
-  const useGetPagedSkills = (page: number, size: number, search?: string) => {
+  // 🔹 Lấy skill theo trang (có hỗ trợ filter robot model)
+  const useGetPagedSkills = (page: number, size: number, search?: string, robotModelId?: string) => {
     return useQuery<SkillResponse>({
-      queryKey: ["skills", "paged", page, size, search],
+      queryKey: ["skills", "paged", page, size, search, robotModelId],
       queryFn: () =>
         getAllSkills({
           page,
           size,
           search,
+          robotModelId, // ✅ thêm param này
         }),
       staleTime: 0,
       enabled: true,
