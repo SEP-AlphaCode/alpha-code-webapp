@@ -355,7 +355,7 @@ export default function JoystickPage() {
   // --- UI ---
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-gray-100 to-slate-200 p-6">
-      <div className="max-w-6xl mx-auto">
+      <div className="max-w-5xl mx-auto">
         <header className="flex items-center justify-between mb-6">
           <div>
             <h1 className="text-3xl md:text-4xl font-extrabold text-gray-900">🎮 Controller Studio</h1>

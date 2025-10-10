@@ -18,7 +18,7 @@ import {
 
 import { DancePlanReposnse } from "@/types/music"
 import { ActionActivites } from "@/types/action"
-import { createActivity } from "@/features/activities/api/activities-api"
+import { useCreateActivity } from "@/features/activities/hooks/use-activities"
 import { Activity } from "@/types/activities"
 import { getUserInfoFromToken } from "@/utils/tokenUtils"
 
@@ -49,9 +49,11 @@ export default function PreviewActivitiesPage() {
   const [loading, setLoading] = useState(true)
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [activityName, setActivityName] = useState<string>("")
-  const [isSaving, setIsSaving] = useState(false)
   const searchParams = useSearchParams()
   const router = useRouter()
+  
+  // Sử dụng hook để tạo activity (tắt toast tự động)
+  const createActivityMutation = useCreateActivity({ showToast: false })
 
   useEffect(() => {
     const sessionDataKey = searchParams.get('sessionKey') || 'preview_activity_data'
@@ -88,8 +90,6 @@ export default function PreviewActivitiesPage() {
     }
 
     try {
-      setIsSaving(true)
-
       const token = sessionStorage.getItem('accessToken')
       if (!token) {
         toast.error("Bạn cần đăng nhập để lưu activity!")
@@ -112,7 +112,9 @@ export default function PreviewActivitiesPage() {
         robotModelId: "6e4e14b3-b073-4491-ab2a-2bf315b3259f"
       }
 
-      await createActivity(activityData)
+      // Sử dụng hook mutation để tạo activity
+      await createActivityMutation.mutateAsync(activityData)
+      
       toast.success(`Activity "${activityName}" đã được lưu thành công!`)
 
       const sessionDataKey = searchParams.get('sessionKey') || 'preview_activity_data'
@@ -128,8 +130,6 @@ export default function PreviewActivitiesPage() {
       console.error('Error saving activity:', error)
       const errorMessage = getErrorMessage(error)
       toast.error(errorMessage)
-    } finally {
-      setIsSaving(false)
     }
   }
 
@@ -226,10 +226,10 @@ export default function PreviewActivitiesPage() {
                   </Button>
                   <Button
                     onClick={handleSaveActivity}
-                    disabled={isSaving || !activityName.trim()}
+                    disabled={createActivityMutation.isPending || !activityName.trim()}
                     className="flex-1"
                   >
-                    {isSaving ? (
+                    {createActivityMutation.isPending ? (
                       <Loader2 className="w-4 h-4 animate-spin mr-2" />
                     ) : (
                       <Save className="w-4 h-4 mr-2" />
