@@ -23,14 +23,14 @@ import { Activity } from "@/types/activities"
 import { getUserInfoFromToken } from "@/utils/tokenUtils"
 
 import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardContent, CardHeader } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
 
 const getErrorMessage = (error: unknown): string => {
   if (error && typeof error === 'object' && 'response' in error) {
-    const httpError = error as { response: { status: number; data?: any } }
+    const httpError = error as { response: { status: number; data?: object } }
     switch (httpError.response.status) {
       case 400: return 'Dữ liệu không hợp lệ!'
       case 401: return 'Bạn cần đăng nhập lại!'

@@ -75,7 +75,7 @@ export function useRobotCommand(
         to: string;
         command: {
           type: string;
-          data: any;
+          data: object;
         };
         active_clients: number;
       };
