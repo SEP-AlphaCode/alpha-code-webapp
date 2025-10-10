@@ -42,7 +42,7 @@ export default function RobotActionPage() {
 
   const handleSendCommand = async (
     actionCode: string,
-    type: "action" | "expression" | "skills_helper" | "extended_action" = "action"
+    type: "action" | "expression" | "skill_helper" | "extended_action" = "action"
   ) => {
     if (!selectedRobotSerial || !selectedRobot) {
       setNotify("Bạn chưa chọn robot!", "error");
@@ -52,7 +52,9 @@ export default function RobotActionPage() {
       setNotify(`Robot ${selectedRobot.name} đang offline!`, "error");
       return Promise.resolve();
     }
-    await sendCommandToBackend(actionCode, selectedRobotSerial);
+
+    // ✅ TRUYỀN TYPE XUỐNG BACKEND CHÍNH XÁC
+    await sendCommandToBackend(actionCode, selectedRobotSerial, type);
   };
 
   return (
