@@ -29,17 +29,47 @@ import { Input } from "@/components/ui/input"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
 
 const getErrorMessage = (error: unknown): string => {
+  console.error('Full error object:', error); // Debug log
+  
   if (error && typeof error === 'object' && 'response' in error) {
-    const httpError = error as { response: { status: number; data?: any } }
+    const httpError = error as { 
+      response: { 
+        status: number; 
+        data?: { 
+          message?: string; 
+          error?: string;
+          details?: string;
+        } 
+      };
+      message?: string;
+    }
+    
+    const errorData = httpError.response?.data;
+    const serverMessage = errorData?.message || errorData?.error || errorData?.details;
+    
     switch (httpError.response.status) {
-      case 400: return 'Dữ liệu không hợp lệ!'
-      case 401: return 'Bạn cần đăng nhập lại!'
-      case 403: return 'Không có quyền lưu activity!'
-      case 500: return 'Lỗi server!'
-      default: return `Lỗi ${httpError.response.status}`
+      case 400: 
+        return serverMessage || 'Dữ liệu không hợp lệ!'
+      case 401: 
+        return 'Bạn cần đăng nhập lại!'
+      case 403: 
+        return 'Không có quyền lưu hoạt động!'
+      case 409:
+        return serverMessage || 'Tên hoạt động đã tồn tại! Vui lòng chọn tên khác.'
+      case 422:
+        return serverMessage || 'Dữ liệu không đúng định dạng!'
+      case 500: 
+        return serverMessage || 'Lỗi server! Vui lòng thử lại sau.'
+      default: 
+        return serverMessage || 'Có lỗi xảy ra khi lưu hoạt động!'
     }
   }
-  return 'Có lỗi xảy ra!'
+  
+  if (error && typeof error === 'object' && 'message' in error) {
+    return (error as { message: string }).message;
+  }
+  
+  return 'Có lỗi xảy ra khi lưu hoạt động!'
 }
 
 export default function PreviewActivitiesPage() {
@@ -69,7 +99,7 @@ export default function PreviewActivitiesPage() {
         if (parsedSessionData.fileName) {
           setFileName(parsedSessionData.fileName)
           const nameWithoutExtension = parsedSessionData.fileName.replace(/\.[^/.]+$/, "")
-          setActivityName(`Dance Activity - ${nameWithoutExtension}`)
+          setActivityName(`Hoạt động nhảy - ${nameWithoutExtension}`)
         }
         if (parsedSessionData.timeRange) {
           setTimeRange(parsedSessionData.timeRange)
@@ -85,14 +115,34 @@ export default function PreviewActivitiesPage() {
 
   const handleSaveActivity = async () => {
     if (!dancePlan || !activityName.trim()) {
-      toast.error("Vui lòng nhập tên cho activity!")
+      toast.error("Vui lòng nhập tên cho hoạt động!")
+      return
+    }
+
+    // Validation chi tiết cho tên activity
+    const trimmedName = activityName.trim()
+    
+    if (trimmedName.length < 3) {
+      toast.error("Tên hoạt động phải có ít nhất 3 ký tự!")
+      return
+    }
+
+    if (trimmedName.length > 100) {
+      toast.error("Tên hoạt động không được quá 100 ký tự!")
+      return
+    }
+
+    // Kiểm tra ký tự đặc biệt có thể gây lỗi
+    const invalidChars = /[<>:"/\\|?*]/
+    if (invalidChars.test(trimmedName)) {
+      toast.error("Tên hoạt động không được chứa các ký tự đặc biệt: < > : \" / \\ | ? *")
       return
     }
 
     try {
       const token = sessionStorage.getItem('accessToken')
       if (!token) {
-        toast.error("Bạn cần đăng nhập để lưu activity!")
+        toast.error("Bạn cần đăng nhập để lưu hoạt động!")
         return
       }
 
@@ -105,7 +155,7 @@ export default function PreviewActivitiesPage() {
       const activityData: Omit<Activity, 'id' | 'createdDate' | 'lastUpdate'> = {
         accountId: userInfo.id,
         data: dancePlan,
-        name: activityName.trim(),
+        name: trimmedName,
         status: 1,
         type: "dance_with_music",
         statusText: "ACTIVE",
@@ -115,7 +165,7 @@ export default function PreviewActivitiesPage() {
       // Sử dụng hook mutation để tạo activity
       await createActivityMutation.mutateAsync(activityData)
       
-      toast.success(`Activity "${activityName}" đã được lưu thành công!`)
+      toast.success(`✅ Hoạt động "${trimmedName}" đã được lưu thành công!`)
 
       const sessionDataKey = searchParams.get('sessionKey') || 'preview_activity_data'
       sessionStorage.removeItem(sessionDataKey)
@@ -129,6 +179,8 @@ export default function PreviewActivitiesPage() {
     } catch (error: unknown) {
       console.error('Error saving activity:', error)
       const errorMessage = getErrorMessage(error)
+      
+      // Hiển thị thông báo lỗi chi tiết qua toast
       toast.error(errorMessage)
     }
   }
@@ -164,7 +216,7 @@ export default function PreviewActivitiesPage() {
             <h2 className="text-2xl font-bold mb-2 text-gray-800">Không có dữ liệu</h2>
             <p className="text-gray-600 mb-6">Không tìm thấy dance plan để hiển thị</p>
             <Button onClick={() => router.push('/teacher/music')}>
-              Tạo Dance Plan mới
+              Tạo kế hoạch nhảy mới
             </Button>
           </Card>
         </div>
@@ -191,28 +243,28 @@ export default function PreviewActivitiesPage() {
 
           <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-3">
             <Music className="w-8 h-8 text-blue-600" />
-            Dance Plan Preview
+            Xem trước hành động nhảy
           </h1>
 
           <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
             <DialogTrigger asChild>
               <Button className="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-md">
                 <Save className="w-5 h-5" />
-                Lưu Activity
+                Lưu hoạt động
               </Button>
 
             </DialogTrigger>
             <DialogContent>
               <DialogHeader>
-                <DialogTitle>Lưu Dance Activity</DialogTitle>
+                <DialogTitle>Lưu hoạt động nhảy</DialogTitle>
               </DialogHeader>
               <div className="space-y-4 pt-4">
                 <div>
-                  <label className="text-sm font-medium">Tên Activity</label>
+                  <label className="text-sm font-medium">Tên hoạt động</label>
                   <Input
                     value={activityName}
                     onChange={(e) => setActivityName(e.target.value)}
-                    placeholder="Nhập tên cho activity..."
+                    placeholder="Nhập tên cho hoạt động..."
                     className="mt-1"
                   />
                 </div>
@@ -249,19 +301,19 @@ export default function PreviewActivitiesPage() {
               <div className="flex items-center gap-4">
                 <FileAudio className="w-8 h-8 text-blue-600" />
                 <div>
-                  <h3 className="font-semibold text-lg">{fileName || "Unknown File"}</h3>
+                  <h3 className="font-semibold text-lg">{fileName || "Tệp không xác định"}</h3>
                   <p className="text-gray-600 flex items-center gap-2">
                     <Clock className="w-4 h-4" />
-                    {timeRange || "Full duration"}
+                    {timeRange || "Toàn bộ thời lượng"}
                   </p>
                 </div>
               </div>
               <div className="text-right">
                 <Badge variant="secondary" className="mb-2">
-                  {actions.length} Actions
+                  {actions.length} Hành động
                 </Badge>
                 <p className="text-sm text-gray-600">
-                  Duration: {totalDuration.toFixed(1)}s
+                  Thời lượng: {totalDuration.toFixed(1)}s
                 </p>
               </div>
             </div>
@@ -289,8 +341,8 @@ export default function PreviewActivitiesPage() {
                 <CardContent>
                   <h4 className="font-semibold mb-2">{action.action_id}</h4>
                   <div className="space-y-1 text-sm text-gray-600">
-                    <p>Type: <span className="font-mono">{action.action_type}</span></p>
-                    <p>Duration: {action.duration.toFixed(1)}s</p>
+                    <p>Loại: <span className="font-mono">{action.action_type}</span></p>
+                    <p>Thời lượng: {action.duration.toFixed(1)}s</p>
                   </div>
                 </CardContent>
               </Card>

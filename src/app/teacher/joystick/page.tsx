@@ -39,6 +39,11 @@ export default function JoystickPage() {
 
   const [notify, setNotifyState] = useState<{ msg: string; type: 'success' | 'error' } | null>(null);
   const [isConfigModalOpen, setIsConfigModalOpen] = useState(false);
+  const [lastJoystickCommand, setLastJoystickCommand] = useState<string | null>(null);
+  const [joystickCommandTimeout, setJoystickCommandTimeout] = useState<NodeJS.Timeout | null>(null);
+  const [lastCommandTime, setLastCommandTime] = useState<number>(0);
+  const [isCommandPending, setIsCommandPending] = useState<boolean>(false);
+  
   const setNotify = (msg: string, type: 'success' | 'error') => {
     setNotifyState({ msg, type });
     setTimeout(() => setNotifyState(null), 3000);
@@ -196,6 +201,15 @@ export default function JoystickPage() {
     initializeMockData();
   }, [initializeMockData]);
 
+  // Cleanup timeout when component unmounts
+  useEffect(() => {
+    return () => {
+      if (joystickCommandTimeout) {
+        clearTimeout(joystickCommandTimeout);
+      }
+    };
+  }, [joystickCommandTimeout]);
+
   // --- Joystick interaction (support mouse + touch) ---
   const leftJoystickRef = useRef<HTMLDivElement | null>(null);
   const draggingRef = useRef(false);
@@ -223,37 +237,125 @@ export default function JoystickPage() {
     []
   );
 
+  // Function to detect joystick direction and send commands
+  const getJoystickDirection = useCallback((x: number, y: number): string | null => {
+    const threshold = 0.3;
+    const distance = Math.sqrt(x * x + y * y);
+    
+    if (distance < threshold) {
+      return null;
+    }
+
+    const angle = Math.atan2(-y, x) * (180 / Math.PI);
+    const normalizedAngle = ((angle % 360) + 360) % 360;
+
+    if (normalizedAngle >= 315 || normalizedAngle < 45) {
+      return 'Keep_turning_right';
+    } else if (normalizedAngle >= 45 && normalizedAngle < 135) {
+      return 'Keep_moving_forward';
+    } else if (normalizedAngle >= 135 && normalizedAngle < 225) {
+      return 'Keep_turning_left';
+    } else if (normalizedAngle >= 225 && normalizedAngle < 315) {
+      return 'Keep_going_backwards';
+    }
+
+    return null;
+  }, []);
+
+  const handleJoystickMovement = useCallback(async (x: number, y: number) => {
+    const direction = getJoystickDirection(x, y);
+    const currentTime = Date.now();
+    const COMMAND_THROTTLE_MS = 300;
+    
+    if (direction === lastJoystickCommand && 
+        currentTime - lastCommandTime < COMMAND_THROTTLE_MS) {
+      return;
+    }
+
+    if (isCommandPending) {
+      return;
+    }
+    
+    if (direction !== lastJoystickCommand) {
+      if (joystickCommandTimeout) {
+        clearTimeout(joystickCommandTimeout);
+      }
+
+      if (direction) {
+        if (!selectedRobotSerial || !selectedRobot) {
+          setNotify('Bạn chưa chọn robot!', 'error');
+          return;
+        }
+        if (selectedRobot.status === 'offline') {
+          setNotify(`Robot ${selectedRobot.name} đang offline!`, 'error');
+          return;
+        }
+        
+        setIsCommandPending(true);
+        
+        try {
+          await sendCommandToBackend(direction, selectedRobotSerial, 'skill_helper');
+          setLastJoystickCommand(direction);
+          setLastCommandTime(currentTime);
+          
+          const timeout = setTimeout(() => {
+            setLastJoystickCommand(null);
+          }, 500);
+          setJoystickCommandTimeout(timeout);
+        } catch (error) {
+          // Silent error handling
+        } finally {
+          setTimeout(() => {
+            setIsCommandPending(false);
+          }, 100);
+        }
+      } else {
+        setLastJoystickCommand(null);
+        setIsCommandPending(false);
+      }
+    }
+  }, [lastJoystickCommand, joystickCommandTimeout, selectedRobotSerial, selectedRobot, sendCommandToBackend, setNotify, getJoystickDirection, lastCommandTime, isCommandPending]);
+
   const onPointerMove = useCallback(
     (e: PointerEvent) => {
       if (!draggingRef.current || !leftJoystickRef.current) return;
       const pos = computePositionFromPointer(e.clientX, e.clientY, leftJoystickRef.current);
       setLeftJoystick(pos);
+      
+      if (!isCommandPending) {
+        handleJoystickMovement(pos.x, pos.y);
+      }
     },
-    [computePositionFromPointer]
+    [computePositionFromPointer, handleJoystickMovement, isCommandPending]
   );
 
   const onPointerUp = useCallback(() => {
     draggingRef.current = false;
     setLeftJoystick({ x: 0, y: 0 });
+    
+    if (joystickCommandTimeout) {
+      clearTimeout(joystickCommandTimeout);
+    }
+    setLastJoystickCommand(null);
+    setIsCommandPending(false);
+    
     window.removeEventListener('pointermove', onPointerMove);
     window.removeEventListener('pointerup', onPointerUp);
-  }, [onPointerMove]);
+  }, [onPointerMove, joystickCommandTimeout]);
 
   const handlePointerDown = (e: React.PointerEvent) => {
-    // capture pointer for consistent events
     (e.target as Element).setPointerCapture?.(e.pointerId);
     draggingRef.current = true;
     window.addEventListener('pointermove', onPointerMove);
     window.addEventListener('pointerup', onPointerUp);
 
-    // first position
     if (leftJoystickRef.current) {
       const pos = computePositionFromPointer(e.clientX, e.clientY, leftJoystickRef.current);
       setLeftJoystick(pos);
+      handleJoystickMovement(pos.x, pos.y);
     }
   };
 
-  // For older browsers / fallback, also support touch events
   useEffect(() => {
     const touchMove = (ev: TouchEvent) => {
       if (!draggingRef.current || !leftJoystickRef.current) return;
@@ -261,10 +363,20 @@ export default function JoystickPage() {
       if (!t) return;
       const pos = computePositionFromPointer(t.clientX, t.clientY, leftJoystickRef.current);
       setLeftJoystick(pos);
+      
+      if (!isCommandPending) {
+        handleJoystickMovement(pos.x, pos.y);
+      }
     };
     const handleTouchEnd = () => {
       draggingRef.current = false;
       setLeftJoystick({ x: 0, y: 0 });
+      
+      if (joystickCommandTimeout) {
+        clearTimeout(joystickCommandTimeout);
+      }
+      setLastJoystickCommand(null);
+      setIsCommandPending(false);
     };
 
     window.addEventListener('touchmove', touchMove, { passive: true });
@@ -276,7 +388,7 @@ export default function JoystickPage() {
       window.removeEventListener('touchend', handleTouchEnd);
       window.removeEventListener('touchcancel', handleTouchEnd);
     };
-  }, [computePositionFromPointer]);
+  }, [computePositionFromPointer, handleJoystickMovement, joystickCommandTimeout, isCommandPending]);
 
   // --- Button handlers ---
   const handleButtonPress = (buttonName: string) => {
@@ -320,22 +432,19 @@ export default function JoystickPage() {
     await handleSendCommand(actionCodes[buttonName], actionType);
   };
 
-  // Handler for D-pad buttons with fixed movement commands
   const handleDPadButtonPress = async (direction: 'up' | 'down' | 'left' | 'right') => {
     setButtons(prev => ({ ...prev, [direction]: true }));
     setTimeout(() => {
       setButtons(prev => ({ ...prev, [direction]: false }));
     }, 150);
 
-    // Fixed command mapping for D-pad
     const commandMap = {
-      'up': 'Keep_moving_forward',     // Tiến lên
-      'down': 'Keep_going_backwards',  // Lùi lại  
-      'left': 'Keep_turning_left',      // Quay trái
-      'right': 'Keep_turning_right'     // Quay phải
+      'up': 'Keep_moving_forward',
+      'down': 'Keep_going_backwards',
+      'left': 'Keep_turning_left',
+      'right': 'Keep_turning_right'
     };
 
-    // D-pad commands are extended actions
     const actionCode = commandMap[direction];
     await handleSendCommand(actionCode, 'skill_helper');
   };
@@ -373,26 +482,20 @@ export default function JoystickPage() {
           </div>
         </header>
 
-        {/* Controller */}
         <div className="relative rounded-[3rem] overflow-visible mb-6">
-          {/* soft shadow */}
           <div className="absolute inset-x-6 -bottom-8 h-24 blur-3xl opacity-20 rounded-3xl bg-gray-500/60" />
 
-          {/* Controller body */}
           <div className="relative z-10 mx-auto bg-gradient-to-br from-gray-100 via-gray-50 to-white rounded-[2.5rem] border border-gray-300 shadow-2xl p-8">
                 <div className="flex flex-col md:flex-row items-center gap-8 md:gap-16">
-                  {/* Left Grip: joystick + DPad */}
                   <div className="flex flex-col items-center gap-6 w-full md:w-1/3">
                     <Badge variant="secondary" className="mb-2 bg-gray-200 text-gray-700">Left Stick</Badge>
 
                     <div
                       ref={leftJoystickRef as React.RefObject<HTMLDivElement>}
                       onPointerDown={handlePointerDown}
-                      // To support touch initial capture: onPointerDown handles pointer
                       className="relative w-28 h-28 rounded-full bg-gradient-to-br from-gray-200 to-gray-300 border-4 border-gray-400 flex items-center justify-center shadow-inner cursor-grab active:cursor-grabbing"
                       style={{ touchAction: 'none' }}
                     >
-                      {/* subtle ring */}
                       <div className="absolute -inset-1 rounded-full opacity-30 blur-sm bg-gradient-to-br from-blue-500 to-blue-600" />
 
                       <motion.div
@@ -404,9 +507,16 @@ export default function JoystickPage() {
 
                     <div className="text-xs text-gray-600 font-mono text-center">
                       X: {(leftJoystick.x * 100).toFixed(0)} • Y: {(leftJoystick.y * 100).toFixed(0)}
+                      {lastJoystickCommand && (
+                        <div className="text-blue-600 font-bold mt-1">
+                          {lastJoystickCommand === 'Keep_moving_forward' && '↑ Tiến'}
+                          {lastJoystickCommand === 'Keep_going_backwards' && '↓ Lùi'}
+                          {lastJoystickCommand === 'Keep_turning_left' && '← Trái'}
+                          {lastJoystickCommand === 'Keep_turning_right' && '→ Phải'}
+                        </div>
+                      )}
                     </div>
 
-                    {/* D-Pad */}
                     <div className="mt-4">
                       <Badge variant="secondary" className="bg-gray-200 text-gray-700">D-Pad</Badge>
                       <div className="mt-3 grid grid-cols-3 gap-1 w-32 h-32">
