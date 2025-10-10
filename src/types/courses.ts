@@ -40,6 +40,27 @@ export interface Course {
     lessons?: Lesson[]
 }
 
+export interface AccountCourse {
+    accountId: string;
+    completed: boolean;
+    completedLesson: number;
+    courseId: string;
+    id: string;
+    lastAccessed: string; // or Date if you plan to parse it
+    progressPercent: number;
+    purchaseDate: string; // or Date if you plan to parse it
+    status: number;
+    statusText: string;
+    totalLesson: number;
+}
+
+export interface AccountLesson {
+    duration: number;
+    id: string;
+    status: number;
+    title: string;
+}
+
 export function mapDifficulty(d: number) {
     switch (d) {
         case 3: return {

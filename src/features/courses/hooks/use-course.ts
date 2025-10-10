@@ -1,5 +1,5 @@
-import { getCategories, getCategoryBySlug, getCourseBySlug, getCourses } from "@/features/courses/api/course-api";
-import { Category, Course } from "@/types/courses";
+import { getAccountCourses, getAccountLessons, getCategories, getCategoryBySlug, getCourseBySlug, getCourses, markLessonComplete } from "@/features/courses/api/course-api";
+import { AccountCourse, AccountLesson, Category, Course } from "@/types/courses";
 import { PagedResult } from "@/types/page-result";
 import { useInfiniteQuery, useQuery, useQueryClient } from "@tanstack/react-query";
 import { use } from "react";
@@ -40,10 +40,36 @@ export const useCourse = () => {
         queryFn: () => getCategoryBySlug(slug),
         refetchOnWindowFocus: false,
     })
+    const useGetAccountCourses = (accountId: string, page: number, size: number) => {
+        return useQuery<PagedResult<AccountCourse>>({
+            queryKey: ['account-courses', accountId, page, size],
+            staleTime: STALE_TIME,
+            queryFn: ({ signal }) => getAccountCourses(accountId, page, size, signal),
+            refetchOnWindowFocus: false,
+        })
+    }
+    const useGetAccountLessons = (accountId: string, courseId: string, page: number, size: number) => {
+        return useQuery<PagedResult<AccountLesson>>({
+            queryKey: ['account-lessons', accountId, courseId, page, size],
+            staleTime: STALE_TIME,
+            queryFn: ({ signal }) => getAccountLessons(accountId, courseId, page, size, signal),
+            refetchOnWindowFocus: false,
+        })
+    }
+    const useMarkLessonComplete = (accountLessonId: string) => {
+        return useQuery<void>({
+            queryKey: ['mark-lesson-complete', accountLessonId],
+            queryFn: ({ signal }) => markLessonComplete(accountLessonId, signal),
+            refetchOnWindowFocus: false,
+        })
+    }
     return {
         useGetCategories,
         useGetCourses,
         useGetCategoryBySlug,
         useGetCourseBySlug,
+        useGetAccountCourses,
+        useGetAccountLessons,
+        useMarkLessonComplete
     }
 }
