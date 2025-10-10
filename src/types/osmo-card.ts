@@ -34,4 +34,8 @@ export interface CreateCardData {
   expressionName: string;
   danceId: string;
   danceName: string;
+  extendedActionId: string,
+  extendedActionName: string,
+  skillId: string,
+  skillName: string
 }

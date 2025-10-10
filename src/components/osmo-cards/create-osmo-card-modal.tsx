@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
-import { 
-  Dialog, 
-  DialogContent, 
-  DialogHeader, 
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
   DialogTitle,
-  DialogFooter 
+  DialogFooter
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -12,11 +12,13 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
 import { Separator } from '@/components/ui/separator';
-import { Plus, X, Palette, Music, Zap, Smile } from 'lucide-react';
+import { Plus, X, Palette, Music, Zap, Smile, ZapOff, PlugZap, DatabaseZapIcon, Brain } from 'lucide-react';
 import { CreateCardData } from '@/types/osmo-card';
 import { useAction } from '@/features/activities/hooks/use-action';
 import { useExpression } from '@/features/activities/hooks/use-expression';
 import { useDance } from '@/features/activities/hooks/use-dance';
+import { useExtendedActions } from '@/features/activities/hooks/use-extended-actions';
+import { useSkill } from '@/features/activities/hooks/use-skill';
 
 interface CreateOsmoCardModalProps {
   isOpen: boolean;
@@ -25,11 +27,11 @@ interface CreateOsmoCardModalProps {
   isLoading?: boolean;
 }
 
-export default function CreateOsmoCardModal({ 
-  isOpen, 
-  onClose, 
-  onCreate, 
-  isLoading = false 
+export default function CreateOsmoCardModal({
+  isOpen,
+  onClose,
+  onCreate,
+  isLoading = false
 }: CreateOsmoCardModalProps) {
   const [formData, setFormData] = useState<CreateCardData>({
     name: '',
@@ -40,7 +42,11 @@ export default function CreateOsmoCardModal({
     expressionId: '',
     expressionName: '',
     danceId: '',
-    danceName: ''
+    danceName: '',
+    extendedActionId: '',
+    extendedActionName: '',
+    skillId: '',
+    skillName: ''
   });
 
   const [errors, setErrors] = useState<Partial<CreateCardData>>({});
@@ -49,16 +55,21 @@ export default function CreateOsmoCardModal({
   const actionHooks = useAction();
   const expressionHooks = useExpression();
   const danceHooks = useDance();
+  const extendedActionHooks = useExtendedActions();
+  const skillHooks = useSkill()
 
   // Fetch actions, expressions, and dances
   const { data: actionsResponse, isLoading: actionsLoading, error: actionsError } = actionHooks.useGetPagedActions(1, 100); // Get all actions
   const { data: expressionsResponse, isLoading: expressionsLoading, error: expressionsError } = expressionHooks.useGetPagedExpressions(1, 100); // Get all expressions  
   const { data: dancesResponse, isLoading: dancesLoading, error: dancesError } = danceHooks.useGetPagedDances(1, 100); // Get all dances
-
+  const { data: extendedActionResponse, isLoading: extendedLoading, error: extendedError } = extendedActionHooks.useGetPagedExtendedActions(1, 100)
+  const { data: skillResponse, isLoading: skillLoading, error: skillError } = skillHooks.useGetPagedSkills(1, 100)
   // Extract data from API responses
   const actions = actionsResponse?.data || [];
   const expressions = expressionsResponse?.data || [];
   const dances = dancesResponse?.data || [];
+  const extendedActions = extendedActionResponse?.data || []
+  const skills = skillResponse?.data || []
 
   // Check if any API is loading
   const isDataLoading = actionsLoading || expressionsLoading || dancesLoading;
@@ -81,7 +92,7 @@ export default function CreateOsmoCardModal({
       ...prev,
       [field]: value
     }));
-    
+
     // Clear error when user starts typing
     if (errors[field]) {
       setErrors(prev => ({
@@ -118,6 +129,24 @@ export default function CreateOsmoCardModal({
     }));
   };
 
+  const handleExtActionChange = (extActionId: string) => {
+    const seletedAction = extendedActions.find(v => v.id === extActionId);
+    setFormData(prev => ({
+      ...prev,
+      extendedActionId: extActionId === 'none' ? '' : extActionId,
+      extendedActionName: extActionId === 'none' ? '' : (seletedAction?.name || '')
+    }));
+  };
+
+  const handleSkillChange = (skillId: string) => {
+    const selectedSkill = skills.find(v => v.id === skillId);
+    setFormData(prev => ({
+      ...prev,
+      skillId: skillId === 'none' ? '' : skillId,
+      skillName: skillId === 'none' ? '' : (selectedSkill?.name || '')
+    }));
+  };
+
   const validateForm = (): boolean => {
     const newErrors: Partial<CreateCardData> = {};
 
@@ -150,7 +179,11 @@ export default function CreateOsmoCardModal({
       expressionId: '',
       expressionName: '',
       danceId: '',
-      danceName: ''
+      danceName: '',
+      extendedActionId: '',
+      extendedActionName: '',
+      skillId: '',
+      skillName: ''
     });
     setErrors({});
     onClose();
@@ -167,9 +200,24 @@ export default function CreateOsmoCardModal({
       'orange': '#f97316',
       'gray': '#6b7280',
     };
-    
+
     return colorMap[colorValue] || '#6b7280';
   };
+
+  const lockSelect = (exceptId: string) => {
+    const set = new Set<string>()
+    set.add(formData.actionId)
+    set.add(formData.expressionId)
+    set.add(formData.danceId)
+    set.add(formData.extendedActionId)
+    set.add(formData.skillId)
+    //This select doesn't have a value. Lock it if there's already an id selected somewhere
+    if (exceptId.length == 0) {
+      return set.size >= 2
+    }
+    //We are at the select with value, don't lock it
+    return false
+  }
 
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
@@ -213,7 +261,7 @@ export default function CreateOsmoCardModal({
               <Palette className="h-5 w-5" />
               <span>Basic Information</span>
             </h3>
-            
+
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="cardName">Card Name *</Label>
@@ -228,7 +276,7 @@ export default function CreateOsmoCardModal({
                   <p className="text-sm text-red-500">{errors.name}</p>
                 )}
               </div>
-              
+
               <div className="space-y-2">
                 <Label htmlFor="cardColor">Color *</Label>
                 <Select value={formData.color} onValueChange={(value) => handleInputChange('color', value)}>
@@ -236,7 +284,7 @@ export default function CreateOsmoCardModal({
                     <SelectValue placeholder="Select color">
                       {formData.color && (
                         <div className="flex items-center space-x-2">
-                          <div 
+                          <div
                             className="w-4 h-4 rounded-full border"
                             style={{ backgroundColor: getColorPreview(formData.color) }}
                           />
@@ -249,7 +297,7 @@ export default function CreateOsmoCardModal({
                     {colorOptions.map((color) => (
                       <SelectItem key={color.value} value={color.value}>
                         <div className="flex items-center space-x-2">
-                          <div 
+                          <div
                             className="w-4 h-4 rounded-full border"
                             style={{ backgroundColor: getColorPreview(color.value) }}
                           />
@@ -282,8 +330,8 @@ export default function CreateOsmoCardModal({
           {/* Activity Information */}
           <div className="space-y-4">
             <h3 className="text-lg font-medium text-gray-900">Activity Configuration</h3>
-            <p className="text-sm text-gray-600">Configure the activities that this card will trigger (optional)</p>
-            
+            <p className="text-sm text-gray-600">Configure the activities that this card will trigger. Can only have one of the following</p>
+
             <div className="space-y-4">
               {/* Action */}
               <div className="p-4 border rounded-lg space-y-3">
@@ -291,7 +339,9 @@ export default function CreateOsmoCardModal({
                   <Zap className="h-4 w-4 text-red-500" />
                   <Label className="text-base font-medium">Action</Label>
                 </div>
-                <Select value={formData.actionId || 'none'} onValueChange={handleActionChange}>
+                <Select value={formData.actionId || 'none'} onValueChange={handleActionChange}
+                  disabled={lockSelect(formData.actionId)}
+                >
                   <SelectTrigger>
                     <SelectValue placeholder="Select an action (optional)" />
                   </SelectTrigger>
@@ -316,7 +366,9 @@ export default function CreateOsmoCardModal({
                   <Smile className="h-4 w-4 text-blue-500" />
                   <Label className="text-base font-medium">Expression</Label>
                 </div>
-                <Select value={formData.expressionId || 'none'} onValueChange={handleExpressionChange}>
+                <Select
+                  disabled={lockSelect(formData.expressionId)}
+                  value={formData.expressionId || 'none'} onValueChange={handleExpressionChange}>
                   <SelectTrigger>
                     <SelectValue placeholder="Select an expression (optional)" />
                   </SelectTrigger>
@@ -341,7 +393,9 @@ export default function CreateOsmoCardModal({
                   <Music className="h-4 w-4 text-orange-500" />
                   <Label className="text-base font-medium">Dance</Label>
                 </div>
-                <Select value={formData.danceId || 'none'} onValueChange={handleDanceChange}>
+                <Select
+                  disabled={lockSelect(formData.danceId)}
+                  value={formData.danceId || 'none'} onValueChange={handleDanceChange}>
                   <SelectTrigger>
                     <SelectValue placeholder="Select a dance (optional)" />
                   </SelectTrigger>
@@ -359,20 +413,75 @@ export default function CreateOsmoCardModal({
                   </SelectContent>
                 </Select>
               </div>
+
+              {/* Extended action */}
+              <div className="p-4 border rounded-lg space-y-3">
+                <div className="flex items-center space-x-2">
+                  <DatabaseZapIcon className="h-4 w-4 text-yellow-500" />
+                  <Label className="text-base font-medium">Extended action</Label>
+                </div>
+                <Select
+                  disabled={lockSelect(formData.extendedActionId)}
+                  value={formData.extendedActionId || 'none'} onValueChange={handleExtActionChange}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select an extended action (optional)" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="none">No extended action</SelectItem>
+                    {extendedActions.length === 0 && !extendedLoading ? (
+                      <SelectItem value="no-data" disabled>No extended actions available</SelectItem>
+                    ) : (
+                      extendedActions.map((v) => (
+                        <SelectItem key={v.id} value={v.id}>
+                          {v.name}
+                        </SelectItem>
+                      ))
+                    )}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {/* Skill */}
+              <div className="p-4 border rounded-lg space-y-3">
+                <div className="flex items-center space-x-2">
+                  <Brain className="h-4 w-4 text-green-500" />
+                  <Label className="text-base font-medium">Skill</Label>
+                </div>
+                <Select
+                  disabled={lockSelect(formData.skillId)}
+                  value={formData.skillId || 'none'} onValueChange={handleSkillChange}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select a dance (optional)" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="none">No Skill</SelectItem>
+                    {skills.length === 0 && !skillLoading ? (
+                      <SelectItem value="no-data" disabled>No skills available</SelectItem>
+                    ) : (
+                      skills.map((v) => (
+                        <SelectItem key={v.id} value={v.id}>
+                          {v.name}
+                        </SelectItem>
+                      ))
+                    )}
+                  </SelectContent>
+                </Select>
+              </div>
+
             </div>
           </div>
         </div>
 
         <DialogFooter>
-          <Button 
-            variant="outline" 
+          <Button
+            variant="outline"
             onClick={handleClose}
             disabled={isLoading || isDataLoading}
           >
             <X className="h-4 w-4 mr-2" />
             Cancel
           </Button>
-          <Button 
+          <Button
             onClick={handleCreate}
             disabled={isLoading || isDataLoading}
           >
