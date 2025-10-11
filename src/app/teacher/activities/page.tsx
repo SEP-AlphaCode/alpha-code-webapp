@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useCallback, useMemo } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
@@ -62,23 +62,28 @@ export default function ActivitiesPage() {
     selectedRobotSerial, 
     selectedRobot, 
     updateRobotStatus, 
-    initializeMockData 
+    initializeMockData,
+    robots
   } = useRobotStore()
 
-  // Initialize mock robot data
+  // Initialize mock robot data - only once and only if no robots exist
   useEffect(() => {
-    initializeMockData()
-  }, [initializeMockData])
+    if (robots.length === 0) {
+      initializeMockData()
+    }
+  }, [robots.length, initializeMockData])
 
   const activities = activitiesData?.data || []
-  const pagination = activitiesData ? {
-    total_count: activitiesData.total_count,
-    page: activitiesData.page,
-    per_page: activitiesData.per_page,
-    total_pages: activitiesData.total_pages,
-    has_next: activitiesData.has_next,
-    has_previous: activitiesData.has_previous
-  } : null
+  const pagination = useMemo(() => 
+    activitiesData ? {
+      total_count: activitiesData.total_count,
+      page: activitiesData.page,
+      per_page: activitiesData.per_page,
+      total_pages: activitiesData.total_pages,
+      has_next: activitiesData.has_next,
+      has_previous: activitiesData.has_previous
+    } : null, [activitiesData]
+  )
 
   const getTypeIcon = (type: string) => {
     switch (type) {
@@ -140,14 +145,16 @@ export default function ActivitiesPage() {
     }
   }
 
-  const filteredActivities = activities.filter(activity => {
-    const matchesSearch = activity.name.toLowerCase().includes(searchTerm.toLowerCase())
-    
-    const matchesType = filterType === "all" || activity.type === filterType
-    const matchesStatus = filterStatus === "all" || activity.status.toString() === filterStatus
-    
-    return matchesSearch && matchesType && matchesStatus
-  })
+  const filteredActivities = useMemo(() => 
+    activities.filter(activity => {
+      const matchesSearch = activity.name.toLowerCase().includes(searchTerm.toLowerCase())
+      
+      const matchesType = filterType === "all" || activity.type === filterType
+      const matchesStatus = filterStatus === "all" || activity.status.toString() === filterStatus
+      
+      return matchesSearch && matchesType && matchesStatus
+    }), [activities, searchTerm, filterType, filterStatus]
+  )
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString("vi-VN", {
@@ -159,7 +166,7 @@ export default function ActivitiesPage() {
     })
   }
 
-  const handleStartActivity = (activity: ActivityType) => {
+  const handleStartActivity = useCallback((activity: ActivityType) => {
     // Sử dụng selected robot serial từ Redux
     const robotSerial = selectedRobotSerial || "EAA007UBT10000341";
     
@@ -193,7 +200,7 @@ export default function ActivitiesPage() {
         updateRobotStatus(robotSerial, 'online');
       }
     }, 3000);
-  }
+  }, [selectedRobotSerial, selectedRobot, updateRobotStatus, startActivity])
 
   const CreateActivityForm = () => {
     const [formData, setFormData] = useState({

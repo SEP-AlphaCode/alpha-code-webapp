@@ -12,9 +12,11 @@ import { toast } from 'sonner';
 
 export const useActivities = (page: number = 1, size: number = 10, search?: string) => {
   return useQuery({
-    queryKey: ['activities', page, size, search],
+    queryKey: ['activities', page, size, search || ''],
     queryFn: ({ signal }) => getPagedActivities(page, size, search, signal),
     staleTime: 1000 * 60 * 5, // 5 minutes
+    refetchOnWindowFocus: false, // Prevent refetch on window focus
+    refetchOnMount: false, // Only refetch if data is stale
     retry: (failureCount, error: unknown) => {
       // Don't retry on canceled errors
       if (error && typeof error === 'object') {

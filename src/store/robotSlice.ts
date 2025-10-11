@@ -37,7 +37,14 @@ export const fetchRobotsByAccount = createAsyncThunk(
 // Async thunk để auto-fetch robots dựa trên token
 export const fetchRobotsFromToken = createAsyncThunk(
   'robots/fetchFromToken',
-  async () => {
+  async (_, { getState }) => {
+    const state = getState() as { robot: RobotState };
+    
+    // Prevent multiple simultaneous requests
+    if (state.robot.isLoading) {
+      throw new Error('Request already in progress');
+    }
+    
     if (typeof window !== 'undefined') {
       const accessToken = sessionStorage.getItem('accessToken');
       if (accessToken) {

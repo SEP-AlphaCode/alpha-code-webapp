@@ -1,3 +1,4 @@
+import { useCallback } from 'react'
 import { useAppDispatch, useAppSelector } from './use-redux-hooks'
 import { 
   addRobot, 
@@ -20,6 +21,14 @@ export const useRobotStore = () => {
   
   const selectedRobot = robots.find(robot => robot.serial === selectedRobotSerial)
 
+  // Memoize the initializeMockData function to prevent unnecessary re-renders
+  const initializeMockData = useCallback(() => {
+    // Only fetch if we don't already have robots and we're not currently loading
+    if (robots.length === 0 && !isLoading) {
+      dispatch(fetchRobotsFromToken())
+    }
+  }, [dispatch, robots.length, isLoading])
+
   return {
     // State
     robots,
@@ -31,24 +40,24 @@ export const useRobotStore = () => {
     accountId,
     
     // Actions
-    addRobot: (robot: Robot) => dispatch(addRobot(robot)),
-    removeRobot: (serial: string) => dispatch(removeRobot(serial)),
-    updateRobotStatus: (serial: string, status: Robot['status']) => 
-      dispatch(updateRobotStatus({ serial, status })),
-    selectRobot: (serial: string) => dispatch(selectRobot(serial)),
-    setConnectionStatus: (connected: boolean) => dispatch(setConnectionStatus(connected)),
-    updateRobotInfo: (info: Partial<Robot> & { serial: string }) => 
-      dispatch(updateRobotInfo(info)),
-    updateRobotBattery: (serial: string, battery: number) =>
-      dispatch(updateRobotBattery({ serial, battery })),
-    clearAllRobots: () => dispatch(clearAllRobots()),
-    resetError: () => dispatch(resetError()),
+    addRobot: useCallback((robot: Robot) => dispatch(addRobot(robot)), [dispatch]),
+    removeRobot: useCallback((serial: string) => dispatch(removeRobot(serial)), [dispatch]),
+    updateRobotStatus: useCallback((serial: string, status: Robot['status']) => 
+      dispatch(updateRobotStatus({ serial, status })), [dispatch]),
+    selectRobot: useCallback((serial: string) => dispatch(selectRobot(serial)), [dispatch]),
+    setConnectionStatus: useCallback((connected: boolean) => dispatch(setConnectionStatus(connected)), [dispatch]),
+    updateRobotInfo: useCallback((info: Partial<Robot> & { serial: string }) => 
+      dispatch(updateRobotInfo(info)), [dispatch]),
+    updateRobotBattery: useCallback((serial: string, battery: number) =>
+      dispatch(updateRobotBattery({ serial, battery })), [dispatch]),
+    clearAllRobots: useCallback(() => dispatch(clearAllRobots()), [dispatch]),
+    resetError: useCallback(() => dispatch(resetError()), [dispatch]),
     
     // Async Actions
-    fetchRobotsByAccount: (accountId: string) => dispatch(fetchRobotsByAccount(accountId)),
-    fetchRobotsFromToken: () => dispatch(fetchRobotsFromToken()),
+    fetchRobotsByAccount: useCallback((accountId: string) => dispatch(fetchRobotsByAccount(accountId)), [dispatch]),
+    fetchRobotsFromToken: useCallback(() => dispatch(fetchRobotsFromToken()), [dispatch]),
     
-    // Legacy compatibility
-    initializeMockData: () => dispatch(fetchRobotsFromToken())
+    // Legacy compatibility - now properly memoized
+    initializeMockData
   }
 }
