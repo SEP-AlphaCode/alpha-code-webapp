@@ -104,11 +104,16 @@ function extendRobotWithMockData(robot: ReturnType<typeof useRobotStore>['robots
 export default function TeacherDashboard() {
   const { robots, selectedRobotSerial, selectRobot, initializeMockData } = useRobotStore();
   const [shuffledPrompts, setShuffledPrompts] = useState<string[]>([]);
+  const [hasInitialized, setHasInitialized] = useState(false);
 
   useEffect(() => {
-    // Initialize mock data if no robots exist
-    initializeMockData();
-  }, [initializeMockData]);
+    // Initialize mock data if no robots exist and not initialized yet
+    if (!hasInitialized && robots.length === 0) {
+      console.log("🚀 Initializing robot data from token...");
+      initializeMockData();
+      setHasInitialized(true);
+    }
+  }, [robots, hasInitialized, initializeMockData]);
 
   useEffect(() => {
     setShuffledPrompts(shuffleArray(thingsToTryPrompts));
