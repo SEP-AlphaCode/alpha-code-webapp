@@ -104,6 +104,7 @@ function extendRobotWithMockData(robot: ReturnType<typeof useRobotStore>['robots
 export default function TeacherDashboard() {
   const { robots, selectedRobotSerial, selectRobot, initializeMockData } = useRobotStore();
   const [shuffledPrompts, setShuffledPrompts] = useState<string[]>([]);
+  const [hasInitialized, setHasInitialized] = useState(false);
 
   useEffect(() => {
     // Initialize mock data if no robots exist

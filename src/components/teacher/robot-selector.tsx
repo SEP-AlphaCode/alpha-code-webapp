@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, memo } from "react";
 import Image from "next/image";
 import {
   DropdownMenu,
@@ -193,14 +193,6 @@ export function RobotSelector({ className = "" }: RobotSelectorProps) {
                   </span>
                 );
               })()}
-              {/* SIM card icon, always gray bg */}
-              <span className="flex items-center gap-1 text-xs font-medium rounded text-gray-600 bg-gray-100">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-4 h-4">
-                  <rect x="4" y="4" width="16" height="16" rx="3" />
-                  <rect x="8" y="12" width="8" height="4" rx="1" />
-                </svg>
-                No SIM card
-              </span>
             </div>
           </div>
         </button>
@@ -253,3 +245,6 @@ export function RobotSelector({ className = "" }: RobotSelectorProps) {
     </DropdownMenu>
   );
 }
+
+// Memoize component để tránh re-render không cần thiết
+export default memo(RobotSelector);
