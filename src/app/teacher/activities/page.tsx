@@ -65,23 +65,6 @@ export default function ActivitiesPage() {
   const { data: activitiesData, isLoading, error } = useActivities(currentPage, perPage, debouncedSearchTerm)
   const createActivityMutation = useCreateActivity()
 
-  // Debug logging to track re-renders
-  console.log('ActivitiesPage render #' + renderCount.current + ':', {
-    currentPage,
-    perPage,
-    searchTerm,
-    debouncedSearchTerm,
-    isLoading,
-    hasData: !!activitiesData,
-    error: error ? 'has error' : 'no error'
-  })
-
-  // Safety check for infinite re-renders
-  if (renderCount.current > 100) {
-    console.error('Too many re-renders detected! Possible infinite loop.');
-    return <div>Error: Too many re-renders. Please check console for details.</div>;
-  }
-
   // Robot Controls Hook
   const { startActivity, isLoading: isRobotLoading } = useRobotControls()
   
@@ -99,7 +82,7 @@ export default function ActivitiesPage() {
     if (robots.length === 0) {
       initializeMockData()
     }
-  }, []) // Remove dependencies to prevent infinite loop
+  }, [robots.length, initializeMockData])
 
   const activities = useMemo(() => activitiesData?.data || [], [activitiesData?.data])
   const pagination = useMemo(() => 
@@ -122,6 +105,59 @@ export default function ActivitiesPage() {
       return matchesType && matchesStatus
     }), [activities, filterType, filterStatus]
   )
+
+  const handleStartActivity = useCallback((activity: ActivityType) => {
+    // Sử dụng selected robot serial từ Redux
+    const robotSerial = selectedRobotSerial || "EAA007UBT10000341";
+    
+    console.log('Selected Robot:', selectedRobot);
+    console.log('Using Robot Serial:', robotSerial);
+    console.log('Activity data before processing:', activity);
+    
+    // Update robot status to busy when starting activity
+    if (robotSerial && selectedRobot) {
+      updateRobotStatus(robotSerial, 'busy');
+    }
+    
+    // Parse data từ activity (nếu là JSON string)
+    let activityData;
+    try {
+      activityData = typeof activity.data === 'string' ? JSON.parse(activity.data) : activity.data;
+    } catch (error) {
+      console.error('Error parsing activity data:', error);
+      activityData = activity.data;
+    }
+    
+    console.log('Processed activity data:', activityData);
+    console.log('Activity type:', activity.type);
+    
+    // Gửi command với selected robot
+    startActivity(robotSerial, activity.type, activityData);
+    
+    // Set robot back to online after a delay (mock behavior)
+    setTimeout(() => {
+      if (robotSerial) {
+        updateRobotStatus(robotSerial, 'online');
+      }
+    }, 3000);
+  }, [selectedRobotSerial, selectedRobot, updateRobotStatus, startActivity])
+
+  // Debug logging to track re-renders
+  console.log('ActivitiesPage render #' + renderCount.current + ':', {
+    currentPage,
+    perPage,
+    searchTerm,
+    debouncedSearchTerm,
+    isLoading,
+    hasData: !!activitiesData,
+    error: error ? 'has error' : 'no error'
+  })
+
+  // Safety check for infinite re-renders - moved after all hooks
+  if (renderCount.current > 100) {
+    console.error('Too many re-renders detected! Possible infinite loop.');
+    return <div>Error: Too many re-renders. Please check console for details.</div>;
+  }
 
   const getTypeIcon = (type: string) => {
     switch (type) {
@@ -192,42 +228,6 @@ export default function ActivitiesPage() {
       minute: "2-digit"
     })
   }
-
-  const handleStartActivity = useCallback((activity: ActivityType) => {
-    // Sử dụng selected robot serial từ Redux
-    const robotSerial = selectedRobotSerial || "EAA007UBT10000341";
-    
-    console.log('Selected Robot:', selectedRobot);
-    console.log('Using Robot Serial:', robotSerial);
-    console.log('Activity data before processing:', activity);
-    
-    // Update robot status to busy when starting activity
-    if (robotSerial && selectedRobot) {
-      updateRobotStatus(robotSerial, 'busy');
-    }
-    
-    // Parse data từ activity (nếu là JSON string)
-    let activityData;
-    try {
-      activityData = typeof activity.data === 'string' ? JSON.parse(activity.data) : activity.data;
-    } catch (error) {
-      console.error('Error parsing activity data:', error);
-      activityData = activity.data;
-    }
-    
-    console.log('Processed activity data:', activityData);
-    console.log('Activity type:', activity.type);
-    
-    // Gửi command với selected robot
-    startActivity(robotSerial, activity.type, activityData);
-    
-    // Set robot back to online after a delay (mock behavior)
-    setTimeout(() => {
-      if (robotSerial) {
-        updateRobotStatus(robotSerial, 'online');
-      }
-    }, 3000);
-  }, [selectedRobotSerial, selectedRobot, updateRobotStatus, startActivity])
 
   const CreateActivityForm = () => {
     const [formData, setFormData] = useState({
