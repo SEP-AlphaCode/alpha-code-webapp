@@ -73,7 +73,7 @@ export default function ActivitiesPage() {
     }
   }, [robots.length, initializeMockData])
 
-  const activities = activitiesData?.data || []
+  const activities = useMemo(() => activitiesData?.data || [], [activitiesData?.data])
   const pagination = useMemo(() => 
     activitiesData ? {
       total_count: activitiesData.total_count,
