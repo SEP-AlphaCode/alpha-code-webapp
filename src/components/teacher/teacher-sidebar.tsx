@@ -40,7 +40,7 @@ export function TeacherSidebar({
       }`}
     >
       {/* Scrollable navigation area */}
-      <nav className="flex-1 overflow-y-auto px-4 mt-10 pb-20 scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100 hover:scrollbar-thumb-gray-400">
+      <nav className="flex-1 overflow-y-auto px-4 mt-10 pb-20 scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100 hover:scrollbar-thumb-gray-400 p-4">
         <div className="space-y-1">
           {navigationItems.map((item) => {
             const isActive = isActiveRoute(item.href);
