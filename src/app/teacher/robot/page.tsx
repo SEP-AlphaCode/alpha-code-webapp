@@ -133,7 +133,7 @@ export default function TeacherDashboard() {
         subtitle="Quản lý và tương tác với các robot AlphaMini của bạn"
       />
 
-      {/* <RobotGrid
+      <RobotGrid
         robots={extendedRobots}
         selectedRobot={selectedRobotSerial}
         onRobotSelect={(robotSerial) => {
@@ -149,7 +149,7 @@ export default function TeacherDashboard() {
           offline: "Ngoại tuyến",
           charging: "Đang sạc",
         }}
-      /> */}
+      />
 
       {selectedRobotDetails && (
         <RobotDetails
