@@ -32,7 +32,7 @@ export const useSkill = () => {
   // 🔹 Lấy skill theo trang (có hỗ trợ filter robot model)
   const useGetPagedSkills = (page: number, size: number, search?: string, robotModelId?: string) => {
     return useQuery<SkillResponse>({
-      queryKey: ["skills", "paged", page, size, search, robotModelId],
+      queryKey: ["skills", "paged", page, size, search || '', robotModelId || ''],
       queryFn: () =>
         getAllSkills({
           page,
@@ -40,7 +40,9 @@ export const useSkill = () => {
           search,
           robotModelId, // ✅ thêm param này
         }),
-      staleTime: 0,
+      staleTime: 1000 * 60 * 5, // 5 minutes
+      refetchOnWindowFocus: false,
+      refetchOnMount: false,
       enabled: true,
     })
   }

@@ -7,7 +7,7 @@ import type { RobotActionResponse } from "@/types/robot"
 
 export function useDances(page: number, size: number, search = "") {
   return useQuery<RobotActionResponse, Error>({
-    queryKey: ["robotDances", page, size, search],
+    queryKey: ["robotDances", page, size, search || ""],
     queryFn: async ({ queryKey }) => {
       const [, currentPage, currentSize, currentSearch] = queryKey
 
@@ -20,6 +20,9 @@ export function useDances(page: number, size: number, search = "") {
       )
       return res.data
     },
+    staleTime: 1000 * 60 * 5, // 5 minutes
+    refetchOnWindowFocus: false,
+    refetchOnMount: false,
     retry: 2,
     retryDelay: 1000,
     placeholderData: (prev) => prev,

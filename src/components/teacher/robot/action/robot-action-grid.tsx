@@ -100,7 +100,7 @@ export function RobotActionGrid({
     data: extendedData,
     isLoading: extendedLoading,
     error: extendedError,
-  } = useGetPagedExtendedActions(extendedActionsPage, pageSize, "")
+  } = useGetPagedExtendedActions(extendedActionsPage, pageSize, "", undefined) // Pass undefined for robotModelId to avoid spam
   const extendedActionsTab: TabData<RobotActionUI> = {
     actions: (extendedData?.data ?? []).map(mapExtendedActionToUI),
     totalPages: extendedData?.total_pages ?? 1,
