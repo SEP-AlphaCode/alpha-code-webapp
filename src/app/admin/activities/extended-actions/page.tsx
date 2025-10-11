@@ -75,7 +75,7 @@ function ExtendedActionPage() {
         currentPage as number,
         currentSize as number,
         search as string,
-        modelId as string,
+       modelId === "all" ? "" : (modelId as string),
         controller.signal
       )
     },
@@ -167,7 +167,7 @@ function ExtendedActionPage() {
               <SelectValue placeholder="Lọc theo Robot Model" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="">Tất cả Robot Models</SelectItem>
+              <SelectItem value="all">Tất cả Robot Models</SelectItem>
               {robotModels.map((model) => (
                 <SelectItem key={model.id} value={model.id}>
                   {model.name}
