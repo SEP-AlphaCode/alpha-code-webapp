@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, memo } from "react";
 import Image from "next/image";
 import {
   DropdownMenu,
@@ -253,3 +253,6 @@ export function RobotSelector({ className = "" }: RobotSelectorProps) {
     </DropdownMenu>
   );
 }
+
+// Memoize component để tránh re-render không cần thiết
+export default memo(RobotSelector);
