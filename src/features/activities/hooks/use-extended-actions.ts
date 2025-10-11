@@ -24,10 +24,10 @@ export const useExtendedActions = () => {
         });
     };
 
-    const useGetPagedExtendedActions = (page: number, size: number, search?: string) => {
+    const useGetPagedExtendedActions = (page: number, size: number, search?: string, robotModelId?: string) => {
         return useQuery<ExtendedActionResponse>({
-            queryKey: ['extended-actions', 'paged', page, size, search],
-            queryFn: ({ signal }) => getPagedExtendedActions(page, size, search, signal),
+            queryKey: ['extended-actions', 'paged', page, size, search, robotModelId],
+            queryFn: ({ signal }) => getPagedExtendedActions(page, size, search, robotModelId, signal),
             staleTime: 0,
             enabled: true,
         });

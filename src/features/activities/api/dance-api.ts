@@ -11,7 +11,7 @@ export const getPagedDances = async (
 ) => {
   try {
     // Chỉ thêm param khi có giá trị (tránh gửi undefined lên server)
-    const params: Record<string, any> = { page, size };
+    const params: Record<string, string | number> = { page, size };
 
     if (search && search.trim() !== "") params.search = search.trim();
     if (robotModelId && robotModelId.trim() !== "") params.robotModelId = robotModelId.trim();

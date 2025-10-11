@@ -9,6 +9,7 @@ import { DeleteSkillModal } from "@/app/admin/activities/skills/delete-skill-mod
 import { ViewSkillModal } from "@/app/admin/activities/skills/view-skill-modal"
 import { Skill } from "@/types/skill"
 import { useSkill } from "@/features/activities/hooks/use-skill"
+import { RobotModel } from "@/types/robot-model"
 import { useRobotModel } from "@/features/robots/hooks/use-robot-model"
 import { toast } from "sonner"
 import LoadingGif from "@/components/ui/loading-gif"
@@ -154,7 +155,7 @@ export default function SkillsPage() {
               }}
             >
               <option value="">Tất cả Robot Models</option>
-              {robotModels.map((model: any) => (
+              {robotModels.map((model: RobotModel) => (
                 <option key={model.id} value={model.id}>
                   {model.name}
                 </option>
