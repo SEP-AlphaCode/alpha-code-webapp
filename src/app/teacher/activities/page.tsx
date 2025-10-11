@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect, useCallback, useMemo } from "react"
+import { useState, useEffect, useCallback, useMemo, useRef } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
@@ -26,6 +26,8 @@ import {
   Activity,
   Loader2
 } from "lucide-react"
+import { Pagination } from "@/components/ui/pagination"
+import { PerPageSelector } from "@/components/ui/per-page-selector"
 import { useActivities, useCreateActivity } from "@/features/activities/hooks/use-activities"
 import { useRobotControls } from "@/features/users/hooks/use-websocket"
 import { useRobotStore } from "@/hooks/use-robot-store"
@@ -33,12 +35,16 @@ import { Activity as ActivityType, ActivityData } from "@/types/activities"
 import { ActionActivites } from "@/types/action"
 
 export default function ActivitiesPage() {
+  const renderCount = useRef(0);
+  renderCount.current += 1;
+  
   const [searchTerm, setSearchTerm] = useState("")
   const [debouncedSearchTerm, setDebouncedSearchTerm] = useState("")
   const [filterType, setFilterType] = useState<string>("all")
   const [filterStatus, setFilterStatus] = useState<string>("1") // Mặc định lọc activities đã xuất bản
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false)
   const [currentPage, setCurrentPage] = useState(1)
+  const [perPage, setPerPage] = useState(12)
 
   // Debounce search term
   useEffect(() => {
@@ -50,9 +56,31 @@ export default function ActivitiesPage() {
     return () => clearTimeout(timer)
   }, [searchTerm])
 
+  // Reset page when filters change
+  useEffect(() => {
+    setCurrentPage(1)
+  }, [filterType, filterStatus, perPage])
+
   // API Hooks - use debounced search term
-  const { data: activitiesData, isLoading, error } = useActivities(currentPage, 12, debouncedSearchTerm)
+  const { data: activitiesData, isLoading, error } = useActivities(currentPage, perPage, debouncedSearchTerm)
   const createActivityMutation = useCreateActivity()
+
+  // Debug logging to track re-renders
+  console.log('ActivitiesPage render #' + renderCount.current + ':', {
+    currentPage,
+    perPage,
+    searchTerm,
+    debouncedSearchTerm,
+    isLoading,
+    hasData: !!activitiesData,
+    error: error ? 'has error' : 'no error'
+  })
+
+  // Safety check for infinite re-renders
+  if (renderCount.current > 100) {
+    console.error('Too many re-renders detected! Possible infinite loop.');
+    return <div>Error: Too many re-renders. Please check console for details.</div>;
+  }
 
   // Robot Controls Hook
   const { startActivity, isLoading: isRobotLoading } = useRobotControls()
@@ -71,7 +99,7 @@ export default function ActivitiesPage() {
     if (robots.length === 0) {
       initializeMockData()
     }
-  }, [robots.length, initializeMockData])
+  }, []) // Remove dependencies to prevent infinite loop
 
   const activities = useMemo(() => activitiesData?.data || [], [activitiesData?.data])
   const pagination = useMemo(() => 
@@ -83,6 +111,16 @@ export default function ActivitiesPage() {
       has_next: activitiesData.has_next,
       has_previous: activitiesData.has_previous
     } : null, [activitiesData]
+  )
+
+  // Filter activities on frontend (since backend doesn't support type/status filters yet)
+  const filteredActivities = useMemo(() => 
+    activities.filter(activity => {
+      const matchesType = filterType === "all" || activity.type === filterType
+      const matchesStatus = filterStatus === "all" || activity.status.toString() === filterStatus
+      
+      return matchesType && matchesStatus
+    }), [activities, filterType, filterStatus]
   )
 
   const getTypeIcon = (type: string) => {
@@ -144,17 +182,6 @@ export default function ActivitiesPage() {
         return "Không xác định"
     }
   }
-
-  const filteredActivities = useMemo(() => 
-    activities.filter(activity => {
-      const matchesSearch = activity.name.toLowerCase().includes(searchTerm.toLowerCase())
-      
-      const matchesType = filterType === "all" || activity.type === filterType
-      const matchesStatus = filterStatus === "all" || activity.status.toString() === filterStatus
-      
-      return matchesSearch && matchesType && matchesStatus
-    }), [activities, searchTerm, filterType, filterStatus]
-  )
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString("vi-VN", {
@@ -415,6 +442,12 @@ export default function ActivitiesPage() {
           </div>
           
           <div className="flex gap-2">
+            <PerPageSelector
+              perPage={perPage}
+              onPerPageChange={setPerPage}
+              options={[6, 12, 24, 48]}
+            />
+            
             <Select value={filterType} onValueChange={setFilterType}>
               <SelectTrigger className="w-40">
                 <Filter className="w-4 h-4 mr-2" />
@@ -630,6 +663,28 @@ export default function ActivitiesPage() {
                 </CardContent>
               </Card>
             ))}
+          </div>
+        )}
+
+        {/* Pagination */}
+        {pagination && !isLoading && activities.length > 0 && (
+          <div className="mt-8">
+            <Pagination
+              currentPage={pagination.page}
+              totalPages={pagination.total_pages}
+              onPageChange={setCurrentPage}
+              hasNext={pagination.has_next}
+              hasPrevious={pagination.has_previous}
+              totalCount={pagination.total_count}
+              perPage={pagination.per_page}
+              className="border-t pt-8"
+            />
+            {/* Note: Backend search only. Type/status filters are applied on frontend */}
+            {(filterType !== "all" || filterStatus !== "all") && (
+              <p className="text-sm text-gray-500 text-center mt-4">
+                Hiển thị {filteredActivities.length} / {activities.length} kết quả (đã lọc)
+              </p>
+            )}
           </div>
         )}
 
