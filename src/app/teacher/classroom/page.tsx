@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { useRobotCommand } from '@/hooks/use-robot-command';
 
 interface Classroom {
     id: string;
@@ -33,6 +34,12 @@ interface Robot {
 
 export default function ClassroomPage() {
     const [selectedClassroom, setSelectedClassroom] = useState<string>('classroom-a');
+    const [text, setText] = useState('')
+    const setNotify = (msg: string, type: "success" | "error") => {
+        console.log(`${type === "success" ? "✅" : "❌"} ${msg}`);
+        // You can replace this with actual toast notification system later
+    };
+    const { sendCommandToBackend } = useRobotCommand(setNotify)
 
     const classrooms: Classroom[] = [
         {
@@ -129,6 +136,12 @@ export default function ClassroomPage() {
     const selectedClassroomData = classrooms.find(c => c.id === selectedClassroom);
     const classroomRobots = robots.filter(r => r.classroom === selectedClassroomData?.name);
 
+    const s = async (text: string) => {
+        console.log('Shit');
+        
+        await sendCommandToBackend(text, 'EAA007UBT10000341', 'process-text')
+    }
+
     return (
         <div className="space-y-6 p-10" suppressHydrationWarning>
             <div className="flex items-center justify-between">
@@ -142,15 +155,32 @@ export default function ClassroomPage() {
                     </Button>
                 </div>
             </div>
+            <div className="flex space-x-2">
+                <input
+                    type='text'
+                    placeholder='Input text to send'
+                    value={text}
+                    onChange={(e) => setText(e.target.value)}
+                    className='flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all'
+                />
+                <button
+                    className='px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors'
+                    onClick={(e) => {
+                        // Your send logic here
+                        s(text)
+                    }}
+                >
+                    Send
+                </button>
+            </div>
 
             {/* Classroom Overview Grid */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6" suppressHydrationWarning>
                 {classrooms.map((classroom) => (
-                    <Card 
+                    <Card
                         key={classroom.id}
-                        className={`cursor-pointer transition-all ${
-                            selectedClassroom === classroom.id ? 'ring-2 ring-primary' : ''
-                        }`}
+                        className={`cursor-pointer transition-all ${selectedClassroom === classroom.id ? 'ring-2 ring-primary' : ''
+                            }`}
                         onClick={() => setSelectedClassroom(classroom.id)}
                         suppressHydrationWarning
                     >
@@ -309,10 +339,9 @@ export default function ClassroomPage() {
                                                     </div>
                                                     <div className="w-full bg-muted rounded-full h-1.5" suppressHydrationWarning>
                                                         <div
-                                                            className={`h-1.5 rounded-full ${
-                                                                robot.battery > 60 ? 'bg-green-600' :
+                                                            className={`h-1.5 rounded-full ${robot.battery > 60 ? 'bg-green-600' :
                                                                 robot.battery > 30 ? 'bg-yellow-600' : 'bg-red-600'
-                                                            }`}
+                                                                }`}
                                                             style={{ width: `${robot.battery}%` }}
                                                             suppressHydrationWarning
                                                         ></div>
