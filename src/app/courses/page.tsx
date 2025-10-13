@@ -10,6 +10,7 @@ import { ChevronDown } from 'lucide-react';
 import { CourseFilter } from '@/components/course/category-list';
 import { CourseGrid } from '@/components/course/course-grid';
 import { Pagination } from '@/components/course/pagination';
+import { getUserIdFromToken } from '@/utils/tokenUtils';
 
 // CoursePage.tsx
 export default function CoursePage() {
@@ -17,14 +18,23 @@ export default function CoursePage() {
   const categoriesPerPage = 5;
   const dispatch = useDispatch<AppDispatch>();
   const { pagination, filters } = useSelector((s: RootState) => s.course);
-  const { useGetCourses } = useCourse();
-
+  const { useGetCourses, useGetAccountCourses } = useCourse();
+  const accessToken = sessionStorage.getItem('accessToken')
+  if(!accessToken){
+    return (
+      <div>
+        !!!
+      </div>
+    )
+  }
+  const accId = getUserIdFromToken(accessToken) ?? ''
   // courses
-  const { data: coursesData, isLoading: loadingCourses } = useGetCourses(
-    pagination.page,
-    pagination.size,
-    filters.search,
-  );
+  // const { data: coursesData, isLoading: loadingCourses } = useGetCourses(
+  //   pagination.page,
+  //   pagination.size,
+  //   filters.search,
+  // );
+  const {data: coursesData, isLoading: loadingCourses} = useGetAccountCourses(accId, pagination.page, pagination.size)
   const courses = coursesData?.data ?? [];
   const total = coursesData?.total_count ?? 0;
   const totalPages = Math.ceil(total / pagination.size);

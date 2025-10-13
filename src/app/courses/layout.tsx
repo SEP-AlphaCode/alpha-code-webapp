@@ -91,29 +91,29 @@ export default function CourseLayout({
   children: React.ReactNode
 }) {
   return (
-    // <AuthGuard>
-    <SidebarProvider
-      style={
-        {
-          "--sidebar-width": "8rem",
-          "--sidebar-width-mobile": "8rem",
-        } as React.CSSProperties
-      }
-    >
-      <CourseSidebar />
-      <SidebarInset className="min-h-screen overflow-hidden bg-white">
-        <header className="flex h-16 shrink-0 items-center gap-2 border-b border-slate-200 bg-white">
-          <div className="flex items-center gap-2 px-4 w-full">
-            <SidebarTrigger className="-ml-1" />
-            <Separator orientation="vertical" className="mr-2 data-[orientation=vertical]:h-4" />
-            <CourseBreadcrumb />
+    <AuthGuard>
+      <SidebarProvider
+        style={
+          {
+            "--sidebar-width": "8rem",
+            "--sidebar-width-mobile": "8rem",
+          } as React.CSSProperties
+        }
+      >
+        <CourseSidebar />
+        <SidebarInset className="min-h-screen overflow-hidden bg-white">
+          <header className="flex h-16 shrink-0 items-center gap-2 border-b border-slate-200 bg-white">
+            <div className="flex items-center gap-2 px-4 w-full">
+              <SidebarTrigger className="-ml-1" />
+              <Separator orientation="vertical" className="mr-2 data-[orientation=vertical]:h-4" />
+              <CourseBreadcrumb />
+            </div>
+          </header>
+          <div className="flex-1 flex flex-col">
+            <div className="w-full max-w-full overflow-hidden p-4 md:p-6 lg:p-10">{children}</div>
           </div>
-        </header>
-        <div className="flex-1 flex flex-col">
-          <div className="w-full max-w-full overflow-hidden p-4 md:p-6 lg:p-10">{children}</div>
-        </div>
-      </SidebarInset>
-    </SidebarProvider>
-    // </AuthGuard>
+        </SidebarInset>
+      </SidebarProvider>
+    </AuthGuard>
   )
 }

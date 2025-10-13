@@ -71,7 +71,8 @@ export const getCategoryBySlug = async (slug: string, signal?: AbortSignal) => {
 
 export const getAccountCourses = async (accountId: string, page: number, size: number, signal?: AbortSignal): Promise<PagedResult<AccountCourse>> => {
     try {
-        return getMockAccountCourses(accountId, page, size, signal);
+        const response = await coursesHttp.get<PagedResult<AccountCourse>>('/account-courses/by-account/' + accountId)
+        return response.data
     }
     catch (error) {
         console.error("API Error in getAccountCourses:", error);
