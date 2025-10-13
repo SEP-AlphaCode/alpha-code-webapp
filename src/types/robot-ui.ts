@@ -1,6 +1,8 @@
 import { RobotAction } from "./robot";
 import { RobotDance } from "./robot";
 import { RobotExpression } from "./robot";
+import { Skill } from "@/types/skill"
+import { ExtendedAction } from "@/types/extended-action"
 
 export type RobotCategory = "action" | "dance" | "expression";
 
@@ -73,3 +75,33 @@ export const mapExpressionToUI = (expression: RobotExpression): RobotActionUI =>
   lastUpdate: expression.lastUpdate,
   category: "expression",
 });
+
+
+export const mapSkillToUI = (skill: Skill): RobotActionUI => ({
+  id: skill.id,
+  name: skill.name,
+  code: skill.code,
+  // description: skill. ?? null,
+  duration: undefined,
+  icon: skill.icon ?? "⚙️",
+  status: skill.status,
+  statusText: skill.statusText ?? "",
+  createdDate: skill.createdDate,
+  lastUpdate: skill.lastUpdated ?? undefined,
+  category: "action",
+})
+
+
+export const mapExtendedActionToUI = (ext: ExtendedAction): RobotActionUI => ({
+  id: ext.id,
+  name: ext.name,
+  code: ext.code,
+  // description: ext. ?? null,
+  duration: undefined,
+  icon: ext.icon ?? "✨",
+  status: ext.status,
+  statusText: ext.statusText ?? "",
+  createdDate: ext.createdDate,
+  lastUpdate: ext.lastUpdate ?? undefined,
+  category: "action",
+})

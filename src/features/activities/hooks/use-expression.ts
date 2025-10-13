@@ -7,8 +7,11 @@ export const useExpression = () => {
 
     const useGetPagedExpressions = (page: number, limit: number, search?: string) => {
         return useQuery({
-            queryKey: ['expressions', page, limit, search],
-            queryFn: () => getPagedExpressions(page, limit, search)
+            queryKey: ['expressions', page, limit, search || ''],
+            queryFn: () => getPagedExpressions(page, limit, search),
+            staleTime: 1000 * 60 * 5, // 5 minutes
+            refetchOnWindowFocus: false,
+            refetchOnMount: false,
         });
     }
 

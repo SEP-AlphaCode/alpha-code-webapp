@@ -9,6 +9,8 @@ import { DeleteSkillModal } from "@/app/admin/activities/skills/delete-skill-mod
 import { ViewSkillModal } from "@/app/admin/activities/skills/view-skill-modal"
 import { Skill } from "@/types/skill"
 import { useSkill } from "@/features/activities/hooks/use-skill"
+import { RobotModel } from "@/types/robot-model"
+import { useRobotModel } from "@/features/robots/hooks/use-robot-model"
 import { toast } from "sonner"
 import LoadingGif from "@/components/ui/loading-gif"
 
@@ -24,11 +26,25 @@ export default function SkillsPage() {
   const [isViewModalOpen, setIsViewModalOpen] = useState(false)
   const [viewSkill, setViewSkill] = useState<Skill | null>(null)
 
-  const { useDeleteSkill, useGetPagedSkills } = useSkill()
-  const deleteSkillMutation = useDeleteSkill()
-  const { data, isLoading, error, refetch } = useGetPagedSkills(page, size, debouncedSearchTerm)
+  // ✅ Thêm filter theo robot model
+  const [selectedRobotModelId, setSelectedRobotModelId] = useState<string | undefined>(undefined)
 
-  // 🧠 Lấy robotModels từ response
+  // 🧠 Hooks
+  const { useDeleteSkill, useGetPagedSkills } = useSkill()
+  const { useGetAllRobotModels } = useRobotModel()
+
+  const deleteSkillMutation = useDeleteSkill()
+  const { data: robotModelsData } = useGetAllRobotModels()
+  const robotModels = robotModelsData?.data || []
+
+  // ✅ Gọi API lấy danh sách skill có filter robotModel
+  const { data, isLoading, error, refetch } = useGetPagedSkills(
+    page,
+    size,
+    debouncedSearchTerm,
+    selectedRobotModelId
+  )
+
   const skills = data?.data || []
 
   // Debounce search term
@@ -99,6 +115,7 @@ export default function SkillsPage() {
       toast.success("Skill deleted successfully!")
       setIsDeleteModalOpen(false)
       setDeleteSkill(null)
+      refetch()
     } catch (error) {
       console.error("Error deleting skill:", error)
       toast.error("Failed to delete skill. Please try again.")
@@ -120,17 +137,35 @@ export default function SkillsPage() {
     setEditSkill(null)
   }
 
-  // ✅ Truyền robotModels vào columns
   const columns = createColumns(handleEditSkill, handleDeleteSkill, handleViewSkill)
 
   return (
     <div className="container mx-auto py-10">
       <div className="mb-6">
+        {/* ✅ Header có filter robot model */}
         <div className="flex items-center justify-between mb-4">
           <h1 className="text-2xl font-bold">Quản lý kỹ năng</h1>
-          <Button onClick={handleAddSkill} variant="outline">
-            Thêm kỹ năng
-          </Button>
+          <div className="flex items-center gap-2">
+            <select
+              className="border border-gray-300 rounded-md p-2"
+              value={selectedRobotModelId || ""}
+              onChange={(e) => {
+                setSelectedRobotModelId(e.target.value || undefined)
+                setPage(1)
+              }}
+            >
+              <option value="">Tất cả Robot Models</option>
+              {robotModels.map((model: RobotModel) => (
+                <option key={model.id} value={model.id}>
+                  {model.name}
+                </option>
+              ))}
+            </select>
+
+            <Button onClick={handleAddSkill} variant="outline">
+              Thêm kỹ năng
+            </Button>
+          </div>
         </div>
       </div>
 

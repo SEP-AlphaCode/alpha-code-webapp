@@ -8,7 +8,7 @@ import { useRobotStatus } from "@/hooks/use-robot-status"; // 👈 thêm hook re
 interface Robot {
   id: string;
   name: string;
-  status: "online" | "offline" | "charging";
+  status: "online" | "offline" | "charging" | "busy";
   battery: number;
   lastSeen: string;
   version: string;

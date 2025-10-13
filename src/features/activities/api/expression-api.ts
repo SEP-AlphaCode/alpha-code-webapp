@@ -2,19 +2,26 @@ import { Expression, ExpressionModal } from "@/types/expression";
 import { PagedResult } from "@/types/page-result";
 import { activitiesHttp } from "@/utils/http";
 
-export const getPagedExpressions = async (page: number, size: number, search?: string, signal?: AbortSignal) => {
+// ✅ Thêm robotModelId filter vào params
+export const getPagedExpressions = async (
+  page: number,
+  size: number,
+  search?: string,
+  robotModelId?: string,
+  signal?: AbortSignal
+) => {
   try {
-    const response = await activitiesHttp.get<PagedResult<Expression>>('/expressions', {
+    const response = await activitiesHttp.get<PagedResult<Expression>>("/expressions", {
       params: {
         page,
         size,
-        search
+        search,
+        robotModelId, // ✅ thêm vào query params
       },
-      signal // Add AbortSignal support
+      signal,
     });
-    // Handle different response structures
-    return response.data;
 
+    return response.data;
   } catch (error) {
     console.error("API Error in getPagedExpressions:", error);
     throw error;
@@ -22,7 +29,7 @@ export const getPagedExpressions = async (page: number, size: number, search?: s
 };
 
 export const createExpression = async (expressionData: ExpressionModal) => {
-  const response = await activitiesHttp.post('/expressions', expressionData);
+  const response = await activitiesHttp.post("/expressions", expressionData);
   return response.data;
 };
 

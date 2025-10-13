@@ -6,24 +6,33 @@ import { useQuery } from "@tanstack/react-query"
 import { getPagedExtendedActions } from "@/features/activities/api/extended-action-api"
 import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
-import { CreateExpressionModal } from "@/app/admin/activities/expressions/expression-modal"
+import { CreateExtendedActionModal } from "./extended-action-modal"
 import { DeleteExtendedActionModal } from "./delete-extended-action-modal"
-import { ViewExpressionModal } from "@/app/admin/activities/expressions/view-expression-modal"
+import { ViewExtendedActionModal } from "./view-extended-action-modal"
 import { ExtendedAction } from "@/types/extended-action"
 import { useExtendedActions } from "@/features/activities/hooks/use-extended-actions"
 import { toast } from "sonner"
-
 import LoadingGif from "@/components/ui/loading-gif"
-import { CreateExtendedActionModal } from "./extended-action-modal"
-import { ViewExtendedActionModal } from "./view-extended-action-modal"
 
+import {
+  Select,
+  SelectTrigger,
+  SelectValue,
+  SelectContent,
+  SelectItem,
+} from "@/components/ui/select"
+
+import { getAllRobotModels } from "@/features/robots/api/robot-model-api"
+import { RobotModel } from "@/types/robot-model"
 
 function ExtendedActionPage() {
-  // Đã loại bỏ i18n, chỉ dùng tiếng Việt
   const [page, setPage] = useState(1)
   const [size, setSize] = useState(10)
   const [searchTerm, setSearchTerm] = useState("")
   const [debouncedSearchTerm, setDebouncedSearchTerm] = useState("")
+  const [robotModelId, setRobotModelId] = useState<string>("") // ✅ filter
+  const [robotModels, setRobotModels] = useState<RobotModel[]>([])
+
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false)
   const [editExtendedAction, setEditExtendedAction] = useState<ExtendedAction | null>(null)
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false)
@@ -34,69 +43,73 @@ function ExtendedActionPage() {
   const { useDeleteExtendedAction } = useExtendedActions()
   const deleteExtendedActionMutation = useDeleteExtendedAction()
 
-  // Debounce search term
+  // ✅ Lấy danh sách robot models cho dropdown
+  useEffect(() => {
+    const fetchRobotModels = async () => {
+      try {
+        const res = await getAllRobotModels()
+        setRobotModels(res.data)
+      } catch (err) {
+        console.error("Failed to fetch robot models:", err)
+      }
+    }
+    fetchRobotModels()
+  }, [])
+
+  // ✅ debounce search
   useEffect(() => {
     const timer = setTimeout(() => {
       setDebouncedSearchTerm(searchTerm)
     }, 500)
-
     return () => clearTimeout(timer)
   }, [searchTerm])
 
   const { data, isLoading, error, refetch } = useQuery({
-    queryKey: ["extended-actions", page, size, debouncedSearchTerm],
+    queryKey: ["extended-actions", page, size, debouncedSearchTerm, robotModelId],
     queryFn: async ({ queryKey }) => {
       const controller = new AbortController()
-      setTimeout(() => {
-        controller.abort()
-      }, 10000) // 10 second timeout
+      setTimeout(() => controller.abort(), 10000)
 
-      const [, currentPage, currentSize, search] = queryKey
-
-      try {
-        return await getPagedExtendedActions(
-          currentPage as number,
-          currentSize as number,
-          search as string,
-          controller.signal
-        )
-      } catch (error) {
-        console.error("Failed to fetch extended actions:", error)
-      }
+      const [, currentPage, currentSize, search, modelId] = queryKey
+      return await getPagedExtendedActions(
+        currentPage as number,
+        currentSize as number,
+        search as string,
+       modelId === "all" ? "" : (modelId as string),
+        controller.signal
+      )
     },
     retry: 2,
     retryDelay: 1000,
   })
 
-  if (isLoading) {
+  if (isLoading)
     return (
       <div className="flex items-center justify-center min-h-screen">
-        <LoadingGif size="lg" message="Loading extended actions..." />
+        <LoadingGif size="lg" message="Đang tải danh sách hành động nâng cao..." />
       </div>
     )
-  }
 
-  if (error) {
+  if (error)
     return (
       <div className="flex items-center justify-center min-h-screen">
         <div className="text-center">
-          <div className="text-lg text-red-600 mb-4">Error loading extended actions</div>
+          <div className="text-lg text-red-600 mb-4">Lỗi tải dữ liệu hành động nâng cao</div>
           <button
             onClick={() => refetch()}
             className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors"
           >
-            Retry
+            Thử lại
           </button>
         </div>
       </div>
     )
-  }
 
   const extended_actions = data?.data || []
 
   const handleSizeChange = (newSize: number) => {
     setSize(newSize)
-    setPage(1) // Reset to first page when changing size
+    setPage(1)
   }
 
   const handlePageChange = (newPage: number) => {
@@ -108,48 +121,31 @@ function ExtendedActionPage() {
     setIsCreateModalOpen(true)
   }
 
-  const handleEditExtendedAction = (extended_actions: ExtendedAction) => {
-    setEditExtendedAction(extended_actions)
+  const handleEditExtendedAction = (action: ExtendedAction) => {
+    setEditExtendedAction(action)
     setIsCreateModalOpen(true)
   }
 
-  const handleViewExtendedAction = (extended_actions: ExtendedAction) => {
-    setViewExtendedAction(extended_actions)
+  const handleViewExtendedAction = (action: ExtendedAction) => {
+    setViewExtendedAction(action)
     setIsViewModalOpen(true)
   }
 
-  const handleDeleteExtendedAction = (extended_actions: ExtendedAction) => {
-    setDeleteExtendedAction(extended_actions)
+  const handleDeleteExtendedAction = (action: ExtendedAction) => {
+    setDeleteExtendedAction(action)
     setIsDeleteModalOpen(true)
   }
 
   const handleConfirmDelete = async () => {
     if (!deleteExtendedAction) return
-
     try {
       await deleteExtendedActionMutation.mutateAsync(deleteExtendedAction.id)
-      toast.success("Extended action deleted successfully!")
+      toast.success("Xóa hành động nâng cao thành công!")
       setIsDeleteModalOpen(false)
       setDeleteExtendedAction(null)
-    } catch (error) {
-      console.error("Error deleting extended action:", error)
-      toast.error("Failed to delete extended action. Please try again.")
+    } catch {
+      toast.error("Xóa thất bại, vui lòng thử lại.")
     }
-  }
-
-  const handleCloseDeleteModal = () => {
-    setIsDeleteModalOpen(false)
-    setDeleteExtendedAction(null)
-  }
-
-  const handleCloseViewModal = () => {
-    setIsViewModalOpen(false)
-    setViewExtendedAction(null)
-  }
-
-  const handleCloseModal = () => {
-    setIsCreateModalOpen(false)
-    setEditExtendedAction(null)
   }
 
   const columns = createColumns(handleEditExtendedAction, handleDeleteExtendedAction, handleViewExtendedAction)
@@ -159,14 +155,29 @@ function ExtendedActionPage() {
       <div className="mb-6">
         <div className="flex items-center justify-between mb-4">
           <h1 className="text-2xl font-bold">Quản lý hành động nâng cao</h1>
-          <Button
-            onClick={handleAddExtendedAction}
-            variant="outline"
-          >
+          <Button onClick={handleAddExtendedAction} variant="outline">
             Thêm hành động nâng cao
           </Button>
         </div>
+
+        {/* ✅ Dropdown filter Robot Model */}
+        <div className="flex items-center gap-4">
+          <Select value={robotModelId} onValueChange={setRobotModelId}>
+            <SelectTrigger className="w-[250px]">
+              <SelectValue placeholder="Lọc theo Robot Model" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">Tất cả Robot Models</SelectItem>
+              {robotModels.map((model) => (
+                <SelectItem key={model.id} value={model.id}>
+                  {model.name}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
       </div>
+
       <DataTable
         columns={columns}
         size={size}
@@ -180,23 +191,23 @@ function ExtendedActionPage() {
         onPageChange={handlePageChange}
         total={data?.total_count || 0}
       />
-      
+
       <CreateExtendedActionModal
         isOpen={isCreateModalOpen}
-        onClose={handleCloseModal}
+        onClose={() => setIsCreateModalOpen(false)}
         editExtendedAction={editExtendedAction}
-        mode={editExtendedAction ? 'edit' : 'create'}
+        mode={editExtendedAction ? "edit" : "create"}
       />
-      
+
       <ViewExtendedActionModal
         isOpen={isViewModalOpen}
-        onClose={handleCloseViewModal}
+        onClose={() => setIsViewModalOpen(false)}
         extended_actions={viewExtendedAction}
       />
-      
+
       <DeleteExtendedActionModal
         isOpen={isDeleteModalOpen}
-        onClose={handleCloseDeleteModal}
+        onClose={() => setIsDeleteModalOpen(false)}
         onConfirm={handleConfirmDelete}
         extended_action={deleteExtendedAction}
         isDeleting={deleteExtendedActionMutation.isPending}

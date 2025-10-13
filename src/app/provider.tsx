@@ -12,7 +12,23 @@ import AOS from "aos"
 import "aos/dist/aos.css"
 
 export default function Provider({ children }: { children: React.ReactNode }) {
-  const [queryClient] = useState(() => new QueryClient())
+  const [queryClient] = useState(() => new QueryClient({
+    defaultOptions: {
+      queries: {
+        staleTime: 1000 * 60 * 2, // 2 minutes
+        retry: (failureCount, error: unknown) => {
+          if (error && typeof error === 'object') {
+            const errorObj = error as { name?: string; code?: string };
+            if (errorObj.name === 'CanceledError' || errorObj.code === 'ERR_CANCELED') {
+              return false;
+            }
+          }
+          return failureCount < 3;
+        },
+        retryDelay: attemptIndex => Math.min(1000 * 2 ** attemptIndex, 30000),
+      }
+    }
+  }))
 
   useEffect(() => {
     AOS.init({

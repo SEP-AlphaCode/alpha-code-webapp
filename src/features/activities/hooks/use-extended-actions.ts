@@ -24,11 +24,13 @@ export const useExtendedActions = () => {
         });
     };
 
-    const useGetPagedExtendedActions = (page: number, size: number, search?: string) => {
+    const useGetPagedExtendedActions = (page: number, size: number, search?: string, robotModelId?: string) => {
         return useQuery<ExtendedActionResponse>({
-            queryKey: ['extended-actions', 'paged', page, size, search],
-            queryFn: ({ signal }) => getPagedExtendedActions(page, size, search, signal),
-            staleTime: 0,
+            queryKey: ['extended-actions', 'paged', page, size, search || '', robotModelId || ''],
+            queryFn: ({ signal }) => getPagedExtendedActions(page, size, search, robotModelId, signal),
+            staleTime: 1000 * 60 * 5, // 5 minutes
+            refetchOnWindowFocus: false,
+            refetchOnMount: false,
             enabled: true,
         });
     };

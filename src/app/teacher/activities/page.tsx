@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useCallback, useMemo, useRef } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
@@ -26,6 +26,8 @@ import {
   Activity,
   Loader2
 } from "lucide-react"
+import { Pagination } from "@/components/ui/pagination"
+import { PerPageSelector } from "@/components/ui/per-page-selector"
 import { useActivities, useCreateActivity } from "@/features/activities/hooks/use-activities"
 import { useRobotControls } from "@/features/users/hooks/use-websocket"
 import { useRobotStore } from "@/hooks/use-robot-store"
@@ -33,12 +35,16 @@ import { Activity as ActivityType, ActivityData } from "@/types/activities"
 import { ActionActivites } from "@/types/action"
 
 export default function ActivitiesPage() {
+  const renderCount = useRef(0);
+  renderCount.current += 1;
+  
   const [searchTerm, setSearchTerm] = useState("")
   const [debouncedSearchTerm, setDebouncedSearchTerm] = useState("")
   const [filterType, setFilterType] = useState<string>("all")
   const [filterStatus, setFilterStatus] = useState<string>("1") // Mặc định lọc activities đã xuất bản
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false)
   const [currentPage, setCurrentPage] = useState(1)
+  const [perPage, setPerPage] = useState(12)
 
   // Debounce search term
   useEffect(() => {
@@ -50,8 +56,13 @@ export default function ActivitiesPage() {
     return () => clearTimeout(timer)
   }, [searchTerm])
 
+  // Reset page when filters change
+  useEffect(() => {
+    setCurrentPage(1)
+  }, [filterType, filterStatus, perPage])
+
   // API Hooks - use debounced search term
-  const { data: activitiesData, isLoading, error } = useActivities(currentPage, 12, debouncedSearchTerm)
+  const { data: activitiesData, isLoading, error } = useActivities(currentPage, perPage, debouncedSearchTerm)
   const createActivityMutation = useCreateActivity()
 
   // Robot Controls Hook
@@ -62,23 +73,91 @@ export default function ActivitiesPage() {
     selectedRobotSerial, 
     selectedRobot, 
     updateRobotStatus, 
-    initializeMockData 
+    initializeMockData,
+    robots
   } = useRobotStore()
 
-  // Initialize mock robot data
+  // Initialize mock robot data - only once and only if no robots exist
   useEffect(() => {
-    initializeMockData()
-  }, [initializeMockData])
+    if (robots.length === 0) {
+      initializeMockData()
+    }
+  }, [robots.length, initializeMockData])
 
-  const activities = activitiesData?.data || []
-  const pagination = activitiesData ? {
-    total_count: activitiesData.total_count,
-    page: activitiesData.page,
-    per_page: activitiesData.per_page,
-    total_pages: activitiesData.total_pages,
-    has_next: activitiesData.has_next,
-    has_previous: activitiesData.has_previous
-  } : null
+  const activities = useMemo(() => activitiesData?.data || [], [activitiesData?.data])
+  const pagination = useMemo(() => 
+    activitiesData ? {
+      total_count: activitiesData.total_count,
+      page: activitiesData.page,
+      per_page: activitiesData.per_page,
+      total_pages: activitiesData.total_pages,
+      has_next: activitiesData.has_next,
+      has_previous: activitiesData.has_previous
+    } : null, [activitiesData]
+  )
+
+  // Filter activities on frontend (since backend doesn't support type/status filters yet)
+  const filteredActivities = useMemo(() => 
+    activities.filter(activity => {
+      const matchesType = filterType === "all" || activity.type === filterType
+      const matchesStatus = filterStatus === "all" || activity.status.toString() === filterStatus
+      
+      return matchesType && matchesStatus
+    }), [activities, filterType, filterStatus]
+  )
+
+  const handleStartActivity = useCallback((activity: ActivityType) => {
+    // Sử dụng selected robot serial từ Redux
+    const robotSerial = selectedRobotSerial || "EAA007UBT10000341";
+    
+    console.log('Selected Robot:', selectedRobot);
+    console.log('Using Robot Serial:', robotSerial);
+    console.log('Activity data before processing:', activity);
+    
+    // Update robot status to busy when starting activity
+    if (robotSerial && selectedRobot) {
+      updateRobotStatus(robotSerial, 'busy');
+    }
+    
+    // Parse data từ activity (nếu là JSON string)
+    let activityData;
+    try {
+      activityData = typeof activity.data === 'string' ? JSON.parse(activity.data) : activity.data;
+    } catch (error) {
+      console.error('Error parsing activity data:', error);
+      activityData = activity.data;
+    }
+    
+    console.log('Processed activity data:', activityData);
+    console.log('Activity type:', activity.type);
+    
+    // Gửi command với selected robot
+    startActivity(robotSerial, activity.type, activityData);
+    
+    // Set robot back to online after a delay (mock behavior)
+    setTimeout(() => {
+      if (robotSerial) {
+        updateRobotStatus(robotSerial, 'online');
+      }
+    }, 3000);
+  }, [selectedRobotSerial, selectedRobot, updateRobotStatus, startActivity])
+
+  // Debug logging to track re-renders
+  console.log('ActivitiesPage render #' + renderCount.current + ':', {
+    currentPage,
+    perPage,
+    searchTerm,
+    debouncedSearchTerm,
+    isLoading,
+    hasData: !!activitiesData,
+    error: error ? 'has error' : 'no error'
+  })
+
+  // Safety check for infinite re-renders - moved after all hooks
+  if (renderCount.current > 100) {
+    console.error('Too many re-renders detected! Possible infinite loop.');
+    return <div>Error: Too many re-renders. Please check console for details.</div>;
+  }
 
   const getTypeIcon = (type: string) => {
     switch (type) {
@@ -140,15 +219,6 @@ export default function ActivitiesPage() {
     }
   }
 
-  const filteredActivities = activities.filter(activity => {
-    const matchesSearch = activity.name.toLowerCase().includes(searchTerm.toLowerCase())
-    
-    const matchesType = filterType === "all" || activity.type === filterType
-    const matchesStatus = filterStatus === "all" || activity.status.toString() === filterStatus
-    
-    return matchesSearch && matchesType && matchesStatus
-  })
-
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString("vi-VN", {
       year: "numeric",
@@ -157,42 +227,6 @@ export default function ActivitiesPage() {
       hour: "2-digit",
       minute: "2-digit"
     })
-  }
-
-  const handleStartActivity = (activity: ActivityType) => {
-    // Sử dụng selected robot serial từ Redux
-    const robotSerial = selectedRobotSerial || "EAA007UBT10000341";
-    
-    console.log('Selected Robot:', selectedRobot);
-    console.log('Using Robot Serial:', robotSerial);
-    console.log('Activity data before processing:', activity);
-    
-    // Update robot status to busy when starting activity
-    if (robotSerial && selectedRobot) {
-      updateRobotStatus(robotSerial, 'busy');
-    }
-    
-    // Parse data từ activity (nếu là JSON string)
-    let activityData;
-    try {
-      activityData = typeof activity.data === 'string' ? JSON.parse(activity.data) : activity.data;
-    } catch (error) {
-      console.error('Error parsing activity data:', error);
-      activityData = activity.data;
-    }
-    
-    console.log('Processed activity data:', activityData);
-    console.log('Activity type:', activity.type);
-    
-    // Gửi command với selected robot
-    startActivity(robotSerial, activity.type, activityData);
-    
-    // Set robot back to online after a delay (mock behavior)
-    setTimeout(() => {
-      if (robotSerial) {
-        updateRobotStatus(robotSerial, 'online');
-      }
-    }, 3000);
   }
 
   const CreateActivityForm = () => {
@@ -408,6 +442,12 @@ export default function ActivitiesPage() {
           </div>
           
           <div className="flex gap-2">
+            <PerPageSelector
+              perPage={perPage}
+              onPerPageChange={setPerPage}
+              options={[6, 12, 24, 48]}
+            />
+            
             <Select value={filterType} onValueChange={setFilterType}>
               <SelectTrigger className="w-40">
                 <Filter className="w-4 h-4 mr-2" />
@@ -623,6 +663,28 @@ export default function ActivitiesPage() {
                 </CardContent>
               </Card>
             ))}
+          </div>
+        )}
+
+        {/* Pagination */}
+        {pagination && !isLoading && activities.length > 0 && (
+          <div className="mt-8">
+            <Pagination
+              currentPage={pagination.page}
+              totalPages={pagination.total_pages}
+              onPageChange={setCurrentPage}
+              hasNext={pagination.has_next}
+              hasPrevious={pagination.has_previous}
+              totalCount={pagination.total_count}
+              perPage={pagination.per_page}
+              className="border-t pt-8"
+            />
+            {/* Note: Backend search only. Type/status filters are applied on frontend */}
+            {(filterType !== "all" || filterStatus !== "all") && (
+              <p className="text-sm text-gray-500 text-center mt-4">
+                Hiển thị {filteredActivities.length} / {activities.length} kết quả (đã lọc)
+              </p>
+            )}
           </div>
         )}
 

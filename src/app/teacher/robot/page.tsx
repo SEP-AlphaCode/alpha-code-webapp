@@ -29,7 +29,7 @@ const thingsToTryPrompts = [
 interface ExtendedRobot {
   id: string;
   name: string;
-  status: "online" | "offline" | "charging";
+  status: "online" | "offline" | "charging" | "busy";
   battery: number;
   lastSeen: string;
   version: string;
@@ -67,7 +67,7 @@ function extendRobotWithMockData(robot: ReturnType<typeof useRobotStore>['robots
       image: "/alpha-mini-2.webp",
     },
     {
-      lastSeen: "1 minute ago", 
+      lastSeen: "1 minute ago",
       version: "v2.1.3",
       students: 4,
       currentTask: "Programming Basics",
@@ -82,18 +82,18 @@ function extendRobotWithMockData(robot: ReturnType<typeof useRobotStore>['robots
       students: 2,
       currentTask: "Charging",
       uptime: "1h 12m",
-      ip: "192.168.1.103", 
+      ip: "192.168.1.103",
       temperature: 26,
       image: "/alpha-mini-2.webp",
     }
   ];
 
   const mockInfo = mockData[index] || mockData[0];
-  
+
   return {
     id: robot.id,
     name: robot.name,
-    status: robot.status === 'busy' ? 'charging' : robot.status,
+    status: robot.status === 'offline' ? 'charging' : robot.status,
     battery: robot.battery || 0, // Use battery from Redux, fallback to 0
     serialNumber: robot.serial,
     robotmodel: "AlphaMini", // Add robotmodel, fallback to "AlphaMini"
@@ -104,11 +104,12 @@ function extendRobotWithMockData(robot: ReturnType<typeof useRobotStore>['robots
 export default function TeacherDashboard() {
   const { robots, selectedRobotSerial, selectRobot, initializeMockData } = useRobotStore();
   const [shuffledPrompts, setShuffledPrompts] = useState<string[]>([]);
+  const [hasInitialized, setHasInitialized] = useState(false);
 
   useEffect(() => {
     // Initialize mock data if no robots exist
     initializeMockData();
-  }, [initializeMockData]);
+  }, []);
 
   useEffect(() => {
     setShuffledPrompts(shuffleArray(thingsToTryPrompts));
@@ -119,7 +120,7 @@ export default function TeacherDashboard() {
   };
 
   // Convert Redux robots to extended robot format
-  const extendedRobots: ExtendedRobot[] = robots.map((robot, index) => 
+  const extendedRobots: ExtendedRobot[] = robots.map((robot, index) =>
     extendRobotWithMockData(robot, index)
   );
 
@@ -127,12 +128,12 @@ export default function TeacherDashboard() {
 
   return (
     <div className="space-y-10 p-10">
-      <RobotPageHeader 
+      <RobotPageHeader
         title="Quản lý robot"
         subtitle="Quản lý và tương tác với các robot AlphaMini của bạn"
       />
-      
-      <RobotGrid 
+
+      <RobotGrid
         robots={extendedRobots}
         selectedRobot={selectedRobotSerial}
         onRobotSelect={(robotSerial) => {
@@ -151,7 +152,7 @@ export default function TeacherDashboard() {
       />
 
       {selectedRobotDetails && (
-        <RobotDetails 
+        <RobotDetails
           robot={selectedRobotDetails}
           translations={{
             systemInfo: {
@@ -181,7 +182,7 @@ export default function TeacherDashboard() {
         />
       )}
 
-      <ProgrammingSection 
+      <ProgrammingSection
         title="Lập trình"
         items={{
           createActions: "Tạo hành động",
@@ -190,7 +191,7 @@ export default function TeacherDashboard() {
         }}
       />
 
-      <EntertainmentSection 
+      <EntertainmentSection
         title="Giải trí"
         items={{
           action: "Hành động vui nhộn",
@@ -199,7 +200,7 @@ export default function TeacherDashboard() {
         }}
       />
 
-      <ThingsToTrySection 
+      <ThingsToTrySection
         title="Những điều nên thử"
         refreshText="Làm mới đề xuất"
         prompts={shuffledPrompts}
