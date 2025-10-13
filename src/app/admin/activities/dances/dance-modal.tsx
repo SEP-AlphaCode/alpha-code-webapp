@@ -16,7 +16,7 @@ import { useDance } from "@/features/activities/hooks/use-dance"
 import { DanceModal, Dance } from "@/types/dance"
 import { useEffect } from "react"
 import { toast } from "sonner"
-
+import { useRobotModel } from "@/features/robots/hooks/use-robot-model"
 
 interface CreateDanceModalProps {
   isOpen: boolean
@@ -31,11 +31,12 @@ export function CreateDanceModal({
   editDance = null,
   mode = 'create'
 }: CreateDanceModalProps) {
-  // Đã loại bỏ i18n, chỉ dùng tiếng Việt
   const { useCreateDance, useUpdateDance } = useDance()
   const createDanceMutation = useCreateDance()
   const updateDanceMutation = useUpdateDance()
+  const { useGetAllRobotModels } = useRobotModel()
 
+  const { data: robotModels } = useGetAllRobotModels()
   const isEditMode = mode === 'edit' && editDance
 
   const {
@@ -53,10 +54,10 @@ export function CreateDanceModal({
       duration: 60,
       status: 1,
       icon: "",
+      robotModelId: "",
     }
   })
 
-  // Update form when editDance changes
   useEffect(() => {
     if (isEditMode && editDance) {
       reset({
@@ -66,6 +67,7 @@ export function CreateDanceModal({
         duration: editDance.duration,
         status: editDance.status,
         icon: editDance.icon,
+        robotModelId: editDance.robotModelId || "",
       })
     } else {
       reset({
@@ -75,6 +77,7 @@ export function CreateDanceModal({
         duration: 60,
         status: 1,
         icon: "",
+        robotModelId: "",
       })
     }
   }, [editDance, isEditMode, reset])
@@ -85,16 +88,16 @@ export function CreateDanceModal({
     try {
       if (isEditMode && editDance) {
         await updateDanceMutation.mutateAsync({ id: editDance.id, data })
-  toast.success('Thành công')
+        toast.success('Thành công')
       } else {
         await createDanceMutation.mutateAsync(data)
-  toast.success('Thành công')
+        toast.success('Thành công')
       }
       reset()
       onClose()
     } catch (error) {
       console.error("Error saving dance:", error)
-  toast.error('Có lỗi xảy ra')
+      toast.error('Có lỗi xảy ra')
     }
   }
 
@@ -119,6 +122,32 @@ export function CreateDanceModal({
         </DialogHeader>
 
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+          {/* Mẫu robot */}
+          <div className="space-y-2">
+            <Label htmlFor="robotModelId" className="text-sm font-medium">
+              Mẫu robot *
+            </Label>
+            <Select
+              value={watch("robotModelId")}
+              onValueChange={(value) => setValue("robotModelId", value)}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Chọn mẫu robot" />
+              </SelectTrigger>
+              <SelectContent>
+                {robotModels?.data?.map((model) => (
+                  <SelectItem key={model.id} value={model.id}>
+                    {model.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            {errors.robotModelId && (
+              <p className="text-sm text-red-500">{errors.robotModelId.message}</p>
+            )}
+          </div>
+
+          {/* Mã điệu nhảy */}
           <div className="space-y-2">
             <Label htmlFor="code" className="text-sm font-medium">
               Mã điệu nhảy *
@@ -137,6 +166,7 @@ export function CreateDanceModal({
             )}
           </div>
 
+          {/* Tên điệu nhảy */}
           <div className="space-y-2">
             <Label htmlFor="name" className="text-sm font-medium">
               Tên điệu nhảy *
@@ -155,6 +185,7 @@ export function CreateDanceModal({
             )}
           </div>
 
+          {/* Mô tả */}
           <div className="space-y-2">
             <Label htmlFor="description" className="text-sm font-medium">
               Mô tả
@@ -167,6 +198,7 @@ export function CreateDanceModal({
             />
           </div>
 
+          {/* Icon */}
           <div className="space-y-2">
             <Label htmlFor="icon" className="text-sm font-medium">
               Icon
@@ -179,6 +211,7 @@ export function CreateDanceModal({
             />
           </div>
 
+          {/* Thời lượng */}
           <div className="space-y-2">
             <Label htmlFor="duration" className="text-sm font-medium">
               Thời lượng (giây) *
@@ -199,6 +232,7 @@ export function CreateDanceModal({
             )}
           </div>
 
+          {/* Trạng thái */}
           <div className="space-y-2">
             <Label htmlFor="status" className="text-sm font-medium">
               Trạng thái

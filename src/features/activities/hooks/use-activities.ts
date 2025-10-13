@@ -12,9 +12,11 @@ import { toast } from 'sonner';
 
 export const useActivities = (page: number = 1, size: number = 10, search?: string) => {
   return useQuery({
-    queryKey: ['activities', page, size, search],
+    queryKey: ['activities', page, size, search || ''],
     queryFn: ({ signal }) => getPagedActivities(page, size, search, signal),
-    staleTime: 1000 * 60 * 5, // 5 minutes
+    staleTime: 1000 * 60 * 2, // Reduce to 2 minutes
+    refetchOnWindowFocus: false, // Prevent refetch on window focus
+    refetchOnMount: true, // Always refetch on mount - FIX for reload issue
     retry: (failureCount, error: unknown) => {
       // Don't retry on canceled errors
       if (error && typeof error === 'object') {
@@ -45,20 +47,25 @@ export const useActivity = (id: string) => {
   });
 };
 
-export const useCreateActivity = () => {
+export const useCreateActivity = (options?: { showToast?: boolean }) => {
   const queryClient = useQueryClient();
+  const showToast = options?.showToast ?? true;
 
   return useMutation({
     mutationFn: createActivity,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['activities'] });
-      toast.success('Activity created successfully!');
+      if (showToast) {
+        toast.success('Activity created successfully!');
+      }
     },
     onError: (error: unknown) => {
-      const errorMessage = error && typeof error === 'object' && 'message' in error 
-        ? (error as { message: string }).message 
-        : 'Failed to create activity';
-      toast.error(errorMessage);
+      if (showToast) {
+        const errorMessage = error && typeof error === 'object' && 'message' in error 
+          ? (error as { message: string }).message 
+          : 'Failed to create activity';
+        toast.error(errorMessage);
+      }
     },
   });
 };

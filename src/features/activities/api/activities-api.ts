@@ -13,6 +13,7 @@ export const getAllActivities = async () => {
 };
 
 export const getPagedActivities = async (page: number, size: number, search?: string, signal?: AbortSignal) => {
+  console.log('API Call - getPagedActivities:', { page, size, search });
   try {
     const response = await activitiesHttp.get<ActivitiesResponse>('/activities', {
       params: {
@@ -22,12 +23,14 @@ export const getPagedActivities = async (page: number, size: number, search?: st
       },
       signal
     });
+    console.log('API Response - getPagedActivities:', response.data);
     return response.data;
   } catch (error: unknown) {       
     // Don't log or throw canceled errors
     if (error && typeof error === 'object') {
       const errorObj = error as { name?: string; code?: string };
       if (errorObj.name === 'CanceledError' || errorObj.code === 'ERR_CANCELED') {
+        console.log('API Call canceled');
         return Promise.reject(error); // Let React Query handle it
       }
     }

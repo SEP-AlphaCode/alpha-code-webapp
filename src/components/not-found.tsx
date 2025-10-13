@@ -14,7 +14,7 @@ export default function NotFoundPage() {
         playsInline
       >
         <source src="/error.mp4" type="video/mp4" />
-        Your browser does not support the video tag.
+        Trình duyệt của bạn không hỗ trợ video này.
       </video>
     </div>
   );

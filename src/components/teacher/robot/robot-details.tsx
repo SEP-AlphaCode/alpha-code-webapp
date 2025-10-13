@@ -1,13 +1,15 @@
-import React from "react";
+"use client";
+
+import React, { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Power, Settings, RefreshCw } from "lucide-react";
+import { Power, Settings, RefreshCw, StopCircleIcon } from "lucide-react";
+import { useRobotStatus } from "@/hooks/use-robot-status"; // 👈 thêm hook realtime
 
 interface Robot {
   id: string;
   name: string;
-  status: "online" | "offline" | "charging";
+  status: "online" | "offline" | "charging" | "busy";
   battery: number;
-  location: string;
   lastSeen: string;
   version: string;
   students: number;
@@ -17,6 +19,7 @@ interface Robot {
   temperature: number;
   image: string;
   serialNumber: string;
+  robotmodel: string;
 }
 
 interface RobotDetailsProps {
@@ -26,19 +29,19 @@ interface RobotDetailsProps {
       title: string;
       firmware: string;
       temperature: string;
+      robotmodel: string;
     };
     currentStatus: {
       title: string;
       status: string;
       task: string;
       battery: string;
-      location: string;
     };
     quickActions: {
       title: string;
       restart: string;
       settings: string;
-      updateFirmware: string;
+      forceStop: string;
     };
     statusTexts: {
       online: string;
@@ -49,6 +52,23 @@ interface RobotDetailsProps {
 }
 
 export function RobotDetails({ robot, translations }: RobotDetailsProps) {
+  // 👇 Hook realtime để lấy trạng thái từ backend
+  const { status: liveStatus, loading, error } = useRobotStatus(robot.serialNumber, 5000);
+
+  // Khi có dữ liệu mới -> merge vào robot hiển thị
+  const [displayRobot, setDisplayRobot] = useState(robot);
+
+  useEffect(() => {
+    if (liveStatus) {
+      setDisplayRobot((prev) => ({
+        ...prev,
+        version: liveStatus.firmware_version || prev.version,
+        battery: liveStatus.battery_level ?? prev.battery,
+        status: liveStatus.is_charging ? "charging" : prev.status,
+      }));
+    }
+  }, [liveStatus]);
+
   const getStatusColor = (status: string) => {
     switch (status) {
       case "online":
@@ -92,19 +112,21 @@ export function RobotDetails({ robot, translations }: RobotDetailsProps) {
           <div className="space-y-2 text-sm">
             <div className="flex justify-between">
               <span className="text-gray-400">ID:</span>
-              <span className="text-gray-900 font-medium">{robot.id}</span>
+              <span className="text-gray-900 font-medium">{displayRobot.id}</span>
             </div>
             <div className="flex justify-between">
               <span className="text-gray-400">{translations.systemInfo.firmware}:</span>
-              <span className="text-gray-900 font-medium">{robot.version}</span>
+              <span className="text-gray-900 font-medium">
+                {loading ? "Đang cập nhật..." : displayRobot.version}
+              </span>
             </div>
             <div className="flex justify-between">
-              <span className="text-gray-400">IP:</span>
-              <span className="text-gray-900 font-medium">{robot.ip}</span>
+              <span className="text-gray-400">{translations.systemInfo.robotmodel}:</span>
+              <span className="text-gray-900 font-medium">{displayRobot.robotmodel}</span>
             </div>
             <div className="flex justify-between">
               <span className="text-gray-400">{translations.systemInfo.temperature}:</span>
-              <span className="text-gray-900 font-medium">{robot.temperature}°C</span>
+              <span className="text-gray-900 font-medium">{displayRobot.temperature}°C</span>
             </div>
           </div>
         </div>
@@ -117,29 +139,32 @@ export function RobotDetails({ robot, translations }: RobotDetailsProps) {
           <div className="space-y-2 text-sm">
             <div className="flex justify-between">
               <span className="text-gray-400">{translations.currentStatus.status}:</span>
-              <span className={`px-2 py-0.5 rounded-full text-xs font-semibold ${getStatusColor(robot.status)}`}>
-                {getStatusText(robot.status)}
+              <span
+                className={`px-2 py-0.5 rounded-full text-xs font-semibold ${getStatusColor(
+                  displayRobot.status
+                )}`}
+              >
+                {getStatusText(displayRobot.status)}
               </span>
             </div>
             <div className="flex justify-between">
               <span className="text-gray-400">{translations.currentStatus.task}:</span>
-              <span className="text-gray-900 font-medium">{robot.currentTask}</span>
+              <span className="text-gray-900 font-medium">{displayRobot.currentTask}</span>
             </div>
             <div className="flex justify-between">
               <span className="text-gray-400">{translations.currentStatus.battery}:</span>
-              <span className="text-gray-900 font-medium">{robot.battery}%</span>
+              <span className="text-gray-900 font-medium">
+                {loading ? "..." : `${displayRobot.battery}%`}
+              </span>
             </div>
             <div className="w-full bg-gray-200 rounded-full h-2 my-2">
               <div
-                className={`h-2 rounded-full ${getBatteryColor(robot.battery)}`}
-                style={{ width: `${robot.battery}%` }}
+                className={`h-2 rounded-full ${getBatteryColor(displayRobot.battery)}`}
+                style={{ width: `${displayRobot.battery}%` }}
               ></div>
             </div>
-            <div className="flex justify-between">
-              <span className="text-gray-400">{translations.currentStatus.location}:</span>
-              <span className="text-gray-900 font-medium">{robot.location}</span>
-            </div>
           </div>
+          {error && <p className="text-red-500 text-xs mt-2">⚠️ {error}</p>}
         </div>
 
         {/* Quick Actions */}
@@ -157,8 +182,8 @@ export function RobotDetails({ robot, translations }: RobotDetailsProps) {
               {translations.quickActions.settings}
             </Button>
             <Button className="w-full text-base py-3" variant="outline">
-              <RefreshCw className="h-5 w-5 mr-2" />
-              {translations.quickActions.updateFirmware}
+              <StopCircleIcon className="h-5 w-5 mr-2" />
+              {translations.quickActions.forceStop}
             </Button>
           </div>
         </div>

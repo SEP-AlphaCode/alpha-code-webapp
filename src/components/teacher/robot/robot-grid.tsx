@@ -5,9 +5,8 @@ import { Battery, MapPin, CheckCircle, WifiOff, Zap, Activity } from "lucide-rea
 interface Robot {
   id: string;
   name: string;
-  status: "online" | "offline" | "charging";
+  status: "online" | "offline" | "charging" | "busy";
   battery: number;
-  location: string;
   lastSeen: string;
   version: string;
   students: number;
@@ -28,6 +27,7 @@ interface RobotGridProps {
     online: string;
     offline: string;
     charging: string;
+    busy?: string;
   };
 }
 
@@ -121,8 +121,6 @@ export function RobotGrid({
               </div>
             </div>
             <div className="flex items-center gap-2">
-              <MapPin className="h-4 w-4 text-blue-400" />
-              <span className="text-sm text-gray-600">{robot.location}</span>
             </div>
           </div>
         ))}

@@ -25,7 +25,7 @@ export function EntertainmentSection({ title, items }: EntertainmentSectionProps
       hoverGradient: "from-rose-300 via-pink-300 to-purple-300",
       shadowColor: "shadow-rose-100/40",
       onClick: () => router.push("/teacher/robot/action"),
-      description: "Control and command your robot"
+      description: "Điều khiển và ra lệnh cho robot của bạn."
     },
     {
       title: items.album,
@@ -35,7 +35,7 @@ export function EntertainmentSection({ title, items }: EntertainmentSectionProps
       hoverGradient: "from-orange-300 via-amber-300 to-yellow-300",
       shadowColor: "shadow-orange-100/40",
       onClick: () => router.push("/teacher/robot/action"),
-      description: "View photos captured by robot"
+      description: "Xem ảnh do robot chụp."
     },
     {
       title: items.friends,
@@ -45,7 +45,7 @@ export function EntertainmentSection({ title, items }: EntertainmentSectionProps
       hoverGradient: "from-emerald-300 via-green-300 to-teal-300",
       shadowColor: "shadow-emerald-100/40",
       onClick: () => router.push("/teacher/robot/action"),
-      description: "Manage recognized faces database"
+      description: "Quản lý cơ sở dữ liệu khuôn mặt đã nhận dạng."
     }
   ];
 
@@ -55,7 +55,7 @@ export function EntertainmentSection({ title, items }: EntertainmentSectionProps
         <h2 className="text-2xl font-semibold bg-gradient-to-r from-slate-600 to-slate-700 bg-clip-text text-transparent mb-3">
           {title}
         </h2>
-        <p className="text-gray-500 text-base font-medium">Explore interactive entertainment features</p>
+        <p className="text-gray-500 text-base font-medium">Khám phá những tính năng giải trí tương tác.</p>
       </div>
       
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -109,7 +109,7 @@ export function EntertainmentSection({ title, items }: EntertainmentSectionProps
                 <div className="flex items-center justify-center">
                   <div className="bg-white/20 hover:bg-white/30 backdrop-blur-sm rounded-lg px-4 py-2 flex items-center gap-2 border border-white/10 hover:border-white/20 transition-all duration-300 group-hover:scale-105">
                     <PlayCircle className="h-4 w-4 text-gray-600" />
-                    <span className="text-gray-600 text-sm font-medium">Explore</span>
+                    <span className="text-gray-600 text-sm font-medium">Khám phá</span>
                   </div>
                 </div>
               </CardContent>

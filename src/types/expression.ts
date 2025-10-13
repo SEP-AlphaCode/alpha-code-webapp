@@ -6,9 +6,12 @@ export type Expression = {
     status: number
     createdDate: string
     lastUpdate: string
+    robotModelId: string
+    statusText: string
 }
 
 export type ExpressionModal = {
+    robotModelId?: string
     code: string
     name: string
     imageUrl: string

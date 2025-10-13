@@ -2,19 +2,25 @@ import { Action, ActionModal } from "@/types/action";
 import { PagedResult } from "@/types/page-result";
 import { activitiesHttp } from "@/utils/http";
 
-export const getPagedActions = async (page: number, size: number, search?: string, signal?: AbortSignal) => {
+export const getPagedActions = async (
+  page: number,
+  size: number,
+  search?: string,
+  signal?: AbortSignal,
+  robotModelId?: string
+) => {
   try {
-    const response = await activitiesHttp.get<PagedResult<Action>>('/actions', {
+    const response = await activitiesHttp.get<PagedResult<Action>>("/actions", {
       params: {
         page,
         size,
-        search
+        search,
+        robotModelId,
       },
-      signal // Add AbortSignal support
+      signal,
     });
-    // Handle different response structures
-    return response.data;
 
+    return response.data;
   } catch (error) {
     console.error("API Error in getPagedActions:", error);
     throw error;

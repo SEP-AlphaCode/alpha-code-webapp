@@ -13,6 +13,10 @@ export type OsmoCard = {
     danceName: string;
     statusText: string;
     actionCode: number;
+    extendedActionId: string,
+    extendedActonName: string,
+    skillId: string,
+    skillName: string
 };
 
 // Types for query parameters
@@ -34,4 +38,8 @@ export interface CreateCardData {
   expressionName: string;
   danceId: string;
   danceName: string;
+  extendedActionId: string,
+  extendedActionName: string,
+  skillId: string,
+  skillName: string
 }

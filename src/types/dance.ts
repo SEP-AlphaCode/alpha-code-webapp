@@ -8,12 +8,15 @@ export type Dance = {
     createdDate: string
     lastUpdate: string
     duration: number
+    robotModelId: string
+    statusText: string
 }
 
 export type DanceModal = {
     code: string
     name: string
     description: string
+    robotModelId: string
     duration: number
     status: number
     icon: string

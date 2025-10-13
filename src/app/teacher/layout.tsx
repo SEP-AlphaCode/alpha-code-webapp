@@ -4,7 +4,7 @@ import React, { useState, useEffect } from "react";
 import { usePathname } from "next/navigation";
 import { AuthGuard } from "@/components/auth-guard";
 import { useLogout } from "@/features/auth/hooks/use-logout";
-import { useRobotStore } from "@/hooks/use-robot-store";
+import { getUserInfoFromToken } from "@/utils/tokenUtils";
 import { AccountData } from "@/types/account";
 import { TeacherHeader } from "@/components/teacher/teacher-header";
 import { TeacherSidebar } from "@/components/teacher/teacher-sidebar";
@@ -15,38 +15,41 @@ interface TeacherLayoutProps {
 
 export default function TeacherLayout({ children }: TeacherLayoutProps) {
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
-  const [accountData/*, setAccountData*/] = useState<AccountData | null>({
-    id: "1",
-    username: "teacher",
-    fullName: "Teacher",
-    email: "teacher@example.com",
-    roleName: "teacher",
-    roleId: "teacher",
-  }); // Dữ liệu giả định
-  
-  // Redux Robot Store
-  const { initializeMockData } = useRobotStore();
+  const [accountData, setAccountData] = useState<AccountData | null>(null);
   
   const pathname = usePathname();
   const logoutMutation = useLogout();
 
   useEffect(() => {
-    // Logic để lấy dữ liệu account từ storage
-    // const data = getAccountDataFromStorage();
-    // setAccountData(data);
-    
-    // Initialize robot mock data
-    initializeMockData();
-  }, [initializeMockData]);
+    // Lấy thông tin account từ token
+    if (typeof window !== 'undefined') {
+      const accessToken = sessionStorage.getItem('accessToken');
+      if (accessToken) {
+        const userInfo = getUserInfoFromToken(accessToken);
+        if (userInfo) {
+          setAccountData({
+            id: userInfo.id || "",
+            username: userInfo.username || "",
+            fullName: userInfo.fullName || "",
+            email: userInfo.email || "",
+            roleName: userInfo.roleName || "teacher",
+            roleId: userInfo.roleId || "teacher",
+          });
+        }
+      }
+    }
+  }, []);
 
   const navigationItems = [
     { name: "Dashboard", href: "/teacher", icon: "📊" },
     { name: "Robots", href: "/teacher/robot", icon: "🤖" },
+    { name: "Joysticks Control", href: "/teacher/joystick", icon: "🕹️" },
     { name: "Students", href: "/teacher/student", icon: "👥" },
     { name: "Programming", href: "/teacher/programming", icon: "💻" },
     { name: "Classroom", href: "/teacher/classroom", icon: "🏫" },
     { name: "Activities", href: "/teacher/activities", icon: "🎯" },
     { name: "Music", href: "/teacher/music", icon: "🎵" },
+    { name: "Videos", href: "/teacher/videos", icon: "🎬" },
   ];
 
   const isActiveRoute = (href: string) => {
@@ -94,7 +97,7 @@ export default function TeacherLayout({ children }: TeacherLayoutProps) {
 
         {/* Main Content */}
         <main
-          className={`transition-all duration-300 ease-in-out pt-16 ${
+          className={`transition-all duration-300 ease-in-out pt-13 ${
             isSidebarOpen ? "ml-64" : "ml-16"
           }`}
         >
