@@ -49,7 +49,7 @@ export const useLogin = () => {
       } else if (roleNameLower === 'teacher') {
         router.push('/teacher');
       } else {
-        router.push('/student');
+        router.push('/courses');
       }
     },
     onError: (error) => {

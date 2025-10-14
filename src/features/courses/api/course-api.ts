@@ -1,4 +1,4 @@
-import { AccountCourse, AccountLesson, Category, Course } from "@/types/courses";
+import { AccountCourse, AccountLesson, Category, Course, Lesson } from "@/types/courses";
 import { PagedResult } from "@/types/page-result";
 import { coursesHttp } from "@/utils/http";
 import { getMockAccountCourses } from "./account-courses";
@@ -96,6 +96,18 @@ export const markLessonComplete = async (accountLessonId: string, signal?: Abort
     }
     catch (error) {
         console.error("API Error in markLessonComplete:", error);
+        throw error;
+    }
+}
+
+export const getLessons = async (courseId: string) => {
+    try {
+        const response = await coursesHttp.get<PagedResult<Lesson>>('lessons/get-by-course/' + courseId);
+        // Handle different response structures
+        return response.data;
+
+    } catch (error) {
+        console.error("API Error in getLessons :", error);
         throw error;
     }
 }

@@ -6,10 +6,11 @@ import Link from "next/link";
 interface CourseGridProps {
     courses: AccountCourse[]
     showProgress?: boolean
-    progressData?: Record<string, number> // courseId -> progress percentage
+    progressData?: Record<string, number>, // courseId -> progress percentage
+    onCourseChosen: (c: AccountCourse) => void
 }
 
-export function CourseGrid({ courses, showProgress = false, progressData = {} }: CourseGridProps) {
+export function CourseGrid({ courses, showProgress = false, progressData = {}, onCourseChosen }: CourseGridProps) {
     if (courses.length === 0) {
         return (
             <div className="text-center py-16">
@@ -28,16 +29,20 @@ export function CourseGrid({ courses, showProgress = false, progressData = {} }:
 
                 return (
                     <Link
-                        href={`/courses/${course.courseId}`}
+                        onClick={(e) => {
+                            console.log('Click!', course);
+                            onCourseChosen(course)
+                        }}
+                        href={`/courses/${course.slug}`}
                         key={course.id}
                         className="group block bg-card border border-border rounded-xl overflow-hidden hover:shadow-xl hover:border-primary/30 transition-all duration-300 hover:-translate-y-0.5"
                     >
                         <div className="flex flex-col sm:flex-row gap-0 sm:gap-5 p-4 sm:p-5">
-                            <div className="relative flex-shrink-0 w-full sm:w-44 h-44 rounded-lg overflow-hidden bg-gradient-to-br from-primary/10 to-primary/5">
+                            <div className="relative flex-shrink-0 w-full sm:w-32 h-32 rounded-lg overflow-hidden bg-gradient-to-br from-primary/10 to-primary/5 border-2">
                                 {course.id ? (
                                     <img
-                                        src={"/placeholder.svg"}
-                                        alt={course.courseId}
+                                        src={course.imageUrl || "/placeholder.svg"}
+                                        alt={course.name}
                                         className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
                                     />
                                 ) : (
@@ -50,20 +55,18 @@ export function CourseGrid({ courses, showProgress = false, progressData = {} }:
                             <div className="flex-1 flex flex-col justify-between min-w-0 mt-4 sm:mt-0">
                                 <div className="space-y-3">
                                     <h3 className="text-xl font-bold text-foreground group-hover:text-blue-500 transition-colors line-clamp-2 flex-1">
-                                        {course.id}
+                                        {course.name}
                                     </h3>
-
-                                    <p className="text-sm text-muted-foreground line-clamp-3 leading-relaxed">{course.id}</p>
 
                                     <div className="flex flex-wrap items-center gap-4 text-sm">
                                         <div className="flex items-center gap-1.5 text-muted-foreground">
                                             <BookOpen className="w-4 h-4" />
-                                            <span className="font-medium">{course.completedLesson} / ?</span>
+                                            <span className="font-medium">Đã học {course.completedLesson} / {course.totalLesson} bài học</span>
                                         </div>
-                                        <div className="flex items-center gap-1.5 text-muted-foreground">
+                                        {/* <div className="flex items-center gap-1.5 text-muted-foreground">
                                             <Clock className="w-4 h-4" />
-                                            {/* <span className="font-medium">{formatTimespan(course.totalDuration)}</span> */}
-                                        </div>
+                                            <span className="font-medium">{formatTimespan(course.totalDuration)}</span>
+                                        </div> */}
                                         {showProgress && progress > 0 && (
                                             <div className="flex items-center gap-1.5 text-primary">
                                                 <TrendingUp className="w-4 h-4" />

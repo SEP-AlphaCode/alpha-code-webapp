@@ -11,15 +11,16 @@ interface CourseState {
     search: string;
   };
   currentCourse: {
-    name: string | null;
-    slug: string | null;
+    name?: string;
+    slug?: string;
+    id?: string
   };
 }
 
 const initialState: CourseState = {
   pagination: { page: 1, size: 12 },
   filters: { categoryIds: [], search: "" },
-  currentCourse: { name: null, slug: null }
+  currentCourse: {}
 };
 
 const courseSlice = createSlice({
@@ -35,11 +36,11 @@ const courseSlice = createSlice({
     },
     setSearch: (state, action: PayloadAction<string>) => {
       console.log("Setting search to:", action.payload);
-      
+
       state.filters.search = action.payload;
       state.pagination.page = 1;
     },
-    setCurrentCourse: (state, action: PayloadAction<{ name: string; slug: string } | null>) => {
+    setCurrentCourse: (state, action: PayloadAction<{ name?: string; slug?: string, id?: string }>) => {
       state.currentCourse = action.payload ?? { name: null, slug: null };
     }
   }

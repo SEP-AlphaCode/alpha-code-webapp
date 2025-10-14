@@ -91,7 +91,7 @@ export default function CourseLayout({
   children: React.ReactNode
 }) {
   return (
-    <AuthGuard>
+    <AuthGuard allowedRoles={['teacher', 'user']}>
       <SidebarProvider
         style={
           {
@@ -101,7 +101,7 @@ export default function CourseLayout({
         }
       >
         <CourseSidebar />
-        <SidebarInset className="min-h-screen overflow-hidden bg-white">
+        <SidebarInset className="max-h-screen overflow-hidden bg-white">
           <header className="flex h-16 shrink-0 items-center gap-2 border-b border-slate-200 bg-white">
             <div className="flex items-center gap-2 px-4 w-full">
               <SidebarTrigger className="-ml-1" />

@@ -1,7 +1,7 @@
-import { getAccountCourses, getAccountLessons, getCategories, getCategoryBySlug, getCourseBySlug, getCourses, markLessonComplete } from "@/features/courses/api/course-api";
-import { AccountCourse, AccountLesson, Category, Course } from "@/types/courses";
+import { getAccountCourses, getAccountLessons, getCategories, getCategoryBySlug, getCourseBySlug, getCourses, getLessons, markLessonComplete } from "@/features/courses/api/course-api";
+import { AccountCourse, AccountLesson, Category, Course, Lesson } from "@/types/courses";
 import { PagedResult } from "@/types/page-result";
-import { useInfiniteQuery, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useInfiniteQuery, useQuery, useQueryClient, UseQueryOptions } from "@tanstack/react-query";
 import { use } from "react";
 
 const STALE_TIME = 24 * 3600 * 1000
@@ -28,12 +28,19 @@ export const useCourse = () => {
             refetchOnWindowFocus: false,
         })
     }
-    const useGetCourseBySlug = (slug: string) => useQuery<Course | undefined>({
-        queryKey: ['courses', slug],
-        staleTime: STALE_TIME,
-        queryFn: () => getCourseBySlug(slug),
-        refetchOnWindowFocus: false,
-    })
+    const useGetCourseBySlug = (
+        slug: string,
+        options?: Omit<UseQueryOptions<Course | undefined>, 'queryKey'>
+    ) => {
+        return useQuery<Course | undefined>({
+            queryKey: ['courses', slug],
+            queryFn: () => getCourseBySlug(slug),
+            staleTime: STALE_TIME,
+            refetchOnWindowFocus: false,
+            enabled: !!slug, // prevents query from firing if slug is empty
+            ...options, // allow override
+        });
+    };
     const useGetCategoryBySlug = (slug: string) => useQuery<Category | undefined>({
         queryKey: ['category', slug],
         staleTime: STALE_TIME,
@@ -63,6 +70,19 @@ export const useCourse = () => {
             refetchOnWindowFocus: false,
         })
     }
+    const useGetLessons = (
+        courseId: string,
+        options?: Omit<UseQueryOptions<PagedResult<Lesson>>, 'queryKey'>
+    ) => {
+        return useQuery<PagedResult<Lesson>>({
+            queryKey: ['lessons', courseId],
+            queryFn: () => getLessons(courseId),
+            staleTime: STALE_TIME,
+            refetchOnWindowFocus: false,
+            enabled: !!courseId,            
+            ...options,
+        });
+    };
     return {
         useGetCategories,
         useGetCourses,
@@ -70,6 +90,7 @@ export const useCourse = () => {
         useGetCourseBySlug,
         useGetAccountCourses,
         useGetAccountLessons,
-        useMarkLessonComplete
+        useMarkLessonComplete,
+        useGetLessons
     }
 }

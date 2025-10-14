@@ -52,6 +52,9 @@ export interface AccountCourse {
     status: number;
     statusText: string;
     totalLesson: number;
+    slug: string,
+    imageUrl: string,
+    name: string
 }
 
 export interface AccountLesson {

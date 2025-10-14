@@ -3,49 +3,75 @@ import { CourseDescription } from '@/components/course/detail/course-desc'
 import { CourseError } from '@/components/course/detail/course-error'
 import { CourseHeader } from '@/components/course/detail/course-header'
 import { CourseLessons } from '@/components/course/detail/course-lesson'
-import { CourseSidebar } from '@/components/course/detail/course-sidebar'
 import { CourseSkeleton } from '@/components/course/detail/course-skeleton'
 import { useCourse } from '@/features/courses/hooks/use-course'
-import { cn } from '@/lib/utils'
 import { setCurrentCourse } from '@/store/course-slice'
-import { AppDispatch } from '@/store/store'
-import { formatTimespan, mapDifficulty } from '@/types/courses'
-import Link from 'next/link'
+import { AppDispatch, RootState } from '@/store/store'
 import { useParams } from 'next/navigation'
 import React, { use, useEffect } from 'react'
-import { useDispatch } from 'react-redux'
+import { useDispatch, useSelector } from 'react-redux'
+
 
 export default function CoursePage() {
   const dispatch = useDispatch<AppDispatch>();
+  const { currentCourse } = useSelector((s: RootState) => s.course);
   const { slug } = useParams<{ slug: string }>();
-  const { data, isLoading } = useCourse().useGetCourseBySlug(slug);
+  const { useGetCourseBySlug, useGetLessons } = useCourse();
 
+  // Decide whether to fetch the course (if state is empty or mismatched)
+  const shouldFetchCourse = !currentCourse || currentCourse.slug !== slug;
+  console.log(shouldFetchCourse);
+
+
+  // Fetch only if needed
+  const { data: courseData, isLoading } = useGetCourseBySlug(shouldFetchCourse ? slug : '', {
+    enabled: shouldFetchCourse, // prevent firing with empty slug
+  });
+
+  // Final course to use
+  const course = shouldFetchCourse ? courseData : currentCourse;
+
+  // Fetch lessons only when we have course ID
+  const { data: lessons } = useGetLessons(course?.id ?? '', {
+    enabled: shouldFetchCourse && !!course?.id,
+  });
+
+  // Sync Redux store if we fetched a course
   useEffect(() => {
-    if (data) {
-      dispatch(setCurrentCourse({ name: data.name, slug: data.slug }));
+    if (courseData) {
+      dispatch(
+        setCurrentCourse({
+          id: courseData.id,
+          name: courseData.name,
+          slug: courseData.slug,
+        })
+      );
     }
-    return () => { dispatch(setCurrentCourse(null)); }
-  }, [data, dispatch]);
+    return
+  }, [courseData, dispatch]);
 
-  if (isLoading) return <CourseSkeleton />;
-  if (!data) return <CourseError />;
+  // Handle states
+  if (isLoading && shouldFetchCourse) return <CourseSkeleton />;
+  if (!course) return <CourseError />;
 
   return (
-    <div className="space-y-4 md:space-y-6 min-h-screen">
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 md:gap-8">
-        {/* Left column */}
-        <div className="lg:col-span-2 space-y-6">
-          <CourseHeader data={data} />
-          <CourseDescription data={data} />
-          {/* <CourseHighlights data={data} /> */}
-          <CourseLessons lessons={data.lessons ?? []} lessonCount={data.totalLessons} totalDuration={data.totalDuration} />
-        </div>
-
+    <div className="h-screen overflow-hidden">
+      <div className="grid grid-cols-1 lg:grid-cols-[320px_1fr] h-full">
         {/* Sidebar */}
-        <div className="lg:col-span-1">
-          <CourseSidebar data={data} />
-        </div>
+        <aside className="border-r border-slate-200 h-full overflow-y-auto px-6">
+          <CourseLessons
+            lessons={lessons?.data ?? []}
+            lessonCount={-1}
+            totalDuration={1}
+            courseId={course.id ?? ''}
+          />
+        </aside>
+
+        {/* Main content */}
+        <main className="h-full overflow-y-auto p-6 lg:p-10 bg-white">
+        </main>
       </div>
     </div>
   );
+
 }

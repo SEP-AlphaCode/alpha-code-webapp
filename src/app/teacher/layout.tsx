@@ -74,7 +74,7 @@ export default function TeacherLayout({ children }: TeacherLayoutProps) {
   // };
 
   return (
-    // <AuthGuard allowedRoles={['teacher']}>
+    <AuthGuard allowedRoles={['teacher', 'user']}>
       <div className="min-h-screen bg-gray-50">
         {/* Header */}
         <TeacherHeader
@@ -107,6 +107,6 @@ export default function TeacherLayout({ children }: TeacherLayoutProps) {
           </div>
         </main>
       </div>
-    // </AuthGuard>
+    </AuthGuard>
   );
 }
