@@ -45,6 +45,7 @@ export default function ActivitiesPage() {
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false)
   const [currentPage, setCurrentPage] = useState(1)
   const [perPage, setPerPage] = useState(12)
+  
 
   // Debounce search term
   useEffect(() => {
@@ -61,9 +62,7 @@ export default function ActivitiesPage() {
     setCurrentPage(1)
   }, [filterType, filterStatus, perPage])
 
-  // API Hooks - use debounced search term
-  const { data: activitiesData, isLoading, error } = useActivities(currentPage, perPage, debouncedSearchTerm)
-  const createActivityMutation = useCreateActivity()
+
 
   // Robot Controls Hook
   const { startActivity, isLoading: isRobotLoading } = useRobotControls()
@@ -76,6 +75,11 @@ export default function ActivitiesPage() {
     initializeMockData,
     robots
   } = useRobotStore()
+
+
+  // API Hooks - use debounced search term
+  const { data: activitiesData, isLoading, error } = useActivities(currentPage, perPage, debouncedSearchTerm, selectedRobot?.robotModelId)
+  const createActivityMutation = useCreateActivity()
 
   // Initialize mock robot data - only once and only if no robots exist
   useEffect(() => {

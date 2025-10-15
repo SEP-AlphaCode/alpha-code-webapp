@@ -1,30 +1,51 @@
-// src/hooks/use-robot-dance.ts
+// src/hooks/use-dance.ts
 "use client"
 
-import { useQuery } from "@tanstack/react-query"
-import { activitiesHttp } from "@/utils/http"
-import type { RobotActionResponse } from "@/types/robot"
+import { useRobotStore } from "@/hooks/use-robot-store"
+import { getPagedDances, createDance, updateDance, deleteDance } from "@/features/activities/api/dance-api"
+import { DanceModal } from "@/types/dance"
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 
-export function useDances(page: number, size: number, search = "") {
-  return useQuery<RobotActionResponse, Error>({
-    queryKey: ["robotDances", page, size, search || ""],
-    queryFn: async ({ queryKey }) => {
-      const [, currentPage, currentSize, currentSearch] = queryKey
+export const useDance = () => {
+  const queryClient = useQueryClient()
+  const { selectedRobot } = useRobotStore()
 
-      const controller = new AbortController()
-      setTimeout(() => controller.abort(), 10000)
+  const useGetPagedDances = (page: number, limit: number, search?: string, ) => {
+    
+    const model = selectedRobot?.robotModelId || "default"
 
-      const res = await activitiesHttp.get<RobotActionResponse>(
-        `/dances?page=${currentPage}&size=${currentSize}&search=${currentSearch}`,
-        { signal: controller.signal, headers: { accept: "*/*" } }
-      )
-      return res.data
-    },
-    staleTime: 1000 * 60 * 5, // 5 minutes
-    refetchOnWindowFocus: false,
-    refetchOnMount: false,
-    retry: 2,
-    retryDelay: 1000,
-    placeholderData: (prev) => prev,
-  })
+    return useQuery({
+      queryKey: ["dances", model, page, limit, search || ""],
+      queryFn: () => getPagedDances(page, limit, search, model),
+      enabled: !!model,
+      staleTime: 1000 * 60 * 5,
+      refetchOnWindowFocus: false,
+      refetchOnMount: false,
+    })
+  }
+
+  const useCreateDance = () =>
+    useMutation({
+      mutationFn: createDance,
+      onSuccess: () => queryClient.invalidateQueries({ queryKey: ["dances"] }),
+    })
+
+  const useUpdateDance = () =>
+    useMutation({
+      mutationFn: ({ id, data }: { id: string; data: DanceModal }) => updateDance(id, data),
+      onSuccess: () => queryClient.invalidateQueries({ queryKey: ["dances"] }),
+    })
+
+  const useDeleteDance = () =>
+    useMutation({
+      mutationFn: deleteDance,
+      onSuccess: () => queryClient.invalidateQueries({ queryKey: ["dances"] }),
+    })
+
+  return {
+    useGetPagedDances,
+    useCreateDance,
+    useUpdateDance,
+    useDeleteDance,
+  }
 }
