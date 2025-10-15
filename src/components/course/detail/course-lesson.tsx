@@ -25,25 +25,12 @@ export function CourseLessons({
   };
 
   return (
-    <div className="py-6">
-      {/* Mobile: dropdown selector */}
-      <div className="block lg:hidden">
-        <select
-          className="w-full border border-slate-300 rounded-lg p-3 text-slate-800"
-          value={activeLesson || ""}
-          onChange={(e) => setActiveLesson(e.target.value)}
-        >
-          <option value="">Chọn bài học...</option>
-          {lessons.map((lesson) => (
-            <option key={lesson.id} value={lesson.id}>
-              {lesson.title}
-            </option>
-          ))}
-        </select>
-      </div>
-
+    <div className="">
       {/* Desktop: lesson progress list */}
-      <div className="hidden lg:flex flex-col gap-1 overflow-y-auto max-h-[calc(100vh-5rem)] pr-2">
+      <div className="pl-4 py-2">
+        Nội dung khóa học
+      </div>
+      <div className="flex flex-col gap-1 bg-red-100 overflow-y-auto max-h-[calc(100vh-5rem)] pr-2">
         {lessons.map((lesson, i) => {
           const isCompleted = completed.includes(lesson.id);
           const isActive = activeLesson === lesson.id;
