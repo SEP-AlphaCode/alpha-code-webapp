@@ -49,6 +49,7 @@ export default function TeacherLayout({ children }: TeacherLayoutProps) {
     { name: "Classroom", href: "/teacher/classroom", icon: "🏫" },
     { name: "Activities", href: "/teacher/activities", icon: "🎯" },
     { name: "Music", href: "/teacher/music", icon: "🎵" },
+    { name: "Courses", href: "/teacher/courses", icon: "📖" },
     { name: "Videos", href: "/teacher/videos", icon: "🎬" },
   ];
 
@@ -73,7 +74,7 @@ export default function TeacherLayout({ children }: TeacherLayoutProps) {
   // };
 
   return (
-    <AuthGuard allowedRoles={["teacher"]}>
+    <AuthGuard allowedRoles={['teacher', 'user']}>
       <div className="min-h-screen bg-gray-50">
         {/* Header */}
         <TeacherHeader

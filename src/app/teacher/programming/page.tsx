@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { Suspense, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -21,7 +21,7 @@ interface SequenceBlock extends Omit<ProgramBlock, 'id'> {
 
 type CategoryType = 'Movement' | 'Sound' | 'Emotion' | 'Control';
 
-export default function ProgrammingPage() {
+function ProgrammingPage() {
     const searchParams = useSearchParams();
     const selectedRobotName = searchParams.get('robot') || 'No Robot Selected';
     const [selectedCategory, setSelectedCategory] = useState<CategoryType>('Movement');
@@ -117,11 +117,10 @@ export default function ProgrammingPage() {
                                     <button
                                         key={category.name}
                                         onClick={() => setSelectedCategory(category.name)}
-                                        className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-                                            selectedCategory === category.name
+                                        className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${selectedCategory === category.name
                                                 ? 'bg-primary text-primary-foreground'
                                                 : 'bg-muted hover:bg-muted/80'
-                                        }`}
+                                            }`}
                                     >
                                         <span className="mr-2">{category.icon}</span>
                                         {category.name}
@@ -276,5 +275,13 @@ export default function ProgrammingPage() {
                 </div>
             </div>
         </div>
+    );
+}
+
+export default function ProgrammingPageWrapper() {
+    return (
+        <Suspense fallback={<div className="p-10">Loading...</div>}>
+            <ProgrammingPage />
+        </Suspense>
     );
 }
