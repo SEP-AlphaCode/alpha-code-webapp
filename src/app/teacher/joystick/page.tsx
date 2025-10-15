@@ -11,6 +11,7 @@ import JoystickConfigurationModal from '@/components/teacher/joystick/joystick-c
 import { useJoystick } from '@/features/activities/hooks/use-joystick';
 import { Joystick } from '@/types/joystick';
 import { getUserInfoFromToken } from '@/utils/tokenUtils';
+import RobotVideoStream from '@/components/teacher/robot/robot-video-stream';
 // import RobotVideoStream from '@/components/teacher/robot/robot-video-stream';
 
 interface JoystickPosition {
@@ -603,16 +604,10 @@ export default function JoystickPage() {
                       )}
                     </Badge>
                   </div>
-                  {/* Temporary placeholder instead of RobotVideoStream */}
-                  <div className="w-full h-48 rounded-xl border-2 border-gray-300 shadow-lg bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center">
-                    <div className="text-center text-gray-600">
-                      <div className="text-4xl mb-2">🎥</div>
-                      <div className="text-sm font-medium">Robot Video Stream</div>
-                      <div className="text-xs mt-1">
-                        {selectedRobotSerial ? `Connected: ${selectedRobot?.name || 'Unknown'}` : 'No robot selected'}
-                      </div>
-                    </div>
-                  </div>
+                   <RobotVideoStream 
+                    robotSerial={selectedRobotSerial}
+                    className="w-full h-48 rounded-xl border-2 border-gray-300 shadow-lg"
+                  />
                 </div>
                 
                 {/* Logo/Brand area */}
