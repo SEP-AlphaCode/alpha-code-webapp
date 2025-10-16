@@ -74,8 +74,8 @@ function AdminBreadcrumb() {
         currentPageName = 'Thẻ Osmo'; break;
       case 'settings':
         currentPageName = 'Cài đặt'; break;
-      case 'token-price':
-        currentPageName = 'Giá token'; break;
+      case 'token-rule':
+        currentPageName = 'Luật token'; break;
       case 'key-price':
         currentPageName = 'Giá bản quyền'; break;
       case 'actions':

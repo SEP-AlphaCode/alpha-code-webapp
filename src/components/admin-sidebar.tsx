@@ -141,12 +141,12 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         icon: Settings2,
         items: [
           {
-            title: "Giá Token",
-            url: "/admin/settings/token-price",
-          },
-          {
             title: "Giá Key",
             url: "/admin/settings/key-price",
+          },
+          {
+            title: "Giá Token",
+            url: "/admin/settings/token-rule",
           },
         ],
       },
