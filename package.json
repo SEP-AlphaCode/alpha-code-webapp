@@ -29,6 +29,7 @@
     "@tanstack/react-table": "^8.21.3",
     "aos": "^2.3.4",
     "axios": "^1.11.0",
+    "blockly": "^12.3.1",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "country-flag-icons": "^1.5.19",
