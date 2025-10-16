@@ -8,7 +8,6 @@ const ClientSideComponent = dynamic(
 export default function page() {
     return (
         <div>
-            ABC
             <ClientSideComponent />
         </div>
     )

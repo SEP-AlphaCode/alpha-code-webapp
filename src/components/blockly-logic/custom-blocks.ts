@@ -1,0 +1,17 @@
+const customBlocks = [
+    {
+        "type": "do_action",
+        "message0": 'Execute the action %1',
+        "args0": [
+            {
+                "type": "input_value",
+                "name": "VALUE",
+                "check": "String"
+            }
+        ],
+        "output": "Number",
+        "colour": 160,
+        "tooltip": "Returns number of letters in the provided text.",
+        "helpUrl": "http://www.w3schools.com/jsref/jsref_length_string.asp"
+    }
+]

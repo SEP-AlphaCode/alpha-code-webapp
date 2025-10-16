@@ -1,3 +1,7 @@
+export type Json = {
+    [key: string]: unknown
+}
+
 export type BlockType =
     | "value"
     | "call_function"
