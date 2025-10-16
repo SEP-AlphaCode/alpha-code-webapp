@@ -13,7 +13,8 @@ import {
   Users,
   BookMarkedIcon,
   QrCode,
-  School
+  School,
+  Upload
 } from "lucide-react"
 
 import { NavMain } from "@/components/nav-main"
@@ -70,7 +71,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
     },
     {
       name: "Mã QR",
-      url: "/admin/qrcodes",
+      url: "/admin/qr-codes",
       icon: QrCode,
     },
     {
@@ -82,6 +83,11 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       name: "Dấu đánh dấu",
       url: "/admin/markers",
       icon: BookMarkedIcon,
+    },
+    {
+      name: "Test Lesson Upload",
+      url: "/admin/test-lesson-upload",
+      icon: Upload,
     },
   ], []);
   React.useEffect(() => {
@@ -124,7 +130,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
             url: "/admin/activities/skills",
           },
           {
-            title: "Hành động nâng cao",
+            title: "Hành động mở rộng",
             url: "/admin/activities/extended-actions",
           },
         ],
@@ -135,20 +141,12 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         icon: Settings2,
         items: [
           {
-            title: "Robot",
-            url: "/admin/settings",
+            title: "Giá Token",
+            url: "/admin/settings/token-price",
           },
           {
-            title: "Nhóm",
-            url: "#",
-          },
-          {
-            title: "Thanh toán",
-            url: "#",
-          },
-          {
-            title: "Giới hạn",
-            url: "#",
+            title: "Giá Key",
+            url: "/admin/settings/key-price",
           },
         ],
       },

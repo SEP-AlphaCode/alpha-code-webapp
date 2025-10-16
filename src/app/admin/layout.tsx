@@ -62,6 +62,32 @@ function AdminBreadcrumb() {
         currentPageName = 'Người dùng'; break;
       case 'settings':
         currentPageName = 'Cài đặt'; break;
+      case 'analytics':
+        currentPageName = 'Phân tích'; break;
+      case 'robots':
+        currentPageName = 'Robot'; break;
+      case 'classrooms':
+        currentPageName = 'Lớp học'; break;
+      case 'qrcodes':
+        currentPageName = 'Mã QR'; break;
+      case 'osmo-cards':
+        currentPageName = 'Thẻ Osmo'; break;
+      case 'settings':
+        currentPageName = 'Cài đặt'; break;
+      case 'token-price':
+        currentPageName = 'Giá token'; break;
+      case 'key-price':
+        currentPageName = 'Giá bản quyền'; break;
+      case 'actions':
+        currentPageName = 'Hành động'; break;
+      case 'dances':
+        currentPageName = 'Điệu nhảy'; break;
+      case 'expressions':
+        currentPageName = 'Biểu cảm'; break;
+      case 'extended-actions':
+        currentPageName = 'Hành động mở rộng'; break;
+      case 'skills':
+        currentPageName = 'Kỹ năng'; break;
       // Thêm các trường hợp khác nếu cần
       default:
         currentPageName = formatPathToDisplayName(lastSegment);
