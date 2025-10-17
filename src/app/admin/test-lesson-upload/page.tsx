@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useRef } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -28,11 +28,25 @@ interface LessonData {
   content: string
   duration: number
   requireRobot: boolean
-  courseId: string
+  sectionId: string
   type: number
+  orderNumber: number
   solution: {
     action: string
   }
+}
+
+interface Section {
+  id: string
+  title: string
+  orderNumber: number
+  courseId: string
+}
+
+interface CreateSection {
+  title: string
+  courseId: string
+  orderNumber: number
 }
 
 export default function TestLessonUploadPage() {
@@ -41,17 +55,48 @@ export default function TestLessonUploadPage() {
   const [error, setError] = useState<string | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
   
+  // Course ID state - cần thiết để fetch sections
+  const [courseId, setCourseId] = useState("b3b9e34a-1b1b-4e1c-b23e-0ab3d97c93a7")
+  
   const [lessonData, setLessonData] = useState<LessonData>({
     title: "Lesson 1",
     content: "Intro",
     duration: 100,
     requireRobot: true,
-    courseId: "b3b9e34a-1b1b-4e1c-b23e-0ab3d97c93a7",
+    sectionId: "",
+    orderNumber: 1,
     type: 1,
     solution: { action: "wave" }
   })
+
+  const [sections, setSections] = useState<Section[]>([])
+  const [sectionsLoading, setSectionsLoading] = useState(false)
+  
+  const [newSectionTitle, setNewSectionTitle] = useState("")
+  const [showAddSection, setShowAddSection] = useState(false)
   
   const [selectedFile, setSelectedFile] = useState<File | null>(null)
+
+  // Fetch sections when courseId changes
+  useEffect(() => {
+    if (courseId) {
+      fetchSections()
+    }
+  }, [courseId])
+
+  const fetchSections = async () => {
+    try {
+      setSectionsLoading(true)
+      const response = await lessonApi.get(`/api/v1/sections/get-by-course/${courseId}`)
+      console.log('Sections response:', response.data)
+      setSections(response.data.data || [])
+    } catch (error) {
+      console.error('Error fetching sections:', error)
+      toast.error('Không thể tải danh sách sections')
+    } finally {
+      setSectionsLoading(false)
+    }
+  }
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
@@ -66,6 +111,11 @@ export default function TestLessonUploadPage() {
     
     if (!selectedFile) {
       toast.error('Vui lòng chọn file video')
+      return
+    }
+
+    if (!lessonData.sectionId) {
+      toast.error('Vui lòng chọn section')
       return
     }
 
@@ -117,22 +167,91 @@ export default function TestLessonUploadPage() {
     setSelectedFile(null)
     setResult(null)
     setError(null)
+    setCourseId("b3b9e34a-1b1b-4e1c-b23e-0ab3d97c93a7")
+    setLessonData({
+      title: "Lesson 1",
+      content: "Intro",
+      duration: 100,
+      requireRobot: true,
+      sectionId: "",
+      orderNumber: 1,
+      type: 1,
+      solution: { action: "wave" }
+    })
     if (fileInputRef.current) {
       fileInputRef.current.value = ''
     }
   }
 
   const loadSampleData = () => {
+    const sampleCourseId = "b3b9e34a-1b1b-4e1c-b23e-0ab3d97c93a7"
+    setCourseId(sampleCourseId)
     setLessonData({
       title: "Sample Lesson - Robot Movement",
       content: "This lesson teaches basic robot movement and wave gesture",
       duration: 120,
       requireRobot: true,
-      courseId: "b3b9e34a-1b1b-4e1c-b23e-0ab3d97c93a7",
+      sectionId: "",
+      orderNumber: 1,
       type: 1,
       solution: { action: "wave" }
     })
     toast.success('Đã load sample data')
+  }
+
+  const addSection = async () => {
+    if (!newSectionTitle.trim()) {
+      toast.error('Vui lòng nhập tên section')
+      return
+    }
+
+    if (!courseId) {
+      toast.error('Vui lòng nhập Course ID trước')
+      return
+    }
+
+    try {
+      setLoading(true)
+      const createSectionData: CreateSection = {
+        title: newSectionTitle,
+        courseId: courseId,
+        orderNumber: sections.length + 1
+      }
+
+      await lessonApi.post('/api/v1/sections', createSectionData)
+      
+      setNewSectionTitle("")
+      setShowAddSection(false)
+      toast.success('Đã thêm section mới')
+      
+      // Refresh sections list
+      await fetchSections()
+    } catch (error) {
+      console.error('Error creating section:', error)
+      toast.error('Không thể tạo section mới')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const removeSection = async (sectionId: string) => {
+    try {
+      setLoading(true)
+      await lessonApi.delete(`/api/v1/sections/${sectionId}`)
+      
+      if (lessonData.sectionId === sectionId) {
+        setLessonData(prev => ({...prev, sectionId: ""}))
+      }
+      toast.success('Đã xóa section')
+      
+      // Refresh sections list
+      await fetchSections()
+    } catch (error) {
+      console.error('Error deleting section:', error)
+      toast.error('Không thể xóa section')
+    } finally {
+      setLoading(false)
+    }
   }
 
   return (
@@ -206,22 +325,142 @@ export default function TestLessonUploadPage() {
                 />
               </div>
 
+              <div className="grid gap-2">
+                <Label htmlFor="courseId">Course ID *</Label>
+                <Input
+                  id="courseId"
+                  value={courseId}
+                  onChange={(e) => setCourseId(e.target.value)}
+                  placeholder="VD: b3b9e34a-1b1b-4e1c-b23e-0ab3d97c93a7"
+                  required
+                  disabled={loading}
+                />
+              </div>
+
+              <div className="grid gap-2">
+                <Label htmlFor="duration">Thời lượng (giây) *</Label>
+                <Input
+                  id="duration"
+                  type="number"
+                  min="1"
+                  value={lessonData.duration}
+                  onChange={(e) => setLessonData(prev => ({...prev, duration: parseInt(e.target.value) || 0}))}
+                  required
+                  disabled={loading}
+                />
+              </div>
+
+              {/* Section Management */}
+              <div className="grid gap-2">
+                <div className="flex items-center justify-between">
+                  <Label>Sections *</Label>
+                  <div className="flex gap-2">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={fetchSections}
+                      disabled={loading || sectionsLoading || !courseId}
+                    >
+                      {sectionsLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : '🔄'} Refresh
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setShowAddSection(true)}
+                      disabled={loading || !courseId}
+                    >
+                      + Thêm Section
+                    </Button>
+                  </div>
+                </div>
+                
+                {/* Add Section Form */}
+                {showAddSection && (
+                  <div className="flex gap-2 p-3 border rounded-lg bg-gray-50">
+                    <Input
+                      placeholder="Tên section mới..."
+                      value={newSectionTitle}
+                      onChange={(e) => setNewSectionTitle(e.target.value)}
+                      onKeyPress={(e) => e.key === 'Enter' && addSection()}
+                    />
+                    <Button
+                      type="button"
+                      size="sm"
+                      onClick={addSection}
+                    >
+                      Thêm
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => {
+                        setShowAddSection(false)
+                        setNewSectionTitle("")
+                      }}
+                    >
+                      Hủy
+                    </Button>
+                  </div>
+                )}
+
+                {/* Sections List */}
+                <div className="space-y-2">
+                  {sectionsLoading ? (
+                    <div className="flex items-center justify-center p-4">
+                      <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                      <span className="text-sm text-muted-foreground">Đang tải sections...</span>
+                    </div>
+                  ) : sections.length > 0 ? (
+                    sections.map((section) => (
+                      <div key={section.id} className="flex items-center gap-2 p-2 border rounded-lg">
+                        <input
+                          type="radio"
+                          name="section"
+                          value={section.id}
+                          checked={lessonData.sectionId === section.id}
+                          onChange={(e) => setLessonData(prev => ({...prev, sectionId: e.target.value}))}
+                          disabled={loading}
+                        />
+                        <span className="flex-1 text-sm">{section.title}</span>
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          onClick={() => removeSection(section.id)}
+                          disabled={loading}
+                          className="h-6 w-6 p-0"
+                        >
+                          ×
+                        </Button>
+                      </div>
+                    ))
+                  ) : (
+                    <p className="text-sm text-muted-foreground">
+                      {courseId ? 'Chưa có section nào cho course này. Thêm section đầu tiên!' : 'Vui lòng nhập Course ID để tải sections'}
+                    </p>
+                  )}
+                </div>
+              </div>
+
               <div className="grid grid-cols-2 gap-4">
                 <div className="grid gap-2">
-                  <Label htmlFor="duration">Thời lượng (phút) *</Label>
+                  <Label htmlFor="orderNumber">Thứ tự *</Label>
                   <Input
-                    id="duration"
+                    id="orderNumber"
                     type="number"
                     min="1"
-                    value={lessonData.duration}
-                    onChange={(e) => setLessonData(prev => ({...prev, duration: parseInt(e.target.value) || 0}))}
+                    value={lessonData.orderNumber}
+                    onChange={(e) => setLessonData(prev => ({...prev, orderNumber: parseInt(e.target.value) || 1}))}
                     required
                     disabled={loading}
                   />
                 </div>
-
+                
                 <div className="grid gap-2">
-                  <Label htmlFor="type">Loại lesson *</Label>
+                  <Label htmlFor="type">Loại bài học *</Label>
                   <Select 
                     value={lessonData.type.toString()} 
                     onValueChange={(value) => setLessonData(prev => ({...prev, type: parseInt(value)}))}
@@ -231,24 +470,12 @@ export default function TestLessonUploadPage() {
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="1">Type 1</SelectItem>
-                      <SelectItem value="2">Type 2</SelectItem>
-                      <SelectItem value="3">Type 3</SelectItem>
+                      <SelectItem value="1">Loại 1</SelectItem>
+                      <SelectItem value="2">Loại 2</SelectItem>
+                      <SelectItem value="3">Loại 3</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
-              </div>
-
-              <div className="grid gap-2">
-                <Label htmlFor="courseId">Course ID *</Label>
-                <Input
-                  id="courseId"
-                  value={lessonData.courseId}
-                  onChange={(e) => setLessonData(prev => ({...prev, courseId: e.target.value}))}
-                  placeholder="VD: b3b9e34a-1b1b-4e1c-b23e-0ab3d97c93a7"
-                  required
-                  disabled={loading}
-                />
               </div>
 
               <div className="grid gap-2">

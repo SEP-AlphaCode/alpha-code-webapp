@@ -11,7 +11,7 @@ export type Category = {
 
 export interface Lesson {
     id: string; // uuid
-    courseId: string; // uuid
+    sectionId: string; // uuid
     title: string; // varchar(255)
     contentUrl?: string; // varchar(255) - nullable
     requireRobot: boolean; // bool
@@ -20,6 +20,17 @@ export interface Lesson {
     contentType: string; // varchar(255)
     orderNumber: number; // int4
     solution?: unknown; // jsonb - nullable, can be more specific based on your JSON structure
+}
+
+export interface Section{
+    id: string; // uuid
+    courseId: string; // uuid
+    title: string; // varchar(255)
+    orderNumber: number; // int4
+    lessons?: Lesson[];
+    createdAt: string; // timestamp
+    lastUpdated?: string; // timestamp
+    status: number; // int4
 }
 
 export interface Course {
