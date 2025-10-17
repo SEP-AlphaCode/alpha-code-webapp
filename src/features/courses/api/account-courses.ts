@@ -14,7 +14,10 @@ export const accountCourses: AccountCourse[] = [
         purchaseDate: "2024-05-10T08:15:00Z",
         status: 1,
         statusText: "Hoàn thành",
-        totalLesson: 5
+        totalLesson: 5,
+        slug: "course-1",
+        imageUrl: "/images/course-1.jpg",
+        name: "Khóa học 1"
     },
     {
         id: "ac1-course2",
@@ -27,7 +30,10 @@ export const accountCourses: AccountCourse[] = [
         purchaseDate: "2024-05-12T09:45:00Z",
         status: 1,
         statusText: "Đang học",
-        totalLesson: 6
+        totalLesson: 6,
+        slug: "course-2",
+        imageUrl: "/images/course-2.jpg",
+        name: "Khóa học 2"
     },
     {
         id: "ac1-course3",
@@ -40,89 +46,10 @@ export const accountCourses: AccountCourse[] = [
         purchaseDate: "2024-05-15T11:30:00Z",
         status: 1,
         statusText: "Đang học",
-        totalLesson: 6
-    },
-
-    // Account 2: 5fb9b761-e7bb-445c-81d3-4417a71a4c32
-    {
-        id: "ac2-course1",
-        accountId: "5fb9b761-e7bb-445c-81d3-4417a71a4c32",
-        completed: false,
-        completedLesson: 4,
-        courseId: "a33e476c-1567-43e3-bc14-8308adf58f65",
-        lastAccessed: "2024-06-16T11:45:00Z",
-        progressPercent: 80,
-        purchaseDate: "2024-05-08T10:20:00Z",
-        status: 1,
-        statusText: "Đang học",
-        totalLesson: 5
-    },
-    {
-        id: "ac2-course2",
-        accountId: "5fb9b761-e7bb-445c-81d3-4417a71a4c32",
-        completed: true,
-        completedLesson: 6,
-        courseId: "f5bc51ac-61f6-4f35-8ed8-fb91ccfd6602",
-        lastAccessed: "2024-06-19T15:30:00Z",
-        progressPercent: 100,
-        purchaseDate: "2024-05-09T13:15:00Z",
-        status: 1,
-        statusText: "Hoàn thành",
-        totalLesson: 6
-    },
-    {
-        id: "ac2-course3",
-        accountId: "5fb9b761-e7bb-445c-81d3-4417a71a4c32",
-        completed: false,
-        completedLesson: 2,
-        courseId: "b5fffb19-c2ee-46ec-a812-7a9dfd6edbc5",
-        lastAccessed: "2024-06-21T17:25:00Z",
-        progressPercent: 33,
-        purchaseDate: "2024-05-11T14:50:00Z",
-        status: 1,
-        statusText: "Đang học",
-        totalLesson: 6
-    },
-
-    // Account 3: 177c8fb2-8b39-4ed3-9fb8-aa64a51014bf
-    {
-        id: "ac3-course1",
-        accountId: "177c8fb2-8b39-4ed3-9fb8-aa64a51014bf",
-        completed: false,
-        completedLesson: 2,
-        courseId: "a33e476c-1567-43e3-bc14-8308adf58f65",
-        lastAccessed: "2024-06-14T09:15:00Z",
-        progressPercent: 40,
-        purchaseDate: "2024-05-14T16:40:00Z",
-        status: 1,
-        statusText: "Đang học",
-        totalLesson: 5
-    },
-    {
-        id: "ac3-course2",
-        accountId: "177c8fb2-8b39-4ed3-9fb8-aa64a51014bf",
-        completed: false,
-        completedLesson: 5,
-        courseId: "f5bc51ac-61f6-4f35-8ed8-fb91ccfd6602",
-        lastAccessed: "2024-06-17T13:50:00Z",
-        progressPercent: 83,
-        purchaseDate: "2024-05-16T12:25:00Z",
-        status: 1,
-        statusText: "Đang học",
-        totalLesson: 6
-    },
-    {
-        id: "ac3-course3",
-        accountId: "177c8fb2-8b39-4ed3-9fb8-aa64a51014bf",
-        completed: true,
-        completedLesson: 6,
-        courseId: "b5fffb19-c2ee-46ec-a812-7a9dfd6edbc5",
-        lastAccessed: "2024-06-22T18:05:00Z",
-        progressPercent: 100,
-        purchaseDate: "2024-05-18T15:10:00Z",
-        status: 1,
-        statusText: "Hoàn thành",
-        totalLesson: 6
+        totalLesson: 6,
+        slug: "course-3",
+        imageUrl: "/images/course-3.jpg",
+        name: "Khóa học 3"
     }
 ];
 

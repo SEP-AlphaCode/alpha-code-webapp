@@ -21,6 +21,16 @@ export default function CoursePage() {
   const { pagination, filters, currentCourse } = useSelector((s: RootState) => s.course);
   const { useGetCourses, useGetAccountCourses } = useCourse();
   const accessToken = sessionStorage.getItem('accessToken')
+  const accId = accessToken ? getUserIdFromToken(accessToken) ?? '' : ''
+  
+  // courses - moved hook call before conditional return
+  // const { data: coursesData, isLoading: loadingCourses } = useGetCourses(
+  //   pagination.page,
+  //   pagination.size,
+  //   filters.search,
+  // );
+  const { data: coursesData, isLoading: loadingCourses } = useGetAccountCourses(accId, pagination.page, pagination.size)
+  
   if (!accessToken) {
     return (
       <div>
@@ -28,14 +38,6 @@ export default function CoursePage() {
       </div>
     )
   }
-  const accId = getUserIdFromToken(accessToken) ?? ''
-  // courses
-  // const { data: coursesData, isLoading: loadingCourses } = useGetCourses(
-  //   pagination.page,
-  //   pagination.size,
-  //   filters.search,
-  // );
-  const { data: coursesData, isLoading: loadingCourses } = useGetAccountCourses(accId, pagination.page, pagination.size)
   const courses = coursesData?.data ?? [];
   const total = coursesData?.total_count ?? 0;
   const totalPages = Math.ceil(total / pagination.size);
