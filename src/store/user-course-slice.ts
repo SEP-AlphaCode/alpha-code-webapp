@@ -21,7 +21,7 @@ const initialState: CourseState = {
   currentCourse: { name: null, slug: null }
 };
 
-const teacherCourseSlice = createSlice({
+const userCourseSlice = createSlice({
   name: "course",
   initialState,
   reducers: {
@@ -44,6 +44,5 @@ const teacherCourseSlice = createSlice({
   }
 });
 
-
-export const { setPage, setCategoryFilter, setCurrentCourse, setSearch } = teacherCourseSlice.actions;
-export default teacherCourseSlice.reducer;
+export const { setPage, setCategoryFilter, setCurrentCourse, setSearch } = userCourseSlice.actions;
+export default userCourseSlice.reducer;

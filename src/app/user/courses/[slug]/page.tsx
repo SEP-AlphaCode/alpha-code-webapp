@@ -8,7 +8,7 @@ import { CourseSkeleton } from '@/components/user/course/detail/course-skeleton'
 import { useCourse } from '@/features/courses/hooks/use-course'
 import { AppDispatch } from '@/store/store'
 import { setCurrentCourse } from '@/store/user-course-slice'
-import { useParams, useRouter } from 'next/navigation'
+import { useParams } from 'next/navigation'
 import React, { useEffect } from 'react'
 import { useDispatch } from 'react-redux'
 

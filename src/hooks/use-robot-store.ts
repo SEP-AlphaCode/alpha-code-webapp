@@ -13,7 +13,7 @@ import {
   fetchRobotsByAccount,
   fetchRobotsFromToken,
   Robot 
-} from '@/store/robotSlice'
+} from '@/store/robot-slice'
 
 export const useRobotStore = () => {
   const dispatch = useAppDispatch()

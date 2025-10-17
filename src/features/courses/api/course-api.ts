@@ -1,7 +1,6 @@
 import { AccountCourse, AccountLesson, Category, Course, Lesson } from "@/types/courses";
 import { PagedResult } from "@/types/page-result";
 import { coursesHttp } from "@/utils/http";
-import { getMockAccountCourses } from "./account-courses";
 import { getMockAccountLessons, markMockLessonComplete } from "./account-lessons";
 
 export const getCategories = async (page: number, size: number, signal?: AbortSignal) => {
