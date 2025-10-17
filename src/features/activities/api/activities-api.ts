@@ -12,26 +12,33 @@ export const getAllActivities = async () => {
   }
 };
 
-export const getPagedActivities = async (page: number, size: number, search?: string, signal?: AbortSignal) => {
-  console.log('API Call - getPagedActivities:', { page, size, search });
+export const getPagedActivities = async (
+  page: number,
+  size: number,
+  search?: string,
+  signal?: AbortSignal,
+  robotModelId?: string
+) => {
+  console.log('API Call - getPagedActivities:', { page, size, search, robotModelId });
   try {
     const response = await activitiesHttp.get<ActivitiesResponse>('/activities', {
       params: {
         page,
         size,
-        search
+        search,
+        robotModelId, // 👈 thêm dòng này
       },
-      signal
+      signal,
     });
+
     console.log('API Response - getPagedActivities:', response.data);
     return response.data;
-  } catch (error: unknown) {       
-    // Don't log or throw canceled errors
+  } catch (error: unknown) {
     if (error && typeof error === 'object') {
       const errorObj = error as { name?: string; code?: string };
       if (errorObj.name === 'CanceledError' || errorObj.code === 'ERR_CANCELED') {
         console.log('API Call canceled');
-        return Promise.reject(error); // Let React Query handle it
+        return Promise.reject(error);
       }
     }
     console.error('Error fetching paged activities:', error);

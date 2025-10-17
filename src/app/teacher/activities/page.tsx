@@ -24,7 +24,8 @@ import {
   Star,
   Target,
   Activity,
-  Loader2
+  Loader2,
+  Square
 } from "lucide-react"
 import { Pagination } from "@/components/ui/pagination"
 import { PerPageSelector } from "@/components/ui/per-page-selector"
@@ -45,6 +46,7 @@ export default function ActivitiesPage() {
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false)
   const [currentPage, setCurrentPage] = useState(1)
   const [perPage, setPerPage] = useState(12)
+  
 
   // Debounce search term
   useEffect(() => {
@@ -61,9 +63,7 @@ export default function ActivitiesPage() {
     setCurrentPage(1)
   }, [filterType, filterStatus, perPage])
 
-  // API Hooks - use debounced search term
-  const { data: activitiesData, isLoading, error } = useActivities(currentPage, perPage, debouncedSearchTerm)
-  const createActivityMutation = useCreateActivity()
+
 
   // Robot Controls Hook
   const { startActivity, isLoading: isRobotLoading } = useRobotControls()
@@ -76,6 +76,11 @@ export default function ActivitiesPage() {
     initializeMockData,
     robots
   } = useRobotStore()
+
+
+  // API Hooks - use debounced search term
+  const { data: activitiesData, isLoading, error } = useActivities(currentPage, perPage, debouncedSearchTerm, selectedRobot?.robotModelId)
+  const createActivityMutation = useCreateActivity()
 
   // Initialize mock robot data - only once and only if no robots exist
   useEffect(() => {
@@ -141,6 +146,21 @@ export default function ActivitiesPage() {
       }
     }, 3000);
   }, [selectedRobotSerial, selectedRobot, updateRobotStatus, startActivity])
+
+  // Handle stop all actions
+  const handleStopAllActions = useCallback(() => {
+    const robotSerial = selectedRobotSerial;
+    
+    if (!robotSerial) {
+      console.error('No robot selected for stopping actions');
+      return;
+    }
+
+    console.log('Stopping all actions for robot:', robotSerial);
+    
+    // Send stop_all_actions command via socket
+    startActivity(robotSerial, 'stop_all_actions', {});
+  }, [selectedRobotSerial, startActivity])
 
   // Debug logging to track re-renders
   console.log('ActivitiesPage render #' + renderCount.current + ':', {
@@ -490,6 +510,15 @@ export default function ActivitiesPage() {
                 <CreateActivityForm />
               </DialogContent>
             </Dialog>
+            
+            <Button 
+              variant="destructive" 
+              onClick={handleStopAllActions}
+              disabled={!selectedRobotSerial || isRobotLoading}
+            >
+              <Square className="w-4 h-4 mr-2" />
+              Dừng tất cả
+            </Button>
           </div>
         </div>
 

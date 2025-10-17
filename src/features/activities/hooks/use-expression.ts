@@ -1,3 +1,4 @@
+import { useRobotStore } from "@/hooks/use-robot-store"
 import { createExpression, getPagedExpressions, updateExpression, deleteExpression } from "@/features/activities/api/expression-api";
 import { ExpressionModal } from "@/types/expression";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -5,10 +6,14 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 export const useExpression = () => {
     const queryClient = useQueryClient();
 
+    const { selectedRobot } = useRobotStore()
+
+    const model = selectedRobot?.robotModelId || "default"
+
     const useGetPagedExpressions = (page: number, limit: number, search?: string) => {
         return useQuery({
-            queryKey: ['expressions', page, limit, search || ''],
-            queryFn: () => getPagedExpressions(page, limit, search),
+            queryKey: ['expressions', model, page, limit, search || ''],
+            queryFn: () => getPagedExpressions(page, limit, search, model),
             staleTime: 1000 * 60 * 5, // 5 minutes
             refetchOnWindowFocus: false,
             refetchOnMount: false,

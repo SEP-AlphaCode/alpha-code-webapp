@@ -64,7 +64,7 @@ export const AuthGuard = ({ children, allowedRoles }: AuthGuardProps) => {
             } else if (userRole === 'teacher') {
               router.push('/teacher');
             } else {
-              router.push('/student');
+              router.push('/courses');
             }
             return;
           }
@@ -85,7 +85,7 @@ export const AuthGuard = ({ children, allowedRoles }: AuthGuardProps) => {
               } else if (userRole === 'teacher') {
                 router.push('/teacher');
               } else {
-                router.push('/student');
+                router.push('/courses');
               }
               return;
             }

@@ -13,11 +13,12 @@ import {
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { Skill, SkillResponse } from "@/types/skill"
 
+
 export const useSkill = () => {
   // 🔹 Lấy tất cả skills (phân trang + lọc)
   const useGetAllSkills = (page?: number, size?: number, search?: string, robotModelId?: string) => {
     return useQuery<SkillResponse>({
-      queryKey: ["skills", page, size, search, robotModelId],
+      queryKey: ["skills", page, size, search],
       queryFn: () =>
         getAllSkills({
           page,

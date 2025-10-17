@@ -10,15 +10,19 @@ import {
 import { Activity } from '@/types/activities';
 import { toast } from 'sonner';
 
-export const useActivities = (page: number = 1, size: number = 10, search?: string) => {
+export const useActivities = (
+  page: number = 1,
+  size: number = 10,
+  search?: string,
+  robotModelId?: string // 👈 thêm tham số
+) => {
   return useQuery({
-    queryKey: ['activities', page, size, search || ''],
-    queryFn: ({ signal }) => getPagedActivities(page, size, search, signal),
-    staleTime: 1000 * 60 * 2, // Reduce to 2 minutes
-    refetchOnWindowFocus: false, // Prevent refetch on window focus
-    refetchOnMount: true, // Always refetch on mount - FIX for reload issue
+    queryKey: ['activities', page, size, search || '', robotModelId], // 👈 thêm vào queryKey để cache theo model
+    queryFn: ({ signal }) => getPagedActivities(page, size, search, signal, robotModelId), // 👈 truyền vào đây
+    staleTime: 1000 * 60 * 2,
+    refetchOnWindowFocus: false,
+    refetchOnMount: true,
     retry: (failureCount, error: unknown) => {
-      // Don't retry on canceled errors
       if (error && typeof error === 'object') {
         const errorObj = error as { name?: string; code?: string };
         if (errorObj.name === 'CanceledError' || errorObj.code === 'ERR_CANCELED') {

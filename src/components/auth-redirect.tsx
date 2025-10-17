@@ -24,7 +24,7 @@ export const AuthRedirect = () => {
           } else if (roleNameLower === 'teacher') {
             router.push('/teacher');
           } else {
-            router.push('/student');
+            router.push('/courses');
           }
         } else {
           // Fallback: get role from token
@@ -37,7 +37,7 @@ export const AuthRedirect = () => {
             } else if (roleNameLower === 'teacher') {
               router.push('/teacher');
             } else {
-              router.push('/student');
+              router.push('/courses');
             }
           } else {
             // If no role found, redirect to admin by default

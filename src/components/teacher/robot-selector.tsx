@@ -38,7 +38,8 @@ export function RobotSelector({ className = "" }: RobotSelectorProps) {
   const [selectedRobotId, setSelectedRobotId] = useState<string | null>(null);
 
   // Lấy Redux store để sync data
-  const { selectRobot: selectRobotInRedux, addRobot } = useRobotStore();
+
+  const { robots: reduxRobots, selectedRobotSerial, selectRobot, addRobot } = useRobotStore();
 
   // Lấy account ID từ token
   useEffect(() => {
@@ -89,22 +90,20 @@ export function RobotSelector({ className = "" }: RobotSelectorProps) {
 
   // Auto-select first robot if none selected
   useEffect(() => {
-    if (robots.length > 0 && !selectedRobotId) {
+    if (robots.length > 0 && !selectedRobotSerial) {
       const firstRobot = robots[0];
-      setSelectedRobotId(firstRobot.id);
-      selectRobotInRedux(firstRobot.serialNumber);
+      selectRobot(firstRobot.serialNumber);
     }
-  }, [robots, selectedRobotId, selectRobotInRedux]);
+  }, [robots, selectedRobotId, selectedRobotSerial]);
 
   const handleRobotSelect = (robot: Robot) => {
-    setSelectedRobotId(robot.id);
-    selectRobotInRedux(robot.serialNumber);
+    selectRobot(robot.serialNumber);
   };
 
   // Convert API robot to display format
   const convertToDisplayRobot = (robot: Robot): DisplayRobot => {
     // Nếu là robot được chọn và có thông tin từ API, dùng battery thật
-    const isSelectedRobot = robot.id === selectedRobotId;
+    const isSelectedRobot = robot.serialNumber === selectedRobotSerial;
     const realBattery = isSelectedRobot && robotInfoData?.data?.battery_level 
       ? parseInt(robotInfoData.data.battery_level) 
       : 0; // Không hiển thị battery nếu không có data
@@ -120,7 +119,7 @@ export function RobotSelector({ className = "" }: RobotSelectorProps) {
   };
 
   const robotList = robots.map(convertToDisplayRobot);
-  const currentRobot = robotList.find(robot => robot.id === selectedRobotId);
+  const currentRobot = robotList.find(robot => robot.serialNumber === selectedRobotSerial);
 
   if (isLoading) {
     return (

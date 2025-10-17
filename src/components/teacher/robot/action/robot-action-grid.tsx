@@ -3,10 +3,11 @@
 import { useState } from "react"
 import { RobotActionTab } from "./robot-action-tab"
 import { useRobotActions } from "@/hooks/use-robot-action"
-import { useDances } from "@/hooks/use-robot-dance"
+import { useDance } from "@/hooks/use-robot-dance"
 import { useExpression } from "@/features/activities/hooks/use-expression"
 import { useSkill } from "@/features/activities/hooks/use-skill"
 import { useExtendedActions } from "@/features/activities/hooks/use-extended-actions"
+import { useRobotStore } from "@/hooks/use-robot-store"
 import { TabData } from "@/types/tab-data"
 import {
   RobotActionUI,
@@ -39,12 +40,16 @@ export function RobotActionGrid({
   const [expressionPage, setExpressionPage] = useState(1)
   const [skillsPage, setSkillsPage] = useState(1)
   const [extendedActionsPage, setExtendedActionsPage] = useState(1)
+  const { selectedRobot } = useRobotStore()
+  const robotModelId = selectedRobot?.robotModelId || selectedRobot?.robotModelId || ""
+  const { useGetPagedDances } = useDance()
+  const { useGetPagedExpressions } = useExpression()
 
   const pageSize = 8
 
   // --- Actions ---
   const { data: actionData, isLoading: actionLoading, error: actionError } =
-    useRobotActions(actionPage, pageSize, "")
+    useRobotActions(actionPage, pageSize, "", robotModelId)
   const actionTab: TabData<RobotActionUI> = {
     actions: (actionData?.data ?? []).map(mapActionToUI),
     totalPages: actionData?.total_pages ?? 1,
@@ -56,7 +61,7 @@ export function RobotActionGrid({
 
   // --- Dances ---
   const { data: danceData, isLoading: danceLoading, error: danceError } =
-    useDances(dancePage, pageSize, "")
+  useGetPagedDances(dancePage, pageSize, "")
   const danceTab: TabData<RobotActionUI> = {
     actions: (danceData?.data ?? []).map(mapDanceToUI),
     totalPages: danceData?.total_pages ?? 1,
@@ -84,7 +89,7 @@ export function RobotActionGrid({
     data: skillsData,
     isLoading: skillsLoading,
     error: skillsError,
-  } = useGetPagedSkills(skillsPage, pageSize, "")
+  } = useGetPagedSkills(skillsPage, pageSize, "", robotModelId)
   const skillsTab: TabData<RobotActionUI> = {
     actions: (skillsData?.data ?? []).map(mapSkillToUI),
     totalPages: skillsData?.total_pages ?? 1,
@@ -100,7 +105,7 @@ export function RobotActionGrid({
     data: extendedData,
     isLoading: extendedLoading,
     error: extendedError,
-  } = useGetPagedExtendedActions(extendedActionsPage, pageSize, "", undefined) // Pass undefined for robotModelId to avoid spam
+  } = useGetPagedExtendedActions(extendedActionsPage, pageSize, "", robotModelId) // Pass undefined for robotModelId to avoid spam
   const extendedActionsTab: TabData<RobotActionUI> = {
     actions: (extendedData?.data ?? []).map(mapExtendedActionToUI),
     totalPages: extendedData?.total_pages ?? 1,

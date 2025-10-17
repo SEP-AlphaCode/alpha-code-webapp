@@ -12,6 +12,7 @@ import { useJoystick } from '@/features/activities/hooks/use-joystick';
 import { Joystick } from '@/types/joystick';
 import { getUserInfoFromToken } from '@/utils/tokenUtils';
 import RobotVideoStream from '@/components/teacher/robot/robot-video-stream';
+// import RobotVideoStream from '@/components/teacher/robot/robot-video-stream';
 
 interface JoystickPosition {
   x: number;
@@ -52,87 +53,69 @@ export default function JoystickPage() {
 
   // hooks and stores
   const { sendCommandToBackend } = useRobotCommand(setNotify);
-  const { selectedRobot, selectedRobotSerial, initializeMockData } = useRobotStore();
+  const { selectedRobot, selectedRobotSerial } = useRobotStore();
   const { useGetJoystickByAccountRobot } = useJoystick();
 
-  // fixed robotId example (you had this)
-  const robotId = '7754417e-e9a4-48e4-8f72-164a612403e0';
+  // accountId derivation with proper client-side handling
+  const [accountId, setAccountId] = useState<string>('');
+  const [isClient, setIsClient] = useState(false);
+  const [hasError, setHasError] = useState(false);
 
-  // accountId derivation (memoized)
-  const accountId = useMemo(() => {
-    if (typeof window !== 'undefined') {
-      const accessToken = sessionStorage.getItem('accessToken');
-      if (accessToken) {
-        const userInfo = getUserInfoFromToken(accessToken);
-        const id = userInfo?.id || '';
-        return id;
-      }
-    }
-    return '';
-  }, []);
-
-  // fetch joystick config
-  const { data: joystickData, error: joystickError } =
-    useGetJoystickByAccountRobot(accountId, robotId);
-
-  // caching fallback
-  const effectiveJoystickData = useMemo(() => {
-    if (joystickData) {
-      const cacheKey = `joystick_${accountId}_${robotId}`;
-      try {
-        localStorage.setItem(cacheKey, JSON.stringify(joystickData));
-      } catch (_e) {
-        // ignore localStorage error
-      }
-      return joystickData;
-    }
-
-    if (joystickError) {
-      const cacheKey = `joystick_${accountId}_${robotId}`;
-      const cachedData = localStorage.getItem(cacheKey);
-      if (cachedData) {
-        try {
-          return JSON.parse(cachedData);
-        } catch (_e) {
-          // ignore
+  useEffect(() => {
+    try {
+      setIsClient(true);
+      if (typeof window !== 'undefined') {
+        const accessToken = sessionStorage.getItem('accessToken');
+        if (accessToken) {
+          const userInfo = getUserInfoFromToken(accessToken);
+          const id = userInfo?.id || '';
+          setAccountId(id);
         }
       }
+    } catch (error) {
+      console.error('Error getting account ID:', error);
+      setHasError(true);
+    }
+  }, []);
+
+  // Get robotId from selectedRobot instead of hardcoding
+  const robotId = selectedRobot?.id || '';
+
+  // fetch joystick config - only if we have both accountId and robotId
+  const { data: joystickData, error: joystickError } =
+    useGetJoystickByAccountRobot(accountId || '', robotId);
+
+  // caching fallback with error handling
+  const effectiveJoystickData = useMemo(() => {
+    try {
+      if (joystickData) {
+        const cacheKey = `joystick_${accountId}_${robotId}`;
+        try {
+          localStorage.setItem(cacheKey, JSON.stringify(joystickData));
+        } catch (e) {
+          console.warn('Failed to cache joystick data:', e);
+        }
+        return joystickData;
+      }
+
+      if (joystickError) {
+        console.warn('Joystick API error, trying cache:', joystickError);
+        const cacheKey = `joystick_${accountId}_${robotId}`;
+        const cachedData = localStorage.getItem(cacheKey);
+        if (cachedData) {
+          try {
+            return JSON.parse(cachedData);
+          } catch (e) {
+            console.warn('Failed to parse cached joystick data:', e);
+          }
+        }
+      }
+    } catch (error) {
+      console.error('Error in effectiveJoystickData:', error);
     }
 
     return joystickData;
   }, [joystickData, joystickError, accountId, robotId]);
-
-  const mockJoystickData = useMemo(
-    () => ({
-      joysticks: [
-        {
-          buttonCode: 'A',
-          danceId: 'dee9a7a3-bb8a-4ca2-a562-ba9384614bc9',
-          danceName: 'Dance 2',
-          danceCode: 'dance_0002en',
-          actionId: null,
-          actionName: null,
-          actionCode: null,
-        },
-        {
-          buttonCode: 'B',
-          actionId: '89145fc0-7871-456b-96c5-ce23a285c612',
-          actionName: 'Squat',
-          actionCode: '031',
-          danceId: null,
-          danceName: null,
-          danceCode: null,
-        },
-      ],
-    }),
-    []
-  );
-
-  const finalJoystickData = useMemo(() => {
-    return effectiveJoystickData?.joysticks && effectiveJoystickData.joysticks.length > 0
-      ? effectiveJoystickData
-      : mockJoystickData;
-  }, [effectiveJoystickData, mockJoystickData]);
 
   const [actionCodes, setActionCodes] = useState<Record<string, string>>({});
   const [actionDescriptions, setActionDescriptions] = useState<{
@@ -140,67 +123,72 @@ export default function JoystickPage() {
   }>({});
 
   useEffect(() => {
-    if (finalJoystickData?.joysticks && finalJoystickData.joysticks.length > 0) {
-      const newActionCodes: Record<string, string> = {};
-      const newActionDescriptions: Record<string, { name: string; category: 'action' | 'dance' | 'expression' | 'skill' | 'extended_action' }> =
-        {};
+    try {
+      if (effectiveJoystickData?.joysticks && effectiveJoystickData.joysticks.length > 0) {
+        const newActionCodes: Record<string, string> = {};
+        const newActionDescriptions: Record<string, { name: string; category: 'action' | 'dance' | 'expression' | 'skill' | 'extended_action' }> =
+          {};
 
-      finalJoystickData.joysticks.forEach((joystick: Joystick) => {
-        const buttonName = joystick.buttonCode as 'A' | 'B' | 'X' | 'Y';
+        effectiveJoystickData.joysticks.forEach((joystick: Joystick) => {
+          try {
+            const buttonName = joystick.buttonCode as 'A' | 'B' | 'X' | 'Y';
 
-        if (['A', 'B', 'X', 'Y'].includes(buttonName)) {
-          let actionCode = '';
-          let actionName = '';
-          let category: 'action' | 'dance' | 'expression' | 'skill' | 'extended_action' = 'action';
+            if (['A', 'B', 'X', 'Y'].includes(buttonName)) {
+              let actionCode = '';
+              let actionName = '';
+              let category: 'action' | 'dance' | 'expression' | 'skill' | 'extended_action' = 'action';
 
-          if (joystick.actionId && joystick.actionName && joystick.actionCode) {
-            actionCode = joystick.actionCode;
-            actionName = joystick.actionName;
-            category = 'action';
-          } else if (joystick.danceId && joystick.danceName && joystick.danceCode) {
-            actionCode = joystick.danceCode;
-            actionName = joystick.danceName;
-            category = 'dance';
-          } else if (joystick.expressionId && joystick.expressionName && joystick.expressionCode) {
-            actionCode = joystick.expressionCode;
-            actionName = joystick.expressionName;
-            category = 'expression';
-          } else if (joystick.skillId && joystick.skillName && joystick.skillCode) {
-            actionCode = joystick.skillCode;
-            actionName = joystick.skillName;
-            category = 'skill';
-          } else if (
-            joystick.extendedActionId &&
-            joystick.extendedActionName &&
-            joystick.extendedActionCode
-          ) {
-            actionCode = joystick.extendedActionCode;
-            actionName = joystick.extendedActionName;
-            category = 'extended_action';
+              if (joystick.actionId && joystick.actionName && joystick.actionCode) {
+                actionCode = joystick.actionCode;
+                actionName = joystick.actionName;
+                category = 'action';
+              } else if (joystick.danceId && joystick.danceName && joystick.danceCode) {
+                actionCode = joystick.danceCode;
+                actionName = joystick.danceName;
+                category = 'dance';
+              } else if (joystick.expressionId && joystick.expressionName && joystick.expressionCode) {
+                actionCode = joystick.expressionCode;
+                actionName = joystick.expressionName;
+                category = 'expression';
+              } else if (joystick.skillId && joystick.skillName && joystick.skillCode) {
+                actionCode = joystick.skillCode;
+                actionName = joystick.skillName;
+                category = 'skill';
+              } else if (
+                joystick.extendedActionId &&
+                joystick.extendedActionName &&
+                joystick.extendedActionCode
+              ) {
+                actionCode = joystick.extendedActionCode;
+                actionName = joystick.extendedActionName;
+                category = 'extended_action';
+              }
+
+              if (actionCode && actionName) {
+                newActionCodes[buttonName] = actionCode;
+                newActionDescriptions[buttonName] = {
+                  name: actionName,
+                  category,
+                };
+              }
+            }
+          } catch (error) {
+            console.warn('Error processing joystick config:', error);
           }
+        });
 
-          if (actionCode && actionName) {
-            newActionCodes[buttonName] = actionCode;
-            newActionDescriptions[buttonName] = {
-              name: actionName,
-              category,
-            };
-          }
-        }
-      });
-
-      setActionCodes(newActionCodes);
-      setActionDescriptions(newActionDescriptions);
-    } else {
+        setActionCodes(newActionCodes);
+        setActionDescriptions(newActionDescriptions);
+      } else {
+        setActionCodes({});
+        setActionDescriptions({});
+      }
+    } catch (error) {
+      console.error('Error in joystick configuration effect:', error);
       setActionCodes({});
       setActionDescriptions({});
     }
-  }, [finalJoystickData]);
-
-  // initialize mock data if needed
-  useEffect(() => {
-    initializeMockData();
-  }, [initializeMockData]);
+  }, [effectiveJoystickData]);
 
   // Cleanup timeout when component unmounts
   useEffect(() => {
@@ -463,6 +451,45 @@ export default function JoystickPage() {
   };
 
   // --- UI ---
+  // Show loading screen during hydration to prevent SSR mismatch
+  if (!isClient) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-gray-100 to-slate-200 p-6 flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-purple-600 rounded-2xl flex items-center justify-center shadow-lg mx-auto mb-4">
+            <span className="text-2xl text-white font-bold">🎮</span>
+          </div>
+          <h2 className="text-xl font-semibold text-gray-700">Loading Controller...</h2>
+          <p className="text-sm text-gray-500 mt-2">Initializing joystick interface</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Show error screen if something went wrong
+  if (hasError) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-gray-100 to-slate-200 p-6 flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-16 h-16 bg-gradient-to-br from-red-500 to-red-600 rounded-2xl flex items-center justify-center shadow-lg mx-auto mb-4">
+            <span className="text-2xl text-white font-bold">⚠️</span>
+          </div>
+          <h2 className="text-xl font-semibold text-gray-700">Lỗi khởi tạo</h2>
+          <p className="text-sm text-gray-500 mt-2">Không thể tải trang joystick</p>
+          <button 
+            onClick={() => {
+              setHasError(false);
+              window.location.reload();
+            }} 
+            className="mt-4 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600"
+          >
+            Thử lại
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-gray-100 to-slate-200 p-6">
       <div className="max-w-5xl mx-auto">
@@ -577,7 +604,7 @@ export default function JoystickPage() {
                       )}
                     </Badge>
                   </div>
-                  <RobotVideoStream 
+                   <RobotVideoStream 
                     robotSerial={selectedRobotSerial}
                     className="w-full h-48 rounded-xl border-2 border-gray-300 shadow-lg"
                   />
@@ -752,7 +779,7 @@ export default function JoystickPage() {
           setIsConfigModalOpen(false);
           // react-query will handle refetch if needed
         }}
-        existingJoysticks={finalJoystickData?.joysticks || []}
+        existingJoysticks={effectiveJoystickData?.joysticks || []}
         onSuccess={() => {
           // Modal already shows toast notification, no need for duplicate
         }}
