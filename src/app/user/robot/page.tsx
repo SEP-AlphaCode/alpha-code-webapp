@@ -5,12 +5,12 @@ import React, { useState, useEffect } from "react";
 import { useRobotStore } from "@/hooks/use-robot-store";
 
 // Import extracted components
-import { RobotPageHeader } from "@/components/teacher/robot/robot-page-header";
-import { RobotGrid } from "@/components/teacher/robot/robot-grid";
-import { RobotDetails } from "@/components/teacher/robot/robot-details";
-import { ProgrammingSection } from "@/components/teacher/robot/programming-section";
-import { EntertainmentSection } from "@/components/teacher/robot/entertainment-section";
-import { ThingsToTrySection } from "@/components/teacher/robot/things-to-try-section";
+import { RobotPageHeader } from "@/components/user/robot/robot-page-header";
+import { RobotGrid } from "@/components/user/robot/robot-grid";
+import { RobotDetails } from "@/components/user/robot/robot-details";
+import { ProgrammingSection } from "@/components/user/robot/programming-section";
+import { EntertainmentSection } from "@/components/user/robot/entertainment-section";
+import { ThingsToTrySection } from "@/components/user/robot/things-to-try-section";
 
 // Import tĩnh cả hai file ngôn ngữ
 
@@ -103,7 +103,7 @@ function extendRobotWithMockData(robot: ReturnType<typeof useRobotStore>['robots
   };
 }
 
-export default function TeacherDashboard() {
+export default function UserDashboard() {
   const { robots, selectedRobotSerial, selectRobot, initializeMockData } = useRobotStore();
   const [shuffledPrompts, setShuffledPrompts] = useState<string[]>([]);
   const [hasInitialized, setHasInitialized] = useState(false);

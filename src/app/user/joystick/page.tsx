@@ -7,12 +7,12 @@ import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { useRobotCommand } from '@/hooks/use-robot-command';
 import { useRobotStore } from '@/hooks/use-robot-store';
-import JoystickConfigurationModal from '@/components/teacher/joystick/joystick-configuration-modal';
+import JoystickConfigurationModal from '@/components/user/joystick/joystick-configuration-modal';
 import { useJoystick } from '@/features/activities/hooks/use-joystick';
 import { Joystick } from '@/types/joystick';
 import { getUserInfoFromToken } from '@/utils/tokenUtils';
-import RobotVideoStream from '@/components/teacher/robot/robot-video-stream';
-// import RobotVideoStream from '@/components/teacher/robot/robot-video-stream';
+import RobotVideoStream from '@/components/user/robot/robot-video-stream';
+// import RobotVideoStream from '@/components/user/robot/robot-video-stream';
 
 interface JoystickPosition {
   x: number;

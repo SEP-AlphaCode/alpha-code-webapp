@@ -2,20 +2,20 @@
 import { useCourse } from '@/features/courses/hooks/use-course';
 import React, { useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux';
-import { setCategoryFilter, setPage, setSearch } from '@/store/teacher-course-slice';
+import { setCategoryFilter, setPage, setSearch } from '@/store/user-course-slice';
 import { AppDispatch, RootState } from '@/store/store';
-import { CourseFilter } from '@/components/teacher/course/category-list';
+import { CourseFilter } from '@/components/user/course/category-list';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent } from '@radix-ui/react-dialog';
 import { ChevronDown } from 'lucide-react';
-import { CourseGrid } from '@/components/teacher/course/course-grid';
-import { Pagination } from '@/components/teacher/course/pagination';
+import { CourseGrid } from '@/components/user/course/course-grid';
+import { Pagination } from '@/components/user/course/pagination';
 
 export default function CoursePage() {
   const [isCategoriesModalOpen, setIsCategoriesModalOpen] = useState(false);
   const categoriesPerPage = 5;
   const dispatch = useDispatch<AppDispatch>();
-  const { pagination, filters } = useSelector((s: RootState) => s.teacherCourse);
+  const { pagination, filters } = useSelector((s: RootState) => s.userCourse);
   const { useGetCourses } = useCourse();
 
   // courses

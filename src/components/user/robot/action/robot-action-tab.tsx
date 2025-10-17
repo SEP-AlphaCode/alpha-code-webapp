@@ -1,4 +1,4 @@
-// src/components/teacher/robot/action/robot-action-tab.tsx
+// src/components/user/robot/action/robot-action-tab.tsx
 "use client";
 
 import { Dispatch, SetStateAction } from "react";

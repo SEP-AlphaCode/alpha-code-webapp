@@ -7,11 +7,11 @@ import { Menu } from "lucide-react";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import Logo2 from "../../../public/logo2.png";
 import { RobotSelector } from "./robot-selector";
-import { TeacherSidebar } from "./teacher-sidebar";
+import { UserSidebar } from "./user-sidebar";
 import { AccountData } from "@/types/account";
-import { NavigationItem } from "@/types/teacher";
+import { NavigationItem } from "@/types/user";
 
-interface TeacherHeaderProps {
+interface UserHeaderProps {
   onToggleSidebar: () => void;
   // Sidebar props for mobile
   navigationItems: NavigationItem[];
@@ -21,14 +21,14 @@ interface TeacherHeaderProps {
   isLogoutPending?: boolean;
 }
 
-export function TeacherHeader({
+export function UserHeader({
   onToggleSidebar,
   navigationItems,
   isActiveRoute,
   accountData,
   onLogout,
   isLogoutPending = false
-}: TeacherHeaderProps) {
+}: UserHeaderProps) {
   return (
     <header className="bg-white border-b border-gray-200 fixed top-0 left-0 right-0 z-40 shadow-sm">
       <div className="flex items-center justify-between px-4 sm:px-6 py-4">
@@ -49,7 +49,7 @@ export function TeacherHeader({
               </Button>
             </SheetTrigger>
             <SheetContent side="left" className="p-0 sm:max-w-xs">
-              <TeacherSidebar
+              <UserSidebar
                 isSidebarOpen={true}
                 navigationItems={navigationItems}
                 isActiveRoute={isActiveRoute}
@@ -68,7 +68,7 @@ export function TeacherHeader({
                 AlphaCode
               </h1>
               <p className="text-xs sm:text-sm text-gray-500 -mt-1">
-                Teacher Portal
+                User Portal
               </p>
             </div>
           </div>

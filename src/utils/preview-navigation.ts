@@ -39,7 +39,7 @@ export function navigateToPreviewActivities(
       sessionKey: sessionKey
     })
     
-    router.push(`/teacher/music/previewactivities?${searchParams.toString()}`)
+    router.push(`/user/music/previewactivities?${searchParams.toString()}`)
     
     console.log('✅ Navigated to preview with sessionStorage:', {
       sessionKey,
@@ -62,7 +62,7 @@ export function navigateToPreviewActivities(
       // Store only dancePlan in sessionStorage for fallback
       sessionStorage.setItem('preview_activity_fallback', JSON.stringify(data.dancePlan))
       
-      router.push(`/teacher/music/previewactivities?${searchParams.toString()}`)
+      router.push(`/user/music/previewactivities?${searchParams.toString()}`)
       
     } catch (fallbackError) {
       console.error('❌ Fallback navigation also failed:', fallbackError)

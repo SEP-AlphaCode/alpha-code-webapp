@@ -26,7 +26,7 @@ interface ClassGroup {
   id: string;
   name: string;
   studentCount: number;
-  teacher: string;
+  user: string;
   description: string;
 }
 
@@ -119,21 +119,21 @@ export default function StudentManagementPage() {
         id: '1',
         name: 'Class 6A',
         studentCount: 25,
-        teacher: 'Ms. Nguyen Thi Lan',
+        user: 'Ms. Nguyen Thi Lan',
         description: 'Basic programming class for 6th grade students'
       },
       {
         id: '2',
         name: 'Class 6B',
         studentCount: 22,
-        teacher: 'Mr. Tran Van Nam',
+        user: 'Mr. Tran Van Nam',
         description: 'Advanced programming class for 6th grade students'
       },
       {
         id: '3',
         name: 'Class 7A',
         studentCount: 28,
-        teacher: 'Ms. Le Thi Hoa',
+        user: 'Ms. Le Thi Hoa',
         description: 'Intermediate programming class for 7th grade students'
       }
     ];
@@ -418,7 +418,7 @@ export default function StudentManagementPage() {
                   </div>
                   <div>
                     <span className="text-gray-600">Giáo viên:</span>
-                    <p className="font-medium">{classGroup.teacher}</p>
+                    <p className="font-medium">{classGroup.user}</p>
                   </div>
                 </div>
 

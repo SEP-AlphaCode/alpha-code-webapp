@@ -3,7 +3,7 @@
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 
-export default function TeacherDashboard() {
+export default function UserDashboard() {
     return (
         <div className="space-y-8 p-10" suppressHydrationWarning>
             {/* Top Metrics Row */}

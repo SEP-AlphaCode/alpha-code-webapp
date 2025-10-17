@@ -47,7 +47,7 @@ export const useLogin = () => {
       if (roleNameLower === 'admin') {
         router.push('/admin');
       } else if (roleNameLower === 'teacher') {
-        router.push('/teacher');
+        router.push('/user');
       } else {
         router.push('/courses');
       }
@@ -118,7 +118,7 @@ export const useGoogleLogin = () => {
       if (roleNameLower === 'admin') {
         router.push('/admin');
       } else if (roleNameLower === 'teacher') {
-        router.push('/teacher');
+        router.push('/user');
       } else {
         router.push('/student');
       }

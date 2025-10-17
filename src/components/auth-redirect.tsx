@@ -22,7 +22,7 @@ export const AuthRedirect = () => {
           if (roleNameLower === 'admin') {
             router.push('/admin');
           } else if (roleNameLower === 'teacher') {
-            router.push('/teacher');
+            router.push('/user');
           } else {
             router.push('/courses');
           }
@@ -35,7 +35,7 @@ export const AuthRedirect = () => {
             if (roleNameLower === 'admin') {
               router.push('/admin');
             } else if (roleNameLower === 'teacher') {
-              router.push('/teacher');
+              router.push('/user');
             } else {
               router.push('/courses');
             }

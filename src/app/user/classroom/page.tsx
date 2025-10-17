@@ -15,7 +15,7 @@ interface Classroom {
     activeRobots: number;
     totalRobots: number;
     currentLesson?: string;
-    teacher?: string;
+    user?: string;
     schedule: {
         time: string;
         subject: string;
@@ -51,7 +51,7 @@ export default function ClassroomPage() {
             activeRobots: 3,
             totalRobots: 4,
             currentLesson: 'Basic Programming',
-            teacher: 'Ms. Johnson',
+            user: 'Ms. Johnson',
             schedule: [
                 { time: '9:00 AM', subject: 'Basic Programming', students: 24 },
                 { time: '10:30 AM', subject: 'Robot Control', students: 20 },
@@ -67,7 +67,7 @@ export default function ClassroomPage() {
             activeRobots: 2,
             totalRobots: 3,
             currentLesson: 'Sensor Programming',
-            teacher: 'Mr. Smith',
+            user: 'Mr. Smith',
             schedule: [
                 { time: '8:30 AM', subject: 'Sensor Programming', students: 18 },
                 { time: '11:00 AM', subject: 'AI Basics', students: 22 },
@@ -209,11 +209,11 @@ export default function ClassroomPage() {
                                         <span className="font-medium" suppressHydrationWarning>{classroom.currentLesson}</span>
                                     </div>
                                 )}
-                                {classroom.teacher && (
+                                {classroom.user && (
                                     <div className="text-sm" suppressHydrationWarning>
-                                        <span className="text-muted-foreground" suppressHydrationWarning>Teacher:</span>
+                                        <span className="text-muted-foreground" suppressHydrationWarning>User:</span>
                                         <br />
-                                        <span suppressHydrationWarning>{classroom.teacher}</span>
+                                        <span suppressHydrationWarning>{classroom.user}</span>
                                     </div>
                                 )}
                             </div>
@@ -257,9 +257,9 @@ export default function ClassroomPage() {
                                             <span suppressHydrationWarning>{selectedClassroomData.activeRobots}/{selectedClassroomData.totalRobots}</span>
                                         </div>
                                         <div suppressHydrationWarning>
-                                            <span className="text-muted-foreground" suppressHydrationWarning>Teacher:</span>
+                                            <span className="text-muted-foreground" suppressHydrationWarning>User:</span>
                                             <br />
-                                            <span suppressHydrationWarning>{selectedClassroomData.teacher || 'Not assigned'}</span>
+                                            <span suppressHydrationWarning>{selectedClassroomData.user || 'Not assigned'}</span>
                                         </div>
                                     </div>
                                 </div>

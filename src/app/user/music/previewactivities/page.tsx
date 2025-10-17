@@ -173,7 +173,7 @@ export default function PreviewActivitiesPage() {
       setIsModalOpen(false)
 
       setTimeout(() => {
-        router.push('/teacher/activities')
+        router.push('/user/activities')
       }, 1500)
 
     } catch (error: unknown) {
@@ -215,7 +215,7 @@ export default function PreviewActivitiesPage() {
             <AlertCircle className="w-16 h-16 mx-auto mb-4 text-gray-400" />
             <h2 className="text-2xl font-bold mb-2 text-gray-800">Không có dữ liệu</h2>
             <p className="text-gray-600 mb-6">Không tìm thấy dance plan để hiển thị</p>
-            <Button onClick={() => router.push('/teacher/music')}>
+            <Button onClick={() => router.push('/user/music')}>
               Tạo kế hoạch nhảy mới
             </Button>
           </Card>

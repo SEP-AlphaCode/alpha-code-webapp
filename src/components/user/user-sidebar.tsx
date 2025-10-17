@@ -14,9 +14,9 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { AccountData } from "@/types/account";
-import { NavigationItem } from "@/types/teacher";
+import { NavigationItem } from "@/types/user";
 
-interface TeacherSidebarProps {
+interface UserSidebarProps {
   isSidebarOpen: boolean;
   navigationItems: NavigationItem[];
   isActiveRoute: (href: string) => boolean;
@@ -25,14 +25,14 @@ interface TeacherSidebarProps {
   isLogoutPending?: boolean;
 }
 
-export function TeacherSidebar({ 
+export function UserSidebar({ 
   isSidebarOpen, 
   navigationItems, 
   isActiveRoute, 
   accountData, 
   onLogout,
   isLogoutPending = false
-}: TeacherSidebarProps) {
+}: UserSidebarProps) {
   return (
     <aside
       className={`fixed top-16 left-0 h-[calc(100vh-4rem)] bg-white border-r border-gray-200 transition-all duration-300 ease-in-out z-30 flex flex-col ${
@@ -88,7 +88,7 @@ export function TeacherSidebar({
                     </Avatar>
                     <div className="flex flex-col items-start justify-center">
                       <span className="font-semibold text-gray-900 text-base leading-tight">
-                        {accountData?.fullName || "Teacher"}
+                        {accountData?.fullName || "User"}
                       </span>
                       <span className="text-xs text-gray-500">{accountData?.email || "N/A"}</span>
                     </div>
@@ -99,20 +99,20 @@ export function TeacherSidebar({
               <DropdownMenuContent className="w-56" side="top" align="center" sideOffset={12} forceMount>
                 <DropdownMenuLabel className="font-normal">
                   <div className="flex flex-col space-y-1">
-                    <p className="text-sm font-medium leading-none">{accountData?.fullName || "Teacher"}</p>
+                    <p className="text-sm font-medium leading-none">{accountData?.fullName || "User"}</p>
                     <p className="text-xs leading-none text-muted-foreground">{accountData?.email || "N/A"}</p>
                   </div>
                 </DropdownMenuLabel>
                 <DropdownMenuSeparator />
                 <DropdownMenuGroup>
                   <DropdownMenuItem asChild>
-                    <Link href="/teacher/profile" className="cursor-pointer">
+                    <Link href="/user/profile" className="cursor-pointer">
                       <UserCircle className="mr-2 h-4 w-4" />
                       <span>Profile</span>
                     </Link>
                   </DropdownMenuItem>
                   <DropdownMenuItem asChild>
-                    <Link href="/teacher/settings" className="cursor-pointer">
+                    <Link href="/user/settings" className="cursor-pointer">
                       <Settings className="mr-2 h-4 w-4" />
                       <span>Settings</span>
                     </Link>
@@ -140,20 +140,20 @@ export function TeacherSidebar({
             <DropdownMenuContent className="w-56" align="end" forceMount>
               <DropdownMenuLabel className="font-normal">
                 <div className="flex flex-col space-y-1">
-                  <p className="text-sm font-medium leading-none">{accountData?.fullName || "Teacher"}</p>
+                  <p className="text-sm font-medium leading-none">{accountData?.fullName || "User"}</p>
                   <p className="text-xs leading-none text-muted-foreground">{accountData?.email || "N/A"}</p>
                 </div>
               </DropdownMenuLabel>
               <DropdownMenuSeparator />
               <DropdownMenuGroup>
                 <DropdownMenuItem asChild>
-                  <Link href="/teacher/profile" className="cursor-pointer">
+                  <Link href="/user/profile" className="cursor-pointer">
                     <UserCircle className="mr-2 h-4 w-4" />
                     <span>Profile</span>
                   </Link>
                 </DropdownMenuItem>
                 <DropdownMenuItem asChild>
-                  <Link href="/teacher/settings" className="cursor-pointer">
+                  <Link href="/user/settings" className="cursor-pointer">
                     <Settings className="mr-2 h-4 w-4" />
                     <span>Settings</span>
                   </Link>
