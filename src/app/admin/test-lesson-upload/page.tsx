@@ -19,7 +19,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
-import { Upload, Send, Loader2, CheckCircle, XCircle } from "lucide-react"
+import { Send, Loader2, CheckCircle, XCircle } from "lucide-react"
 import { toast } from "sonner"
 import lessonApi from '@/services/lesson-api'
 
@@ -37,7 +37,7 @@ interface LessonData {
 
 export default function TestLessonUploadPage() {
   const [loading, setLoading] = useState(false)
-  const [result, setResult] = useState<any>(null)
+  const [result, setResult] = useState<Record<string, unknown> | null>(null)
   const [error, setError] = useState<string | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
   
@@ -99,11 +99,15 @@ export default function TestLessonUploadPage() {
       setResult(response.data)
       toast.success('Upload lesson thành công!')
       
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Upload error:', error)
-      const errorMessage = error.response?.data?.message || error.message || 'Có lỗi xảy ra'
-      setError(errorMessage)
-      toast.error(`Upload thất bại: ${errorMessage}`)
+      const errorMessage = error && typeof error === 'object' && 'response' in error 
+        ? (error as { response?: { data?: { message?: string } } }).response?.data?.message 
+        : error instanceof Error 
+        ? error.message 
+        : 'Có lỗi xảy ra'
+      setError(errorMessage || 'Có lỗi xảy ra')
+      toast.error(`Upload thất bại: ${errorMessage || 'Có lỗi xảy ra'}`)
     } finally {
       setLoading(false)
     }
@@ -150,7 +154,7 @@ export default function TestLessonUploadPage() {
           <ul className="list-disc list-inside space-y-1">
             <li>Điền thông tin lesson vào form bên trái</li>
             <li>Chọn file video (hỗ trợ các định dạng: mp4, avi, mov, etc.)</li>
-            <li>Nhấn "Upload Lesson" để gửi request</li>
+            <li>Nhấn &quot;Upload Lesson&quot; để gửi request</li>
             <li>Xem kết quả ở bên phải (success/error)</li>
             <li>Check Console để xem chi tiết request/response</li>
           </ul>
@@ -332,6 +336,7 @@ export default function TestLessonUploadPage() {
               </ul>
             </CardContent>
           </Card>
+          
 
           {/* Success Result */}
           {result && (
@@ -344,7 +349,7 @@ export default function TestLessonUploadPage() {
               </CardHeader>
               <CardContent>
                 <pre className="text-sm bg-green-50 p-3 rounded overflow-auto">
-                  {JSON.stringify(result, null, 2)}
+                  {result ? JSON.stringify(result, null, 2) : 'No result data'}
                 </pre>
               </CardContent>
             </Card>

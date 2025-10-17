@@ -69,7 +69,7 @@ export default function TokenRulePage() {
       rule.note?.toLowerCase().includes(searchTerm.toLowerCase())
     )
     .sort((a, b) => {
-      let valueA: any, valueB: any
+      let valueA: string | number | Date, valueB: string | number | Date
       switch (sortBy) {
         case 'code':
           valueA = a.code || ''
@@ -151,8 +151,12 @@ export default function TokenRulePage() {
         toast.success('Tạo token rule thành công!')
         setCreateModalOpen(false)
       } else {
+        if (!selectedRule?.id) {
+          toast.error('Không tìm thấy ID của rule để cập nhật')
+          return
+        }
         await updateMutation.mutateAsync({
-          id: selectedRule?.id!,
+          id: selectedRule.id,
           code: formData.code.trim(),
           cost,
           note: formData.note.trim() || undefined
