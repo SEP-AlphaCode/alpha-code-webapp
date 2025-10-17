@@ -24,7 +24,8 @@ import {
   Star,
   Target,
   Activity,
-  Loader2
+  Loader2,
+  Square
 } from "lucide-react"
 import { Pagination } from "@/components/ui/pagination"
 import { PerPageSelector } from "@/components/ui/per-page-selector"
@@ -145,6 +146,21 @@ export default function ActivitiesPage() {
       }
     }, 3000);
   }, [selectedRobotSerial, selectedRobot, updateRobotStatus, startActivity])
+
+  // Handle stop all actions
+  const handleStopAllActions = useCallback(() => {
+    const robotSerial = selectedRobotSerial;
+    
+    if (!robotSerial) {
+      console.error('No robot selected for stopping actions');
+      return;
+    }
+
+    console.log('Stopping all actions for robot:', robotSerial);
+    
+    // Send stop_all_actions command via socket
+    startActivity(robotSerial, 'stop_all_actions', {});
+  }, [selectedRobotSerial, startActivity])
 
   // Debug logging to track re-renders
   console.log('ActivitiesPage render #' + renderCount.current + ':', {
@@ -494,6 +510,15 @@ export default function ActivitiesPage() {
                 <CreateActivityForm />
               </DialogContent>
             </Dialog>
+            
+            <Button 
+              variant="destructive" 
+              onClick={handleStopAllActions}
+              disabled={!selectedRobotSerial || isRobotLoading}
+            >
+              <Square className="w-4 h-4 mr-2" />
+              Dừng tất cả
+            </Button>
           </div>
         </div>
 
