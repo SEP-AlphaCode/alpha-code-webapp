@@ -1,25 +1,25 @@
-import { getAccountCourses, getAccountLessons, getCategories, getCategoryBySlug, getCourseBySlug, getCourses, getLessons, markLessonComplete } from "@/features/courses/api/course-api";
-import { AccountCourse, AccountLesson, Category, Course, Lesson } from "@/types/courses";
+import { 
+    getCourseBySlug, 
+    getCourses, 
+    getNoneDeleteCourses,
+    getNoneDeleteCourseById,
+    getCourseById,
+    createCourse,
+    updateCourse,
+    patchCourse,
+    deleteCourse
+} from "@/features/courses/api/course-api";
+import { Course } from "@/types/courses";
 import { PagedResult } from "@/types/page-result";
-import { useInfiniteQuery, useQuery, useQueryClient, UseQueryOptions } from "@tanstack/react-query";
-import { use } from "react";
+import { useQuery, useMutation, useQueryClient, UseQueryOptions } from "@tanstack/react-query";
+import { toast } from "sonner";
 
 const STALE_TIME = 24 * 3600 * 1000
+
 export const useCourse = () => {
-    const useGetCategories = (size: number) => {
-        return useInfiniteQuery({
-            queryKey: ["categories", size],
-            queryFn: ({ pageParam = 1, signal }) =>
-                getCategories(pageParam, size, signal),
-            initialPageParam: 1,
-            getNextPageParam: (lastPage, allPages) => {
-                // assuming your API returns something like { has_next, page, total_pages }
-                return lastPage.has_next ? lastPage.page + 1 : undefined;
-            },
-            staleTime: STALE_TIME,
-            refetchOnWindowFocus: false,
-        });
-    };
+    const queryClient = useQueryClient();
+
+    // GET /api/v1/courses - Get all active courses
     const useGetCourses = (page: number, size: number, search?: string, signal?: AbortSignal) => {
         return useQuery<PagedResult<Course>>({
             queryKey: ['courses', page, size, search],
@@ -28,69 +28,135 @@ export const useCourse = () => {
             refetchOnWindowFocus: false,
         })
     }
+
+    // GET /api/v1/courses/get-by-slug/{slug} - Get course by slug
     const useGetCourseBySlug = (
         slug: string,
         options?: Omit<UseQueryOptions<Course | undefined>, 'queryKey'>
     ) => {
         return useQuery<Course | undefined>({
-            queryKey: ['courses', slug],
+            queryKey: ['courses', 'slug', slug],
             queryFn: () => getCourseBySlug(slug),
             staleTime: STALE_TIME,
             refetchOnWindowFocus: false,
-            enabled: !!slug, // prevents query from firing if slug is empty
-            ...options, // allow override
-        });
-    };
-    const useGetCategoryBySlug = (slug: string) => useQuery<Category | undefined>({
-        queryKey: ['category', slug],
-        staleTime: STALE_TIME,
-        queryFn: () => getCategoryBySlug(slug),
-        refetchOnWindowFocus: false,
-    })
-    const useGetAccountCourses = (accountId: string, page: number, size: number) => {
-        return useQuery<PagedResult<AccountCourse>>({
-            queryKey: ['account-courses', accountId, page, size],
-            staleTime: STALE_TIME,
-            queryFn: ({ signal }) => getAccountCourses(accountId, page, size, signal),
-            refetchOnWindowFocus: false,
-        })
-    }
-    const useGetAccountLessons = (accountId: string, courseId: string, page: number, size: number) => {
-        return useQuery<PagedResult<AccountLesson>>({
-            queryKey: ['account-lessons', accountId, courseId, page, size],
-            staleTime: STALE_TIME,
-            queryFn: ({ signal }) => getAccountLessons(accountId, courseId, page, size, signal),
-            refetchOnWindowFocus: false,
-        })
-    }
-    const useMarkLessonComplete = (accountLessonId: string) => {
-        return useQuery<void>({
-            queryKey: ['mark-lesson-complete', accountLessonId],
-            queryFn: ({ signal }) => markLessonComplete(accountLessonId, signal),
-            refetchOnWindowFocus: false,
-        })
-    }
-    const useGetLessons = (
-        courseId: string,
-        options?: Omit<UseQueryOptions<PagedResult<Lesson>>, 'queryKey'>
-    ) => {
-        return useQuery<PagedResult<Lesson>>({
-            queryKey: ['lessons', courseId],
-            queryFn: () => getLessons(courseId),
-            staleTime: STALE_TIME,
-            refetchOnWindowFocus: false,
-            enabled: !!courseId,            
+            enabled: !!slug,
             ...options,
         });
     };
+
+    // GET /api/v1/courses/none-delete - Get all none delete courses
+    const useGetNoneDeleteCourses = (page: number, size: number, search?: string, signal?: AbortSignal) => {
+        return useQuery<PagedResult<Course>>({
+            queryKey: ['courses', 'none-delete', page, size, search],
+            staleTime: STALE_TIME,
+            queryFn: () => getNoneDeleteCourses(page, size, search, signal),
+            refetchOnWindowFocus: false,
+        })
+    }
+
+    // GET /api/v1/courses/none-delete/{id} - Get none delete course by id
+    const useGetNoneDeleteCourseById = (
+        id: string,
+        options?: Omit<UseQueryOptions<Course | undefined>, 'queryKey'>
+    ) => {
+        return useQuery<Course | undefined>({
+            queryKey: ['courses', 'none-delete', id],
+            queryFn: () => getNoneDeleteCourseById(id),
+            staleTime: STALE_TIME,
+            refetchOnWindowFocus: false,
+            enabled: !!id,
+            ...options,
+        });
+    };
+
+    // GET /api/v1/courses/{id} - Get course by id
+    const useGetCourseById = (
+        id: string,
+        options?: Omit<UseQueryOptions<Course | undefined>, 'queryKey'>
+    ) => {
+        return useQuery<Course | undefined>({
+            queryKey: ['courses', id],
+            queryFn: () => getCourseById(id),
+            staleTime: STALE_TIME,
+            refetchOnWindowFocus: false,
+            enabled: !!id,
+            ...options,
+        });
+    };
+
+    // POST /api/v1/courses - Create new course
+    const useCreateCourse = () => {
+        return useMutation({
+            mutationFn: createCourse,
+            onSuccess: () => {
+                queryClient.invalidateQueries({ queryKey: ['courses'] });
+                toast.success('Tạo khóa học thành công!');
+            },
+            onError: (error: any) => {
+                console.error('Create course error:', error);
+                toast.error('Có lỗi xảy ra khi tạo khóa học');
+            }
+        });
+    };
+
+    // PUT /api/v1/courses/{id} - Update course
+    const useUpdateCourse = () => {
+        return useMutation({
+            mutationFn: ({ id, data }: { id: string; data: Partial<Course> }) => 
+                updateCourse(id, data),
+            onSuccess: (_, variables) => {
+                queryClient.invalidateQueries({ queryKey: ['courses'] });
+                queryClient.invalidateQueries({ queryKey: ['courses', variables.id] });
+                toast.success('Cập nhật khóa học thành công!');
+            },
+            onError: (error: any) => {
+                console.error('Update course error:', error);
+                toast.error('Có lỗi xảy ra khi cập nhật khóa học');
+            }
+        });
+    };
+
+    // PATCH /api/v1/courses/{id} - Patch update course
+    const usePatchCourse = () => {
+        return useMutation({
+            mutationFn: ({ id, data }: { id: string; data: Partial<Course> }) => 
+                patchCourse(id, data),
+            onSuccess: (_, variables) => {
+                queryClient.invalidateQueries({ queryKey: ['courses'] });
+                queryClient.invalidateQueries({ queryKey: ['courses', variables.id] });
+                toast.success('Cập nhật khóa học thành công!');
+            },
+            onError: (error: any) => {
+                console.error('Patch course error:', error);
+                toast.error('Có lỗi xảy ra khi cập nhật khóa học');
+            }
+        });
+    };
+
+    // DELETE /api/v1/courses/{id} - Delete course
+    const useDeleteCourse = () => {
+        return useMutation({
+            mutationFn: deleteCourse,
+            onSuccess: () => {
+                queryClient.invalidateQueries({ queryKey: ['courses'] });
+                toast.success('Xóa khóa học thành công!');
+            },
+            onError: (error: any) => {
+                console.error('Delete course error:', error);
+                toast.error('Có lỗi xảy ra khi xóa khóa học');
+            }
+        });
+    };
+
     return {
-        useGetCategories,
         useGetCourses,
-        useGetCategoryBySlug,
         useGetCourseBySlug,
-        useGetAccountCourses,
-        useGetAccountLessons,
-        useMarkLessonComplete,
-        useGetLessons
+        useGetNoneDeleteCourses,
+        useGetNoneDeleteCourseById,
+        useGetCourseById,
+        useCreateCourse,
+        useUpdateCourse,
+        usePatchCourse,
+        useDeleteCourse,
     }
 }
