@@ -6,7 +6,7 @@ interface Robot {
   id: string;
   name: string;
   status: "online" | "offline" | "charging" | "busy";
-  battery: number;
+  battery: number | null;
   lastSeen: string;
   version: string;
   students: number;
@@ -87,7 +87,14 @@ export function RobotGrid({
     <section>
       <h2 className="text-2xl font-semibold text-blue-800 mb-4">{sectionTitle}</h2>
       <div className="flex gap-6 overflow-x-auto p-5 hide-scrollbar">
-        {robots.map((robot) => (
+        {robots.map((robot) => {
+        // 🧩 Chuẩn hóa status hiển thị
+        const displayStatus: Robot["status"] =
+        (["error", "disconnected"].includes(robot.status as string)
+          ? "offline"
+          : robot.status) as Robot["status"];
+
+        return (
           <div
             key={robot.id}
             className={`min-w-[320px] bg-white rounded-2xl shadow-lg border border-gray-100 p-5 flex flex-col items-center transition-transform duration-200 hover:scale-105 cursor-pointer ${
@@ -104,26 +111,32 @@ export function RobotGrid({
             />
             <span className="font-bold text-lg text-gray-900 mb-1">{robot.name}</span>
             <span className="text-xs text-gray-400 mb-2">{robot.serialNumber}</span>
+
+            {/* 🧠 Dùng displayStatus thay cho robot.status */}
             <div className="flex items-center gap-2 mb-2">
-              {getStatusIcon(robot.status)}
-              <span className={`px-2 py-0.5 rounded-full text-xs font-semibold ${getStatusColor(robot.status)}`}>
-                {getStatusText(robot.status)}
+              {getStatusIcon(displayStatus)}
+              <span
+                className={`px-2 py-0.5 rounded-full text-xs font-semibold ${getStatusColor(
+                  displayStatus
+                )}`}
+              >
+                {getStatusText(displayStatus)}
               </span>
             </div>
+
             <div className="flex items-center gap-2 mb-2">
               <Battery className="h-4 w-4" />
               <span className="font-semibold text-sm">{robot.battery}%</span>
               <div className="w-20 h-2 bg-gray-200 rounded-full overflow-hidden">
                 <div
-                  className={`h-2 rounded-full ${getBatteryColor(robot.battery)}`}
+                  className={`h-2 rounded-full ${getBatteryColor(robot.battery ?? 0)}`}
                   style={{ width: `${robot.battery}%` }}
                 ></div>
               </div>
             </div>
-            <div className="flex items-center gap-2">
-            </div>
           </div>
-        ))}
+        );
+      })}
       </div>
     </section>
   );

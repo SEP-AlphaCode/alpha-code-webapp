@@ -30,7 +30,7 @@ interface ExtendedRobot {
   id: string;
   name: string;
   status: "online" | "offline" | "charging" | "busy";
-  battery: number;
+  battery: number | null;
   lastSeen: string;
   version: string;
   students: number;
@@ -85,7 +85,7 @@ function extendRobotWithMockData(robot: ReturnType<typeof useRobotStore>['robots
       ip: "192.168.1.103",
       temperature: 26,
       image: "/alpha-mini-2.webp",
-    }
+    },
   ];
 
   const mockInfo = mockData[index] || mockData[0];
@@ -93,10 +93,12 @@ function extendRobotWithMockData(robot: ReturnType<typeof useRobotStore>['robots
   return {
     id: robot.id,
     name: robot.name,
-    status: robot.status === 'offline' ? 'charging' : robot.status,
-    battery: robot.battery || 0, // Use battery from Redux, fallback to 0
+    // ✅ Giữ nguyên status thật, fallback “offline”
+    status: robot.status || "offline",
+    // ✅ Nếu pin không có, để null để RobotGrid tự ẩn
+    battery: typeof robot.battery === "number" ? robot.battery : null,
     serialNumber: robot.serial,
-    robotmodel: "AlphaMini", // Add robotmodel, fallback to "AlphaMini"
+    robotmodel: "AlphaMini",
     ...mockInfo,
   };
 }

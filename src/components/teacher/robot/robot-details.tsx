@@ -9,7 +9,7 @@ interface Robot {
   id: string;
   name: string;
   status: "online" | "offline" | "charging" | "busy";
-  battery: number;
+  battery: number | null;
   lastSeen: string;
   version: string;
   students: number;
@@ -159,7 +159,7 @@ export function RobotDetails({ robot, translations }: RobotDetailsProps) {
             </div>
             <div className="w-full bg-gray-200 rounded-full h-2 my-2">
               <div
-                className={`h-2 rounded-full ${getBatteryColor(displayRobot.battery)}`}
+                className={`h-2 rounded-full ${getBatteryColor(displayRobot.battery ?? 0)}`}
                 style={{ width: `${displayRobot.battery}%` }}
               ></div>
             </div>

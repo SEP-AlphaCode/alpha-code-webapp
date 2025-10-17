@@ -73,10 +73,15 @@ const convertApiRobotToReduxRobot = (apiRobot: ApiRobot): Robot => ({
   id: apiRobot.id,
   serial: apiRobot.serialNumber,
   name: apiRobot.robotModelName || 'Unknown Robot',
-  status: apiRobot.status === 1 ? 'online' : 'offline',
+  status:
+  apiRobot.status === 'online' || apiRobot.status === 'success'
+    ? 'online'
+    : apiRobot.status === 'busy'
+    ? 'busy'
+    : 'offline',
   lastConnected: apiRobot.lastUpdate || new Date().toISOString(),
   isSelected: false,
-  battery: Math.floor(Math.random() * 100), // Tạm thời random vì API chưa có battery
+  battery: apiRobot.battery_level ?? 0, // ✅ Dùng field thật từ API nếu có, nếu null thì 0
   robotModelId: apiRobot.robotModelId,
   robotModelName: apiRobot.robotModelName,
   accountId: apiRobot.accountId
