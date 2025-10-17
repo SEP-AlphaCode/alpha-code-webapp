@@ -307,9 +307,20 @@ export const toolbox = {
         },
         {
             kind: 'category',
+            name: 'Robot',
+            categoryStyle: 'robot_category',
+            contents: [
+                {
+                    kind: 'block',
+                    type: 'do_action'
+                }
+            ]
+        },
+        {
+            kind: 'category',
             name: 'Text',
             categorystyle: 'text_category',
-            contents: [
+            contents: [                
                 {
                     kind: 'block',
                     type: 'text',
@@ -476,21 +487,7 @@ export const toolbox = {
                             },
                         },
                     },
-                },
-                {
-                    kind: 'block',
-                    type: 'add_text',
-                    inputs: {
-                        TEXT: {
-                            shadow: {
-                                type: 'text',
-                                fields: {
-                                    TEXT: 'abc',
-                                },
-                            },
-                        },
-                    },
-                },
+                }                
             ],
         },
         {

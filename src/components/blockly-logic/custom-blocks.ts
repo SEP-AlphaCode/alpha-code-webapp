@@ -1,17 +1,44 @@
-const customBlocks = [
+import * as Blockly from 'blockly';
+const customBlockData = [
     {
         "type": "do_action",
-        "message0": 'Execute the action %1',
+        "tooltip": "do an action",
+        "helpUrl": "nothing here",
+        "message0": "play action %1 for %2 time(s) %3",
         "args0": [
             {
-                "type": "input_value",
-                "name": "VALUE",
-                "check": "String"
+                "type": "field_dropdown",
+                "name": "ACTION_NAME",
+                "options": [
+                    [
+                        "option",
+                        "OPTIONNAME1"
+                    ],
+                    [
+                        "option",
+                        "OPTIONNAME2"
+                    ],
+                    [
+                        "option",
+                        "OPTIONNAME3"
+                    ]
+                ]
+            },
+            {
+                "type": "field_number",
+                "name": "COUNT",
+                "value": 0,
+                "min": 0
+            },
+            {
+                "type": "input_dummy",
+                "name": "DUMMY"
             }
         ],
-        "output": "Number",
-        "colour": 160,
-        "tooltip": "Returns number of letters in the provided text.",
-        "helpUrl": "http://www.w3schools.com/jsref/jsref_length_string.asp"
+        "previousStatement": null,
+        "nextStatement": null,
+        "colour": 225
     }
 ]
+
+export const customBlocks = Blockly.common.createBlockDefinitionsFromJsonArray(customBlockData)
