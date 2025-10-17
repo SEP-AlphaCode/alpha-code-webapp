@@ -62,7 +62,7 @@ export function navigateToPreviewActivities(
       // Store only dancePlan in sessionStorage for fallback
       sessionStorage.setItem('preview_activity_fallback', JSON.stringify(data.dancePlan))
       
-      router.push(`/user/music/previewactivities?${searchParams.toString()}`)
+      router.push(`/user/music/preview-activities?${searchParams.toString()}`)
       
     } catch (fallbackError) {
       console.error('❌ Fallback navigation also failed:', fallbackError)
