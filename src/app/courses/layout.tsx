@@ -91,7 +91,7 @@ export default function CourseLayout({
   children: React.ReactNode
 }) {
   return (
-    <AuthGuard allowedRoles={['teacher', 'user']}>
+    <AuthGuard allowedRoles={['user']}>
       <SidebarProvider
         style={
           {

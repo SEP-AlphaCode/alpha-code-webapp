@@ -23,12 +23,7 @@ export default function CoursePage() {
   const accessToken = sessionStorage.getItem('accessToken')
   const accId = accessToken ? getUserIdFromToken(accessToken) ?? '' : ''
   
-  // courses - moved hook call before conditional return
-  // const { data: coursesData, isLoading: loadingCourses } = useGetCourses(
-  //   pagination.page,
-  //   pagination.size,
-  //   filters.search,
-  // );
+  // courses - Always call hooks at the top level
   const { data: coursesData, isLoading: loadingCourses } = useGetAccountCourses(accId, pagination.page, pagination.size)
   
   if (!accessToken) {

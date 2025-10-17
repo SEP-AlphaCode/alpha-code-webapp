@@ -10,19 +10,18 @@ interface CourseState {
     search: string;
   };
   currentCourse: {
-    name?: string;
-    slug?: string;
-    id?: string
+    name: string | null;
+    slug: string | null;
   };
 }
 
 const initialState: CourseState = {
   pagination: { page: 1, size: 12 },
   filters: { categoryIds: [], search: "" },
-  currentCourse: {}
+  currentCourse: { name: null, slug: null }
 };
 
-const courseSlice = createSlice({
+const userCourseSlice = createSlice({
   name: "course",
   initialState,
   reducers: {
@@ -35,15 +34,15 @@ const courseSlice = createSlice({
     },
     setSearch: (state, action: PayloadAction<string>) => {
       console.log("Setting search to:", action.payload);
-
+      
       state.filters.search = action.payload;
       state.pagination.page = 1;
     },
-    setCurrentCourse: (state, action: PayloadAction<{ name?: string; slug?: string, id?: string }>) => {
+    setCurrentCourse: (state, action: PayloadAction<{ name: string; slug: string } | null>) => {
       state.currentCourse = action.payload ?? { name: null, slug: null };
     }
   }
 });
 
-export const { setPage, setCategoryFilter, setSearch, setCurrentCourse } = courseSlice.actions;
-export default courseSlice.reducer;
+export const { setPage, setCategoryFilter, setCurrentCourse, setSearch } = userCourseSlice.actions;
+export default userCourseSlice.reducer;
