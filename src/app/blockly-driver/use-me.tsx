@@ -56,9 +56,10 @@ export default function UseMe() {
                     setSaved(json)
                 }}>Load</button>
                 <button onClick={(e) => {
-                    if(!gen) return;
+                    if (!gen) return;
                     const c = actions.translate(gen, workspaceRef.current)
                     setCode(c)
+                    alert(c)
                 }}>Translate to code</button>
             </div>
             <div ref={blocklyRef} style={{ height: 500, width: 900 }}></div>

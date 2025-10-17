@@ -312,7 +312,19 @@ export const toolbox = {
             contents: [
                 {
                     kind: 'block',
-                    type: 'do_action'
+                    type: 'action'
+                },
+                {
+                    kind: 'block',
+                    type: 'extended_action'
+                },
+                {
+                    kind: 'block',
+                    type: 'skill_helper'
+                },
+                {
+                    kind: 'block',
+                    type: 'expression'
                 }
             ]
         },
