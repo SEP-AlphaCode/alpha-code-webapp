@@ -20,6 +20,8 @@ export interface Robot {
   robotModelId?: string
   robotModelName?: string
   accountId?: string
+  ctrl_version?: string
+  firmware_version?: string
 }
 
 interface RobotState {

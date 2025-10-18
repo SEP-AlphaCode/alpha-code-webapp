@@ -12,11 +12,12 @@ interface Robot {
   battery: number | null;
   lastSeen: string;
   version: string;
+  ctrl_version: string;
+  firmware_version: string;
   students: number;
   currentTask: string;
   uptime: string;
   ip: string;
-  temperature: number;
   image: string;
   serialNumber: string;
   robotmodel: string;
@@ -28,6 +29,7 @@ interface RobotDetailsProps {
     systemInfo: {
       title: string;
       firmware: string;
+      ctrl: string;
       temperature: string;
       robotmodel: string;
     };
@@ -117,16 +119,14 @@ export function RobotDetails({ robot, translations }: RobotDetailsProps) {
             <div className="flex justify-between">
               <span className="text-gray-400">{translations.systemInfo.firmware}:</span>
               <span className="text-gray-900 font-medium">
-                {loading ? "Đang cập nhật..." : displayRobot.version}
+                {displayRobot.firmware_version}
               </span>
             </div>
-            <div className="flex justify-between">
-              <span className="text-gray-400">{translations.systemInfo.robotmodel}:</span>
-              <span className="text-gray-900 font-medium">{displayRobot.robotmodel}</span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-gray-400">{translations.systemInfo.temperature}:</span>
-              <span className="text-gray-900 font-medium">{displayRobot.temperature}°C</span>
+             <div className="flex justify-between">
+              <span className="text-gray-400">{translations.systemInfo.ctrl}:</span>
+              <span className="text-gray-900 font-medium">
+                {displayRobot.ctrl_version}
+              </span>
             </div>
           </div>
         </div>
@@ -148,22 +148,29 @@ export function RobotDetails({ robot, translations }: RobotDetailsProps) {
               </span>
             </div>
             <div className="flex justify-between">
-              <span className="text-gray-400">{translations.currentStatus.task}:</span>
-              <span className="text-gray-900 font-medium">{displayRobot.currentTask}</span>
+              <span className="text-gray-400">{translations.systemInfo.robotmodel}:</span>
+              <span className="text-gray-900 font-medium">{displayRobot.robotmodel}</span>
             </div>
-            <div className="flex justify-between">
-              <span className="text-gray-400">{translations.currentStatus.battery}:</span>
-              <span className="text-gray-900 font-medium">
-                {loading ? "..." : `${displayRobot.battery}%`}
-              </span>
-            </div>
-            <div className="w-full bg-gray-200 rounded-full h-2 my-2">
-              <div
-                className={`h-2 rounded-full ${getBatteryColor(displayRobot.battery ?? 0)}`}
-                style={{ width: `${displayRobot.battery}%` }}
-              ></div>
-            </div>
+
+            {/* ⚡ Ẩn phần pin nếu offline */}
+            {displayRobot.status !== "offline" && (
+              <>
+                <div className="flex justify-between">
+                  <span className="text-gray-400">{translations.currentStatus.battery}:</span>
+                  <span className="text-gray-900 font-medium">
+                    {loading ? "..." : `${displayRobot.battery}%`}
+                  </span>
+                </div>
+                <div className="w-full bg-gray-200 rounded-full h-2 my-2">
+                  <div
+                    className={`h-2 rounded-full ${getBatteryColor(displayRobot.battery ?? 0)}`}
+                    style={{ width: `${displayRobot.battery}%` }}
+                  ></div>
+                </div>
+              </>
+            )}
           </div>
+
           {error && <p className="text-red-500 text-xs mt-2">⚠️ {error}</p>}
         </div>
 
@@ -176,10 +183,6 @@ export function RobotDetails({ robot, translations }: RobotDetailsProps) {
             <Button className="w-full text-base py-3" variant="outline">
               <Power className="h-5 w-5 mr-2" />
               {translations.quickActions.restart}
-            </Button>
-            <Button className="w-full text-base py-3" variant="outline">
-              <Settings className="h-5 w-5 mr-2" />
-              {translations.quickActions.settings}
             </Button>
             <Button className="w-full text-base py-3" variant="outline">
               <StopCircleIcon className="h-5 w-5 mr-2" />

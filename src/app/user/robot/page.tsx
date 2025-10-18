@@ -33,6 +33,8 @@ interface ExtendedRobot {
   battery: number | null;
   lastSeen: string;
   version: string;
+  ctrl_version: string;
+  firmware_version: string;
   students: number;
   currentTask: string;
   uptime: string;
@@ -97,6 +99,8 @@ function extendRobotWithMockData(robot: ReturnType<typeof useRobotStore>['robots
     status: robot.status || "offline",
     // ✅ Nếu pin không có, để null để RobotGrid tự ẩn
     battery: typeof robot.battery === "number" ? robot.battery : null,
+    ctrl_version: robot.ctrl_version || "",
+    firmware_version: robot.firmware_version || "",
     serialNumber: robot.serial,
     robotmodel: "AlphaMini",
     ...mockInfo,
@@ -160,6 +164,7 @@ export default function UserDashboard() {
             systemInfo: {
               title: "Thông tin hệ thống",
               firmware: "Phiên bản phần mềm",
+              ctrl: "Phiên bản điều khiển",
               temperature: "Nhiệt độ",
               robotmodel: "Mẫu robot",
             },
