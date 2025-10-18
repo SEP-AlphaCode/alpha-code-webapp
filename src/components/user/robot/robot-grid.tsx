@@ -20,7 +20,7 @@ interface Robot {
 
 interface RobotGridProps {
   robots: Robot[];
-  selectedRobot: string | null;
+  selectedRobot: string | string[] | null 
   onRobotSelect: (robotSerial: string) => void;
   sectionTitle: string;
   statusTexts: {
@@ -124,16 +124,18 @@ export function RobotGrid({
               </span>
             </div>
 
-            <div className="flex items-center gap-2 mb-2">
-              <Battery className="h-4 w-4" />
-              <span className="font-semibold text-sm">{robot.battery}%</span>
-              <div className="w-20 h-2 bg-gray-200 rounded-full overflow-hidden">
-                <div
-                  className={`h-2 rounded-full ${getBatteryColor(robot.battery ?? 0)}`}
-                  style={{ width: `${robot.battery}%` }}
-                ></div>
+            {displayStatus !== "offline" && (
+              <div className="flex items-center gap-2 mb-2">
+                <Battery className="h-4 w-4" />
+                <span className="font-semibold text-sm">{robot.battery}%</span>
+                <div className="w-20 h-2 bg-gray-200 rounded-full overflow-hidden">
+                  <div
+                    className={`h-2 rounded-full ${getBatteryColor(robot.battery ?? 0)}`}
+                    style={{ width: `${robot.battery}%` }}
+                  ></div>
+                </div>
               </div>
-            </div>
+            )}
           </div>
         );
       })}
