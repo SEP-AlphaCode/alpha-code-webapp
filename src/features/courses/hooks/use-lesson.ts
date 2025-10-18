@@ -100,6 +100,16 @@ export const useLesson = () => {
             queryFn: ({ signal }) => getLessonsBySection(sectionId, signal),
             refetchOnWindowFocus: false,
             enabled: !!sectionId,
+            retry: (failureCount, error: unknown) => {
+                if (error && typeof error === 'object') {
+                    const errorObj = error as { name?: string; code?: string };
+                    if (errorObj.name === 'CanceledError' || errorObj.code === 'ERR_CANCELED') {
+                        return false;
+                    }
+                }
+                return failureCount < 3;
+            },
+            retryDelay: attemptIndex => Math.min(1000 * 2 ** attemptIndex, 30000),
         })
     }
 

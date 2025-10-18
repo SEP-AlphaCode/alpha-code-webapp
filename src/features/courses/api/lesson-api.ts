@@ -64,7 +64,23 @@ export const getLessonsBySection = async (sectionId: string, signal?: AbortSigna
             signal
         });
         return response.data;
-    } catch (error) {
+    } catch (error: unknown) {
+        if (error && typeof error === 'object') {
+            const errorObj = error as { name?: string; code?: string };
+            if (errorObj.name === 'CanceledError' || errorObj.code === 'ERR_CANCELED') {
+                console.log('API Call canceled for getLessonsBySection');
+                // Return empty result instead of throwing
+                return {
+                    data: [],
+                    total_count: 0,
+                    page: 1,
+                    per_page: 10,
+                    total_pages: 0,
+                    has_next: false,
+                    has_previous: false
+                } as PagedResult<Lesson>;
+            }
+        }
         console.error("API Error in getLessonsBySection:", error);
         throw error;
     }
