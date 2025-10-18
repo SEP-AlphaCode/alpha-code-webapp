@@ -96,7 +96,6 @@ export function RobotGridContainer() {
                 onRobotSelect={handleRobotSelect}
                 sectionTitle={`Danh sách Robot`}
                 statusTexts={statusTexts}
-                multiMode={multiMode} // ✅ Quan trọng: Truyền chế độ vào component
             />
         </div>
     );

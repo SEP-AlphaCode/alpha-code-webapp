@@ -42,7 +42,7 @@ interface ExtendedRobot {
   temperature: number;
   image: string;
   serialNumber: string;
-  robotmodel: string;
+  robotmodel: string | undefined;
 }
 
 // Hàm xáo trộn mảng ngẫu nhiên
@@ -102,18 +102,28 @@ function extendRobotWithMockData(robot: ReturnType<typeof useRobotStore>['robots
     ctrl_version: robot.ctrl_version || "",
     firmware_version: robot.firmware_version || "",
     serialNumber: robot.serial,
-    robotmodel: "AlphaMini",
+    robotmodel: robot.robotModelName ?? "",
     ...mockInfo,
   };
 }
 
 export default function UserDashboard() {
-  const { robots, selectedRobotSerial, selectRobot, initializeMockData } = useRobotStore();
+  const { robots, selectedRobotSerial, selectRobot, initializeMockData, connectMode } = useRobotStore();
   const [shuffledPrompts, setShuffledPrompts] = useState<string[]>([]);
+  const [selectedModelName, setSelectedModelName] = useState<string>(""); // ✅ thêm state model
   const [hasInitialized, setHasInitialized] = useState(false);
+  
+
 
   useEffect(() => {
-    // Initialize mock data if no robots exist
+  if (connectMode === "single") {
+    setSelectedModelName(""); // 👈 hiển thị lại tất cả robot
+    selectRobot(""); // 👈 bỏ chọn robot cũ (nếu cần)
+    sessionStorage.removeItem("selectedRobotSerial");
+  }
+}, [connectMode]);
+
+  useEffect(() => {
     initializeMockData();
   }, []);
 
@@ -125,26 +135,36 @@ export default function UserDashboard() {
     setShuffledPrompts(shuffleArray(thingsToTryPrompts));
   };
 
-  // Convert Redux robots to extended robot format
   const extendedRobots: ExtendedRobot[] = robots.map((robot, index) =>
     extendRobotWithMockData(robot, index)
   );
 
-  const selectedRobotDetails = extendedRobots.find((robot) => robot.serialNumber === selectedRobotSerial) || null;
+  // ✅ Lọc robot theo model được chọn (nếu có)
+  const filteredRobots = selectedModelName
+    ? extendedRobots.filter((r) => r.robotmodel === selectedModelName)
+    : extendedRobots
+
+  const selectedRobotDetails =
+    filteredRobots.find((robot) => robot.serialNumber === selectedRobotSerial) || null;
 
   return (
     <div className="space-y-10 p-10">
       <RobotPageHeader
         title="Quản lý robot"
         subtitle="Quản lý và tương tác với các robot AlphaMini của bạn"
+        onModelSelect={(modelName) => {
+          setSelectedModelName(modelName)
+          selectRobot("") // 👈 reset robot đang chọn trong store
+          sessionStorage.removeItem("selectedRobotSerial") // 👈 xóa khỏi sessionStorage luôn
+        }}
       />
 
       <RobotGrid
-        robots={extendedRobots}
+        robots={filteredRobots} // ✅ truyền danh sách đã lọc
         selectedRobot={selectedRobotSerial}
         onRobotSelect={(robotSerial) => {
           selectRobot(robotSerial);
-          const robot = extendedRobots.find(r => r.serialNumber === robotSerial);
+          const robot = filteredRobots.find(r => r.serialNumber === robotSerial);
           if (robot) {
             sessionStorage.setItem("selectedRobotSerial", robot.serialNumber);
           }

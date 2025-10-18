@@ -2,8 +2,9 @@
 
 import React, { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Power, Settings, RefreshCw, StopCircleIcon } from "lucide-react";
-import { useRobotStatus } from "@/hooks/use-robot-status"; // 👈 thêm hook realtime
+import { Power, StopCircleIcon } from "lucide-react";
+import { useRobotStatus } from "@/hooks/use-robot-status";
+import { useRobotStore } from "@/hooks/use-robot-store"; // 👈 thêm dòng này
 
 interface Robot {
   id: string;
@@ -20,7 +21,7 @@ interface Robot {
   ip: string;
   image: string;
   serialNumber: string;
-  robotmodel: string;
+  robotmodel: string | undefined;
 }
 
 interface RobotDetailsProps {
@@ -54,10 +55,10 @@ interface RobotDetailsProps {
 }
 
 export function RobotDetails({ robot, translations }: RobotDetailsProps) {
-  // 👇 Hook realtime để lấy trạng thái từ backend
-  const { status: liveStatus, loading, error } = useRobotStatus(robot.serialNumber, 5000);
+  const { connectMode } = useRobotStore(); // 👈 lấy từ store
+  const isMultiMode = connectMode === "multi"; // ✅ kiểm tra
 
-  // Khi có dữ liệu mới -> merge vào robot hiển thị
+  const { status: liveStatus, loading, error } = useRobotStatus(robot.serialNumber, 5000);
   const [displayRobot, setDisplayRobot] = useState(robot);
 
   useEffect(() => {
@@ -103,6 +104,11 @@ export function RobotDetails({ robot, translations }: RobotDetailsProps) {
     }
   };
 
+  // ⚡ Nếu đang ở multi-mode → không hiển thị chi tiết
+  if (isMultiMode) {
+    return null;
+  }
+
   return (
     <section className="mt-8">
       <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
@@ -122,7 +128,7 @@ export function RobotDetails({ robot, translations }: RobotDetailsProps) {
                 {displayRobot.firmware_version}
               </span>
             </div>
-             <div className="flex justify-between">
+            <div className="flex justify-between">
               <span className="text-gray-400">{translations.systemInfo.ctrl}:</span>
               <span className="text-gray-900 font-medium">
                 {displayRobot.ctrl_version}
@@ -156,21 +162,24 @@ export function RobotDetails({ robot, translations }: RobotDetailsProps) {
             {displayRobot.status !== "offline" && (
               <>
                 <div className="flex justify-between">
-                  <span className="text-gray-400">{translations.currentStatus.battery}:</span>
+                  <span className="text-gray-400">
+                    {translations.currentStatus.battery}:
+                  </span>
                   <span className="text-gray-900 font-medium">
                     {loading ? "..." : `${displayRobot.battery}%`}
                   </span>
                 </div>
                 <div className="w-full bg-gray-200 rounded-full h-2 my-2">
                   <div
-                    className={`h-2 rounded-full ${getBatteryColor(displayRobot.battery ?? 0)}`}
+                    className={`h-2 rounded-full ${getBatteryColor(
+                      displayRobot.battery ?? 0
+                    )}`}
                     style={{ width: `${displayRobot.battery}%` }}
                   ></div>
                 </div>
               </>
             )}
           </div>
-
           {error && <p className="text-red-500 text-xs mt-2">⚠️ {error}</p>}
         </div>
 
