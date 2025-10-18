@@ -308,7 +308,7 @@ export const toolbox = {
         {
             kind: 'category',
             name: 'Robot',
-            categoryStyle: 'robot_category',
+            colour: '255',
             contents: [
                 {
                     kind: 'block',
@@ -325,6 +325,10 @@ export const toolbox = {
                 {
                     kind: 'block',
                     type: 'expression'
+                },
+                {
+                    kind: 'block',
+                    type: 'tts'
                 }
             ]
         },

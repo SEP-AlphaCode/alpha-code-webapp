@@ -18,14 +18,14 @@ export const buildCodeGeneratorForModelId = async (modelId: string, serial: stri
         //Inner function, fetch the ws call
         const body = JSON.stringify({
             type: block.type,
-            lang: 'en',
+            lang: 'vi',
             data: {
                 code: dropdown_action_name
             }
         })
         const comment = `// calling function ${block.type}\n`
         const inner =
-            `fetch("${callUrl}",
+            `await fetch("${callUrl}",
         {body:${body}}
         )`
         //Then wrap the code inside a for loop
@@ -38,5 +38,23 @@ export const buildCodeGeneratorForModelId = async (modelId: string, serial: stri
     alphaCodeGenerator.forBlock['extended_action'] = executableTask
     alphaCodeGenerator.forBlock['expression'] = executableTask
     alphaCodeGenerator.forBlock['skill_helper'] = executableTask
+    alphaCodeGenerator.forBlock['tts'] = (block) => {
+        const text_text_input = block.getFieldValue('TEXT_INPUT');
+        const body = JSON.stringify({
+            type: '',
+            lang: 'en',
+            data: {
+                text: text_text_input
+            }
+        })
+        const comment = `// calling function ${block.type}\n`
+        const inner =
+            `await fetch("${callUrl}",
+        {body:${body}}
+        )`
+        // TODO: Assemble javascript into the code variable.
+        const code = comment + inner + '\n';
+        return code;
+    }
     return alphaCodeGenerator
 }

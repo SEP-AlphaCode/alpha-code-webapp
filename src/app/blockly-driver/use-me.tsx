@@ -52,7 +52,7 @@ export default function UseMe() {
                     const state = localStorage.getItem(key)
                     if (!state) return;
                     const json = JSON.parse(state)
-                    actions.load(json, workspaceRef.current)
+                    actions.loadFromJson(json, workspaceRef.current)
                     setSaved(json)
                 }}>Load</button>
                 <button onClick={(e) => {
@@ -62,7 +62,7 @@ export default function UseMe() {
                     alert(c)
                 }}>Translate to code</button>
             </div>
-            <div ref={blocklyRef} style={{ height: 500, width: 900 }}></div>
+            <div ref={blocklyRef} style={{ height: 600, width: 1000 }}></div>
             <div className='grid grid-cols-2 *:border-2 *:p-2'>
                 <div>
                     {

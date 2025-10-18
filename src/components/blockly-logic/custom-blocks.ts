@@ -2,9 +2,9 @@ import * as Blockly from 'blockly';
 const customBlockData = [
     {
         "type": "action",
-        "tooltip": "do an action",
-        "helpUrl": "nothing here",
-        "message0": "play action %1 for %2 time(s) %3",
+        "tooltip": "",
+        "helpUrl": "",
+        "message0": "thực hiện hành động %1 %2 lần %3",
         "args0": [
             {
                 "type": "field_dropdown",
@@ -43,7 +43,7 @@ const customBlockData = [
         "type": "extended_action",
         "tooltip": "",
         "helpUrl": "",
-        "message0": "do extended action %1 for %2 time(s) %3",
+        "message0": "thực hiện hành động mở rộng %1 %2 lần %3",
         "args0": [
             {
                 "type": "field_dropdown",
@@ -82,7 +82,7 @@ const customBlockData = [
         "type": "expression",
         "tooltip": "",
         "helpUrl": "",
-        "message0": "do expression %1 for %2 time(s) %3",
+        "message0": "thực hiện biểu cảm %1 %2 lần %3",
         "args0": [
             {
                 "type": "field_dropdown",
@@ -121,7 +121,7 @@ const customBlockData = [
         "type": "skill_helper",
         "tooltip": "",
         "helpUrl": "",
-        "message0": "do skill %1 for %2 time(s) %3",
+        "message0": "thực hiện kỹ năng %1 %2 lần %3",
         "args0": [
             {
                 "type": "field_dropdown",
@@ -155,7 +155,28 @@ const customBlockData = [
         "previousStatement": null,
         "nextStatement": null,
         "colour": 225
+    },
+    {
+        "type": "tts",
+        "tooltip": "Không hỗ trợ dịch sang tiếng Anh",
+        "helpUrl": "",
+        "message0": "nói %1 %2",
+        "args0": [
+            {
+                "type": "field_input",
+                "name": "TEXT_INPUT",
+                "text": "Tôi là Alpha Mini"
+            },
+            {
+                "type": "input_dummy",
+                "name": "NAME"
+            }
+        ],
+        "previousStatement": null,
+        "nextStatement": null,
+        "colour": 225
     }
+
 ]
 
 export const customBlocks = Blockly.common.createBlockDefinitionsFromJsonArray(customBlockData)
