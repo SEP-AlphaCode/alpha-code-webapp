@@ -13,4 +13,5 @@ export type Lesson = {
     solution: string
     createdDate: string
     lastUpdated?: string
+    videoUrl?: string
 }

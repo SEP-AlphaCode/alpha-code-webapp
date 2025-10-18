@@ -1,4 +1,4 @@
-import { Category } from "@/types/courses";
+import { Category } from "@/types/categories";
 import { PagedResult } from "@/types/page-result";
 import { coursesHttp } from "@/utils/http";
 
@@ -14,7 +14,14 @@ export const getCategories = async (page: number, size: number, search?: string,
             signal // Add AbortSignal support
         });
         return response.data;
-    } catch (error) {
+    } catch (error: unknown) {
+        if (error && typeof error === 'object') {
+            const errorObj = error as { name?: string; code?: string };
+            if (errorObj.name === 'CanceledError' || errorObj.code === 'ERR_CANCELED') {
+                console.log('API Call canceled for getCategories');
+                return Promise.reject(error);
+            }
+        }
         console.error("API Error in getCategories:", error);
         throw error;
     }
