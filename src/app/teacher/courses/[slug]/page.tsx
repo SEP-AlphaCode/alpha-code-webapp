@@ -1,54 +1,172 @@
 'use client'
-import { CourseDescription } from '@/components/teacher/course/detail/course-desc'
 import { CourseError } from '@/components/teacher/course/detail/course-error'
-import { CourseHeader } from '@/components/teacher/course/detail/course-header'
-import { CourseLessons } from '@/components/teacher/course/detail/course-lesson'
-import { CourseSidebar } from '@/components/teacher/course/detail/course-sidebar'
 import { CourseSkeleton } from '@/components/teacher/course/detail/course-skeleton'
 import { useCourse } from '@/features/courses/hooks/use-course'
+import { useSection } from '@/features/courses/hooks/use-section'
 import { useLesson } from '@/features/courses/hooks/use-lesson'
 import { AppDispatch } from '@/store/store'
 import { setCurrentCourse } from '@/store/teacher-course-slice'
-import { Lesson as CourseLesson } from '@/types/courses'
-import { Lesson as ApiLesson } from '@/types/lesson'
 import { useParams, useRouter } from 'next/navigation'
-import React, { useEffect, useMemo } from 'react'
+import React, { useEffect, useState } from 'react'
 import { useDispatch } from 'react-redux'
+
+// SectionLessons component to display section with its lessons
+interface SectionLessonsProps {
+  section: any;
+  index: number;
+  isExpanded: boolean;
+  onToggle: () => void;
+  courseSlug: string;
+}
+
+function SectionLessons({ section, index, isExpanded, onToggle, courseSlug }: SectionLessonsProps) {
+  const router = useRouter();
+  const { data: lessonsData, isLoading: isLessonsLoading, error: lessonsError } = useLesson().useGetLessonsBySection(
+    section.id
+  );
+
+  return (
+    <div className="border-b border-gray-100">
+      {/* Section Header */}
+      <div 
+        className="p-6 hover:bg-gray-50 transition-colors cursor-pointer"
+        onClick={onToggle}
+      >
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            <div className="flex-shrink-0">
+              <div className="w-10 h-10 rounded-full bg-blue-500 flex items-center justify-center text-white font-semibold">
+                {index + 1}
+              </div>
+            </div>
+            <div>
+              <h3 className="font-semibold text-gray-900 mb-1">
+                {section.title}
+              </h3>
+              <p className="text-gray-600 text-sm">
+                {section.description}
+              </p>
+            </div>
+          </div>
+          <div className="flex items-center gap-3">
+            <span className="text-sm text-gray-500">
+              {lessonsData?.data?.length || 0} bài học
+            </span>
+            <div className={`transform transition-transform ${isExpanded ? 'rotate-180' : ''}`}>
+              <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+              </svg>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Lessons List */}
+      {isExpanded && (
+        <div className="bg-gray-50">
+          {isLessonsLoading && (
+            <div className="p-6 text-center">
+              <div className="inline-block animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600"></div>
+              <p className="mt-2 text-sm text-gray-600">Đang tải bài học...</p>
+            </div>
+          )}
+
+          {lessonsData && lessonsData.data && lessonsData.data.length === 0 && (
+            <div className="p-6 text-center text-gray-500">
+              <p className="text-sm">Chưa có bài học nào trong chương này</p>
+            </div>
+          )}
+
+          {lessonsData && lessonsData.data && lessonsData.data.length > 0 && (
+            <div className="divide-y divide-gray-200">
+              {lessonsData.data.map((lesson: any, lessonIndex: number) => (
+                <div 
+                  key={lesson.id}
+                  className="p-4 pl-20 hover:bg-white transition-colors cursor-pointer"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    router.push(`/teacher/courses/${courseSlug}/lessons/${lesson.id}`);
+                  }}
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="flex-shrink-0">
+                      <div className="w-6 h-6 rounded-full bg-gray-300 flex items-center justify-center text-xs font-medium">
+                        {lessonIndex + 1}
+                      </div>
+                    </div>
+                    <div className="flex-grow">
+                      <h4 className="font-medium text-gray-900 text-sm hover:text-blue-600 transition-colors">
+                        {lesson.title}
+                      </h4>
+                      <div className="flex items-center gap-4 text-xs text-gray-500 mt-1">
+                        <span className="flex items-center gap-1">
+                          <span>🎥</span>
+                          Video
+                        </span>
+                        <span className="flex items-center gap-1">
+                          <span>⏱️</span>
+                          {Math.floor(lesson.duration / 60)}:{(lesson.duration % 60).toString().padStart(2, '0')}
+                        </span>
+                        {lesson.requireRobot && (
+                          <span className="flex items-center gap-1">
+                            <span>🤖</span>
+                            Cần robot
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                    <div className="flex-shrink-0">
+                      <button className="w-6 h-6 rounded-full bg-gray-200 hover:bg-gray-300 flex items-center justify-center transition-colors">
+                        <span className="text-gray-600 text-xs">▶</span>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
 
 export default function CoursePage() {
   const dispatch = useDispatch<AppDispatch>();
-  const router = useRouter();
   const { slug } = useParams<{ slug: string }>();
+  const [expandedSections, setExpandedSections] = useState<string[]>([]);
+  
   const { data: courseData, isLoading: isCourseLoading } = useCourse().useGetCourseBySlug(slug);
   
-  // Get lessons for this course using lesson API (get all lessons without pagination)
-  const { data: lessonsData, isLoading: isLessonsLoading, error: lessonsError } = useLesson().useGetAllLessonsByCourse(courseData?.id || '');
+  // Get sections for this course - only call when courseData is available
+  const { data: sectionsData, isLoading: isSectionsLoading, error: sectionsError } = useSection().useGetSectionsByCourseId(
+    courseData?.id || '',
+    {
+      enabled: !!courseData?.id, // Only fetch when courseId is available
+    }
+  );
 
-  // Convert ApiLesson to CourseLesson format
-  const mappedLessons = useMemo(() => {
-    if (!lessonsData) return [];
-    
-    console.log('Raw lessons data from API:', lessonsData);
-    
-    return lessonsData.map((lesson: ApiLesson): CourseLesson => ({
-      id: lesson.id,
-      courseId: lesson.courseId,
-      title: lesson.title,
-      content: lesson.content,
-      contentType: lesson.typeText || 'default', // Map typeText to contentType
-      requireRobot: lesson.requireRobot,
-      duration: lesson.duration,
-      orderNumber: lesson.orderNumber,
-      solution: lesson.solution,
-    }));
-  }, [lessonsData]);
+  const toggleSection = (sectionId: string) => {
+    setExpandedSections(prev => 
+      prev.includes(sectionId) 
+        ? prev.filter(id => id !== sectionId)
+        : [...prev, sectionId]
+    );
+  };
 
-  useEffect(() => {
-    console.log('Course data:', courseData);
-    console.log('Lessons loading:', isLessonsLoading);
-    console.log('Lessons error:', lessonsError);
-    console.log('Mapped lessons:', mappedLessons);
-  }, [courseData, isLessonsLoading, lessonsError, mappedLessons]);
+  const toggleAllSections = () => {
+    if (!sectionsData?.data) return;
+    
+    if (expandedSections.length === sectionsData.data.length) {
+      setExpandedSections([]);
+    } else {
+      setExpandedSections(sectionsData.data.map(section => section.id));
+    }
+  };
+
+  // Show sections loading state
+  const showSectionsLoading = isSectionsLoading && courseData?.id;
+  const showSectionsError = sectionsError && courseData?.id;
 
   useEffect(() => {
     if (courseData) {
@@ -57,8 +175,8 @@ export default function CoursePage() {
     return () => { dispatch(setCurrentCourse(null)); }
   }, [courseData, dispatch]);
 
-  // Show loading if either course or lessons are loading
-  if (isCourseLoading || isLessonsLoading) return <CourseSkeleton />;
+  // Show loading if course is loading
+  if (isCourseLoading) return <CourseSkeleton />;
   if (!courseData) return <CourseError />;
 
   return (
@@ -93,7 +211,7 @@ export default function CoursePage() {
                   <div className="w-5 h-5 rounded-full bg-gray-100 flex items-center justify-center">
                     <span className="text-xs">📚</span>
                   </div>
-                  <span>{mappedLessons.length} bài học</span>
+                  <span>{sectionsData?.data?.length || 0} chương học</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <div className="w-5 h-5 rounded-full bg-gray-100 flex items-center justify-center">
@@ -169,7 +287,7 @@ export default function CoursePage() {
                     </div>
                     <div className="flex items-center gap-3">
                       <span className="text-gray-400">📺</span>
-                      <span>Tổng số {mappedLessons.length} bài học</span>
+                      <span>Tổng số {sectionsData?.data?.length || 0} chương học</span>
                     </div>
                     <div className="flex items-center gap-3">
                       <span className="text-gray-400">⏰</span>
@@ -193,60 +311,48 @@ export default function CoursePage() {
           <div className="p-6 border-b border-gray-200">
             <div className="flex items-center justify-between">
               <h2 className="text-2xl font-bold text-gray-900">Nội dung khóa học</h2>
-              <button className="text-blue-600 hover:text-blue-700 font-medium text-sm">
-                Mở rộng tất cả
+              <button 
+                onClick={toggleAllSections}
+                className="text-blue-600 hover:text-blue-700 font-medium text-sm"
+              >
+                {expandedSections.length === sectionsData?.data?.length ? 'Thu gọn tất cả' : 'Mở rộng tất cả'}
               </button>
             </div>
             <p className="text-gray-600 mt-2">
-              {mappedLessons.length} bài học • Thời lượng {Math.floor(courseData.totalDuration / 60)} phút
+              {sectionsData?.data?.length || 0} chương học
             </p>
           </div>
 
-          {/* Lessons List */}
+          {/* Sections List */}
           <div className="divide-y divide-gray-100">
-            {mappedLessons.map((lesson, index) => (
-              <div 
-                key={lesson.id} 
-                className="p-6 hover:bg-gray-50 transition-colors cursor-pointer"
-                onClick={() => router.push(`/teacher/courses/${slug}/lessons/${lesson.id}`)}
-              >
-                <div className="flex items-start gap-4">
-                  <div className="flex-shrink-0">
-                    <div className="w-10 h-10 rounded-full bg-blue-500 flex items-center justify-center text-white font-semibold">
-                      {index + 1}
-                    </div>
-                  </div>
-                  <div className="flex-grow">
-                    <h3 className="font-semibold text-gray-900 mb-1 hover:text-blue-600 transition-colors">
-                      {lesson.title}
-                    </h3>
-                    <p className="text-gray-600 text-sm mb-2">
-                      {lesson.content?.substring(0, 100)}...
-                    </p>
-                    <div className="flex items-center gap-4 text-sm text-gray-500">
-                      <span className="flex items-center gap-1">
-                        <span>🎥</span>
-                        Video
-                      </span>
-                      <span className="flex items-center gap-1">
-                        <span>⏱️</span>
-                        {Math.floor(lesson.duration / 60)}:{(lesson.duration % 60).toString().padStart(2, '0')}
-                      </span>
-                      {lesson.requireRobot && (
-                        <span className="flex items-center gap-1">
-                          <span>🤖</span>
-                          Cần robot
-                        </span>
-                      )}
-                    </div>
-                  </div>
-                  <div className="flex-shrink-0">
-                    <button className="w-8 h-8 rounded-full hover:bg-gray-200 flex items-center justify-center transition-colors">
-                      <span className="text-gray-400">▶️</span>
-                    </button>
-                  </div>
-                </div>
+            {showSectionsLoading && (
+              <div className="p-6 text-center">
+                <div className="inline-block animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600"></div>
+                <p className="mt-2 text-gray-600">Đang tải chương học...</p>
               </div>
+            )}
+
+            {showSectionsError && (
+              <div className="p-6 text-center text-red-600">
+                <p>Có lỗi xảy ra khi tải chương học</p>
+              </div>
+            )}
+
+            {sectionsData && sectionsData.data && sectionsData.data.length === 0 && (
+              <div className="p-6 text-center text-gray-500">
+                <p>Chưa có chương học nào</p>
+              </div>
+            )}
+
+            {sectionsData && sectionsData.data && sectionsData.data.length > 0 && sectionsData.data.map((section, index) => (
+              <SectionLessons 
+                key={section.id}
+                section={section}
+                index={index}
+                isExpanded={expandedSections.includes(section.id)}
+                onToggle={() => toggleSection(section.id)}
+                courseSlug={slug}
+              />
             ))}
           </div>
         </div>

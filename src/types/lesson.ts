@@ -1,6 +1,6 @@
 export type Lesson = {
     id: string
-    courseId: string
+    sectionId: string
     content: string
     duration: number
     orderNumber: number

@@ -108,11 +108,6 @@ export default function TestLessonUploadPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    
-    if (!selectedFile) {
-      toast.error('Vui lòng chọn file video')
-      return
-    }
 
     if (!lessonData.sectionId) {
       toast.error('Vui lòng chọn section')
@@ -133,11 +128,17 @@ export default function TestLessonUploadPage() {
         new Blob([JSON.stringify(lessonData)], { type: "application/json" })
       )
       
-      // Append video file
-      formData.append("videoFile", selectedFile)
+      // Append video file nếu có
+      if (selectedFile) {
+        formData.append("videoFile", selectedFile)
+      }
 
       console.log('Sending request with data:', lessonData)
-      console.log('File:', selectedFile.name, selectedFile.type, selectedFile.size)
+      if (selectedFile) {
+        console.log('File:', selectedFile.name, selectedFile.type, selectedFile.size)
+      } else {
+        console.log('No file selected')
+      }
 
       // Gửi request
       const response = await lessonApi.post("/api/v1/lessons", formData, {
@@ -506,14 +507,13 @@ export default function TestLessonUploadPage() {
               </div>
 
               <div className="grid gap-2">
-                <Label htmlFor="videoFile">File video *</Label>
+                <Label htmlFor="videoFile">File video (tùy chọn)</Label>
                 <Input
                   ref={fileInputRef}
                   id="videoFile"
                   type="file"
                   accept="video/*"
                   onChange={handleFileChange}
-                  required
                   disabled={loading}
                 />
                 {selectedFile && (
@@ -524,7 +524,7 @@ export default function TestLessonUploadPage() {
               </div>
 
               <div className="flex gap-2">
-                <Button type="submit" disabled={loading || !selectedFile} className="flex-1">
+                <Button type="submit"  className="flex-1">
                   {loading ? (
                     <>
                       <Loader2 className="mr-2 h-4 w-4 animate-spin" />

@@ -1,14 +1,3 @@
-export type Category = {
-    id: string,
-    name: string,
-    description: string,
-    slug: string,
-    imageUrl: string,
-    status: number,
-    lastUpdated?: string,
-    createdDate: string
-}
-
 export interface Lesson {
     id: string; // uuid
     sectionId: string; // uuid
@@ -48,7 +37,7 @@ export interface Course {
     categoryId: string; // uuid
     slug: string; // varchar(255)
     imageUrl?: string; // varchar(255) - assuming nullable
-    lessons?: Lesson[]
+    // lessons?: Lesson[]
 }
 
 export function mapDifficulty(d: number) {

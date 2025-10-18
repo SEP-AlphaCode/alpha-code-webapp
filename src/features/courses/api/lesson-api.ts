@@ -44,6 +44,32 @@ export const getAllLessonsWithSolution = async (courseId: string, signal?: Abort
     }
 };
 
+// GET /api/v1/lessons/all-with-solution-by-section/{sectionId} - Get all lessons with solutions by section id (Admin and Staff only)
+export const getAllLessonsWithSolutionBySection = async (sectionId: string, signal?: AbortSignal) => {
+    try {
+        const response = await coursesHttp.get<Lesson[]>(`/lessons/all-with-solution-by-section/${sectionId}`, {
+            signal
+        });
+        return response.data;
+    } catch (error) {
+        console.error("API Error in getAllLessonsWithSolutionBySection:", error);
+        throw error;
+    }
+};
+
+// GET /api/v1/lessons/get-by-section/{sectionId} - Get all active lessons by section id
+export const getLessonsBySection = async (sectionId: string, signal?: AbortSignal) => {
+    try {
+        const response = await coursesHttp.get<PagedResult<Lesson>>(`/lessons/get-by-section/${sectionId}`, {
+            signal
+        });
+        return response.data;
+    } catch (error) {
+        console.error("API Error in getLessonsBySection:", error);
+        throw error;
+    }
+};
+
 // GET /api/v1/lessons/{id} - Get active lesson by id
 export const getLessonById = async (id: string, signal?: AbortSignal) => {
     try {

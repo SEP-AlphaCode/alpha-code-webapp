@@ -1,6 +1,8 @@
 import { 
     getLessons,
     getAllLessonsWithSolution,
+    getAllLessonsWithSolutionBySection,
+    getLessonsBySection,
     getLessonById,
     getLessonWithSolution,
     createLesson,
@@ -69,13 +71,35 @@ export const useLesson = () => {
     }
 
     // GET /api/v1/lessons/all-with-solution-by-course/{courseId} - Get all lessons with solutions (Admin only)
-    const useGetAllLessonsWithSolution = (courseId: string, signal?: AbortSignal) => {
+    const useGetAllLessonsWithSolution = (courseId: string) => {
         return useQuery<Lesson[]>({
             queryKey: ['lessons', 'with-solution', courseId],
             staleTime: STALE_TIME,
-            queryFn: () => getAllLessonsWithSolution(courseId, signal),
+            queryFn: ({ signal }) => getAllLessonsWithSolution(courseId, signal),
             refetchOnWindowFocus: false,
             enabled: !!courseId,
+        })
+    }
+
+    // GET /api/v1/lessons/all-with-solution-by-section/{sectionId} - Get all lessons with solutions by section id (Admin only)
+    const useGetAllLessonsWithSolutionBySection = (sectionId: string) => {
+        return useQuery<Lesson[]>({
+            queryKey: ['lessons', 'with-solution-by-section', sectionId],
+            staleTime: STALE_TIME,
+            queryFn: ({ signal }) => getAllLessonsWithSolutionBySection(sectionId, signal),
+            refetchOnWindowFocus: false,
+            enabled: !!sectionId,
+        })
+    }
+
+    // GET /api/v1/lessons/get-by-section/{sectionId} - Get all active lessons by section id
+    const useGetLessonsBySection = (sectionId: string) => {
+        return useQuery<PagedResult<Lesson>>({
+            queryKey: ['lessons', 'by-section', sectionId],
+            staleTime: STALE_TIME,
+            queryFn: ({ signal }) => getLessonsBySection(sectionId, signal),
+            refetchOnWindowFocus: false,
+            enabled: !!sectionId,
         })
     }
 
@@ -177,6 +201,8 @@ export const useLesson = () => {
         useGetLessons,
         useGetAllLessonsByCourse,
         useGetAllLessonsWithSolution,
+        useGetAllLessonsWithSolutionBySection,
+        useGetLessonsBySection,
         useGetLessonById,
         useGetLessonWithSolution,
         useCreateLesson,
