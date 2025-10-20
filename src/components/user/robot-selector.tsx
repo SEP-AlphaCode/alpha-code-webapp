@@ -18,6 +18,7 @@ import { useRobotInfo } from "@/features/robots/hooks/use-robot-info";
 import { getUserIdFromToken } from "@/utils/tokenUtils";
 import { Robot } from "@/types/robot";
 import { useRobotStore } from "@/hooks/use-robot-store";
+import { RobotModal } from "@/app/admin/robots/robot-modal";
 
 interface RobotSelectorProps {
   className?: string;
@@ -38,6 +39,7 @@ interface DisplayRobot {
 export function RobotSelector({ className = "" }: RobotSelectorProps) {
   const [accountId, setAccountId] = useState<string>("");
   const [selectedRobotId, setSelectedRobotId] = useState<string | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false); 
 
   const {
     robots: reduxRobots,
@@ -206,101 +208,112 @@ export function RobotSelector({ className = "" }: RobotSelectorProps) {
   }
 
   return (
-    <DropdownMenu>
-      <DropdownMenuTrigger asChild>
-        <button
-          className={`flex items-center px-2 py-1 rounded-xl shadow border border-gray-100 bg-blue-50 hover:bg-blue-100 transition-colors focus:outline-none min-w-[260px] ${className}`}
-        >
-          <Image
-            src={displayAvatar}
-            alt="AlphaMini"
-            width={50}
-            height={50}
-            className="object-cover object-top rounded-lg ml-2"
-          />
-          <div className="flex flex-col justify-center items-start ml-3">
-            <span className="font-semibold text-base text-gray-900 leading-tight">
-              {displayName}
-            </span>
-            {isMultiMode ? (
-              <span className="text-xs text-gray-500 font-mono tracking-wide mt-0.5">
-                Multi mode
-              </span>
-            ) : (
-              <span className="text-xs text-gray-500 font-mono tracking-wide mt-0.5">
-                {selectedRobots[0]?.serialNumber ?? ""}
-              </span>
-            )}
-          </div>
-        </button>
-      </DropdownMenuTrigger>
-
-      <DropdownMenuContent
-        className="w-80"
-        side="bottom"
-        align="end"
-        sideOffset={8}
-        forceMount
-      >
-        <DropdownMenuLabel className="font-semibold text-base mb-2">
-          {isMultiMode ? "Select Multiple Robots" : "Select AlphaMini"}
-        </DropdownMenuLabel>
-        <DropdownMenuSeparator />
-        <DropdownMenuGroup>
-          {robotList.map((robot) => {
-            const isSelected = Array.isArray(selectedRobotSerial)
-              ? selectedRobotSerial.includes(robot.serialNumber)
-              : robot.serialNumber === selectedRobotSerial;
-
-            return (
-              <DropdownMenuItem
-                key={robot.id}
-                onClick={() => handleRobotSelect(robot.serialNumber)}
-                className={`flex items-center gap-3 py-2 px-2 rounded-lg cursor-pointer ${
-                  isSelected ? "bg-blue-50" : ""
-                }`}
-              >
-                <Avatar className="h-9 w-9 rounded-none overflow-hidden">
-                  <AvatarImage src={robot.avatar} alt={robot.name} />
-                  <AvatarFallback>
-                    <Image src={imageFallback} alt={robot.name} width={36} height={36} />
-                  </AvatarFallback>
-                </Avatar>
-                <div className="flex flex-col flex-1">
-                  <div className="flex flex-row items-center gap-2">
-                    <span className="font-medium text-gray-900 text-sm">
-                      {robot.name}
-                    </span>
-                    <span
-                      className={`text-xs px-2 py-0.5 rounded ${
-                        robot.status === "online"
-                          ? "bg-green-100 text-green-600"
-                          : "bg-red-100 text-red-600"
-                      }`}
-                    >
-                      {robot.status}
-                    </span>
-                  </div>
-                  <span className="text-xs text-gray-400 mt-1">
-                    {robot.serialNumber}
+      <>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <button
+              className={`flex items-center px-2 py-1 rounded-xl shadow border border-gray-100 bg-blue-50 hover:bg-blue-100 transition-colors focus:outline-none min-w-[260px] ${className}`}
+            >
+              <Image
+                src={displayAvatar}
+                alt="AlphaMini"
+                width={50}
+                height={50}
+                className="object-cover object-top rounded-lg ml-2"
+              />
+              <div className="flex flex-col justify-center items-start ml-3">
+                <span className="font-semibold text-base text-gray-900 leading-tight">
+                  {displayName}
+                </span>
+                {isMultiMode ? (
+                  <span className="text-xs text-gray-500 font-mono tracking-wide mt-0.5">
+                    Multi mode
                   </span>
-                </div>
-                {isSelected && (
-                  <span className="ml-2 text-blue-600 font-bold">✓</span>
+                ) : (
+                  <span className="text-xs text-gray-500 font-mono tracking-wide mt-0.5">
+                    {selectedRobots[0]?.serialNumber ?? ""}
+                  </span>
                 )}
-              </DropdownMenuItem>
-            );
-          })}
-        </DropdownMenuGroup>
+              </div>
+            </button>
+          </DropdownMenuTrigger>
 
-        <DropdownMenuSeparator />
-        <DropdownMenuItem className="flex items-center gap-2 py-2 px-2 text-blue-600 hover:bg-blue-50 cursor-pointer">
-          <span className="text-lg">＋</span>
-          <span className="font-medium">Bind New Robots</span>
-        </DropdownMenuItem>
-      </DropdownMenuContent>
-    </DropdownMenu>
-  );
-}
+          <DropdownMenuContent
+            className="w-80"
+            side="bottom"
+            align="end"
+            sideOffset={8}
+            forceMount
+          >
+            <DropdownMenuLabel className="font-semibold text-base mb-2">
+              {isMultiMode ? "Chọn nhiều Robot" : "Chọn Robot"}
+            </DropdownMenuLabel>
+            <DropdownMenuSeparator />
+            <DropdownMenuGroup>
+              {robotList.map((robot) => {
+                const isSelected = Array.isArray(selectedRobotSerial)
+                  ? selectedRobotSerial.includes(robot.serialNumber)
+                  : robot.serialNumber === selectedRobotSerial;
 
-export default memo(RobotSelector);
+                return (
+                  <DropdownMenuItem
+                    key={robot.id}
+                    onClick={() => handleRobotSelect(robot.serialNumber)}
+                    className={`flex items-center gap-3 py-2 px-2 rounded-lg cursor-pointer ${
+                      isSelected ? "bg-blue-50" : ""
+                    }`}
+                  >
+                    <Avatar className="h-9 w-9 rounded-none overflow-hidden">
+                      <AvatarImage src={robot.avatar} alt={robot.name} />
+                      <AvatarFallback>
+                        <Image
+                          src={imageFallback}
+                          alt={robot.name}
+                          width={36}
+                          height={36}
+                        />
+                      </AvatarFallback>
+                    </Avatar>
+                    <div className="flex flex-col flex-1">
+                      <div className="flex flex-row items-center gap-2">
+                        <span className="font-medium text-gray-900 text-sm">
+                          {robot.name}
+                        </span>
+                        <span
+                          className={`text-xs px-2 py-0.5 rounded ${
+                            robot.status === "online"
+                              ? "bg-green-100 text-green-600"
+                              : "bg-red-100 text-red-600"
+                          }`}
+                        >
+                          {robot.status}
+                        </span>
+                      </div>
+                      <span className="text-xs text-gray-400 mt-1">
+                        {robot.serialNumber}
+                      </span>
+                    </div>
+                    {isSelected && (
+                      <span className="ml-2 text-blue-600 font-bold">✓</span>
+                    )}
+                  </DropdownMenuItem>
+                );
+              })}
+            </DropdownMenuGroup>
+
+            <DropdownMenuSeparator />
+            <DropdownMenuItem
+              className="flex items-center gap-2 py-2 px-2 text-blue-600 hover:bg-blue-50 cursor-pointer"
+              onClick={() => setIsModalOpen(true)} // ✅ mở modal
+            >
+              <span className="text-lg">＋</span>
+              <span className="font-medium">Thêm Robot mới</span>
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+
+        {/* ✅ Gắn modal ở cuối */}
+        <RobotModal open={isModalOpen} onClose={() => setIsModalOpen(false)} />
+      </>
+    );
+  }

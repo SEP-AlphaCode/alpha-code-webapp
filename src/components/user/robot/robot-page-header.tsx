@@ -3,35 +3,50 @@
 import { useState, useMemo } from "react"
 import { Switch } from "@/components/ui/switch"
 import { Label } from "@/components/ui/label"
+import { Button } from "@/components/ui/button"
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select"
+import { Trash2, PlusCircle } from "lucide-react"
 import { useRobotStore } from "@/hooks/use-robot-store"
+import { deleteRobot } from "@/features/robots/api/robot-api"
 
 interface RobotPageHeaderProps {
   title: string
   subtitle: string
-  onModelSelect?: (modelName: string) => void // 👈 giờ truyền tên model
+  onModelSelect?: (modelName: string) => void
+  onAddRobot?: () => void
 }
 
-export function RobotPageHeader({ title, subtitle, onModelSelect }: RobotPageHeaderProps) {
-  const { connectMode, setConnectMode, robots } = useRobotStore()
+export function RobotPageHeader({ title, subtitle, onModelSelect, onAddRobot }: RobotPageHeaderProps) {
+  const { connectMode, setConnectMode, robots, selectedRobotSerial, selectedRobot, removeRobot } = useRobotStore()
   const [selectedModel, setSelectedModel] = useState<string>("")
+  const [isDeleting, setIsDeleting] = useState(false)
 
   const handleToggle = (checked: boolean) => {
     setConnectMode(checked ? "multi" : "single")
   }
 
-  // 🔍 Lấy danh sách model duy nhất
   const modelOptions = useMemo(() => {
-    const models = robots.map(r => ({
-      id: r.robotModelId,
-      name: r.robotModelName
-    }))
-    return Array.from(new Map(models.map(m => [m.name, m])).values()) // dùng name làm key
+    const models = robots.map(r => ({ id: r.robotModelId, name: r.robotModelName }))
+    return Array.from(new Map(models.map(m => [m.name, m])).values())
   }, [robots])
 
   const handleModelChange = (value: string) => {
     setSelectedModel(value)
-    onModelSelect?.(value) // 👈 gửi tên model
+    onModelSelect?.(value)
+  }
+
+  const handleDeleteRobot = async () => {
+    if (!selectedRobot) return
+    const confirmed = confirm(`Bạn muốn xóa robot "${selectedRobot.name}" này không ?`)
+    if (!confirmed) return
+
+    setIsDeleting(true)
+    try {
+      await deleteRobot(selectedRobot.id)
+      removeRobot(selectedRobot.id)
+    } finally {
+      setIsDeleting(false)
+    }
   }
 
   return (
@@ -42,7 +57,7 @@ export function RobotPageHeader({ title, subtitle, onModelSelect }: RobotPageHea
       </div>
 
       <div className="flex items-center space-x-4">
-        {/* 🧩 Dropdown chọn model khi Multi Mode */}
+        {/* 🧩 Model dropdown */}
         {connectMode === "multi" && (
           <Select value={selectedModel} onValueChange={handleModelChange}>
             <SelectTrigger className="w-[180px]">
@@ -58,19 +73,29 @@ export function RobotPageHeader({ title, subtitle, onModelSelect }: RobotPageHea
           </Select>
         )}
 
+        {/* ➕ Add Robot */}
+        <Button onClick={onAddRobot} variant="outline" className="gap-2">
+          <PlusCircle className="w-4 h-4" />
+          Thêm mới Robot
+        </Button>
+
+        {/* 🗑 Delete Selected Robot */}
+        <Button
+          variant="destructive"
+          onClick={handleDeleteRobot}
+          disabled={!selectedRobot || isDeleting}
+          className="gap-2"
+        >
+          <Trash2 className="w-4 h-4" />
+          {isDeleting ? "Đang xóa..." : "Xóa Robot"}
+        </Button>
+
         {/* 🔀 Toggle Single / Multi Mode */}
         <div className="flex items-center space-x-3">
-          <Label
-            htmlFor="connect-mode"
-            className="text-sm font-medium text-gray-700 select-none"
-          >
+          <Label htmlFor="connect-mode" className="text-sm font-medium text-gray-700 select-none">
             {connectMode === "single" ? "Single Mode" : "Multi Mode"}
           </Label>
-          <Switch
-            id="connect-mode"
-            checked={connectMode === "multi"}
-            onCheckedChange={handleToggle}
-          />
+          <Switch id="connect-mode" checked={connectMode === "multi"} onCheckedChange={handleToggle} />
         </div>
       </div>
     </header>

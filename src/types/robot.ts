@@ -17,8 +17,8 @@ export type Robot = {
   serialNumber: string
   robotModelId: string
   robotModelName: string
-  ctrl_version: string
-  firmware_version: string
+  ctrl_version?: string
+  firmware_version?: string
   battery_level?: number | null
   accountId: string
   status: string

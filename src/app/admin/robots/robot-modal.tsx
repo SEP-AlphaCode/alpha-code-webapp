@@ -155,7 +155,7 @@ export const RobotModal: React.FC<RobotModalProps> = ({ open, onClose }) => {
       accountId: userId,
       robotModelId,
       robotModelName,
-      serialNumber
+      serialNumber,
     });
   };
 

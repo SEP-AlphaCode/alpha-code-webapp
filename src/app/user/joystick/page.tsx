@@ -61,6 +61,10 @@ export default function JoystickPage() {
   const [isClient, setIsClient] = useState(false);
   const [hasError, setHasError] = useState(false);
 
+  const robotSerial = Array.isArray(selectedRobotSerial)
+  ? selectedRobotSerial[0]
+  : selectedRobotSerial;
+
   useEffect(() => {
     try {
       setIsClient(true);
@@ -283,7 +287,7 @@ export default function JoystickPage() {
         setIsCommandPending(true);
         
         try {
-          await sendCommandToBackend(direction, selectedRobotSerial, 'skill_helper');
+          await sendCommandToBackend(direction, robotSerial as string, 'skill_helper');
           setLastJoystickCommand(direction);
           setLastCommandTime(currentTime);
           
@@ -447,7 +451,7 @@ export default function JoystickPage() {
       setNotify(`Robot ${selectedRobot.name} đang offline!`, 'error');
       return Promise.resolve();
     }
-    await sendCommandToBackend(actionCode, selectedRobotSerial, type);
+    await sendCommandToBackend(actionCode, robotSerial as string, type);
   };
 
   // --- UI ---
@@ -605,7 +609,7 @@ export default function JoystickPage() {
                     </Badge>
                   </div>
                    <RobotVideoStream 
-                    robotSerial={selectedRobotSerial}
+                    robotSerial={robotSerial}
                     className="w-full h-48 rounded-xl border-2 border-gray-300 shadow-lg"
                   />
                 </div>
