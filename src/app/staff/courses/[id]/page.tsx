@@ -35,16 +35,18 @@ import {
   Layers
 } from "lucide-react"
 import Link from "next/link"
-import { Course, Section, Lesson } from "@/types/courses"
-import { useStaffCourse, useSections, useUpdateSectionOrder, useUpdateLessonOrder, useDeleteSection, useDeleteLesson, useCreateSection } from "@/features/courses/hooks"
+import { Section, Lesson } from "@/types/courses"
+import { useStaffCourse, useSections, useUpdateSectionOrder, useDeleteSection, useDeleteLesson } from "@/features/courses/hooks"
+import * as lessonApi from "@/features/courses/api/lesson-api"
 import { toast } from "sonner"
 import { UUID } from "crypto"
 import { CreateSectionModal } from "@/components/course/create-section-modal"
 import { EditSectionModal } from "@/components/course/edit-section-modal"
 import { DeleteSectionDialog } from "@/components/course/delete-section-dialog"
 import { DeleteLessonDialog } from "@/components/course/delete-lesson-dialog"
+import { LucideIcon } from "lucide-react"
 
-const lessonTypeMap: { [key: number]: { text: string; icon: any; color: string } } = {
+const lessonTypeMap: { [key: number]: { text: string; icon: LucideIcon; color: string } } = {
   1: { text: "Bài học", icon: Code, color: "bg-green-500/10 text-green-500" },
   2: { text: "Video", icon: Play, color: "bg-blue-500/10 text-blue-500" },
   3: { text: "Kiểm tra", icon: CheckCircle2, color: "bg-purple-500/10 text-purple-500" }
@@ -53,7 +55,7 @@ const lessonTypeMap: { [key: number]: { text: string; icon: any; color: string }
 export default function CourseDetailPage() {
   const params = useParams()
   const router = useRouter()
-  const courseSlug = params.id as UUID
+  const courseSlug = params.slug as string
   
   const { data: course, isLoading: courseLoading } = useStaffCourse(courseSlug)
   const courseId = course?.id ?? '' // Get actual ID from course data for API calls
@@ -149,8 +151,8 @@ export default function CourseDetailPage() {
 
     // Call API to update lesson order
     try {
-      const updateLessonOrderMutation = useUpdateLessonOrder(courseId || '', targetSectionId)
-      await updateLessonOrderMutation.mutateAsync(
+      await lessonApi.updateLessonOrder(
+        targetSectionId,
         targetLessons.map(l => ({
           id: l.id,
           orderNumber: l.orderNumber,
@@ -160,8 +162,8 @@ export default function CourseDetailPage() {
       
       // If moving between sections, also update source section
       if (sourceSectionIndex !== targetSectionIndex) {
-        const updateSourceLessonOrderMutation = useUpdateLessonOrder(courseId || '', draggedLesson.sectionId)
-        await updateSourceLessonOrderMutation.mutateAsync(
+        await lessonApi.updateLessonOrder(
+          draggedLesson.sectionId,
           sourceLessons.map(l => ({
             id: l.id,
             orderNumber: l.orderNumber,
@@ -258,21 +260,6 @@ export default function CourseDetailPage() {
     await updateSectionOrder(newSectionsData)
   }
 
-  const handleDeleteSection = async (sectionId: string) => {
-    if (!confirm('Bạn có chắc chắn muốn xóa chương này? Tất cả bài học trong chương cũng sẽ bị xóa.')) {
-      return
-    }
-
-    try {
-      await deleteSectionMutation.mutateAsync(sectionId)
-      toast.success('Đã xóa chương thành công')
-      refetchSections()
-    } catch (error) {
-      toast.error('Lỗi khi xóa chương')
-      console.error('Error deleting section:', error)
-    }
-  }
-
   const handleDeleteSectionConfirm = async () => {
     if (!deletingSectionId) return
 
@@ -285,21 +272,6 @@ export default function CourseDetailPage() {
     } catch (error) {
       toast.error('Lỗi khi xóa chương')
       console.error('Error deleting section:', error)
-    }
-  }
-
-  const handleDeleteLesson = async (lessonId: string) => {
-    if (!confirm('Bạn có chắc chắn muốn xóa bài học này?')) {
-      return
-    }
-
-    try {
-      await deleteLessonMutation.mutateAsync(lessonId)
-      toast.success('Đã xóa bài học thành công')
-      refetchSections()
-    } catch (error) {
-      toast.error('Lỗi khi xóa bài học')
-      console.error('Error deleting lesson:', error)
     }
   }
 

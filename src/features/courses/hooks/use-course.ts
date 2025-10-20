@@ -118,7 +118,7 @@ export function useStaffCourses(params?: {
   })
 }
 
-export function useStaffCourse(slug: UUID) {
+export function useStaffCourse(slug: string) {
   return useQuery({
     queryKey: ['staff', 'course', slug],
     queryFn: ({ signal }) => courseApi.getCourseBySlug(slug, signal),

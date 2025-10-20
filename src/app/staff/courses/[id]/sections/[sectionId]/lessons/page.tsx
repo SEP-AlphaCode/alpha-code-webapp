@@ -33,7 +33,8 @@ import {
   MoveDown,
   Play,
   Code,
-  CheckCircle2
+  CheckCircle2,
+  LucideIcon
 } from "lucide-react"
 import Link from "next/link"
 
@@ -125,7 +126,7 @@ const mockLessons = [
   }
 ]
 
-const lessonTypeMap: { [key: number]: { text: string; icon: any; color: string } } = {
+const lessonTypeMap: { [key: number]: { text: string; icon: LucideIcon; color: string } } = {
   1: { text: "Video", icon: Play, color: "bg-blue-500/10 text-blue-500" },
   2: { text: "Lập trình", icon: Code, color: "bg-green-500/10 text-green-500" },
   3: { text: "Kiểm tra", icon: CheckCircle2, color: "bg-purple-500/10 text-purple-500" }

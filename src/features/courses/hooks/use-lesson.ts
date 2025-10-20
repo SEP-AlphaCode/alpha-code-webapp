@@ -47,7 +47,7 @@ export function useCreateLesson(courseId: string, sectionId: string) {
       requireRobot: boolean
       type: number
       orderNumber: number
-      solution?: any
+      solution?: object
     }) => lessonApi.createLesson(courseId, sectionId, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['lessons', 'section', sectionId] })
@@ -73,7 +73,7 @@ export function useUpdateLesson(courseId: string, lessonId: string, sectionId?: 
       type: number
       orderNumber: number
       sectionId?: string
-      solution?: any
+      solution?: unknown
     }) => lessonApi.updateLesson(lessonId, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['lesson', lessonId] })

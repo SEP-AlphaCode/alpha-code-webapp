@@ -72,7 +72,7 @@ export const createLesson = async (courseId: string, sectionId: string, data: {
     requireRobot: boolean;
     type: number;
     orderNumber: number;
-    solution?: any;
+    solution?: object;
 }) => {
     try {
         const response = await coursesHttp.post<Lesson>(`/courses/${courseId}/sections/${sectionId}/lessons`, data);
@@ -93,7 +93,7 @@ export const updateLesson = async (lessonId: string, data: {
     type: number;
     orderNumber: number;
     sectionId?: string;
-    solution?: any;
+    solution?: unknown;
 }) => {
     try {
         const response = await coursesHttp.put<Lesson>(`/lessons/${lessonId}`, data);

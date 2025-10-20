@@ -17,7 +17,8 @@ import {
   BookOpen,
   Layers,
   Video,
-  FileJson
+  FileJson,
+  LucideIcon
 } from "lucide-react"
 import Link from "next/link"
 
@@ -56,7 +57,7 @@ const mockLesson = {
   lastUpdated: "2024-02-15"
 }
 
-const lessonTypeMap: { [key: number]: { text: string; icon: any; color: string; bgColor: string } } = {
+const lessonTypeMap: { [key: number]: { text: string; icon: LucideIcon; color: string; bgColor: string } } = {
   1: { 
     text: "Bài học Video", 
     icon: Play, 

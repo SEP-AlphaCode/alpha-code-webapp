@@ -48,8 +48,11 @@ export default function NewCategoryPage() {
       onSuccess: () => {
         toast.success("Tạo danh mục thành công!")
       },
-      onError: (error: any) => {
-        toast.error(error?.response?.data?.message || "Có lỗi xảy ra khi tạo danh mục")
+      onError: (error: unknown) => {
+        const errorMessage = error && typeof error === 'object' && 'response' in error 
+          ? (error as { response?: { data?: { message?: string } } }).response?.data?.message 
+          : undefined;
+        toast.error(errorMessage || "Có lỗi xảy ra khi tạo danh mục")
       }
     })
   }

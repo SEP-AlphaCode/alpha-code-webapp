@@ -132,9 +132,11 @@ export default function NewCoursePage() {
       
       toast.success("Tạo khóa học thành công!")
       // Router will be handled by the mutation's onSuccess
-    } catch (error: any) {
-      const errorMessage = error?.response?.data?.message || "Lỗi khi tạo khóa học"
-      toast.error(errorMessage)
+    } catch (error: unknown) {
+      const errorMessage = error && typeof error === 'object' && 'response' in error 
+        ? (error as { response?: { data?: { message?: string } } }).response?.data?.message 
+        : undefined;
+      toast.error(errorMessage || "Lỗi khi tạo khóa học")
       console.error("Error creating course:", error)
       setIsSubmitting(false)
     }

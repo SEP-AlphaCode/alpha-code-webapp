@@ -32,11 +32,10 @@ const statusOptions = [
 
 export default function EditCoursePage() {
   const params = useParams()
-  const router = useRouter()
-  const courseId = params.id as string
-  
-  const { data: course, isLoading: courseLoading } = useStaffCourse(courseId)
-  const updateCourse = useUpdateCourse(courseId)
+  const courseSlug = params.slug as string
+
+  const { data: course, isLoading: courseLoading } = useStaffCourse(courseSlug)
+  const updateCourse = useUpdateCourse(courseSlug)
   const { useGetCategories } = useCourse()
   const { data: categoriesData, isLoading: categoriesLoading } = useGetCategories(0, 100)
   
