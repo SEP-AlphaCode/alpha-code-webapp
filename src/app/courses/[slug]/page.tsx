@@ -16,7 +16,7 @@ import { useDispatch, useSelector } from 'react-redux'
 export default function CoursePage() {
   const dispatch = useDispatch<AppDispatch>();
   const { slug } = useParams<{ slug: string }>();
-  const { useGetCourseBySlug, useGetLessons } = useCourse();
+  const { useGetCourseBySlug, useGetLessonsByCourseId } = useCourse();
 
   // Fetch only if needed
   const { data: courseData, isLoading } = useGetCourseBySlug(slug, {
@@ -27,8 +27,8 @@ export default function CoursePage() {
   const course = courseData
 
   // Fetch lessons only when we have course ID
-  const { data: lessons } = useGetLessons(course?.id ?? '', {
-    enabled: true
+  const { data: lessons } = useGetLessonsByCourseId(course?.id ?? '', {
+    enabled: !!course?.id
   });
 
   // Sync Redux store if we fetched a course

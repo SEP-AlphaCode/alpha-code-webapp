@@ -23,7 +23,7 @@ export function CourseLessons({ lessons }: { lessons: Lesson[] }) {
                   <h3 className="font-bold text-lg text-slate-900">{lesson.title}</h3>
                   <div className="flex flex-wrap gap-2 mt-2">
                     <span className="px-3 py-1 bg-blue-50 rounded-full text-blue-700 text-sm font-semibold">
-                      {lesson.contentType}
+                      {lesson.type}
                     </span>
                     <span className="px-3 py-1 bg-slate-50 rounded-full text-slate-700 text-sm font-semibold">
                       ⏱️ {formatTimespan(lesson.duration)}
