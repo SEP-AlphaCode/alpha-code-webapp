@@ -1,0 +1,78 @@
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { useRouter } from 'next/navigation'
+import * as sectionApi from '@/features/courses/api/section-api'
+
+// ==================== SECTION HOOKS ====================
+
+export function useSections(courseId: string) {
+  return useQuery({
+    queryKey: ['sections', courseId],
+    queryFn: ({ signal }) => sectionApi.getSectionsByCourseId(courseId, signal),
+    enabled: !!courseId,
+  })
+}
+
+export function useSection(courseId: string, sectionId: string) {
+  return useQuery({
+    queryKey: ['section', courseId, sectionId],
+    queryFn: ({ signal }) => sectionApi.getSectionById(courseId, sectionId, signal),
+    enabled: !!courseId && !!sectionId,
+  })
+}
+
+export function useCreateSection(courseId: string) {
+  const queryClient = useQueryClient()
+  const router = useRouter()
+
+  return useMutation({
+    mutationFn: (data: { title: string; }) =>
+      sectionApi.createSection(courseId, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['sections', courseId] })
+      queryClient.invalidateQueries({ queryKey: ['staff', 'course', courseId] })
+      queryClient.invalidateQueries({ queryKey: ['course', courseId] })
+    },
+  })
+}
+
+export function useUpdateSection(sectionId: string) {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: (data: { title: string; orderNumber: number }) =>
+      sectionApi.updateSection(sectionId, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['sections'] })
+      queryClient.invalidateQueries({ queryKey: ['section', sectionId] })
+      queryClient.invalidateQueries({ queryKey: ['staff', 'course'] })
+      queryClient.invalidateQueries({ queryKey: ['course'] })
+    },
+  })
+}
+
+export function useDeleteSection(courseId: string) {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: (sectionId: string) => sectionApi.deleteSection(courseId, sectionId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['sections', courseId] })
+      queryClient.invalidateQueries({ queryKey: ['staff', 'course', courseId] })
+      queryClient.invalidateQueries({ queryKey: ['course', courseId] })
+    },
+  })
+}
+
+export function useUpdateSectionOrder(courseId: string) {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: (sections: Array<{ id: string; orderNumber: number }>) =>
+      sectionApi.updateSectionOrder(courseId, sections),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['sections', courseId] })
+      queryClient.invalidateQueries({ queryKey: ['staff', 'course', courseId] })
+      queryClient.invalidateQueries({ queryKey: ['course', courseId] })
+    },
+  })
+}

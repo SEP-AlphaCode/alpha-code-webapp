@@ -117,7 +117,7 @@ const CoursePaymentUI = ({
                                     </div>
 
                                     {/* Lessons Preview */}
-                                    {course.lessons && course.lessons.length > 0 && (
+                                    {/* {course.lessons && course.lessons.length > 0 && (
                                         <div className="bg-gradient-to-r from-indigo-50 to-purple-50 rounded-2xl p-6 border border-indigo-100">
                                             <h3 className="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
                                                 <List className="w-5 h-5 text-indigo-600" />
@@ -142,7 +142,7 @@ const CoursePaymentUI = ({
                                                 )}
                                             </div>
                                         </div>
-                                    )}
+                                    )} */}
                                 </CardContent>
                             </Card>
                         </div>

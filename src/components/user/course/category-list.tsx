@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { useCourse } from "@/features/courses/hooks/use-course";
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '@/components/ui/select';
 import { X } from "lucide-react";
+import { Category } from "@/types/courses";
 
 
 interface CategoryListProps {
@@ -19,13 +20,10 @@ export function CourseFilter({ selected, onChange, size = 20, currentSearchTerm,
     const { useGetCategories } = useCourse();
     const {
         data,
-        fetchNextPage,
-        hasNextPage,
-        isFetchingNextPage,
         isLoading
-    } = useGetCategories(size);
+    } = useGetCategories(0, size, undefined);
 
-    const categories = data?.pages.flatMap((page) => page.data) ?? [];
+    const categories = data?.data ?? [];
 
     const handleSelect = (id: string) => {
         if (!selected.includes(id)) {
@@ -63,35 +61,18 @@ export function CourseFilter({ selected, onChange, size = 20, currentSearchTerm,
                     <SelectValue placeholder="Chọn danh mục" />
                 </SelectTrigger>
                 <SelectContent>
-                    {categories.map((cat) => (
+                    {categories.map((cat: Category) => (
                         <SelectItem key={cat.id} value={cat.id}>
                             {cat.name}
                         </SelectItem>
                     ))}
-
-                    {hasNextPage && (
-                        <div className="px-2 py-1">
-                            <Button
-                                // variant="outline"
-                                size="sm"
-                                className="w-full"
-                                onClick={(e) => {
-                                    e.stopPropagation();
-                                    fetchNextPage();
-                                }}
-                                disabled={isFetchingNextPage}
-                            >
-                                {isFetchingNextPage ? "Đang tải..." : "Tải thêm"}
-                            </Button>
-                        </div>
-                    )}
                 </SelectContent>
             </Select>
 
             {/* Selected list */}
             <div className="flex flex-wrap gap-2">
                 {selected.map((id) => {
-                    const cat = categories.find((c) => c.id === id);
+                    const cat = categories.find((c: Category) => c.id === id);
                     if (!cat) return null;
                     return (
                         <div

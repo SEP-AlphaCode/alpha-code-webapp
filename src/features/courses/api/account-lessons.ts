@@ -205,12 +205,3 @@ export const getMockAccountLessons = async (accountId: string, courseId: string,
         total_pages: Math.ceil(filtered.length / size)
     }
 }
-
-export const markMockLessonComplete = async (accountLessonId: string, signal?: AbortSignal): Promise<void> => {
-    const lesson = accountLessonsDB.find(al => al.id === accountLessonId);
-    if (lesson) {
-        lesson.status = 1;
-        lesson.completedAt = new Date().toISOString();
-    }
-    return;
-}
