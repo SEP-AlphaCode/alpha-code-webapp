@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useMemo, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
@@ -28,84 +28,86 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import { Badge } from "@/components/ui/badge"
-import { Plus, Search, MoreHorizontal, Pencil, Trash2, Eye, Layers, BookOpen } from "lucide-react"
+import { Pagination } from "@/components/ui/pagination"
+import { Plus, Search, MoreHorizontal, Pencil, Trash2, Eye, Layers, BookOpen, Loader2 } from "lucide-react"
 import Link from "next/link"
 import Image from "next/image"
-
-// Mock data
-const mockCategories = [
-  { id: "1", name: "Lập trình cơ bản" },
-  { id: "2", name: "Robot nâng cao" },
-  { id: "3", name: "AI & Machine Learning" }
-]
-
-const mockCourses = [
-  {
-    id: "c1",
-    name: "Python cho người mới bắt đầu",
-    description: "Khóa học Python từ cơ bản đến nâng cao",
-    categoryId: "1",
-    categoryName: "Lập trình cơ bản",
-    level: 3,
-    totalLessons: 24,
-    totalDuration: 14400,
-    status: 1,
-    price: 299000,
-    sectionsCount: 4,
-    imageUrl: "/placeholder-course.jpg",
-    createdDate: "2024-02-01"
-  },
-  {
-    id: "c2",
-    name: "JavaScript Fundamentals",
-    description: "Nền tảng JavaScript và lập trình web",
-    categoryId: "1",
-    categoryName: "Lập trình cơ bản",
-    level: 3,
-    totalLessons: 32,
-    totalDuration: 18000,
-    status: 1,
-    price: 399000,
-    sectionsCount: 5,
-    imageUrl: "/placeholder-course.jpg",
-    createdDate: "2024-02-15"
-  },
-  {
-    id: "c3",
-    name: "Điều khiển Robot Alpha",
-    description: "Học cách lập trình và điều khiển robot",
-    categoryId: "2",
-    categoryName: "Robot nâng cao",
-    level: 4,
-    totalLessons: 18,
-    totalDuration: 12600,
-    status: 1,
-    price: 499000,
-    sectionsCount: 3,
-    imageUrl: "/placeholder-course.jpg",
-    createdDate: "2024-03-01"
-  }
-]
+import { useStaffCourses, useDeleteCourse, useCourse } from "@/features/courses/hooks"
+import { toast } from "sonner"
 
 const levelMap: { [key: number]: { text: string; color: string } } = {
-  3: { text: "Cơ bản", color: "bg-blue-500/10 text-blue-500" },
-  4: { text: "Trung bình", color: "bg-green-500/10 text-green-500" },
-  5: { text: "Nâng cao", color: "bg-yellow-500/10 text-yellow-500" }
+  1: { text: "Cơ bản", color: "bg-blue-500/10 text-blue-500" },
+  2: { text: "Trung bình", color: "bg-green-500/10 text-green-500" },
+  3: { text: "Nâng cao", color: "bg-yellow-500/10 text-yellow-500" }
 }
 
 export default function CoursesPage() {
   const [searchQuery, setSearchQuery] = useState("")
   const [selectedCategory, setSelectedCategory] = useState("all")
-  const [courses] = useState(mockCourses)
-  const [categories] = useState(mockCategories)
-
-  const filteredCourses = courses.filter(course => {
-    const matchesSearch = course.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                         course.description.toLowerCase().includes(searchQuery.toLowerCase())
-    const matchesCategory = selectedCategory === "all" || course.categoryId === selectedCategory
+  const [page, setPage] = useState(1)
+  const [size] = useState(10)
+  const [debouncedSearch, setDebouncedSearch] = useState("")
+  
+  // Debounce search query
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearch(searchQuery)
+      setPage(1) // Reset to first page when search changes
+    }, 500)
     
-    return matchesSearch && matchesCategory
+    return () => clearTimeout(timer)
+  }, [searchQuery])
+
+  // Reset to first page when category changes
+  useEffect(() => {
+    setPage(1)
+  }, [selectedCategory])
+  
+  const { data: coursesData, isLoading: coursesLoading, refetch } = useStaffCourses({ 
+    page, 
+    size, 
+    search: debouncedSearch 
   })
+  const { useGetCategories } = useCourse()
+  const { data: categoriesData, isLoading: categoriesLoading } = useGetCategories(1, 100)
+  const deleteCourse = useDeleteCourse()
+
+  const courses = coursesData?.data || []
+  const categories = categoriesData?.data || []
+  const totalPages = coursesData?.total_pages || 0
+  const totalCount = coursesData?.total_count || 0
+  const hasNext = coursesData?.has_next || false
+  const hasPrevious = coursesData?.has_previous || false
+
+  // Filter by category on client side (since API might not support category filter)
+  const filteredCourses = useMemo(() => {
+    if (selectedCategory === "all") {
+      return courses
+    }
+    return courses.filter(course => course.categoryId === selectedCategory)
+  }, [courses, selectedCategory])
+
+  const handleDeleteCourse = async (courseId: string, courseName: string) => {
+    if (!confirm(`Bạn có chắc chắn muốn xóa khóa học "${courseName}"? Tất cả các chương và bài học cũng sẽ bị xóa.`)) {
+      return
+    }
+
+    try {
+      await deleteCourse.mutateAsync(courseId)
+      toast.success('Đã xóa khóa học thành công')
+      refetch()
+    } catch (error) {
+      toast.error('Lỗi khi xóa khóa học')
+      console.error('Error deleting course:', error)
+    }
+  }
+
+  const handlePageChange = (newPage: number) => {
+    setPage(newPage)
+    window.scrollTo({ top: 0, behavior: 'smooth' })
+  }
+
+  const isLoading = coursesLoading || categoriesLoading
 
   const formatDuration = (seconds: number) => {
     const hours = Math.floor(seconds / 3600)
@@ -141,7 +143,7 @@ export default function CoursesPage() {
         <CardHeader>
           <CardTitle>Danh sách khóa học</CardTitle>
           <CardDescription>
-            Tổng cộng {courses.length} khóa học
+            Tổng cộng {totalCount} khóa học
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -187,7 +189,13 @@ export default function CoursesPage() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {filteredCourses.length === 0 ? (
+                {isLoading ? (
+                  <TableRow>
+                    <TableCell colSpan={10} className="text-center py-8">
+                      <Loader2 className="h-6 w-6 animate-spin mx-auto text-muted-foreground" />
+                    </TableCell>
+                  </TableRow>
+                ) : filteredCourses.length === 0 ? (
                   <TableRow>
                     <TableCell colSpan={10} className="text-center py-8 text-muted-foreground">
                       Không tìm thấy khóa học nào
@@ -221,7 +229,7 @@ export default function CoursesPage() {
                         </div>
                       </TableCell>
                       <TableCell>
-                        <Badge variant="outline">{course.categoryName}</Badge>
+                        <Badge variant="outline">{course.categoryName|| 'N/A'}</Badge>
                       </TableCell>
                       <TableCell>
                         <Badge className={levelMap[course.level]?.color}>
@@ -230,15 +238,18 @@ export default function CoursesPage() {
                       </TableCell>
                       <TableCell>{course.totalLessons}</TableCell>
                       <TableCell>
-                        <Badge variant="secondary">{course.sectionsCount}</Badge>
+                        <Badge variant="secondary">{course.sectionCount || 0}</Badge>
                       </TableCell>
                       <TableCell>{formatDuration(course.totalDuration)}</TableCell>
                       <TableCell className="font-medium">
                         {formatPrice(course.price)}
                       </TableCell>
                       <TableCell>
-                        <Badge variant={course.status === 1 ? "default" : "secondary"}>
-                          {course.status === 1 ? "Hoạt động" : "Ẩn"}
+                        <Badge 
+                          variant={course.status === 1 ? "default" : "secondary"}
+                          className={course.status === 1 ? "bg-green-500/10 text-green-700 border-green-500/20" : "bg-gray-500/10 text-gray-700 border-gray-500/20"}
+                        >
+                          {course.statusText  }
                         </Badge>
                       </TableCell>
                       <TableCell className="text-right">
@@ -253,7 +264,7 @@ export default function CoursesPage() {
                             <DropdownMenuLabel>Thao tác</DropdownMenuLabel>
                             <DropdownMenuSeparator />
                             <DropdownMenuItem asChild>
-                              <Link href={`/staff/courses/${course.id}`}>
+                              <Link href={`/staff/courses/${course.slug}`}>
                                 <Eye className="mr-2 h-4 w-4" />
                                 Xem chi tiết
                               </Link>
@@ -271,7 +282,10 @@ export default function CoursesPage() {
                               </Link>
                             </DropdownMenuItem>
                             <DropdownMenuSeparator />
-                            <DropdownMenuItem className="text-destructive">
+                            <DropdownMenuItem 
+                              className="text-destructive"
+                              onClick={() => handleDeleteCourse(course.id, course.name)}
+                            >
                               <Trash2 className="mr-2 h-4 w-4" />
                               Xóa
                             </DropdownMenuItem>
@@ -284,6 +298,21 @@ export default function CoursesPage() {
               </TableBody>
             </Table>
           </div>
+
+          {/* Pagination */}
+          {!isLoading && totalPages > 1 && (
+            <div className="mt-4">
+              <Pagination
+                currentPage={page}
+                totalPages={totalPages}
+                onPageChange={handlePageChange}
+                hasNext={hasNext}
+                hasPrevious={hasPrevious}
+                totalCount={totalCount}
+                perPage={size}
+              />
+            </div>
+          )}
         </CardContent>
       </Card>
     </div>

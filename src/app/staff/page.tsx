@@ -2,10 +2,17 @@
 
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { BookOpen, Folder, Layers, FileText } from "lucide-react"
+import { BookOpen, Folder, Layers, FileText, Loader2 } from "lucide-react"
 import Link from "next/link"
+import { useStaffDashboardStats } from "@/features/courses/hooks"
 
 export default function StaffPage() {
+  const { data: stats, isLoading, error } = useStaffDashboardStats()
+
+  if (error) {
+    console.error('Failed to load dashboard stats:', error)
+  }
+
   return (
     <div className="space-y-6">
       <div>
@@ -24,7 +31,13 @@ export default function StaffPage() {
             <Folder className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">-</div>
+            <div className="text-2xl font-bold">
+              {isLoading ? (
+                <Loader2 className="h-6 w-6 animate-spin" />
+              ) : (
+                stats?.totalCategories || 0
+              )}
+            </div>
             <p className="text-xs text-muted-foreground">
               Tổng số danh mục
             </p>
@@ -44,7 +57,13 @@ export default function StaffPage() {
             <BookOpen className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">-</div>
+            <div className="text-2xl font-bold">
+              {isLoading ? (
+                <Loader2 className="h-6 w-6 animate-spin" />
+              ) : (
+                stats?.totalCourses || 0
+              )}
+            </div>
             <p className="text-xs text-muted-foreground">
               Tổng số khóa học
             </p>
@@ -64,7 +83,13 @@ export default function StaffPage() {
             <Layers className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">-</div>
+            <div className="text-2xl font-bold">
+              {isLoading ? (
+                <Loader2 className="h-6 w-6 animate-spin" />
+              ) : (
+                stats?.totalSections || 0
+              )}
+            </div>
             <p className="text-xs text-muted-foreground">
               Tổng số chương
             </p>
@@ -79,7 +104,13 @@ export default function StaffPage() {
             <FileText className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">-</div>
+            <div className="text-2xl font-bold">
+              {isLoading ? (
+                <Loader2 className="h-6 w-6 animate-spin" />
+              ) : (
+                stats?.totalLessons || 0
+              )}
+            </div>
             <p className="text-xs text-muted-foreground">
               Tổng số bài học
             </p>

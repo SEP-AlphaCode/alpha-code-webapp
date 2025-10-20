@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useParams, useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -30,185 +30,59 @@ import {
   Play,
   Code,
   CheckCircle2,
+  Loader2,
   FileText,
   Layers
 } from "lucide-react"
 import Link from "next/link"
-
-// Mock data
-const mockCourse = {
-  id: "c1",
-  name: "Python cho người mới bắt đầu",
-  description: "Khóa học Python từ cơ bản đến nâng cao",
-  categoryName: "Lập trình cơ bản",
-  level: 3,
-  totalLessons: 24,
-  totalDuration: 14400,
-  status: 1,
-  price: 299000,
-}
-
-const mockData = [
-  {
-    section: {
-      id: "s1",
-      courseId: "c1",
-      title: "Giới thiệu về Python",
-      orderNumber: 1,
-      createdDate: "2024-02-01"
-    },
-    lessons: [
-      {
-        id: "l1",
-        sectionId: "s1",
-        title: "Python là gì?",
-        content: "Giới thiệu về ngôn ngữ lập trình Python",
-        videoUrl: "https://example.com/video1.mp4",
-        duration: 600,
-        requireRobot: false,
-        type: 1,
-        orderNumber: 1,
-      },
-      {
-        id: "l2",
-        sectionId: "s1",
-        title: "Cài đặt môi trường Python",
-        content: "Hướng dẫn cài đặt Python và IDE",
-        videoUrl: "https://example.com/video2.mp4",
-        duration: 900,
-        requireRobot: false,
-        type: 1,
-        orderNumber: 2,
-      },
-      {
-        id: "l3",
-        sectionId: "s1",
-        title: "Viết chương trình Python đầu tiên",
-        content: "Thực hành viết Hello World",
-        videoUrl: null,
-        duration: 1200,
-        requireRobot: false,
-        type: 2,
-        orderNumber: 3,
-      },
-    ]
-  },
-  {
-    section: {
-      id: "s2",
-      courseId: "c1",
-      title: "Cấu trúc dữ liệu cơ bản",
-      orderNumber: 2,
-      createdDate: "2024-02-05"
-    },
-    lessons: [
-      {
-        id: "l4",
-        sectionId: "s2",
-        title: "List và Tuple",
-        content: "Tìm hiểu về List và Tuple trong Python",
-        videoUrl: "https://example.com/video4.mp4",
-        duration: 1800,
-        requireRobot: false,
-        type: 1,
-        orderNumber: 1,
-      },
-      {
-        id: "l5",
-        sectionId: "s2",
-        title: "Dictionary và Set",
-        content: "Làm việc với Dictionary và Set",
-        videoUrl: "https://example.com/video5.mp4",
-        duration: 1500,
-        requireRobot: false,
-        type: 1,
-        orderNumber: 2,
-      },
-      {
-        id: "l6",
-        sectionId: "s2",
-        title: "Bài kiểm tra: Cấu trúc dữ liệu",
-        content: "Kiểm tra kiến thức về cấu trúc dữ liệu",
-        videoUrl: null,
-        duration: 600,
-        requireRobot: false,
-        type: 3,
-        orderNumber: 3,
-      },
-    ]
-  },
-  {
-    section: {
-      id: "s3",
-      courseId: "c1",
-      title: "Vòng lặp và điều kiện",
-      orderNumber: 3,
-      createdDate: "2024-02-10"
-    },
-    lessons: [
-      {
-        id: "l7",
-        sectionId: "s3",
-        title: "Câu lệnh if-else",
-        content: "Điều kiện trong Python",
-        videoUrl: "https://example.com/video7.mp4",
-        duration: 1200,
-        requireRobot: false,
-        type: 1,
-        orderNumber: 1,
-      },
-      {
-        id: "l8",
-        sectionId: "s3",
-        title: "Vòng lặp for",
-        content: "Sử dụng vòng lặp for",
-        videoUrl: null,
-        duration: 1400,
-        requireRobot: false,
-        type: 2,
-        orderNumber: 2,
-      },
-    ]
-  }
-]
+import { Course, Section, Lesson } from "@/types/courses"
+import { useStaffCourse, useSections, useUpdateSectionOrder, useUpdateLessonOrder, useDeleteSection, useDeleteLesson, useCreateSection } from "@/features/courses/hooks"
+import { toast } from "sonner"
+import { UUID } from "crypto"
+import { CreateSectionModal } from "@/components/course/create-section-modal"
+import { EditSectionModal } from "@/components/course/edit-section-modal"
+import { DeleteSectionDialog } from "@/components/course/delete-section-dialog"
+import { DeleteLessonDialog } from "@/components/course/delete-lesson-dialog"
 
 const lessonTypeMap: { [key: number]: { text: string; icon: any; color: string } } = {
-  1: { text: "Video", icon: Play, color: "bg-blue-500/10 text-blue-500" },
-  2: { text: "Lập trình", icon: Code, color: "bg-green-500/10 text-green-500" },
+  1: { text: "Bài học", icon: Code, color: "bg-green-500/10 text-green-500" },
+  2: { text: "Video", icon: Play, color: "bg-blue-500/10 text-blue-500" },
   3: { text: "Kiểm tra", icon: CheckCircle2, color: "bg-purple-500/10 text-purple-500" }
-}
-
-type Lesson = {
-  id: string
-  sectionId: string
-  title: string
-  content: string
-  videoUrl: string | null
-  duration: number
-  requireRobot: boolean
-  type: number
-  orderNumber: number
-}
-
-type SectionWithLessons = {
-  section: {
-    id: string
-    courseId: string
-    title: string
-    orderNumber: number
-    createdDate: string
-  }
-  lessons: Lesson[]
 }
 
 export default function CourseDetailPage() {
   const params = useParams()
   const router = useRouter()
-  const courseId = params.id as string
-  const [course] = useState(mockCourse)
-  const [sectionsData, setSectionsData] = useState<SectionWithLessons[]>(mockData)
+  const courseSlug = params.id as UUID
+  
+  const { data: course, isLoading: courseLoading } = useStaffCourse(courseSlug)
+  const courseId = course?.id ?? '' // Get actual ID from course data for API calls
+  
+  const { data: sections, isLoading: sectionsLoading, refetch: refetchSections } = useSections(courseId || '')
+  const updateSectionOrderMutation = useUpdateSectionOrder(courseId || '')
+  const deleteSectionMutation = useDeleteSection(courseId || '')
+  const deleteLessonMutation = useDeleteLesson(courseId || '')
+
+  const [sectionsData, setSectionsData] = useState<Section[]>([])
   const [draggedLesson, setDraggedLesson] = useState<{ lesson: Lesson; sectionId: string } | null>(null)
   const [draggedSection, setDraggedSection] = useState<number | null>(null)
+  const [isCreateSectionModalOpen, setIsCreateSectionModalOpen] = useState(false)
+  const [editingSectionId, setEditingSectionId] = useState<string | null>(null)
+  const [editingSectionTitle, setEditingSectionTitle] = useState("")
+  const [editingSectionOrderNumber, setEditingSectionOrderNumber] = useState(0)
+  const [deletingSectionId, setDeleteSectionId] = useState<string | null>(null)
+  const [deletingSectionTitle, setDeleteSectionTitle] = useState("")
+  const [deletingLessonId, setDeleteLessonId] = useState<string | null>(null)
+  const [deletingLessonTitle, setDeleteLessonTitle] = useState("")
+
+  // Update local state when sections data changes
+  useEffect(() => {
+    if (sections && Array.isArray(sections)) {
+      setSectionsData(sections)
+    }
+  }, [sections])
+
+  const isLoading = courseLoading || sectionsLoading
 
   const formatDuration = (seconds: number) => {
     const minutes = Math.floor(seconds / 60)
@@ -224,21 +98,21 @@ export default function CourseDetailPage() {
     e.preventDefault()
   }
 
-  const handleDrop = (targetSectionId: string, targetIndex: number) => {
-    if (!draggedLesson) return
+  const handleDrop = async (targetSectionId: string, targetIndex: number) => {
+    if (!draggedLesson || !Array.isArray(sectionsData)) return
 
     const newSectionsData = [...sectionsData]
     const sourceSectionIndex = newSectionsData.findIndex(
-      s => s.section.id === draggedLesson.sectionId
+      s => s.id === draggedLesson.sectionId
     )
     const targetSectionIndex = newSectionsData.findIndex(
-      s => s.section.id === targetSectionId
+      s => s.id === targetSectionId
     )
 
     if (sourceSectionIndex === -1 || targetSectionIndex === -1) return
 
     // Remove lesson from source
-    const sourceLessons = [...newSectionsData[sourceSectionIndex].lessons]
+    const sourceLessons = [...(newSectionsData[sourceSectionIndex].lessons || [])]
     const lessonIndex = sourceLessons.findIndex(l => l.id === draggedLesson.lesson.id)
     const [movedLesson] = sourceLessons.splice(lessonIndex, 1)
 
@@ -255,7 +129,7 @@ export default function CourseDetailPage() {
     // Add lesson to target
     const targetLessons = sourceSectionIndex === targetSectionIndex 
       ? sourceLessons 
-      : [...newSectionsData[targetSectionIndex].lessons]
+      : [...(newSectionsData[targetSectionIndex].lessons || [])]
     
     movedLesson.sectionId = targetSectionId
     targetLessons.splice(targetIndex, 0, movedLesson)
@@ -273,36 +147,85 @@ export default function CourseDetailPage() {
     setSectionsData(newSectionsData)
     setDraggedLesson(null)
 
-    // TODO: Call API to update lesson order
-    console.log('Moved lesson:', movedLesson.id, 'to section:', targetSectionId, 'at index:', targetIndex)
+    // Call API to update lesson order
+    try {
+      const updateLessonOrderMutation = useUpdateLessonOrder(courseId || '', targetSectionId)
+      await updateLessonOrderMutation.mutateAsync(
+        targetLessons.map(l => ({
+          id: l.id,
+          orderNumber: l.orderNumber,
+          sectionId: targetSectionId
+        }))
+      )
+      
+      // If moving between sections, also update source section
+      if (sourceSectionIndex !== targetSectionIndex) {
+        const updateSourceLessonOrderMutation = useUpdateLessonOrder(courseId || '', draggedLesson.sectionId)
+        await updateSourceLessonOrderMutation.mutateAsync(
+          sourceLessons.map(l => ({
+            id: l.id,
+            orderNumber: l.orderNumber,
+            sectionId: draggedLesson.sectionId
+          }))
+        )
+      }
+      
+      toast.success('Đã cập nhật thứ tự bài học')
+      refetchSections()
+    } catch (error) {
+      toast.error('Lỗi khi cập nhật thứ tự bài học')
+      console.error('Error updating lesson order:', error)
+    }
   }
 
-  const moveSectionUp = (index: number) => {
-    if (index === 0) return
+  const moveSectionUp = async (index: number) => {
+    if (index === 0 || !Array.isArray(sectionsData)) return
     const newSectionsData = [...sectionsData]
     const temp = newSectionsData[index]
     newSectionsData[index] = newSectionsData[index - 1]
     newSectionsData[index - 1] = temp
     
     // Update order numbers
-    newSectionsData[index].section.orderNumber = index + 1
-    newSectionsData[index - 1].section.orderNumber = index
+    newSectionsData[index].orderNumber = index + 1
+    newSectionsData[index - 1].orderNumber = index
     
     setSectionsData(newSectionsData)
+    
+    // Call API to update section order
+    await updateSectionOrder(newSectionsData)
   }
 
-  const moveSectionDown = (index: number) => {
-    if (index === sectionsData.length - 1) return
+  const moveSectionDown = async (index: number) => {
+    if (!Array.isArray(sectionsData) || index === sectionsData.length - 1) return
     const newSectionsData = [...sectionsData]
     const temp = newSectionsData[index]
     newSectionsData[index] = newSectionsData[index + 1]
     newSectionsData[index + 1] = temp
     
     // Update order numbers
-    newSectionsData[index].section.orderNumber = index + 1
-    newSectionsData[index + 1].section.orderNumber = index + 2
+    newSectionsData[index].orderNumber = index + 1
+    newSectionsData[index + 1].orderNumber = index + 2
     
     setSectionsData(newSectionsData)
+    
+    // Call API to update section order
+    await updateSectionOrder(newSectionsData)
+  }
+
+  const updateSectionOrder = async (sections: Section[]) => {
+    try {
+      await updateSectionOrderMutation.mutateAsync(
+        sections.map(s => ({
+          id: s.id,
+          orderNumber: s.orderNumber
+        }))
+      )
+      toast.success('Đã cập nhật thứ tự chương')
+      refetchSections()
+    } catch (error) {
+      toast.error('Lỗi khi cập nhật thứ tự chương')
+      console.error('Error updating section order:', error)
+    }
   }
 
   const handleSectionDragStart = (index: number) => {
@@ -313,8 +236,8 @@ export default function CourseDetailPage() {
     e.preventDefault()
   }
 
-  const handleSectionDrop = (targetIndex: number) => {
-    if (draggedSection === null || draggedSection === targetIndex) {
+  const handleSectionDrop = async (targetIndex: number) => {
+    if (draggedSection === null || draggedSection === targetIndex || !Array.isArray(sectionsData)) {
       setDraggedSection(null)
       return
     }
@@ -325,17 +248,95 @@ export default function CourseDetailPage() {
 
     // Update order numbers
     newSectionsData.forEach((sectionData, idx) => {
-      sectionData.section.orderNumber = idx + 1
+      sectionData.orderNumber = idx + 1
     })
 
     setSectionsData(newSectionsData)
     setDraggedSection(null)
 
-    // TODO: Call API to update section order
-    console.log('Moved section from index', draggedSection, 'to', targetIndex)
+    // Call API to update section order
+    await updateSectionOrder(newSectionsData)
   }
 
-  const totalLessons = sectionsData.reduce((sum, s) => sum + s.lessons.length, 0)
+  const handleDeleteSection = async (sectionId: string) => {
+    if (!confirm('Bạn có chắc chắn muốn xóa chương này? Tất cả bài học trong chương cũng sẽ bị xóa.')) {
+      return
+    }
+
+    try {
+      await deleteSectionMutation.mutateAsync(sectionId)
+      toast.success('Đã xóa chương thành công')
+      refetchSections()
+    } catch (error) {
+      toast.error('Lỗi khi xóa chương')
+      console.error('Error deleting section:', error)
+    }
+  }
+
+  const handleDeleteSectionConfirm = async () => {
+    if (!deletingSectionId) return
+
+    try {
+      await deleteSectionMutation.mutateAsync(deletingSectionId)
+      setDeleteSectionId(null)
+      setDeleteSectionTitle("")
+      toast.success('Đã xóa chương thành công')
+      refetchSections()
+    } catch (error) {
+      toast.error('Lỗi khi xóa chương')
+      console.error('Error deleting section:', error)
+    }
+  }
+
+  const handleDeleteLesson = async (lessonId: string) => {
+    if (!confirm('Bạn có chắc chắn muốn xóa bài học này?')) {
+      return
+    }
+
+    try {
+      await deleteLessonMutation.mutateAsync(lessonId)
+      toast.success('Đã xóa bài học thành công')
+      refetchSections()
+    } catch (error) {
+      toast.error('Lỗi khi xóa bài học')
+      console.error('Error deleting lesson:', error)
+    }
+  }
+
+  const handleDeleteLessonConfirm = async () => {
+    if (!deletingLessonId) return
+
+    try {
+      await deleteLessonMutation.mutateAsync(deletingLessonId)
+      setDeleteLessonId(null)
+      setDeleteLessonTitle("")
+      toast.success('Đã xóa bài học thành công')
+      refetchSections()
+    } catch (error) {
+      toast.error('Lỗi khi xóa bài học')
+      console.error('Error deleting lesson:', error)
+    }
+  }
+
+  const totalLessons = Array.isArray(sectionsData) 
+    ? sectionsData.reduce((sum, s) => sum + (s.lessons?.length || 0), 0)
+    : 0
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+      </div>
+    )
+  }
+
+  if (!course) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <p className="text-muted-foreground">Không tìm thấy khóa học</p>
+      </div>
+    )
+  }
 
   return (
     <div className="space-y-6">
@@ -352,18 +353,16 @@ export default function CourseDetailPage() {
           </p>
         </div>
         <div className="flex gap-2">
-          <Link href={`/staff/courses/${courseId}/edit`}>
+          <Link href={`/staff/courses/${courseSlug}/edit`}>
             <Button variant="outline">
               <Pencil className="mr-2 h-4 w-4" />
               Chỉnh sửa khóa học
             </Button>
           </Link>
-          <Link href={`/staff/courses/${courseId}/sections/new`}>
-            <Button>
-              <Plus className="mr-2 h-4 w-4" />
-              Thêm chương
-            </Button>
-          </Link>
+          <Button onClick={() => setIsCreateSectionModalOpen(true)}>
+            <Plus className="mr-2 h-4 w-4" />
+            Thêm chương
+          </Button>
         </div>
       </div>
 
@@ -376,11 +375,11 @@ export default function CourseDetailPage() {
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             <div>
               <p className="text-sm text-muted-foreground">Danh mục</p>
-              <p className="font-medium">{course.categoryName}</p>
+              <p className="font-medium">{course.categoryName || 'N/A'}</p>
             </div>
             <div>
               <p className="text-sm text-muted-foreground">Số chương</p>
-              <p className="font-medium">{sectionsData.length} chương</p>
+              <p className="font-medium">{Array.isArray(sectionsData) ? sectionsData.length : 0} chương</p>
             </div>
             <div>
               <p className="text-sm text-muted-foreground">Số bài học</p>
@@ -404,10 +403,10 @@ export default function CourseDetailPage() {
         </CardHeader>
         <CardContent>
           <Accordion type="multiple" className="w-full">
-            {sectionsData.map((sectionData, sectionIndex) => (
+            {Array.isArray(sectionsData) && sectionsData.map((sectionData, sectionIndex) => (
               <AccordionItem 
-                key={sectionData.section.id} 
-                value={sectionData.section.id}
+                key={sectionData.id} 
+                value={sectionData.id}
                 className={`border rounded-lg mb-4 px-4 transition-all ${
                   draggedSection === sectionIndex 
                     ? 'opacity-50 scale-95' 
@@ -429,14 +428,14 @@ export default function CourseDetailPage() {
                     <div className="flex items-center gap-4 flex-1">
                       <div className="flex items-center gap-2">
                         <Badge variant="outline">
-                          Chương {sectionData.section.orderNumber}
+                          Chương {sectionData.orderNumber}
                         </Badge>
                         <span className="font-semibold text-lg">
-                          {sectionData.section.title}
+                          {sectionData.title}
                         </span>
                       </div>
                       <Badge variant="secondary" className="ml-auto mr-4">
-                        {sectionData.lessons.length} bài học
+                        {sectionData.lessons?.length || 0} bài học
                       </Badge>
                     </div>
                   </AccordionTrigger>
@@ -449,14 +448,18 @@ export default function CourseDetailPage() {
                     <DropdownMenuContent align="end">
                       <DropdownMenuLabel>Thao tác</DropdownMenuLabel>
                       <DropdownMenuSeparator />
-                      <DropdownMenuItem asChild>
-                        <Link href={`/staff/courses/${courseId}/sections/${sectionData.section.id}/edit`}>
-                          <Pencil className="mr-2 h-4 w-4" />
-                          Chỉnh sửa chương
-                        </Link>
+                      <DropdownMenuItem 
+                        onClick={() => {
+                          setEditingSectionId(sectionData.id)
+                          setEditingSectionTitle(sectionData.title)
+                          setEditingSectionOrderNumber(sectionData.orderNumber)
+                        }}
+                      >
+                        <Pencil className="mr-2 h-4 w-4" />
+                        Chỉnh sửa chương
                       </DropdownMenuItem>
                       <DropdownMenuItem asChild>
-                        <Link href={`/staff/courses/${courseId}/sections/${sectionData.section.id}/lessons/new`}>
+                        <Link href={`/staff/courses/${courseSlug}/sections/${sectionData.id}/lessons/new`}>
                           <Plus className="mr-2 h-4 w-4" />
                           Thêm bài học
                         </Link>
@@ -470,12 +473,18 @@ export default function CourseDetailPage() {
                       </DropdownMenuItem>
                       <DropdownMenuItem 
                         onClick={() => moveSectionDown(sectionIndex)}
-                        disabled={sectionIndex === sectionsData.length - 1}
+                        disabled={sectionIndex === (Array.isArray(sectionsData) ? sectionsData.length - 1 : 0)}
                       >
                         ↓ Di chuyển xuống
                       </DropdownMenuItem>
                       <DropdownMenuSeparator />
-                      <DropdownMenuItem className="text-destructive">
+                      <DropdownMenuItem 
+                        className="text-destructive"
+                        onClick={() => {
+                          setDeleteSectionId(sectionData.id)
+                          setDeleteSectionTitle(sectionData.title)
+                        }}
+                      >
                         <Trash2 className="mr-2 h-4 w-4" />
                         Xóa chương
                       </DropdownMenuItem>
@@ -489,14 +498,14 @@ export default function CourseDetailPage() {
                     onDragOver={handleDragOver}
                     onDrop={(e) => {
                       e.preventDefault()
-                      handleDrop(sectionData.section.id, sectionData.lessons.length)
+                      handleDrop(sectionData.id, sectionData.lessons?.length || 0)
                     }}
                   >
-                    {sectionData.lessons.length === 0 ? (
+                    {(!sectionData.lessons || sectionData.lessons.length === 0) ? (
                       <div className="text-center py-8 text-muted-foreground border-2 border-dashed rounded-lg">
                         <FileText className="h-8 w-8 mx-auto mb-2 opacity-50" />
                         <p>Chưa có bài học. Kéo bài học vào đây hoặc tạo mới.</p>
-                        <Link href={`/staff/courses/${courseId}/sections/${sectionData.section.id}/lessons/new`}>
+                        <Link href={`/staff/courses/${courseSlug}/sections/${sectionData.id}/lessons/new`}>
                           <Button variant="link" className="mt-2">
                             <Plus className="mr-2 h-4 w-4" />
                             Thêm bài học đầu tiên
@@ -512,11 +521,11 @@ export default function CourseDetailPage() {
                           <div
                             key={lesson.id}
                             draggable
-                            onDragStart={() => handleDragStart(lesson, sectionData.section.id)}
+                            onDragStart={() => handleDragStart(lesson, sectionData.id)}
                             onDragOver={handleDragOver}
                             onDrop={(e) => {
                               e.stopPropagation()
-                              handleDrop(sectionData.section.id, lessonIndex)
+                              handleDrop(sectionData.id, lessonIndex)
                             }}
                             className={`
                               flex items-center gap-3 p-3 rounded-lg border bg-card hover:bg-accent cursor-move
@@ -568,7 +577,13 @@ export default function CourseDetailPage() {
                                   Chỉnh sửa
                                 </DropdownMenuItem>
                                 <DropdownMenuSeparator />
-                                <DropdownMenuItem className="text-destructive">
+                                <DropdownMenuItem 
+                                  className="text-destructive"
+                                  onClick={() => {
+                                    setDeleteLessonId(lesson.id)
+                                    setDeleteLessonTitle(lesson.title)
+                                  }}
+                                >
                                   <Trash2 className="mr-2 h-4 w-4" />
                                   Xóa
                                 </DropdownMenuItem>
@@ -584,21 +599,76 @@ export default function CourseDetailPage() {
             ))}
           </Accordion>
 
-          {sectionsData.length === 0 && (
+          {(!Array.isArray(sectionsData) || sectionsData.length === 0) && (
             <div className="text-center py-12 text-muted-foreground">
               <Layers className="h-12 w-12 mx-auto mb-4 opacity-50" />
               <p className="text-lg font-medium mb-2">Chưa có chương nào</p>
               <p className="mb-4">Hãy tạo chương đầu tiên cho khóa học này</p>
-              <Link href={`/staff/courses/${courseId}/sections/new`}>
-                <Button>
-                  <Plus className="mr-2 h-4 w-4" />
-                  Tạo chương đầu tiên
-                </Button>
-              </Link>
+              <Button onClick={() => setIsCreateSectionModalOpen(true)}>
+                <Plus className="mr-2 h-4 w-4" />
+                Tạo chương đầu tiên
+              </Button>
             </div>
           )}
         </CardContent>
       </Card>
+
+      {/* Create Section Modal */}
+      <CreateSectionModal
+        open={isCreateSectionModalOpen}
+        onOpenChange={setIsCreateSectionModalOpen}
+        courseId={courseId}
+        onSuccess={() => {
+          refetchSections()
+          toast.success('Đã tạo chương thành công')
+        }}
+      />
+
+      {/* Edit Section Modal */}
+      <EditSectionModal
+        open={!!editingSectionId}
+        onOpenChange={(open) => {
+          if (!open) {
+            setEditingSectionId(null)
+            setEditingSectionTitle("")
+            setEditingSectionOrderNumber(0)
+          }
+        }}
+        sectionId={editingSectionId || ""}
+        currentTitle={editingSectionTitle}
+        currentOrderNumber={editingSectionOrderNumber}
+        onSuccess={() => {
+          refetchSections()
+        }}
+      />
+
+      {/* Delete Section Dialog */}
+      <DeleteSectionDialog
+        open={!!deletingSectionId}
+        onOpenChange={(open) => {
+          if (!open) {
+            setDeleteSectionId(null)
+            setDeleteSectionTitle("")
+          }
+        }}
+        onConfirm={handleDeleteSectionConfirm}
+        isDeleting={deleteSectionMutation.isPending}
+        sectionTitle={deletingSectionTitle}
+      />
+
+      {/* Delete Lesson Dialog */}
+      <DeleteLessonDialog
+        open={!!deletingLessonId}
+        onOpenChange={(open) => {
+          if (!open) {
+            setDeleteLessonId(null)
+            setDeleteLessonTitle("")
+          }
+        }}
+        onConfirm={handleDeleteLessonConfirm}
+        isDeleting={deleteLessonMutation.isPending}
+        lessonTitle={deletingLessonTitle}
+      />
     </div>
   )
 }

@@ -7,39 +7,51 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
-import { 
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select"
-import { ArrowLeft, Save, Upload } from "lucide-react"
+import { ArrowLeft, Save, Upload, X } from "lucide-react"
 import Link from "next/link"
+import { useCreateCategory } from "@/features/courses/hooks"
+import { toast } from "sonner"
 
 export default function NewCategoryPage() {
   const router = useRouter()
-  const [isSubmitting, setIsSubmitting] = useState(false)
+  const createCategory = useCreateCategory()
   const [formData, setFormData] = useState({
     name: "",
     description: "",
-    slug: "",
-    imageUrl: "",
-    status: "1"
   })
+  const [imageFile, setImageFile] = useState<File | null>(null)
+  const [imagePreview, setImagePreview] = useState<string>("")
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    setIsSubmitting(true)
     
-    // TODO: Call API để tạo category
-    console.log("Creating category:", formData)
-    
-    // Simulate API call
-    setTimeout(() => {
-      setIsSubmitting(false)
-      router.push("/staff/categories")
-    }, 1000)
+    if (!imageFile) {
+      toast.error("Vui lòng chọn hình ảnh cho danh mục")
+      return
+    }
+
+    if (!formData.name.trim()) {
+      toast.error("Vui lòng nhập tên danh mục")
+      return
+    }
+
+    if (!formData.description.trim()) {
+      toast.error("Vui lòng nhập mô tả danh mục")
+      return
+    }
+
+    createCategory.mutate({
+      name: formData.name,
+      description: formData.description,
+      image: imageFile,
+    }, {
+      onSuccess: () => {
+        toast.success("Tạo danh mục thành công!")
+      },
+      onError: (error: any) => {
+        toast.error(error?.response?.data?.message || "Có lỗi xảy ra khi tạo danh mục")
+      }
+    })
   }
 
   const handleChange = (field: string, value: string) => {
@@ -47,24 +59,37 @@ export default function NewCategoryPage() {
       ...prev,
       [field]: value
     }))
-    
-    // Auto-generate slug from name
-    if (field === "name") {
-      const slug = value
-        .toLowerCase()
-        .normalize("NFD")
-        .replace(/[\u0300-\u036f]/g, "")
-        .replace(/[đĐ]/g, "d")
-        .replace(/[^a-z0-9\s-]/g, "")
-        .replace(/\s+/g, "-")
-        .replace(/-+/g, "-")
-        .trim()
+  }
+
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (file) {
+      // Validate file type
+      if (!file.type.startsWith('image/')) {
+        toast.error("Vui lòng chọn file hình ảnh")
+        return
+      }
       
-      setFormData(prev => ({
-        ...prev,
-        slug: slug
-      }))
+      // Validate file size (max 5MB)
+      if (file.size > 5 * 1024 * 1024) {
+        toast.error("Kích thước file không được vượt quá 5MB")
+        return
+      }
+
+      setImageFile(file)
+      
+      // Create preview
+      const reader = new FileReader()
+      reader.onloadend = () => {
+        setImagePreview(reader.result as string)
+      }
+      reader.readAsDataURL(file)
     }
+  }
+
+  const handleRemoveImage = () => {
+    setImageFile(null)
+    setImagePreview("")
   }
 
   return (
@@ -101,66 +126,67 @@ export default function NewCategoryPage() {
                 onChange={(e) => handleChange("name", e.target.value)}
                 required
               />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="slug">Đường dẫn (Slug) *</Label>
-              <Input
-                id="slug"
-                placeholder="lap-trinh-co-ban"
-                value={formData.slug}
-                onChange={(e) => handleChange("slug", e.target.value)}
-                required
-              />
               <p className="text-sm text-muted-foreground">
-                Đường dẫn thân thiện cho URL, tự động tạo từ tên danh mục
+                Đường dẫn (slug) sẽ được tự động tạo từ tên danh mục
               </p>
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="description">Mô tả</Label>
+              <Label htmlFor="description">Mô tả *</Label>
               <Textarea
                 id="description"
                 placeholder="Mô tả chi tiết về danh mục này..."
                 value={formData.description}
                 onChange={(e) => handleChange("description", e.target.value)}
                 rows={4}
+                required
               />
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="imageUrl">URL hình ảnh</Label>
-              <div className="flex gap-2">
-                <Input
-                  id="imageUrl"
-                  placeholder="https://example.com/image.jpg"
-                  value={formData.imageUrl}
-                  onChange={(e) => handleChange("imageUrl", e.target.value)}
-                />
-                <Button type="button" variant="outline">
-                  <Upload className="h-4 w-4 mr-2" />
-                  Tải lên
-                </Button>
-              </div>
-              <p className="text-sm text-muted-foreground">
-                Hoặc tải lên hình ảnh từ máy tính
-              </p>
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="status">Trạng thái</Label>
-              <Select
-                value={formData.status}
-                onValueChange={(value) => handleChange("status", value)}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Chọn trạng thái" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="1">Hoạt động</SelectItem>
-                  <SelectItem value="0">Ẩn</SelectItem>
-                </SelectContent>
-              </Select>
+              <Label htmlFor="image">Hình ảnh *</Label>
+              {imagePreview ? (
+                <div className="relative">
+                  <img 
+                    src={imagePreview} 
+                    alt="Preview" 
+                    className="w-full h-48 object-cover rounded-lg"
+                  />
+                  <Button
+                    type="button"
+                    variant="destructive"
+                    size="icon"
+                    className="absolute top-2 right-2"
+                    onClick={handleRemoveImage}
+                  >
+                    <X className="h-4 w-4" />
+                  </Button>
+                </div>
+              ) : (
+                <div className="flex items-center gap-2">
+                  <Input
+                    id="image"
+                    type="file"
+                    accept="image/*"
+                    onChange={handleImageChange}
+                    className="hidden"
+                  />
+                  <Label
+                    htmlFor="image"
+                    className="flex items-center justify-center w-full h-32 border-2 border-dashed rounded-lg cursor-pointer hover:bg-accent"
+                  >
+                    <div className="text-center">
+                      <Upload className="h-8 w-8 mx-auto mb-2 text-muted-foreground" />
+                      <p className="text-sm text-muted-foreground">
+                        Click để tải lên hình ảnh
+                      </p>
+                      <p className="text-xs text-muted-foreground mt-1">
+                        PNG, JPG, GIF (tối đa 5MB)
+                      </p>
+                    </div>
+                  </Label>
+                </div>
+              )}
             </div>
 
             <div className="flex justify-end gap-4 pt-4">
@@ -169,9 +195,9 @@ export default function NewCategoryPage() {
                   Hủy
                 </Button>
               </Link>
-              <Button type="submit" disabled={isSubmitting}>
+              <Button type="submit" disabled={createCategory.isPending}>
                 <Save className="mr-2 h-4 w-4" />
-                {isSubmitting ? "Đang lưu..." : "Lưu danh mục"}
+                {createCategory.isPending ? "Đang lưu..." : "Lưu danh mục"}
               </Button>
             </div>
           </CardContent>

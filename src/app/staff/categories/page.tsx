@@ -21,55 +21,46 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { Badge } from "@/components/ui/badge"
-import { Plus, Search, MoreHorizontal, Pencil, Trash2, Eye, FolderOpen } from "lucide-react"
+import { Plus, Search, MoreHorizontal, Pencil, Trash2, Eye, FolderOpen, Loader2 } from "lucide-react"
 import Link from "next/link"
 import Image from "next/image"
-
-// Mock data - sẽ thay bằng API call thực tế
-const mockCategories = [
-  {
-    id: "1",
-    name: "Lập trình cơ bản",
-    description: "Các khóa học về lập trình cơ bản cho người mới bắt đầu",
-    slug: "lap-trinh-co-ban",
-    imageUrl: "/placeholder-category.jpg",
-    status: 1,
-    coursesCount: 12,
-    createdDate: "2024-01-15",
-    lastUpdated: "2024-03-20"
-  },
-  {
-    id: "2",
-    name: "Robot nâng cao",
-    description: "Khóa học điều khiển robot nâng cao",
-    slug: "robot-nang-cao",
-    imageUrl: "/placeholder-category.jpg",
-    status: 1,
-    coursesCount: 8,
-    createdDate: "2024-02-10",
-    lastUpdated: "2024-03-18"
-  },
-  {
-    id: "3",
-    name: "AI & Machine Learning",
-    description: "Các khóa học về trí tuệ nhân tạo",
-    slug: "ai-machine-learning",
-    imageUrl: "/placeholder-category.jpg",
-    status: 0,
-    coursesCount: 5,
-    createdDate: "2024-03-01",
-    lastUpdated: "2024-03-15"
-  }
-]
+import { useNoneDeleteCategories, useDeleteCategory } from "@/features/courses/hooks"
+import { toast } from "sonner"
+import { Pagination } from "@/components/ui/pagination"
 
 export default function CategoriesPage() {
   const [searchQuery, setSearchQuery] = useState("")
-  const [categories] = useState(mockCategories)
+  const [page, setPage] = useState(1) // UI uses 1-based pages
+  const pageSize = 20
+  
+  const { data, isLoading, error } = useNoneDeleteCategories({
+    page: page, // API uses 0-based pages
+    size: pageSize,
+    search: searchQuery || undefined
+  })
+  
+  const deleteCategory = useDeleteCategory()
 
-  const filteredCategories = categories.filter(category =>
-    category.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    category.description.toLowerCase().includes(searchQuery.toLowerCase())
-  )
+  const handleDelete = (id: string, name: string) => {
+    if (!confirm(`Bạn có chắc chắn muốn xóa danh mục "${name}"?`)) {
+      return
+    }
+
+    deleteCategory.mutate(id, {
+      onSuccess: () => {
+        toast.success("Xóa danh mục thành công!")
+      },
+      onError: (error: any) => {
+        toast.error(error?.response?.data?.message || "Có lỗi xảy ra khi xóa danh mục")
+      }
+    })
+  }
+
+  const categories = data?.data || []
+  const totalCount = data?.total_count || 0
+  const totalPages = data?.total_pages || 0
+  const hasNext = data?.has_next || false
+  const hasPrevious = data?.has_previous || false
 
   return (
     <div className="space-y-6">
@@ -92,7 +83,7 @@ export default function CategoriesPage() {
         <CardHeader>
           <CardTitle>Danh sách danh mục</CardTitle>
           <CardDescription>
-            Tổng cộng {categories.length} danh mục
+            {isLoading ? "Đang tải..." : `Tổng cộng ${totalCount} danh mục`}
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -122,14 +113,26 @@ export default function CategoriesPage() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {filteredCategories.length === 0 ? (
+                {isLoading ? (
+                  <TableRow>
+                    <TableCell colSpan={7} className="text-center py-8">
+                      <Loader2 className="h-6 w-6 animate-spin mx-auto" />
+                    </TableCell>
+                  </TableRow>
+                ) : error ? (
+                  <TableRow>
+                    <TableCell colSpan={7} className="text-center py-8 text-destructive">
+                      Có lỗi xảy ra khi tải danh mục
+                    </TableCell>
+                  </TableRow>
+                ) : categories.length === 0 ? (
                   <TableRow>
                     <TableCell colSpan={7} className="text-center py-8 text-muted-foreground">
                       Không tìm thấy danh mục nào
                     </TableCell>
                   </TableRow>
                 ) : (
-                  filteredCategories.map((category) => (
+                  categories.map((category) => (
                     <TableRow key={category.id}>
                       <TableCell>
                         <div className="relative w-16 h-16 rounded-md overflow-hidden bg-muted">
@@ -153,7 +156,7 @@ export default function CategoriesPage() {
                       </TableCell>
                       <TableCell>
                         <Badge variant="secondary">
-                          {category.coursesCount} khóa học
+                          {category.countCourses || 0}
                         </Badge>
                       </TableCell>
                       <TableCell>
@@ -194,7 +197,10 @@ export default function CategoriesPage() {
                               </Link>
                             </DropdownMenuItem>
                             <DropdownMenuSeparator />
-                            <DropdownMenuItem className="text-destructive">
+                            <DropdownMenuItem 
+                              className="text-destructive"
+                              onClick={() => handleDelete(category.id, category.name)}
+                            >
                               <Trash2 className="mr-2 h-4 w-4" />
                               Xóa
                             </DropdownMenuItem>
@@ -207,6 +213,20 @@ export default function CategoriesPage() {
               </TableBody>
             </Table>
           </div>
+
+          {!isLoading && totalPages > 1 && (
+            <div className="mt-4">
+              <Pagination
+                currentPage={page}
+                totalPages={totalPages}
+                onPageChange={setPage}
+                hasNext={hasNext}
+                hasPrevious={hasPrevious}
+                totalCount={totalCount}
+                perPage={pageSize}
+              />
+            </div>
+          )}
         </CardContent>
       </Card>
     </div>

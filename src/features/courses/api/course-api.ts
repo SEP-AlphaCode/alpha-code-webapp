@@ -1,14 +1,16 @@
-import { AccountCourse, AccountLesson, Category, Course, Lesson } from "@/types/courses";
+import { Course } from "@/types/courses";
 import { PagedResult } from "@/types/page-result";
 import { coursesHttp } from "@/utils/http";
-import { getMockAccountLessons, markMockLessonComplete } from "./account-lessons";
 
-export const getCategories = async (page: number, size: number, signal?: AbortSignal) => {
+
+// Get none delete courses with pagination
+export const getNoneDeleteCourses = async (page: number, size: number, search?: string, signal?: AbortSignal) => {
     try {
-        const response = await coursesHttp.get<PagedResult<Category>>('/categories', {
+        const response = await coursesHttp.get<PagedResult<Course>>('/courses/none-delete', {
             params: {
                 page,
                 size,
+                search
             },
             signal // Add AbortSignal support
         });
@@ -16,10 +18,10 @@ export const getCategories = async (page: number, size: number, signal?: AbortSi
         return response.data;
 
     } catch (error) {
-        console.error("API Error in getAllCategories:", error);
+        console.error("API Error in getNoneDeleteCourses:", error);
         throw error;
     }
-};
+}
 
 export const getCourses = async (page: number, size: number, search?: string, signal?: AbortSignal) => {
     try {
@@ -54,59 +56,79 @@ export const getCourseBySlug = async (slug: string, signal?: AbortSignal) => {
     }
 }
 
-export const getCategoryBySlug = async (slug: string, signal?: AbortSignal) => {
+
+// Create new course
+export const createCourse = async (data: FormData) => {
     try {
-        const response = await coursesHttp.get<Category>('/categories/get-by-slug/' + slug, {
-            signal // Add AbortSignal support
+        const response = await coursesHttp.post<Course>('/courses', data, {
+            headers: {
+                'Content-Type': 'multipart/form-data',
+            },
         });
-        // Handle different response structures
         return response.data;
-
     } catch (error) {
-        console.error("API Error in getCategoryBySlug:", error);
+        console.error("API Error in createCourse:", error);
         throw error;
     }
-}
+};
 
-export const getAccountCourses = async (accountId: string, page: number, size: number, signal?: AbortSignal): Promise<PagedResult<AccountCourse>> => {
+// Update course
+export const updateCourse = async (id: string, data: {
+    name: string;
+    description: string;
+    categoryId: string;
+    level: number;
+    price: number;
+    image?: string;
+    status?: number;
+}) => {
     try {
-        const response = await coursesHttp.get<PagedResult<AccountCourse>>('/account-courses/by-account/' + accountId)
-        return response.data
-    }
-    catch (error) {
-        console.error("API Error in getAccountCourses:", error);
-        throw error;
-    }
-}
-
-export const getAccountLessons = async (accountId: string, courseId: string, page: number, size: number, signal?: AbortSignal): Promise<PagedResult<AccountLesson>> => {
-    try {
-        return getMockAccountLessons(accountId, courseId, page, size, signal);
-    }
-    catch (error) {
-        console.error("API Error in getAccountLessons:", error);
-        throw error;
-    }
-}
-
-export const markLessonComplete = async (accountLessonId: string, signal?: AbortSignal): Promise<void> => {
-    try {
-        return markMockLessonComplete(accountLessonId, signal);
-    }
-    catch (error) {
-        console.error("API Error in markLessonComplete:", error);
-        throw error;
-    }
-}
-
-export const getLessons = async (courseId: string) => {
-    try {
-        const response = await coursesHttp.get<PagedResult<Lesson>>('lessons/get-by-course/' + courseId);
-        // Handle different response structures
+        const response = await coursesHttp.put<Course>(`/courses/${id}`, data);
         return response.data;
-
     } catch (error) {
-        console.error("API Error in getLessons :", error);
+        console.error("API Error in updateCourse:", error);
         throw error;
     }
-}
+};
+
+// Delete course
+export const deleteCourse = async (id: string) => {
+    try {
+        const response = await coursesHttp.delete(`/courses/${id}`);
+        return response.data;
+    } catch (error) {
+        console.error("API Error in deleteCourse:", error);
+        throw error;
+    }
+};
+
+// Get course by ID (for editing)
+export const getCourseById = async (id: string, signal?: AbortSignal) => {
+    try {
+        const response = await coursesHttp.get<Course>(`/courses/${id}`, {
+            signal
+        });
+        return response.data;
+    } catch (error) {
+        console.error("API Error in getCourseById:", error);
+        throw error;
+    }
+};
+
+// Get dashboard statistics for staff
+export const getStaffDashboardStats = async (signal?: AbortSignal) => {
+    try {
+        const response = await coursesHttp.get<{
+            totalCategories: number;
+            totalCourses: number;
+            totalSections: number;
+            totalLessons: number;
+        }>('courses/dashboard/stats', {
+            signal
+        });
+        return response.data;
+    } catch (error) {
+        console.error("API Error in getStaffDashboardStats:", error);
+        throw error;
+    }
+};

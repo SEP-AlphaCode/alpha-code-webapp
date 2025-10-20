@@ -7,6 +7,7 @@ export type Category = {
     status: number,
     lastUpdated?: string,
     createdDate: string
+    countCourses?: number
 }
 
 export interface Section {
@@ -47,8 +48,9 @@ export interface Course {
     status: number; // int4
     createdDate: string; // timestamp
     lastUpdated?: string; // timestamp
-    sections?: Section[];
-    category?: Category; // relation
+    categoryName?: string;
+    sectionCount?: number;
+    statusText?: string;
 }
 
 export interface AccountCourse {
