@@ -1,6 +1,17 @@
+"use client";
+
 import React from "react";
 import Image from "next/image";
-import { Battery, MapPin, CheckCircle, WifiOff, Zap, Activity } from "lucide-react";
+import {
+  Battery,
+  CheckCircle,
+  WifiOff,
+  Zap,
+  Activity,
+  CheckSquare,
+  Square,
+} from "lucide-react";
+import { useRobotStore } from "@/hooks/use-robot-store";
 
 interface Robot {
   id: string;
@@ -16,11 +27,12 @@ interface Robot {
   temperature: number;
   image: string;
   serialNumber: string;
+  robotModelName?: string;
 }
 
 interface RobotGridProps {
   robots: Robot[];
-  selectedRobot: string | null;
+  selectedRobot: string | string[] | null;
   onRobotSelect: (robotSerial: string) => void;
   sectionTitle: string;
   statusTexts: {
@@ -38,6 +50,10 @@ export function RobotGrid({
   sectionTitle,
   statusTexts,
 }: RobotGridProps) {
+  // ✅ Lấy connectMode từ Redux
+  const { connectMode } = useRobotStore();
+  const isMultiMode = connectMode === "multi";
+
   const getStatusIcon = (status: string) => {
     switch (status) {
       case "online":
@@ -79,64 +95,110 @@ export function RobotGrid({
       case "charging":
         return statusTexts.charging;
       default:
-        return status;
+        return statusTexts.busy || status;
     }
+  };
+
+  const isRobotSelected = (serial: string) => {
+    if (Array.isArray(selectedRobot)) return selectedRobot.includes(serial);
+    return selectedRobot === serial;
   };
 
   return (
     <section>
-      <h2 className="text-2xl font-semibold text-blue-800 mb-4">{sectionTitle}</h2>
+      {/* 🔵 Title */}
+      <div className="flex items-center justify-between mb-4">
+        <h2 className="text-2xl font-semibold text-blue-800">{sectionTitle}</h2>
+
+        {/* ✅ Hiển thị chế độ connect hiện tại */}
+        <span
+          className={`text-sm px-3 py-1 rounded-full ${
+            isMultiMode ? "bg-purple-100 text-purple-700" : "bg-blue-100 text-blue-700"
+          }`}
+        >
+          {isMultiMode ? "Multi Mode" : "Single Mode"}
+        </span>
+      </div>
+
+      {/* 🟦 Robot list */}
       <div className="flex gap-6 overflow-x-auto p-5 hide-scrollbar">
         {robots.map((robot) => {
-        // 🧩 Chuẩn hóa status hiển thị
-        const displayStatus: Robot["status"] =
-        (["error", "disconnected"].includes(robot.status as string)
-          ? "offline"
-          : robot.status) as Robot["status"];
+          const displayStatus: Robot["status"] = (
+            (["error", "disconnected"].includes(robot.status as string)
+              ? "offline"
+              : robot.status) as Robot["status"]
+          );
 
-        return (
-          <div
-            key={robot.id}
-            className={`min-w-[320px] bg-white rounded-2xl shadow-lg border border-gray-100 p-5 flex flex-col items-center transition-transform duration-200 hover:scale-105 cursor-pointer ${
-              selectedRobot === robot.serialNumber ? "ring-2 ring-blue-400" : ""
-            }`}
-            onClick={() => onRobotSelect(robot.serialNumber)}
-          >
-            <Image
-              src={robot.image}
-              alt={robot.name}
-              width={80}
-              height={80}
-              className="rounded-full object-cover mb-2"
-            />
-            <span className="font-bold text-lg text-gray-900 mb-1">{robot.name}</span>
-            <span className="text-xs text-gray-400 mb-2">{robot.serialNumber}</span>
+          const selected = isRobotSelected(robot.serialNumber);
 
-            {/* 🧠 Dùng displayStatus thay cho robot.status */}
-            <div className="flex items-center gap-2 mb-2">
-              {getStatusIcon(displayStatus)}
-              <span
-                className={`px-2 py-0.5 rounded-full text-xs font-semibold ${getStatusColor(
-                  displayStatus
-                )}`}
-              >
-                {getStatusText(displayStatus)}
+          return (
+            <div
+              key={robot.id}
+              className={`relative min-w-[320px] bg-white rounded-2xl shadow-lg border border-gray-100 p-5 flex flex-col items-center transition-transform duration-200 hover:scale-105 cursor-pointer ${
+                selected ? "ring-2 ring-blue-400" : ""
+              }`}
+              onClick={() => onRobotSelect(robot.serialNumber)}
+            >
+              {/* 🟣 Multi-Select Checkbox */}
+              {isMultiMode && (
+                <div className="absolute top-3 right-3 z-10 p-1 bg-white rounded-md shadow-md">
+                  {selected ? (
+                    <CheckSquare className="h-6 w-6 text-blue-500" />
+                  ) : (
+                    <Square className="h-6 w-6 text-gray-300" />
+                  )}
+                </div>
+              )}
+
+              {/* 🖼️ Robot Avatar */}
+              <Image
+                src={robot.image}
+                alt={robot.name}
+                width={80}
+                height={80}
+                className="rounded-full object-cover mb-2"
+              />
+
+              {/* 📛 Info */}
+              <span className="font-bold text-lg text-gray-900 mb-1">
+                {robot.name}
               </span>
-            </div>
+              <span className="text-xs text-gray-400 mb-2">
+                {robot.serialNumber}
+              </span>
 
-            <div className="flex items-center gap-2 mb-2">
-              <Battery className="h-4 w-4" />
-              <span className="font-semibold text-sm">{robot.battery}%</span>
-              <div className="w-20 h-2 bg-gray-200 rounded-full overflow-hidden">
-                <div
-                  className={`h-2 rounded-full ${getBatteryColor(robot.battery ?? 0)}`}
-                  style={{ width: `${robot.battery}%` }}
-                ></div>
+              {/* 🟢 Status */}
+              <div className="flex items-center gap-2 mb-2">
+                {getStatusIcon(displayStatus)}
+                <span
+                  className={`px-2 py-0.5 rounded-full text-xs font-semibold ${getStatusColor(
+                    displayStatus
+                  )}`}
+                >
+                  {getStatusText(displayStatus)}
+                </span>
               </div>
+
+              {/* 🔋 Battery */}
+              {displayStatus !== "offline" && (
+                <div className="flex items-center gap-2 mb-2">
+                  <Battery className="h-4 w-4" />
+                  <span className="font-semibold text-sm">
+                    {robot.battery ?? 0}%
+                  </span>
+                  <div className="w-20 h-2 bg-gray-200 rounded-full overflow-hidden">
+                    <div
+                      className={`h-2 rounded-full ${getBatteryColor(
+                        robot.battery ?? 0
+                      )}`}
+                      style={{ width: `${robot.battery ?? 0}%` }}
+                    ></div>
+                  </div>
+                </div>
+              )}
             </div>
-          </div>
-        );
-      })}
+          );
+        })}
       </div>
     </section>
   );

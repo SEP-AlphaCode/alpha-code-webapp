@@ -1,71 +1,144 @@
 // src/components/user/robot/action/robot-action-page.tsx
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef, useCallback } from "react";
 import Image from "next/image";
 import { RobotActionHeader } from "@/components/user/robot/action/robot-action-header";
 import { RobotActionDetail } from "@/components/user/robot/action/robot-action-detail";
 import { RobotActionGrid } from "@/components/user/robot/action/robot-action-grid";
-import { RobotSelector } from "@/components/user/robot-selector";
 import { useRobotCommand } from "@/hooks/use-robot-command";
 import { useRobotStore } from "@/hooks/use-robot-store";
 import { AnimatePresence, motion } from "framer-motion";
-import { ChevronLeft, ChevronRight } from "lucide-react";
 import type { RobotAction } from "@/types/robot";
-import type { RobotActionUI } from "@/types/robot-ui"; // nếu bạn có UI type
+import type { RobotActionUI } from "@/types/robot-ui";
 
 export default function RobotActionPage() {
+  // ------------------------------
+  // 🔔 Notify state + cleanup
+  // ------------------------------
   const [notify, setNotifyState] = useState<{ msg: string; type: "success" | "error" } | null>(null);
-  const setNotify = (msg: string, type: "success" | "error") => {
+  const notifyTimeoutRef = useRef<number | null>(null);
+  const [sending, setSending] = useState(false);
+
+  const setNotify = useCallback((msg: string, type: "success" | "error") => {
     setNotifyState({ msg, type });
-    setTimeout(() => setNotifyState(null), 2500);
-  };
+    if (notifyTimeoutRef.current) {
+      window.clearTimeout(notifyTimeoutRef.current);
+    }
+    notifyTimeoutRef.current = window.setTimeout(() => {
+      setNotifyState(null);
+      notifyTimeoutRef.current = null;
+    }, 2500);
+  }, []);
+
+  useEffect(() => {
+    return () => {
+      if (notifyTimeoutRef.current) {
+        window.clearTimeout(notifyTimeoutRef.current);
+      }
+    };
+  }, []);
 
   const { sendCommandToBackend } = useRobotCommand(setNotify);
 
-  // 👇 Cho phép state nhận cả RobotAction lẫn RobotActionUI
+  // ------------------------------
+  // 🤖 Robot + Action states
+  // ------------------------------
   const [currentAction, setCurrentAction] = useState<RobotAction | RobotActionUI | null>(null);
   const direction = 0;
 
-  const { selectedRobot, selectedRobotSerial, initializeMockData } = useRobotStore();
+  const { selectedRobotSerial, initializeMockData, robots } = useRobotStore();
 
   useEffect(() => {
-    initializeMockData();
-  }, [initializeMockData]);
-
-  const handlePrevAction = () => {
-    // Logic for previous action (not implemented)
-  };
-  const handleNextAction = () => {
-    // Logic for next action (not implemented)
-  };
-
-  const handleSendCommand = async (
-    actionCode: string,
-    type: "action" | "expression" | "skill_helper" | "extended_action" = "action"
-  ) => {
-    if (!selectedRobotSerial || !selectedRobot) {
-      setNotify("Bạn chưa chọn robot!", "error");
-      return Promise.resolve();
+    try {
+      if (typeof initializeMockData === "function") {
+        initializeMockData();
+      }
+    } catch (err) {
+      console.error("initializeMockData error", err);
     }
-    if (selectedRobot.status === "offline") {
-      setNotify(`Robot ${selectedRobot.name} đang offline!`, "error");
-      return Promise.resolve();
-    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
-    // ✅ TRUYỀN TYPE XUỐNG BACKEND CHÍNH XÁC
-    await sendCommandToBackend(actionCode, selectedRobotSerial, type);
-  };
+  // ------------------------------
+  // 🧭 Send Command Handler
+  // ------------------------------
+  const handleSendCommand = useCallback(
+    async (
+      actionCode: string,
+      type: "action" | "expression" | "skill_helper" | "extended_action" | "process-text" = "action"
+    ) => {
+      const targets: string[] = Array.isArray(selectedRobotSerial)
+        ? selectedRobotSerial
+        : selectedRobotSerial
+        ? [selectedRobotSerial]
+        : [];
 
+      if (targets.length === 0) {
+        setNotify("Bạn chưa chọn robot!", "error");
+        return;
+      }
+
+      const offlineTargets = targets
+        .map((s) => robots.find((r) => r.serial === s))
+        .filter((r) => r && r.status === "offline") as typeof robots;
+
+      if (offlineTargets.length > 0) {
+        setNotify(
+          `Một số robot đang offline: ${offlineTargets.map((r) => r?.name || r?.serial).join(", ")}`,
+          "error"
+        );
+      }
+
+      const onlineTargets = targets.filter((s) => !offlineTargets.some((r) => r?.serial === s));
+
+      if (onlineTargets.length === 0) return;
+
+      setSending(true);
+      try {
+        const results = await Promise.allSettled(
+          onlineTargets.map((serial) => sendCommandToBackend(actionCode, serial, type))
+        );
+
+        const succeeded = results.filter((r) => r.status === "fulfilled");
+        const failed = results.filter((r) => r.status === "rejected");
+
+        if (failed.length === 0) {
+          setNotify(`✅ Đã gửi hành động cho ${succeeded.length} robot.`, "success");
+        } else if (succeeded.length === 0) {
+          setNotify(`❌ Gửi thất bại cho tất cả ${failed.length} robot.`, "error");
+        } else {
+          setNotify(`✅ ${succeeded.length} thành công, ❌ ${failed.length} thất bại.`, "success");
+        }
+
+        if (failed.length > 0) console.warn("Some robot sends failed:", failed);
+      } catch (err) {
+        console.error("Unexpected error sending commands:", err);
+        setNotify("❌ Gửi lệnh thất bại! Lỗi hệ thống.", "error");
+      } finally {
+        setSending(false);
+      }
+    },
+    [selectedRobotSerial, robots, sendCommandToBackend, setNotify]
+  );
+
+  // ------------------------------
+  // 🪄 Action Selection
+  // ------------------------------
+  const onActionSelect = useCallback((action: RobotAction | RobotActionUI) => {
+    setCurrentAction(action);
+  }, []);
+
+  // ------------------------------
+  // 🧩 Render
+  // ------------------------------
   return (
     <div className="min-h-screen">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 pb-20">
         <RobotActionHeader />
 
-        {/* Nếu có action đang chọn thì show detail */}
         {currentAction ? (
           <div className="relative">
-           
             <AnimatePresence mode="wait" initial={false} custom={direction}>
               <motion.div
                 key={currentAction.id}
@@ -79,20 +152,16 @@ export default function RobotActionPage() {
                   action={{
                     id: currentAction.id,
                     name: currentAction.name,
-                    description: currentAction.description ?? "",
-                    code: currentAction.code,
-                    duration: currentAction.duration,
-                    category: (currentAction as RobotActionUI).category ?? "action",
-
-                    // Ưu tiên ảnh nếu có, fallback sang icon
-                    imageUrl: (currentAction as RobotActionUI).imageUrl ?? null,
-                    icon: (currentAction as RobotActionUI).icon ?? null,
-
-                    status: (currentAction as RobotActionUI).status,
-                    statusText: (currentAction as RobotActionUI).statusText ?? "",
-
-                    createdDate: currentAction.createdDate,
-                    lastUpdate: currentAction.lastUpdate,
+                    description: "description" in currentAction ? currentAction.description ?? "" : "",
+                    code: "code" in currentAction ? currentAction.code : "",
+                    duration: "duration" in currentAction ? currentAction.duration ?? 0 : 0,
+                    category: "category" in currentAction ? currentAction.category ?? "action" : "action",
+                    imageUrl: "imageUrl" in currentAction ? currentAction.imageUrl ?? null : null,
+                    icon: "icon" in currentAction ? currentAction.icon ?? null : null,
+                    status: "status" in currentAction ? currentAction.status : undefined,
+                    statusText: "statusText" in currentAction ? currentAction.statusText ?? "" : "",
+                    createdDate: "createdDate" in currentAction ? currentAction.createdDate : undefined,
+                    lastUpdate: "lastUpdate" in currentAction ? currentAction.lastUpdate : undefined,
                   }}
                 />
               </motion.div>
@@ -113,13 +182,7 @@ export default function RobotActionPage() {
           </div>
         )}
 
-        {/* Grid hiển thị actions */}
-        <RobotActionGrid
-          sendCommandToBackend={(actionCode, type) =>
-          handleSendCommand(actionCode, type)
-        }
-          onActionSelect={(action) => setCurrentAction(action)}
-        />
+        <RobotActionGrid sendCommandToBackend={handleSendCommand} onActionSelect={onActionSelect} />
       </div>
 
       {notify && (

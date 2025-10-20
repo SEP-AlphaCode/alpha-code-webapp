@@ -60,7 +60,7 @@ export default function VideoPage() {
     
     try {
       // 1. Gửi start command qua HTTP API trước
-      await sendWebRTCCommand(selectedRobotSerial, "webrtc_start");
+      await sendWebRTCCommand(selectedRobotSerial as string, "webrtc_start");
       
       // 2. Sau đó khởi tạo WebSocket signaling connection
       initializeWebRTCConnection();
@@ -80,7 +80,7 @@ export default function VideoPage() {
     
     try {
       // 1. Gửi stop command qua HTTP API
-      await sendWebRTCCommand(selectedRobotSerial, "webrtc_stop");
+      await sendWebRTCCommand(selectedRobotSerial as string, "webrtc_stop");
       
       // 2. Đóng signaling connection
       cleanupWebRTCConnection();
@@ -288,7 +288,7 @@ export default function VideoPage() {
       // Gửi stop command nếu đang active
       if (isWebRTCStarted && selectedRobotSerial) {
         try {
-          sendWebRTCCommand(selectedRobotSerial, "webrtc_stop");
+          sendWebRTCCommand(selectedRobotSerial as string, "webrtc_stop");
         } catch (e) {
           console.warn("⚠️ Error sending stop during cleanup:", e);
         }

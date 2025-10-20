@@ -113,7 +113,9 @@ export default function ActivitiesPage() {
 
   const handleStartActivity = useCallback((activity: ActivityType) => {
     // Sử dụng selected robot serial từ Redux
-    const robotSerial = selectedRobotSerial || "EAA007UBT10000341";
+    const robotSerial = Array.isArray(selectedRobotSerial)
+    ? selectedRobotSerial[0]
+    : selectedRobotSerial || "EAA007UBT10000341";
     
     console.log('Selected Robot:', selectedRobot);
     console.log('Using Robot Serial:', robotSerial);
@@ -159,7 +161,11 @@ export default function ActivitiesPage() {
     console.log('Stopping all actions for robot:', robotSerial);
     
     // Send stop_all_actions command via socket
-    startActivity(robotSerial, 'stop_all_actions', {});
+    const serial = Array.isArray(robotSerial) ? robotSerial[0] : robotSerial;
+
+    if (!serial) return; // phòng trường hợp undefined
+
+    startActivity(serial, 'stop_all_actions', {});
   }, [selectedRobotSerial, startActivity])
 
   // Debug logging to track re-renders

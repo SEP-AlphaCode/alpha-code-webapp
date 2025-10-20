@@ -17,7 +17,7 @@ export interface RobotActionUI {
   duration?: number; // có thể null với expression
   imageUrl?: string | null;
   icon?: string | null;
-  status: number;
+  status?: number;
   statusText: string;
   createdDate?: string;
   lastUpdate?: string;

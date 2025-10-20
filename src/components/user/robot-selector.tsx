@@ -18,6 +18,7 @@ import { useRobotInfo } from "@/features/robots/hooks/use-robot-info";
 import { getUserIdFromToken } from "@/utils/tokenUtils";
 import { Robot } from "@/types/robot";
 import { useRobotStore } from "@/hooks/use-robot-store";
+import { RobotModal } from "@/app/admin/robots/robot-modal";
 
 interface RobotSelectorProps {
   className?: string;
@@ -30,18 +31,27 @@ interface DisplayRobot {
   avatar: string;
   battery: number;
   serialNumber: string;
+  ctrl_version?: string;
+  firmware_version?: string;
+
 }
 
 export function RobotSelector({ className = "" }: RobotSelectorProps) {
   const [accountId, setAccountId] = useState<string>("");
   const [selectedRobotId, setSelectedRobotId] = useState<string | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false); 
 
   const {
     robots: reduxRobots,
     selectedRobotSerial,
     selectRobot,
     addRobot,
+    connectMode, // ✅ new: lấy mode từ store
   } = useRobotStore();
+
+  const isMultiMode =
+    connectMode === "multi" ||
+    (Array.isArray(selectedRobotSerial) && selectedRobotSerial.length > 1);
 
   // ✅ Lấy accountId từ token
   useEffect(() => {
@@ -61,17 +71,24 @@ export function RobotSelector({ className = "" }: RobotSelectorProps) {
   const robots = robotsResponse?.data || [];
 
   // ✅ Gọi API lấy robot info (battery, status, etc.)
-  const selectedRobot = robots.find((r) => r.id === selectedRobotId);
+  const selectedSerial =
+    Array.isArray(selectedRobotSerial) && selectedRobotSerial.length > 0
+      ? selectedRobotSerial[0]
+      : selectedRobotSerial;
+  const selectedRobot = robots.find((r) => r.serialNumber === selectedSerial);
+
   const { useGetRobotInfo } = useRobotInfo();
-  const { data: robotInfoData } = useGetRobotInfo(
-    selectedRobot?.serialNumber || "",
-    10,
-    {
-      enabled:
-        !!(selectedRobot?.serialNumber &&
-        (selectedRobot?.status === "online" || selectedRobot?.status === "success")),
-    }
-  );
+  const { data: robotInfoData } = useGetRobotInfo( Array.isArray(selectedRobotSerial)
+    ? selectedRobotSerial[0] ?? ""
+    : selectedRobotSerial ?? "",
+  10, {
+    enabled:
+      !!(
+        selectedSerial &&
+        (selectedRobot?.status === "online" ||
+          selectedRobot?.status === "success")
+      ),
+  });
 
   // ✅ Đồng bộ robots vào Redux
   useEffect(() => {
@@ -94,27 +111,34 @@ export function RobotSelector({ className = "" }: RobotSelectorProps) {
     });
   }, [robots, addRobot]);
 
-  // ✅ Tự động chọn robot đầu tiên
+  // ✅ Tự động chọn robot đầu tiên nếu chưa có
   useEffect(() => {
     if (robots.length > 0 && !selectedRobotSerial) {
       const firstRobot = robots[0];
       selectRobot(firstRobot.serialNumber);
     }
-  }, [robots, selectedRobotId, selectedRobotSerial]);
+  }, [robots, selectedRobotSerial]);
 
-  const handleRobotSelect = (robot: Robot) => {
-    selectRobot(robot.serialNumber);
-    setSelectedRobotId(robot.id);
+  // ✅ Click chọn robot (toggle nếu multi)
+  const handleRobotSelect = (serialNumber: string) => {
+    if (isMultiMode) {
+      selectRobot(serialNumber); // toggle trong Redux
+    } else {
+      selectRobot(serialNumber);
+      setSelectedRobotId(serialNumber);
+    }
   };
 
   // ✅ Chuẩn hóa dữ liệu hiển thị
   const convertToDisplayRobot = (robot: Robot): DisplayRobot => {
-    const isSelectedRobot = robot.serialNumber === selectedRobotSerial;
+    const isSelected = Array.isArray(selectedRobotSerial)
+      ? selectedRobotSerial.includes(robot.serialNumber)
+      : robot.serialNumber === selectedRobotSerial;
 
     let realBattery = robot.battery_level ?? 0;
     let finalStatus: "online" | "offline" = "offline";
 
-    if (isSelectedRobot && robotInfoData?.data) {
+    if (isSelected && robotInfoData?.data) {
       const info = robotInfoData.data;
       if (robotInfoData.status !== "error" && info?.battery_level != null) {
         finalStatus = "online";
@@ -141,9 +165,24 @@ export function RobotSelector({ className = "" }: RobotSelectorProps) {
   };
 
   const robotList = robots.map(convertToDisplayRobot);
-  const currentRobot = robotList.find(
-    (robot) => robot.serialNumber === selectedRobotSerial
+
+  const selectedRobots = robotList.filter((r) =>
+    Array.isArray(selectedRobotSerial)
+      ? selectedRobotSerial.includes(r.serialNumber)
+      : r.serialNumber === selectedRobotSerial
   );
+
+  const displayName =
+    selectedRobots.length === 0
+      ? "Chưa có robot nào"
+      : isMultiMode
+      ? `${selectedRobots.length} robots được chọn`
+      : selectedRobots[0].name;
+
+  const displayAvatar =
+    isMultiMode && selectedRobots.length > 1
+      ? "/img_top_alphamini_multi.webp"
+      : selectedRobots[0]?.avatar ?? "/img_top_alphamini_disconnect.webp";
 
   // ==========================
   // UI
@@ -158,7 +197,7 @@ export function RobotSelector({ className = "" }: RobotSelectorProps) {
     );
   }
 
-  if (error || !currentRobot) {
+  if (error || robotList.length === 0) {
     return (
       <div
         className={`flex items-center px-2 py-1 rounded-xl shadow border border-gray-100 bg-gray-50 min-w-[260px] ${className}`}
@@ -169,166 +208,112 @@ export function RobotSelector({ className = "" }: RobotSelectorProps) {
   }
 
   return (
-    <DropdownMenu>
-      <DropdownMenuTrigger asChild>
-        <button
-          className={`flex items-center px-2 py-1 rounded-xl shadow border border-gray-100 bg-blue-50 hover:bg-blue-100 transition-colors focus:outline-none min-w-[260px] ${className}`}
-        >
-          <div className="flex flex-row flex-1 gap-4">
-            <div className="flex items-center gap-2">
+      <>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <button
+              className={`flex items-center px-2 py-1 rounded-xl shadow border border-gray-100 bg-blue-50 hover:bg-blue-100 transition-colors focus:outline-none min-w-[260px] ${className}`}
+            >
               <Image
-                src={currentRobot.avatar}
+                src={displayAvatar}
                 alt="AlphaMini"
                 width={50}
                 height={50}
                 className="object-cover object-top rounded-lg ml-2"
               />
-              <div className="flex flex-col justify-center items-start">
+              <div className="flex flex-col justify-center items-start ml-3">
                 <span className="font-semibold text-base text-gray-900 leading-tight">
-                  {currentRobot.name}
+                  {displayName}
                 </span>
-                <span className="text-xs text-gray-500 font-mono tracking-wide mt-0.5">
-                  {currentRobot.serialNumber}
-                </span>
-              </div>
-            </div>
-
-            <div className="flex flex-col justify-center items-start gap-2 mt-1 px-1 py-0.5">
-              {/* Connection status */}
-              <span
-                className={`flex items-center gap-1 text-xs font-medium rounded px-2 py-1 ${
-                  currentRobot.status === "online"
-                    ? "text-green-600 bg-green-100"
-                    : "text-red-600 bg-red-100"
-                }`}
-              >
-                <div
-                  className={`w-2 h-2 rounded-full ${
-                    currentRobot.status === "online"
-                      ? "bg-green-500"
-                      : "bg-red-500"
-                  }`}
-                ></div>
-                {currentRobot.status === "online" ? "Online" : "Offline"}
-              </span>
-
-              {/* Battery status */}
-              {currentRobot.status === "online" &&
-                currentRobot.battery != null && (
-                  <span
-                    className={`flex items-center gap-1 text-xs font-medium rounded px-2 py-1 ${
-                      currentRobot.battery <= 20
-                        ? "text-red-600 bg-red-100"
-                        : currentRobot.battery <= 50
-                        ? "text-yellow-700 bg-yellow-100"
-                        : "text-green-600 bg-green-100"
-                    }`}
-                  >
-                    <svg
-                      width="16"
-                      height="16"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      className="w-4 h-4"
-                    >
-                      <rect x="2" y="7" width="18" height="10" rx="2" ry="2" />
-                      <rect x="20" y="10" width="2" height="4" rx="1" />
-                      <rect
-                        x="4"
-                        y="9"
-                        width={Math.max(
-                          1,
-                          Math.floor((currentRobot.battery / 100) * 14)
-                        )}
-                        height="6"
-                        rx="1"
-                        fill="currentColor"
-                      />
-                    </svg>
-                    {currentRobot.battery}%
+                {isMultiMode ? (
+                  <span className="text-xs text-gray-500 font-mono tracking-wide mt-0.5">
+                    Multi mode
+                  </span>
+                ) : (
+                  <span className="text-xs text-gray-500 font-mono tracking-wide mt-0.5">
+                    {selectedRobots[0]?.serialNumber ?? ""}
                   </span>
                 )}
-            </div>
-          </div>
-        </button>
-      </DropdownMenuTrigger>
+              </div>
+            </button>
+          </DropdownMenuTrigger>
 
-      <DropdownMenuContent
-        className="w-80"
-        side="bottom"
-        align="end"
-        sideOffset={8}
-        forceMount
-      >
-        <DropdownMenuLabel className="font-semibold text-base mb-2">
-          Select AlphaMini
-        </DropdownMenuLabel>
-        <DropdownMenuSeparator />
-        <DropdownMenuGroup>
-          {robotList.map((robot) => (
-            <DropdownMenuItem
-              key={robot.id}
-              onClick={() =>
-                handleRobotSelect(robots.find((r) => r.id === robot.id)!)
-              }
-              className={`flex items-center gap-3 py-2 px-2 rounded-lg ${
-                robot.id === currentRobot.id ? "bg-blue-50" : ""
-              }`}
-            >
-              <Avatar className="h-9 w-9 rounded-none overflow-hidden">
-                <AvatarImage
-                  src={robot.avatar}
-                  alt={robot.name}
-                  className="object-cover w-full h-full rounded-none"
-                />
-                <AvatarFallback className="bg-gray-300 text-gray-700 font-medium rounded-none p-0">
-                  <Image
-                    src={imageFallback}
-                    alt={robot.name}
-                    width={36}
-                    height={36}
-                    className="object-cover w-full h-full rounded-none"
-                  />
-                </AvatarFallback>
-              </Avatar>
-              <div className="flex flex-col flex-1">
-                <div className="flex flex-row items-center gap-2">
-                  <span className="font-medium text-gray-900 text-sm">
-                    {robot.name}
-                  </span>
-                  <span
-                    className={`text-xs px-2 py-0.5 rounded ${
-                      robot.status === "online"
-                        ? "bg-green-100 text-green-600"
-                        : "bg-red-100 text-red-600"
+          <DropdownMenuContent
+            className="w-80"
+            side="bottom"
+            align="end"
+            sideOffset={8}
+            forceMount
+          >
+            <DropdownMenuLabel className="font-semibold text-base mb-2">
+              {isMultiMode ? "Chọn nhiều Robot" : "Chọn Robot"}
+            </DropdownMenuLabel>
+            <DropdownMenuSeparator />
+            <DropdownMenuGroup>
+              {robotList.map((robot) => {
+                const isSelected = Array.isArray(selectedRobotSerial)
+                  ? selectedRobotSerial.includes(robot.serialNumber)
+                  : robot.serialNumber === selectedRobotSerial;
+
+                return (
+                  <DropdownMenuItem
+                    key={robot.id}
+                    onClick={() => handleRobotSelect(robot.serialNumber)}
+                    className={`flex items-center gap-3 py-2 px-2 rounded-lg cursor-pointer ${
+                      isSelected ? "bg-blue-50" : ""
                     }`}
                   >
-                    {robot.status === "online" ? "Online" : "Offline"}
-                  </span>
-                </div>
-                <span className="text-xs text-gray-400 mt-1">
-                  {robot.serialNumber}
-                </span>
-              </div>
-              {robot.id === currentRobot.id && (
-                <span className="ml-2 text-blue-600 font-bold">✓</span>
-              )}
+                    <Avatar className="h-9 w-9 rounded-none overflow-hidden">
+                      <AvatarImage src={robot.avatar} alt={robot.name} />
+                      <AvatarFallback>
+                        <Image
+                          src={imageFallback}
+                          alt={robot.name}
+                          width={36}
+                          height={36}
+                        />
+                      </AvatarFallback>
+                    </Avatar>
+                    <div className="flex flex-col flex-1">
+                      <div className="flex flex-row items-center gap-2">
+                        <span className="font-medium text-gray-900 text-sm">
+                          {robot.name}
+                        </span>
+                        <span
+                          className={`text-xs px-2 py-0.5 rounded ${
+                            robot.status === "online"
+                              ? "bg-green-100 text-green-600"
+                              : "bg-red-100 text-red-600"
+                          }`}
+                        >
+                          {robot.status}
+                        </span>
+                      </div>
+                      <span className="text-xs text-gray-400 mt-1">
+                        {robot.serialNumber}
+                      </span>
+                    </div>
+                    {isSelected && (
+                      <span className="ml-2 text-blue-600 font-bold">✓</span>
+                    )}
+                  </DropdownMenuItem>
+                );
+              })}
+            </DropdownMenuGroup>
+
+            <DropdownMenuSeparator />
+            <DropdownMenuItem
+              className="flex items-center gap-2 py-2 px-2 text-blue-600 hover:bg-blue-50 cursor-pointer"
+              onClick={() => setIsModalOpen(true)} // ✅ mở modal
+            >
+              <span className="text-lg">＋</span>
+              <span className="font-medium">Thêm Robot mới</span>
             </DropdownMenuItem>
-          ))}
-        </DropdownMenuGroup>
+          </DropdownMenuContent>
+        </DropdownMenu>
 
-        <DropdownMenuSeparator />
-        <DropdownMenuItem className="flex items-center gap-2 py-2 px-2 text-blue-600 hover:bg-blue-50 cursor-pointer">
-          <span className="text-lg">＋</span>
-          <span className="font-medium">Bind New Robots</span>
-        </DropdownMenuItem>
-      </DropdownMenuContent>
-    </DropdownMenu>
-  );
-}
-
-export default memo(RobotSelector);
+        {/* ✅ Gắn modal ở cuối */}
+        <RobotModal open={isModalOpen} onClose={() => setIsModalOpen(false)} />
+      </>
+    );
+  }
