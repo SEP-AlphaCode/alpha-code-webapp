@@ -9,35 +9,46 @@ export type Category = {
     createdDate: string
 }
 
-export interface Lesson {
+export interface Section {
     id: string; // uuid
     courseId: string; // uuid
     title: string; // varchar(255)
-    contentUrl?: string; // varchar(255) - nullable
-    requireRobot: boolean; // bool
-    duration: number; // int4 (in seconds)
-    content?: string; // varchar(255) - nullable
-    contentType: string; // varchar(255)
     orderNumber: number; // int4
-    solution?: unknown; // jsonb - nullable, can be more specific based on your JSON structure
+    createdDate?: string; // timestamp
+    lastUpdated?: string; // timestamp
+    lessons?: Lesson[];
+}
+
+export interface Lesson {
+    id: string; // uuid
+    sectionId: string; // uuid
+    title: string; // varchar(255)
+    content: string; // text
+    videoUrl?: string; // varchar(512) - nullable
+    duration: number; // int4 (in seconds)
+    requireRobot: boolean; // bool
+    solution?: unknown; // jsonb - nullable
+    orderNumber: number; // int4
+    type: number; // int4 - lesson type
 }
 
 export interface Course {
     id: string; // uuid
     name: string; // varchar(255)
-    description: string; // varchar(max) - assuming nullable
-    price: number; // numeric(19, 2)
+    description: string; // text
+    price: number; // integer (in VND)
     requireLicense: boolean; // bool
     level: number; // int4
     totalLessons: number; // int4
+    totalDuration: number; // int4 (in seconds)
+    imageUrl?: string; // varchar(512) - nullable
+    slug: string; // varchar(255) - unique
+    categoryId: string; // uuid
     status: number; // int4
     createdDate: string; // timestamp
     lastUpdated?: string; // timestamp
-    totalDuration: number; // int4
-    categoryId: string; // uuid
-    slug: string; // varchar(255)
-    imageUrl?: string; // varchar(255) - assuming nullable
-    lessons?: Lesson[]
+    sections?: Section[];
+    category?: Category; // relation
 }
 
 export interface AccountCourse {
