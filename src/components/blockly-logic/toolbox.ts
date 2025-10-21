@@ -1,8 +1,9 @@
+import { ToolboxItemInfo } from '@/types/blockly';
 import * as Blockly from 'blockly'
 
 type L = {
     kind: string,
-    contents: Blockly.ToolboxItemInfo[]
+    contents: ToolboxItemInfo[]
 }
 export const toolbox: L = {
     kind: 'categoryToolbox',

@@ -1,13 +1,14 @@
 import * as Blockly from 'blockly/core';
 import { JavascriptGenerator } from 'blockly/javascript';
 
-export const blockControls = () => {
-    const serialize = (ws: Blockly.Workspace) => Blockly.serialization.workspaces.save(ws)
+export const blockControls = (ws: Blockly.Workspace) => {
+    const serialize = () => Blockly.serialization.workspaces.save(ws)
 
-    const loadFromJson = (json: { [key: string]: any }, ws: Blockly.Workspace) => Blockly
+    const loadFromJson = (json: { [key: string]: any }) => Blockly
         .serialization.workspaces.load(json, ws)
 
-    const translate = (gen: JavascriptGenerator, ws: Blockly.Workspace) => gen.workspaceToCode(ws)
+    const translate = (gen: JavascriptGenerator) => gen.workspaceToCode(ws)
+
     return {
         serialize,
         loadFromJson,

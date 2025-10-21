@@ -6,66 +6,60 @@ import { customBlocks } from '@/components/blockly-logic/custom-blocks';
 import { JavascriptGenerator, javascriptGenerator } from 'blockly/javascript';
 import { buildCodeGeneratorForModelId } from '@/components/blockly-logic/js-generator';
 import { toast } from 'sonner';
+import { StaticCategoryInfo } from '@/types/blockly';
 
 export default function UseMe() {
     const blocklyRef = useRef<HTMLDivElement>(null);
     const workspaceRef = useRef<any>(null);
     const [saved, setSaved] = useState<undefined | { [key: string]: any }>()
     const [code, setCode] = useState('')
-    const actions = blockControls()
+    const actions = blockControls(workspaceRef.current)
     const key = 'workspace-state'
     const [gen, setGen] = useState<JavascriptGenerator | undefined>()
     const [curTool, setCurTool] = useState(toolbox)
 
     function inject(x: string) {
-        if (blocklyRef.current && !workspaceRef.current) {
-            toast.success(x)
-            workspaceRef.current = Blockly.inject((blocklyRef.current), {
-                toolbox: curTool
-            });
-            workspaceRef.current.addChangeListener((event: Blockly.Events.Abstract) => {
-                if (event.type === Blockly.Events.TOOLBOX_ITEM_SELECT) {
-                    // Cast to the correct subtype
-                    const toolboxEvent = event as Blockly.Events.ToolboxItemSelect;
+        if (!blocklyRef.current || !workspaceRef.current) { return; }
+        toast.success(x)
+        workspaceRef.current = Blockly.inject((blocklyRef.current), {
+            toolbox: curTool
+        });
+        workspaceRef.current.addChangeListener((event: Blockly.Events.Abstract) => {
+            if (event.type !== Blockly.Events.TOOLBOX_ITEM_SELECT) { return; }
+            // Cast to the correct subtype
+            const toolboxEvent = event as Blockly.Events.ToolboxItemSelect;
 
-                    // Now TypeScript recognizes newItem
-                    const newItem = toolboxEvent.newItem;
+            // Now TypeScript recognizes newItem
+            const newItem = toolboxEvent.newItem;
 
-                    if (Object.hasOwn(toolboxEvent, 'newItem')) {
-                        const toolbox = (workspaceRef.current as Blockly.WorkspaceSvg).getToolbox();
-                        const flyout = toolbox?.getFlyout();
-                        const flyouts = blocklyRef.current?.querySelectorAll<SVGElement>('.blocklyFlyoutScrollbar');
-                        // Deselecting toolbox → hide rogue scrollbars
-                        if (!newItem) {
-                            flyouts?.forEach((el) => {
-                                el.style.display = 'none';
-                            });
+            if (Object.hasOwn(toolboxEvent, 'newItem')) {
+                const flyouts = blocklyRef.current?.querySelectorAll<SVGElement>('.blocklyFlyoutScrollbar');
+                // Deselecting toolbox → hide rogue scrollbars
+                if (!newItem) {
+                    flyouts?.forEach((el) => {
+                        el.style.display = 'none';
+                    });
 
-                            Blockly.svgResize(workspaceRef.current);
-                        } else {
-                            flyouts?.forEach((el) => {
-                                el.style.display = 'block';
-                            });
-                        }
-
-                        // Always resize after toolbox state change
-                        setTimeout(() => Blockly.svgResize(workspaceRef.current), 100);
-                    }
+                    Blockly.svgResize(workspaceRef.current);
+                } else {
+                    flyouts?.forEach((el) => {
+                        el.style.display = 'block';
+                    });
                 }
-            });
-        }
+            }
+        });
     }
 
     useEffect(() => {
         async function fn() {
             setTimeout(async () => {
-                const x = actions.serialize(workspaceRef.current)
+                const x = actions.serialize()
                 Blockly.common.defineBlocks(customBlocks)
-                if (!curTool.contents.find(x => x.name == 'Robot')) {
+                if (!curTool.contents.find(x => (x as StaticCategoryInfo).name == 'Robot')) {
                     var t = curTool
                     t = addRobotActions(t)
                 }
-                const s = await buildCodeGeneratorForModelId('abc', 'abc')
+                const s = await buildCodeGeneratorForModelId('6e4e14b3-b073-4491-ab2a-2bf315b3259f', 'EAA007UBT10000341')
                 setGen(s);
                 if (workspaceRef.current) {
                     workspaceRef.current.dispose();
@@ -73,7 +67,7 @@ export default function UseMe() {
                 }
                 inject('Load');
                 (workspaceRef.current as Blockly.WorkspaceSvg).getToolbox();
-                actions.loadFromJson(x ?? {}, workspaceRef.current)
+                actions.loadFromJson(x ?? {})
             }, 100);
             inject('Init')
         }
@@ -95,7 +89,7 @@ export default function UseMe() {
         <div>
             <div className='*:border-2 space-x-5 mb-4'>
                 <button onClick={(e) => {
-                    const state = actions.serialize(workspaceRef.current)
+                    const state = actions.serialize()
                     localStorage.setItem(key, JSON.stringify(state))
                     setSaved(state)
                 }}>Save</button>
@@ -103,12 +97,12 @@ export default function UseMe() {
                     const state = localStorage.getItem(key)
                     if (!state) return;
                     const json = JSON.parse(state)
-                    actions.loadFromJson(json, workspaceRef.current)
+                    actions.loadFromJson(json)
                     setSaved(json)
                 }}>Load</button>
                 <button onClick={(e) => {
                     if (!gen) return;
-                    const c = actions.translate(gen, workspaceRef.current)
+                    const c = actions.translate(gen)
                     setCode(c)
                     alert(c)
                 }}>Translate to code</button>
