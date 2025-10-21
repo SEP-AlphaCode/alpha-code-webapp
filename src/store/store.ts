@@ -1,9 +1,13 @@
 import { configureStore } from '@reduxjs/toolkit'
-import robotReducer from './robotSlice'
+import robotReducer from './robot-slice'
+import courseReducer from './course-slice'
+import userCourseReducer from './user-course-slice'
 
 export const store = configureStore({
   reducer: {
-    robot: robotReducer
+    robot: robotReducer,
+    course: courseReducer,
+    userCourse: userCourseReducer
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({

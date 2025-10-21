@@ -1,4 +1,4 @@
-import { apiActivitiesUrl, apiCoursesUrl, apiPythonUrl, apiRobotsUrl, apiUsersUrl } from '@/app/constants/constants'
+import { apiActivitiesUrl, apiCoursesUrl, apiPaymentsUrl, apiPythonUrl, apiRobotsUrl, apiUsersUrl } from '@/app/constants/constants'
 import axios, { AxiosInstance } from 'axios'
 import { refreshToken as callRefreshToken } from "@/features/auth/api/auth-api";
 
@@ -92,3 +92,4 @@ export const coursesHttp = new Http(apiCoursesUrl).instance
 export const usersHttp = new Http(apiUsersUrl).instance
 export const activitiesHttp = new Http(apiActivitiesUrl).instance
 export const robotsHttp = new Http(apiRobotsUrl).instance
+export const paymentsHttp = new Http(apiPaymentsUrl).instance 
