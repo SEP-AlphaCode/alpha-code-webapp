@@ -24,32 +24,33 @@ export default function UseMe() {
                 toolbox: curTool
             });
             workspaceRef.current.addChangeListener((event: Blockly.Events.Abstract) => {
-                if (event.type !== Blockly.Events.TOOLBOX_ITEM_SELECT) return;
-                // Safely access newItem (only exists on ToolboxItemSelect)
-                if (Object.hasOwn(event, 'newItem')) {
-                    const toolbox = (workspaceRef.current as Blockly.WorkspaceSvg).getToolbox();
-                    const flyout = toolbox?.getFlyout();
-                    const flyouts = blocklyRef.current?.querySelectorAll<SVGElement>('.blocklyFlyoutScrollbar');
-                    // If deselecting toolbox (newItem is undefined), hide stray flyout scrollbars
-                    if (!event.newItem) {
-                        console.log('Toolbox deselected -> cleaning up stray flyout scrollbars');
+                if (event.type === Blockly.Events.TOOLBOX_ITEM_SELECT) {
+                    // Cast to the correct subtype
+                    const toolboxEvent = event as Blockly.Events.ToolboxItemSelect;
 
-                        flyouts?.forEach((el) => {
-                            el.style.display = 'none';
-                        });
+                    // Now TypeScript recognizes newItem
+                    const newItem = toolboxEvent.newItem;
 
-                        // Trigger a resize to recalc scrollbars
-                        Blockly.svgResize(workspaceRef.current);
-                    } else {
-                        flyouts?.forEach((el) => {
-                            el.style.display = 'block';
-                        });
+                    if (Object.hasOwn(toolboxEvent, 'newItem')) {
+                        const toolbox = (workspaceRef.current as Blockly.WorkspaceSvg).getToolbox();
+                        const flyout = toolbox?.getFlyout();
+                        const flyouts = blocklyRef.current?.querySelectorAll<SVGElement>('.blocklyFlyoutScrollbar');
+                        // Deselecting toolbox → hide rogue scrollbars
+                        if (!newItem) {
+                            flyouts?.forEach((el) => {
+                                el.style.display = 'none';
+                            });
+
+                            Blockly.svgResize(workspaceRef.current);
+                        } else {
+                            flyouts?.forEach((el) => {
+                                el.style.display = 'block';
+                            });
+                        }
+
+                        // Always resize after toolbox state change
+                        setTimeout(() => Blockly.svgResize(workspaceRef.current), 100);
                     }
-
-                    // Optional: re-render sizing after a small delay for UI updates
-                    setTimeout(() => {
-                        Blockly.svgResize(workspaceRef.current);
-                    }, 100);
                 }
             });
         }
