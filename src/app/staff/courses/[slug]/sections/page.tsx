@@ -1,6 +1,5 @@
 "use client"
 
-import { useState } from "react"
 import { useParams } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -31,67 +30,27 @@ import {
   GripVertical,
   FileText,
   MoveUp,
-  MoveDown
+  MoveDown,
+  Loader2
 } from "lucide-react"
 import Link from "next/link"
-
-// Mock data
-const mockCourse = {
-  id: "c1",
-  name: "Python cho người mới bắt đầu",
-  description: "Khóa học Python từ cơ bản đến nâng cao",
-  categoryName: "Lập trình cơ bản",
-  level: 3,
-  totalLessons: 24,
-  totalDuration: 14400,
-  status: 1,
-  price: 299000,
-}
-
-const mockSections = [
-  {
-    id: "s1",
-    courseId: "c1",
-    title: "Giới thiệu về Python",
-    orderNumber: 1,
-    lessonsCount: 6,
-    totalDuration: 3600,
-    createdDate: "2024-02-01"
-  },
-  {
-    id: "s2",
-    courseId: "c1",
-    title: "Cấu trúc dữ liệu cơ bản",
-    orderNumber: 2,
-    lessonsCount: 8,
-    totalDuration: 4800,
-    createdDate: "2024-02-05"
-  },
-  {
-    id: "s3",
-    courseId: "c1",
-    title: "Vòng lặp và điều kiện",
-    orderNumber: 3,
-    lessonsCount: 6,
-    totalDuration: 3600,
-    createdDate: "2024-02-10"
-  },
-  {
-    id: "s4",
-    courseId: "c1",
-    title: "Hàm và Module",
-    orderNumber: 4,
-    lessonsCount: 4,
-    totalDuration: 2400,
-    createdDate: "2024-02-15"
-  }
-]
+import { useStaffCourse } from "@/features/courses/hooks/use-course"
+import { useSections, useDeleteSection, useUpdateSectionOrder } from "@/features/courses/hooks/use-section"
+import { toast } from "sonner"
+import { Section } from "@/types/courses"
 
 export default function CourseSectionsPage() {
   const params = useParams()
-  const courseId = params.id as string
-  const [course] = useState(mockCourse)
-  const [sections, setSections] = useState(mockSections)
+  const courseSlug = params.slug as string
+  
+  const { data: course, isLoading: courseLoading } = useStaffCourse(courseSlug)
+  const courseId = course?.id ?? ''
+  
+  const { data: sections = [], isLoading: sectionsLoading, refetch: refetchSections } = useSections(courseId)
+  const deleteSectionMutation = useDeleteSection(courseId)
+  const updateSectionOrderMutation = useUpdateSectionOrder(courseId)
+  
+  const isLoading = courseLoading || sectionsLoading
 
   const formatDuration = (seconds: number) => {
     const hours = Math.floor(seconds / 3600)
@@ -99,7 +58,7 @@ export default function CourseSectionsPage() {
     return `${hours}h ${minutes}m`
   }
 
-  const moveSection = (index: number, direction: 'up' | 'down') => {
+  const moveSection = async (index: number, direction: 'up' | 'down') => {
     const newSections = [...sections]
     const targetIndex = direction === 'up' ? index - 1 : index + 1
     
@@ -112,27 +71,57 @@ export default function CourseSectionsPage() {
     newSections[index].orderNumber = index + 1
     newSections[targetIndex].orderNumber = targetIndex + 1
     
-    setSections(newSections)
+    try {
+      await updateSectionOrderMutation.mutateAsync(
+        newSections.map(s => ({
+          id: s.id,
+          orderNumber: s.orderNumber
+        }))
+      )
+      toast.success('Đã cập nhật thứ tự chương')
+      refetchSections()
+    } catch (error) {
+      toast.error('Lỗi khi cập nhật thứ tự chương')
+      console.error('Error updating section order:', error)
+    }
+  }
+
+  const handleDeleteSection = async (sectionId: string) => {
+    if (!confirm('Bạn có chắc chắn muốn xóa chương này? Tất cả bài học trong chương cũng sẽ bị xóa.')) return
     
-    // TODO: Call API to update order
-    console.log('Reordering sections:', newSections.map(s => s.id))
+    try {
+      await deleteSectionMutation.mutateAsync(sectionId)
+      toast.success('Đã xóa chương thành công')
+      refetchSections()
+    } catch (error) {
+      toast.error('Lỗi khi xóa chương')
+      console.error('Error deleting section:', error)
+    }
+  }
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+      </div>
+    )
   }
 
   return (
     <div className="space-y-6">
       <div className="flex items-center gap-4">
-        <Link href={`/staff/courses/${courseId}`}>
+        <Link href={`/staff/courses/${courseSlug}`}>
           <Button variant="outline" size="icon">
             <ArrowLeft className="h-4 w-4" />
           </Button>
         </Link>
         <div className="flex-1">
-          <h1 className="text-3xl font-bold tracking-tight">{course.name}</h1>
+          <h1 className="text-3xl font-bold tracking-tight">{course?.name}</h1>
           <p className="text-muted-foreground">
             Quản lý các chương học
           </p>
         </div>
-        <Link href={`/staff/courses/${courseId}/sections/new`}>
+        <Link href={`/staff/courses/${courseSlug}/sections/new`}>
           <Button>
             <Plus className="mr-2 h-4 w-4" />
             Thêm chương mới
@@ -149,7 +138,7 @@ export default function CourseSectionsPage() {
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             <div>
               <p className="text-sm text-muted-foreground">Danh mục</p>
-              <p className="font-medium">{course.categoryName}</p>
+              <p className="font-medium">{course?.categoryName || '-'}</p>
             </div>
             <div>
               <p className="text-sm text-muted-foreground">Tổng số chương</p>
@@ -157,11 +146,11 @@ export default function CourseSectionsPage() {
             </div>
             <div>
               <p className="text-sm text-muted-foreground">Tổng số bài học</p>
-              <p className="font-medium">{course.totalLessons} bài</p>
+              <p className="font-medium">{course?.totalLessons || 0} bài</p>
             </div>
             <div>
               <p className="text-sm text-muted-foreground">Thời lượng</p>
-              <p className="font-medium">{formatDuration(course.totalDuration)}</p>
+              <p className="font-medium">{course?.totalDuration ? formatDuration(course.totalDuration) : '0h 0m'}</p>
             </div>
           </div>
         </CardContent>
@@ -183,15 +172,13 @@ export default function CourseSectionsPage() {
                   <TableHead className="w-[50px]">STT</TableHead>
                   <TableHead>Tên chương</TableHead>
                   <TableHead>Số bài học</TableHead>
-                  <TableHead>Thời lượng</TableHead>
-                  <TableHead>Ngày tạo</TableHead>
                   <TableHead className="text-right">Thao tác</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {sections.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">
+                    <TableCell colSpan={4} className="text-center py-8 text-muted-foreground">
                       Chưa có chương nào. Hãy tạo chương đầu tiên!
                     </TableCell>
                   </TableRow>
@@ -207,12 +194,8 @@ export default function CourseSectionsPage() {
                       <TableCell className="font-medium">{section.title}</TableCell>
                       <TableCell>
                         <Badge variant="secondary">
-                          {section.lessonsCount} bài
+                          {section.lessons?.length || 0} bài
                         </Badge>
-                      </TableCell>
-                      <TableCell>{formatDuration(section.totalDuration)}</TableCell>
-                      <TableCell>
-                        {new Date(section.createdDate).toLocaleDateString('vi-VN')}
                       </TableCell>
                       <TableCell className="text-right">
                         <div className="flex items-center justify-end gap-1">
@@ -245,25 +228,16 @@ export default function CourseSectionsPage() {
                               <DropdownMenuLabel>Thao tác</DropdownMenuLabel>
                               <DropdownMenuSeparator />
                               <DropdownMenuItem asChild>
-                                <Link href={`/staff/courses/${courseId}/sections/${section.id}`}>
-                                  <Eye className="mr-2 h-4 w-4" />
-                                  Xem chi tiết
-                                </Link>
-                              </DropdownMenuItem>
-                              <DropdownMenuItem asChild>
-                                <Link href={`/staff/courses/${courseId}/sections/${section.id}/edit`}>
-                                  <Pencil className="mr-2 h-4 w-4" />
-                                  Chỉnh sửa
-                                </Link>
-                              </DropdownMenuItem>
-                              <DropdownMenuItem asChild>
-                                <Link href={`/staff/courses/${courseId}/sections/${section.id}/lessons`}>
+                                <Link href={`/staff/courses/${courseSlug}/sections/${section.id}/lessons`}>
                                   <FileText className="mr-2 h-4 w-4" />
                                   Quản lý bài học
                                 </Link>
                               </DropdownMenuItem>
                               <DropdownMenuSeparator />
-                              <DropdownMenuItem className="text-destructive">
+                              <DropdownMenuItem 
+                                className="text-destructive"
+                                onClick={() => handleDeleteSection(section.id)}
+                              >
                                 <Trash2 className="mr-2 h-4 w-4" />
                                 Xóa
                               </DropdownMenuItem>

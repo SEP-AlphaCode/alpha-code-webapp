@@ -20,6 +20,7 @@ interface CreateSectionModalProps {
   open: boolean
   onOpenChange: (open: boolean) => void
   courseId: string
+  courseSlug?: string
   onSuccess?: () => void
 }
 
@@ -27,11 +28,12 @@ export function CreateSectionModal({
   open,
   onOpenChange,
   courseId,
+  courseSlug,
   onSuccess,
 }: CreateSectionModalProps) {
   const [title, setTitle] = useState("")
   const [error, setError] = useState("")
-  const createSectionMutation = useCreateSection(courseId)
+  const createSectionMutation = useCreateSection(courseId, courseSlug)
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()

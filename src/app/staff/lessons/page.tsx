@@ -40,152 +40,53 @@ import {
   CheckCircle2,
   BookOpen,
   Layers,
-  LucideIcon
+  LucideIcon,
+  Loader2
 } from "lucide-react"
 import Link from "next/link"
-
-// Mock data
-const mockCourses = [
-  { id: "c1", name: "Python cho người mới bắt đầu" },
-  { id: "c2", name: "JavaScript Fundamentals" },
-  { id: "c3", name: "Điều khiển Robot Alpha" }
-]
-
-const mockSections = [
-  { id: "s1", courseId: "c1", courseName: "Python cho người mới bắt đầu", title: "Giới thiệu về Python" },
-  { id: "s2", courseId: "c1", courseName: "Python cho người mới bắt đầu", title: "Cấu trúc dữ liệu cơ bản" },
-  { id: "s3", courseId: "c2", courseName: "JavaScript Fundamentals", title: "JavaScript Basics" },
-  { id: "s4", courseId: "c3", courseName: "Điều khiển Robot Alpha", title: "Lập trình Robot" }
-]
-
-const mockLessons = [
-  {
-    id: "l1",
-    sectionId: "s1",
-    sectionTitle: "Giới thiệu về Python",
-    courseId: "c1",
-    courseName: "Python cho người mới bắt đầu",
-    title: "Python là gì?",
-    content: "Giới thiệu về ngôn ngữ lập trình Python",
-    videoUrl: "https://example.com/video1.mp4",
-    duration: 600,
-    requireRobot: false,
-    type: 1,
-    orderNumber: 1,
-    createdDate: "2024-02-01"
-  },
-  {
-    id: "l2",
-    sectionId: "s1",
-    sectionTitle: "Giới thiệu về Python",
-    courseId: "c1",
-    courseName: "Python cho người mới bắt đầu",
-    title: "Cài đặt môi trường Python",
-    content: "Hướng dẫn cài đặt Python và IDE",
-    videoUrl: "https://example.com/video2.mp4",
-    duration: 900,
-    requireRobot: false,
-    type: 1,
-    orderNumber: 2,
-    createdDate: "2024-02-01"
-  },
-  {
-    id: "l3",
-    sectionId: "s1",
-    sectionTitle: "Giới thiệu về Python",
-    courseId: "c1",
-    courseName: "Python cho người mới bắt đầu",
-    title: "Viết chương trình Python đầu tiên",
-    content: "Thực hành viết Hello World",
-    videoUrl: null,
-    duration: 1200,
-    requireRobot: false,
-    type: 2,
-    orderNumber: 3,
-    createdDate: "2024-02-02"
-  },
-  {
-    id: "l4",
-    sectionId: "s2",
-    sectionTitle: "Cấu trúc dữ liệu cơ bản",
-    courseId: "c1",
-    courseName: "Python cho người mới bắt đầu",
-    title: "List và Tuple",
-    content: "Tìm hiểu về List và Tuple trong Python",
-    videoUrl: "https://example.com/video4.mp4",
-    duration: 1800,
-    requireRobot: false,
-    type: 1,
-    orderNumber: 1,
-    createdDate: "2024-02-03"
-  },
-  {
-    id: "l5",
-    sectionId: "s2",
-    sectionTitle: "Cấu trúc dữ liệu cơ bản",
-    courseId: "c1",
-    courseName: "Python cho người mới bắt đầu",
-    title: "Bài kiểm tra: Cấu trúc dữ liệu",
-    content: "Kiểm tra kiến thức về cấu trúc dữ liệu",
-    videoUrl: null,
-    duration: 600,
-    requireRobot: false,
-    type: 3,
-    orderNumber: 2,
-    createdDate: "2024-02-04"
-  },
-  {
-    id: "l6",
-    sectionId: "s3",
-    sectionTitle: "JavaScript Basics",
-    courseId: "c2",
-    courseName: "JavaScript Fundamentals",
-    title: "Variables và Data Types",
-    content: "Biến và kiểu dữ liệu trong JavaScript",
-    videoUrl: "https://example.com/video6.mp4",
-    duration: 1500,
-    requireRobot: false,
-    type: 1,
-    orderNumber: 1,
-    createdDate: "2024-02-05"
-  },
-  {
-    id: "l7",
-    sectionId: "s4",
-    sectionTitle: "Lập trình Robot",
-    courseId: "c3",
-    courseName: "Điều khiển Robot Alpha",
-    title: "Thực hành với Robot Alpha",
-    content: "Lập trình điều khiển robot",
-    videoUrl: null,
-    duration: 1500,
-    requireRobot: true,
-    type: 2,
-    orderNumber: 1,
-    createdDate: "2024-02-06"
-  }
-]
+import { useRouter } from "next/navigation"
+import { useAllLessons, useDeleteLesson } from "@/features/courses/hooks/use-lesson"
+import { useStaffCourses } from "@/features/courses/hooks"
+import { toast } from "sonner"
 
 const lessonTypeMap: { [key: number]: { text: string; icon: LucideIcon; color: string } } = {
-  1: { text: "Video", icon: Play, color: "bg-blue-500/10 text-blue-500" },
-  2: { text: "Lập trình", icon: Code, color: "bg-green-500/10 text-green-500" },
+  1: { text: "Bài học", icon: Code, color: "bg-green-500/10 text-green-500" },
+  2: { text: "Video", icon: Play, color: "bg-blue-500/10 text-blue-500" },
   3: { text: "Kiểm tra", icon: CheckCircle2, color: "bg-purple-500/10 text-purple-500" }
 }
 
 export default function AllLessonsPage() {
+  const router = useRouter()
   const [searchQuery, setSearchQuery] = useState("")
-  const [selectedCourse, setSelectedCourse] = useState("all")
   const [selectedType, setSelectedType] = useState("all")
-  const [lessons] = useState(mockLessons)
-  const [courses] = useState(mockCourses)
+  const [currentPage, setCurrentPage] = useState(0)
+  const pageSize = 20
+
+  // Fetch all lessons with pagination
+  const { data: lessonsData, isLoading: lessonsLoading } = useAllLessons({
+    page: currentPage,
+    size: pageSize,
+    search: searchQuery || undefined
+  })
+
+  const lessons = lessonsData?.data || []
+  const deleteLessonMutation = useDeleteLesson('')
+
+  const handleDeleteLesson = async (lessonId: string, lessonTitle: string) => {
+    if (confirm(`Bạn có chắc chắn muốn xóa bài học "${lessonTitle}"?`)) {
+      try {
+        await deleteLessonMutation.mutateAsync(lessonId)
+        toast.success('Đã xóa bài học')
+      } catch (error) {
+        toast.error('Lỗi khi xóa bài học')
+        console.error('Error deleting lesson:', error)
+      }
+    }
+  }
 
   const filteredLessons = lessons.filter(lesson => {
-    const matchesSearch = lesson.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                         lesson.content.toLowerCase().includes(searchQuery.toLowerCase())
-    const matchesCourse = selectedCourse === "all" || lesson.courseId === selectedCourse
     const matchesType = selectedType === "all" || lesson.type.toString() === selectedType
-    
-    return matchesSearch && matchesCourse && matchesType
+    return matchesType
   })
 
   const formatDuration = (seconds: number) => {
@@ -292,27 +193,14 @@ export default function AllLessonsPage() {
                 className="pl-8"
               />
             </div>
-            <Select value={selectedCourse} onValueChange={setSelectedCourse}>
-              <SelectTrigger className="w-full md:w-[200px]">
-                <SelectValue placeholder="Lọc theo khóa học" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">Tất cả khóa học</SelectItem>
-                {courses.map(course => (
-                  <SelectItem key={course.id} value={course.id}>
-                    {course.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
             <Select value={selectedType} onValueChange={setSelectedType}>
               <SelectTrigger className="w-full md:w-[150px]">
                 <SelectValue placeholder="Loại bài học" />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">Tất cả loại</SelectItem>
-                <SelectItem value="1">Video</SelectItem>
-                <SelectItem value="2">Lập trình</SelectItem>
+                <SelectItem value="1">Bài học</SelectItem>
+                <SelectItem value="2">Video</SelectItem>
                 <SelectItem value="3">Kiểm tra</SelectItem>
               </SelectContent>
             </Select>
@@ -323,19 +211,16 @@ export default function AllLessonsPage() {
               <TableHeader>
                 <TableRow>
                   <TableHead>Tên bài học</TableHead>
-                  <TableHead>Khóa học</TableHead>
-                  <TableHead>Chương</TableHead>
                   <TableHead>Loại</TableHead>
                   <TableHead>Thời lượng</TableHead>
                   <TableHead>Robot</TableHead>
-                  <TableHead>Ngày tạo</TableHead>
                   <TableHead className="text-right">Thao tác</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {filteredLessons.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={8} className="text-center py-8 text-muted-foreground">
+                    <TableCell colSpan={5} className="text-center py-8 text-muted-foreground">
                       Không tìm thấy bài học nào
                     </TableCell>
                   </TableRow>
@@ -358,20 +243,8 @@ export default function AllLessonsPage() {
                           </div>
                         </TableCell>
                         <TableCell>
-                          <Badge variant="outline" className="whitespace-nowrap">
-                            {lesson.courseName}
-                          </Badge>
-                        </TableCell>
-                        <TableCell>
-                          <div className="flex items-center gap-1 text-sm text-muted-foreground">
-                            <Layers className="h-3 w-3" />
-                            <span className="truncate max-w-[150px]">
-                              {lesson.sectionTitle}
-                            </span>
-                          </div>
-                        </TableCell>
-                        <TableCell>
                           <Badge className={typeInfo.color}>
+                            <TypeIcon className="mr-1 h-3 w-3" />
                             {typeInfo.text}
                           </Badge>
                         </TableCell>
@@ -382,9 +255,6 @@ export default function AllLessonsPage() {
                           ) : (
                             <Badge variant="outline">Không</Badge>
                           )}
-                        </TableCell>
-                        <TableCell>
-                          {new Date(lesson.createdDate).toLocaleDateString('vi-VN')}
                         </TableCell>
                         <TableCell className="text-right">
                           <DropdownMenu>
@@ -397,26 +267,23 @@ export default function AllLessonsPage() {
                             <DropdownMenuContent align="end">
                               <DropdownMenuLabel>Thao tác</DropdownMenuLabel>
                               <DropdownMenuSeparator />
-                              <DropdownMenuItem asChild>
-                                <Link href={`/staff/courses/${lesson.courseId}/sections/${lesson.sectionId}/lessons/${lesson.id}`}>
-                                  <Eye className="mr-2 h-4 w-4" />
-                                  Xem chi tiết
-                                </Link>
+                              <DropdownMenuItem 
+                                onClick={() => router.push(`/staff/lessons/${lesson.slug}`)}
+                              >
+                                <Eye className="mr-2 h-4 w-4" />
+                                Xem chi tiết
                               </DropdownMenuItem>
-                              <DropdownMenuItem asChild>
-                                <Link href={`/staff/courses/${lesson.courseId}/sections/${lesson.sectionId}/lessons/${lesson.id}/edit`}>
-                                  <Pencil className="mr-2 h-4 w-4" />
-                                  Chỉnh sửa
-                                </Link>
-                              </DropdownMenuItem>
-                              <DropdownMenuItem asChild>
-                                <Link href={`/staff/courses/${lesson.courseId}/sections/${lesson.sectionId}/lessons`}>
-                                  <Layers className="mr-2 h-4 w-4" />
-                                  Xem chương
-                                </Link>
+                              <DropdownMenuItem 
+                                onClick={() => router.push(`/staff/lessons/${lesson.slug}/edit`)}
+                              >
+                                <Pencil className="mr-2 h-4 w-4" />
+                                Chỉnh sửa
                               </DropdownMenuItem>
                               <DropdownMenuSeparator />
-                              <DropdownMenuItem className="text-destructive">
+                              <DropdownMenuItem 
+                                className="text-destructive"
+                                onClick={() => handleDeleteLesson(lesson.id, lesson.title)}
+                              >
                                 <Trash2 className="mr-2 h-4 w-4" />
                                 Xóa
                               </DropdownMenuItem>

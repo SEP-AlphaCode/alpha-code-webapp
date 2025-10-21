@@ -34,7 +34,15 @@ export function useLesson(lessonId: string) {
   })
 }
 
-export function useCreateLesson(courseId: string, sectionId: string) {
+export function useLessonBySlug(slug: string) {
+  return useQuery({
+    queryKey: ['lesson', 'slug', slug],
+    queryFn: ({ signal }) => lessonApi.getLessonBySlug(slug, signal),
+    enabled: !!slug,
+  })
+}
+
+export function useCreateLesson(courseId: string, sectionId: string, courseSlug?: string) {
   const queryClient = useQueryClient()
   const router = useRouter()
 
@@ -42,19 +50,26 @@ export function useCreateLesson(courseId: string, sectionId: string) {
     mutationFn: (data: {
       title: string
       content: string
-      videoUrl?: string
+      videoFile?: File
       duration: number
       requireRobot: boolean
       type: number
-      orderNumber: number
       solution?: object
-    }) => lessonApi.createLesson(courseId, sectionId, data),
+    }) => lessonApi.createLesson(sectionId, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['lessons', 'section', sectionId] })
       queryClient.invalidateQueries({ queryKey: ['sections', courseId] })
-      queryClient.invalidateQueries({ queryKey: ['staff', 'course', courseId] })
-      queryClient.invalidateQueries({ queryKey: ['course', courseId] })
-      router.push(`/staff/courses/${courseId}`)
+      queryClient.invalidateQueries({ queryKey: ['sections'] })
+      
+      if (courseSlug) {
+        queryClient.invalidateQueries({ queryKey: ['staff', 'course', courseSlug] })
+        queryClient.invalidateQueries({ queryKey: ['course', courseSlug] })
+        router.push(`/staff/courses/${courseSlug}`)
+      } else {
+        queryClient.invalidateQueries({ queryKey: ['staff', 'course', courseId] })
+        queryClient.invalidateQueries({ queryKey: ['course', courseId] })
+        router.push(`/staff/courses/${courseId}`)
+      }
     },
   })
 }

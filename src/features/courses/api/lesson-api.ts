@@ -63,19 +63,58 @@ export const getLessonById = async (lessonId: string, signal?: AbortSignal) => {
     }
 };
 
+// Get lesson with solution by slug (for staff/admin)
+export const getLessonBySlug = async (slug: string, signal?: AbortSignal) => {
+    try {
+        const response = await coursesHttp.get<Lesson>(`/lessons/with-solution/slug/${slug}`, {
+            signal
+        });
+        return response.data;
+    } catch (error) {
+        console.error("API Error in getLessonBySlug:", error);
+        throw error;
+    }
+};
+
 // Create new lesson
-export const createLesson = async (courseId: string, sectionId: string, data: {
+export const createLesson = async (sectionId: string, data: {
     title: string;
     content: string;
-    videoUrl?: string;
+    videoFile?: File;
     duration: number;
     requireRobot: boolean;
     type: number;
-    orderNumber: number;
     solution?: object;
 }) => {
     try {
-        const response = await coursesHttp.post<Lesson>(`/courses/${courseId}/sections/${sectionId}/lessons`, data);
+        const formData = new FormData();
+        
+        // Create the createLesson object
+        const createLessonDto = {
+            title: data.title,
+            content: data.content,
+            duration: data.duration,
+            requireRobot: data.requireRobot,
+            sectionId: sectionId,
+            type: data.type,
+            solution: data.solution || null
+        };
+        
+        // Add JSON data as blob
+        formData.append('createLesson', new Blob([JSON.stringify(createLessonDto)], {
+            type: 'application/json'
+        }));
+        
+        // Add video file if provided
+        if (data.videoFile) {
+            formData.append('videoFile', data.videoFile);
+        }
+        
+        const response = await coursesHttp.post<Lesson>('/lessons', formData, {
+            headers: {
+                'Content-Type': 'multipart/form-data'
+            }
+        });
         return response.data;
     } catch (error) {
         console.error("API Error in createLesson:", error);

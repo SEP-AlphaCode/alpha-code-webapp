@@ -20,17 +20,24 @@ export function useSection(courseId: string, sectionId: string) {
   })
 }
 
-export function useCreateSection(courseId: string) {
+export function useCreateSection(courseId: string, courseSlug?: string) {
   const queryClient = useQueryClient()
-  const router = useRouter()
 
   return useMutation({
     mutationFn: (data: { title: string; }) =>
       sectionApi.createSection(courseId, data),
     onSuccess: () => {
+      // Invalidate all related queries
       queryClient.invalidateQueries({ queryKey: ['sections', courseId] })
-      queryClient.invalidateQueries({ queryKey: ['staff', 'course', courseId] })
-      queryClient.invalidateQueries({ queryKey: ['course', courseId] })
+      queryClient.invalidateQueries({ queryKey: ['sections'] })
+      
+      if (courseSlug) {
+        queryClient.invalidateQueries({ queryKey: ['staff', 'course', courseSlug] })
+        queryClient.invalidateQueries({ queryKey: ['course', courseSlug] })
+      }
+      
+      queryClient.invalidateQueries({ queryKey: ['staff', 'course'] })
+      queryClient.invalidateQueries({ queryKey: ['course'] })
     },
   })
 }

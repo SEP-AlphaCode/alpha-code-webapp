@@ -1,6 +1,5 @@
 "use client"
 
-import { useState } from "react"
 import { useParams, useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -18,60 +17,29 @@ import {
   Layers,
   Video,
   FileJson,
-  LucideIcon
+  LucideIcon,
+  Loader2
 } from "lucide-react"
 import Link from "next/link"
-
-// Mock data
-const mockLesson = {
-  id: "l1",
-  sectionId: "s1",
-  sectionTitle: "Giới thiệu về Python",
-  courseId: "c1",
-  courseName: "Python cho người mới bắt đầu",
-  title: "Python là gì?",
-  content: `
-    Python là một ngôn ngữ lập trình bậc cao, thông dịch và đa năng. 
-    
-    Được tạo ra bởi Guido van Rossum và phát hành lần đầu năm 1991, Python nhấn mạnh vào tính dễ đọc của code với việc sử dụng khoảng trắng đáng kể.
-    
-    **Đặc điểm chính:**
-    - Cú pháp rõ ràng, dễ học
-    - Hỗ trợ nhiều mô hình lập trình
-    - Thư viện phong phú
-    - Cộng đồng lớn và năng động
-    
-    **Ứng dụng:**
-    - Phát triển web
-    - Khoa học dữ liệu
-    - Machine Learning
-    - Automation
-  `,
-  videoUrl: "https://example.com/video1.mp4",
-  duration: 600, // 10 minutes
-  requireRobot: false,
-  type: 1, // Video
-  orderNumber: 1,
-  solution: null,
-  createdDate: "2024-02-01",
-  lastUpdated: "2024-02-15"
-}
+import { useLessonBySlug, useDeleteLesson } from "@/features/courses/hooks/use-lesson"
+import { useStaffCourse } from "@/features/courses/hooks"
+import { toast } from "sonner"
 
 const lessonTypeMap: { [key: number]: { text: string; icon: LucideIcon; color: string; bgColor: string } } = {
   1: { 
-    text: "Bài học Video", 
-    icon: Play, 
-    color: "text-blue-500",
-    bgColor: "bg-blue-500/10"
-  },
-  2: { 
-    text: "Bài tập Lập trình", 
+    text: "Bài học", 
     icon: Code, 
     color: "text-green-500",
     bgColor: "bg-green-500/10"
   },
+  2: { 
+    text: "Video", 
+    icon: Play, 
+    color: "text-blue-500",
+    bgColor: "bg-blue-500/10"
+  },
   3: { 
-    text: "Bài Kiểm tra", 
+    text: "Bài kiểm tra", 
     icon: CheckCircle2, 
     color: "text-purple-500",
     bgColor: "bg-purple-500/10"
@@ -81,8 +49,41 @@ const lessonTypeMap: { [key: number]: { text: string; icon: LucideIcon; color: s
 export default function LessonDetailPage() {
   const params = useParams()
   const router = useRouter()
-  const lessonId = params.lessonId as string
-  const [lesson] = useState(mockLesson)
+  const lessonSlug = params.slug as string
+  
+  const { data: lesson, isLoading } = useLessonBySlug(lessonSlug)
+  const deleteLessonMutation = useDeleteLesson('')
+  
+  const handleDelete = async () => {
+    if (!lesson) return
+    
+    if (confirm(`Bạn có chắc chắn muốn xóa bài học "${lesson.title}"?`)) {
+      try {
+        await deleteLessonMutation.mutateAsync(lesson.id)
+        toast.success('Đã xóa bài học')
+        router.back()
+      } catch (error) {
+        toast.error('Lỗi khi xóa bài học')
+        console.error('Error deleting lesson:', error)
+      }
+    }
+  }
+  
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+      </div>
+    )
+  }
+
+  if (!lesson) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <p className="text-muted-foreground">Không tìm thấy bài học</p>
+      </div>
+    )
+  }
 
   const typeInfo = lessonTypeMap[lesson.type]
   const TypeIcon = typeInfo.icon
@@ -105,28 +106,26 @@ export default function LessonDetailPage() {
           <ArrowLeft className="h-4 w-4" />
         </Button>
         <div className="flex-1">
-          <div className="flex items-center gap-2 text-sm text-muted-foreground mb-1">
-            <Link href="/staff/courses" className="hover:text-foreground">
-              Khóa học
-            </Link>
-            <span>/</span>
-            <Link href={`/staff/courses/${lesson.courseId}`} className="hover:text-foreground">
-              {lesson.courseName}
-            </Link>
-            <span>/</span>
-            <span>{lesson.sectionTitle}</span>
-          </div>
           <h1 className="text-3xl font-bold tracking-tight">{lesson.title}</h1>
         </div>
         <div className="flex gap-2">
-          <Link href={`/staff/lessons/${lessonId}/edit`}>
+          <Link href={`/staff/lessons/${lessonSlug}/edit`}>
             <Button variant="outline">
               <Pencil className="mr-2 h-4 w-4" />
               Chỉnh sửa
             </Button>
           </Link>
-          <Button variant="destructive" size="icon">
-            <Trash2 className="h-4 w-4" />
+          <Button 
+            variant="destructive" 
+            size="icon"
+            onClick={handleDelete}
+            disabled={deleteLessonMutation.isPending}
+          >
+            {deleteLessonMutation.isPending ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : (
+              <Trash2 className="h-4 w-4" />
+            )}
           </Button>
         </div>
       </div>
@@ -178,7 +177,7 @@ export default function LessonDetailPage() {
             </CardHeader>
             <CardContent>
               <div className="prose prose-sm max-w-none">
-                {lesson.content.split('\n').map((paragraph, index) => (
+                {lesson.content.split('\n').map((paragraph: string, index: number) => (
                   paragraph.trim() && (
                     <p key={index} className="mb-4 text-foreground">
                       {paragraph.trim()}
@@ -233,53 +232,34 @@ export default function LessonDetailPage() {
               <Separator />
 
               <div className="flex items-center gap-3">
-                <BookOpen className="h-4 w-4 text-muted-foreground" />
+                <Layers className="h-4 w-4 text-muted-foreground" />
                 <div className="flex-1">
-                  <p className="text-sm text-muted-foreground">Khóa học</p>
-                  <Link 
-                    href={`/staff/courses/${lesson.courseId}`}
-                    className="font-medium hover:underline"
-                  >
-                    {lesson.courseName}
-                  </Link>
+                  <p className="text-sm text-muted-foreground">Thứ tự</p>
+                  <p className="font-medium">Bài {lesson.orderNumber}</p>
                 </div>
               </div>
-
+              
               <Separator />
 
               <div className="flex items-center gap-3">
-                <Layers className="h-4 w-4 text-muted-foreground" />
+                <FileJson className="h-4 w-4 text-muted-foreground" />
                 <div className="flex-1">
-                  <p className="text-sm text-muted-foreground">Chương</p>
-                  <p className="font-medium">{lesson.sectionTitle}</p>
+                  <p className="text-sm text-muted-foreground">Loại bài học</p>
+                  <Badge className={`${typeInfo.color}`}>
+                    {typeInfo.text}
+                  </Badge>
                 </div>
               </div>
-
-              <Separator />
-
-              <div>
-                <p className="text-sm text-muted-foreground mb-1">Ngày tạo</p>
-                <p className="font-medium">
-                  {new Date(lesson.createdDate).toLocaleDateString('vi-VN', {
-                    year: 'numeric',
-                    month: 'long',
-                    day: 'numeric'
-                  })}
-                </p>
-              </div>
-
-              {lesson.lastUpdated && (
+              
+              {lesson.requireRobot && (
                 <>
                   <Separator />
-                  <div>
-                    <p className="text-sm text-muted-foreground mb-1">Cập nhật lần cuối</p>
-                    <p className="font-medium">
-                      {new Date(lesson.lastUpdated).toLocaleDateString('vi-VN', {
-                        year: 'numeric',
-                        month: 'long',
-                        day: 'numeric'
-                      })}
-                    </p>
+                  <div className="flex items-center gap-3">
+                    <BookOpen className="h-4 w-4 text-muted-foreground" />
+                    <div className="flex-1">
+                      <p className="text-sm text-muted-foreground">Yêu cầu</p>
+                      <Badge variant="secondary">Robot Alpha</Badge>
+                    </div>
                   </div>
                 </>
               )}
@@ -292,23 +272,23 @@ export default function LessonDetailPage() {
               <CardTitle>Thao tác</CardTitle>
             </CardHeader>
             <CardContent className="space-y-2">
-              <Link href={`/staff/lessons/${lessonId}/edit`} className="block">
+              <Link href={`/staff/lessons/${lessonSlug}/edit`} className="block">
                 <Button className="w-full justify-start" variant="outline">
                   <Pencil className="mr-2 h-4 w-4" />
                   Chỉnh sửa bài học
                 </Button>
               </Link>
-              <Link href={`/staff/courses/${lesson.courseId}`} className="block">
-                <Button className="w-full justify-start" variant="outline">
-                  <Layers className="mr-2 h-4 w-4" />
-                  Xem chương
-                </Button>
-              </Link>
               <Button 
                 className="w-full justify-start" 
                 variant="destructive"
+                onClick={handleDelete}
+                disabled={deleteLessonMutation.isPending}
               >
-                <Trash2 className="mr-2 h-4 w-4" />
+                {deleteLessonMutation.isPending ? (
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                ) : (
+                  <Trash2 className="mr-2 h-4 w-4" />
+                )}
                 Xóa bài học
               </Button>
             </CardContent>
