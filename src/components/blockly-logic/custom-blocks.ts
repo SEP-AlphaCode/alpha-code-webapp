@@ -27,8 +27,8 @@ const customBlockData = [
             {
                 "type": "field_number",
                 "name": "COUNT",
-                "value": 0,
-                "min": 0
+                "value": 1,
+                "min": 1
             },
             {
                 "type": "input_dummy",

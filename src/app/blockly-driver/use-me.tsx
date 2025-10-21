@@ -21,19 +21,37 @@ export default function UseMe() {
         if (blocklyRef.current && !workspaceRef.current) {
             toast.success(x)
             workspaceRef.current = Blockly.inject((blocklyRef.current), {
-                toolbox: curTool,
-                move: {
-                    scrollbars: {
-                        horizontal: true,
-                        vertical: true
-                    },
-                    drag: true,
-                    wheel: true
-                },
-                trashcan: true
+                toolbox: curTool
             });
-            console.log(workspaceRef);
-            
+            workspaceRef.current.addChangeListener((event: Blockly.Events.Abstract) => {
+                if (event.type !== Blockly.Events.TOOLBOX_ITEM_SELECT) return;
+                // Safely access newItem (only exists on ToolboxItemSelect)
+                if (Object.hasOwn(event, 'newItem')) {
+                    const toolbox = (workspaceRef.current as Blockly.WorkspaceSvg).getToolbox();
+                    const flyout = toolbox?.getFlyout();
+                    const flyouts = blocklyRef.current?.querySelectorAll<SVGElement>('.blocklyFlyoutScrollbar');
+                    // If deselecting toolbox (newItem is undefined), hide stray flyout scrollbars
+                    if (!event.newItem) {
+                        console.log('Toolbox deselected -> cleaning up stray flyout scrollbars');
+
+                        flyouts?.forEach((el) => {
+                            el.style.display = 'none';
+                        });
+
+                        // Trigger a resize to recalc scrollbars
+                        Blockly.svgResize(workspaceRef.current);
+                    } else {
+                        flyouts?.forEach((el) => {
+                            el.style.display = 'block';
+                        });
+                    }
+
+                    // Optional: re-render sizing after a small delay for UI updates
+                    setTimeout(() => {
+                        Blockly.svgResize(workspaceRef.current);
+                    }, 100);
+                }
+            });
         }
     }
 
@@ -43,37 +61,24 @@ export default function UseMe() {
                 const x = actions.serialize(workspaceRef.current)
                 Blockly.common.defineBlocks(customBlocks)
                 if (!curTool.contents.find(x => x.name == 'Robot')) {
-                    setCurTool(addRobotActions(curTool))
+                    var t = curTool
+                    t = addRobotActions(t)
                 }
                 const s = await buildCodeGeneratorForModelId('abc', 'abc')
-                setGen(s)
+                setGen(s);
                 if (workspaceRef.current) {
                     workspaceRef.current.dispose();
                     workspaceRef.current = null;
                 }
-                inject('Load')
+                inject('Load');
+                (workspaceRef.current as Blockly.WorkspaceSvg).getToolbox();
                 actions.loadFromJson(x ?? {}, workspaceRef.current)
-            }, 2000);
+            }, 100);
             inject('Init')
         }
 
         fn()
 
-        workspaceRef.current.addChangeListener((event: Blockly.Events.Abstract) => {
-            console.log('Event!', event.type);
-            
-            if (event.type === Blockly.Events.UI) {
-                console.log('Select item');
-                
-                // Small delay to let Blockly finish its internal updates
-                setTimeout(() => {
-                    Blockly.svgResize(workspaceRef.current);
-                    if (workspaceRef.current.scrollbar) {
-                        workspaceRef.current.scrollbar.resize();
-                    }
-                }, 150);
-            }
-        });
 
         return () => {
             console.log('UseMe component unmounted');
@@ -106,7 +111,9 @@ export default function UseMe() {
                     setCode(c)
                     alert(c)
                 }}>Translate to code</button>
-
+                <button onClick={(e) => {
+                    Blockly.svgResize(workspaceRef.current)
+                }}>Resize</button>
                 <div>
                     {gen &&
                         <p>
@@ -116,16 +123,20 @@ export default function UseMe() {
                 </div>
 
             </div>
-            <div ref={blocklyRef} style={{ height: 600, width: 1000 }}></div>
-            <div className='grid grid-cols-2 *:border-2 *:p-2'>
+            <div className=''>
+                <div ref={blocklyRef} style={{ height: 600, width: 1000, flexBasis: '100%', overflow: 'auto' }} className='border-2 border-red-300'></div>
+                <div
+                    className='border-2 p-2 bg-blue-50'
+                    dangerouslySetInnerHTML={{ __html: code.replaceAll('\n', '<br/>') }}
+                />
+            </div>
+            <div >
                 <div>
                     {
                         JSON.stringify(saved, undefined, '')
                     }
                 </div>
-                <div>
-                    {code}
-                </div>
+
             </div>
         </div>
     );

@@ -11,6 +11,15 @@ export const buildCodeGeneratorForModelId = async (modelId: string, serial: stri
     // TODO: Load allowed actions specific to a robot model
     const callUrl = pythonPath + "/websocket/command/" + serial
     const alphaCodeGenerator = javascriptGenerator
+    function baseRequest(body: string) {
+        return `await fetch("${callUrl}",
+        {
+        headers: { 'Content-Type': 'application/json' },
+        method: 'POST', 
+        body:JSON.stringify(${body})
+        }
+        )`
+    }
     function generateActionBlocks(block: Blockly.Block) {
         const dropdown_action_name = block.getFieldValue('ACTION_NAME');
         const number_count = block.getFieldValue('COUNT');
@@ -24,13 +33,12 @@ export const buildCodeGeneratorForModelId = async (modelId: string, serial: stri
             }
         })
         const comment = `// calling function ${block.type}\n`
-        const inner =
-            `await fetch("${callUrl}",
-        {body:${body}}
-        )`
+        const inner = baseRequest(body)
+
         //Then wrap the code inside a for loop
+        //NOTE: USE let TO MAKE THE LOOP USE THE i FROM WITHIN THE LOOP'S SCOPE. DECLARING i WITH var WILL BREAK THE EXECUTION
         const code = number_count !== 1 ?
-            `for(int i = 0; i < ${number_count}; i++) {
+            `for(let i = 0; i < ${number_count}; i++) {
         ${inner}\n}` : inner;
         return comment + code + '\n';
     }
@@ -48,10 +56,7 @@ export const buildCodeGeneratorForModelId = async (modelId: string, serial: stri
             }
         })
         const comment = `// calling function ${block.type}\n`
-        const inner =
-            `await fetch("${callUrl}",
-        {body:${body}}
-        )`
+        const inner = baseRequest(body)
         // TODO: Assemble javascript into the code variable.
         const code = comment + inner + '\n';
         return code;
