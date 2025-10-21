@@ -11,7 +11,7 @@ export const buildCodeGeneratorForModelId = async (modelId: string, serial: stri
     // TODO: Load allowed actions specific to a robot model
     const callUrl = pythonPath + "/websocket/command/" + serial
     const alphaCodeGenerator = javascriptGenerator
-    function executableTask(block: Blockly.Block) {
+    function generateActionBlocks(block: Blockly.Block) {
         const dropdown_action_name = block.getFieldValue('ACTION_NAME');
         const number_count = block.getFieldValue('COUNT');
         // TODO: Assemble javascript into the code variable.
@@ -34,10 +34,10 @@ export const buildCodeGeneratorForModelId = async (modelId: string, serial: stri
         ${inner}\n}` : inner;
         return comment + code + '\n';
     }
-    alphaCodeGenerator.forBlock['action'] = executableTask
-    alphaCodeGenerator.forBlock['extended_action'] = executableTask
-    alphaCodeGenerator.forBlock['expression'] = executableTask
-    alphaCodeGenerator.forBlock['skill_helper'] = executableTask
+    alphaCodeGenerator.forBlock['action'] = generateActionBlocks
+    alphaCodeGenerator.forBlock['extended_action'] = generateActionBlocks
+    alphaCodeGenerator.forBlock['expression'] = generateActionBlocks
+    alphaCodeGenerator.forBlock['skill_helper'] = generateActionBlocks
     alphaCodeGenerator.forBlock['tts'] = (block) => {
         const text_text_input = block.getFieldValue('TEXT_INPUT');
         const body = JSON.stringify({

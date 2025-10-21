@@ -1,10 +1,11 @@
 import * as Blockly from 'blockly'
 import { useEffect, useRef, useState } from 'react';
-import { toolbox } from '../../components/blockly-logic/toolbox';
+import { addRobotActions, toolbox } from '../../components/blockly-logic/toolbox';
 import { blockControls } from '@/components/blockly-logic/control';
 import { customBlocks } from '@/components/blockly-logic/custom-blocks';
 import { JavascriptGenerator, javascriptGenerator } from 'blockly/javascript';
 import { buildCodeGeneratorForModelId } from '@/components/blockly-logic/js-generator';
+import { toast } from 'sonner';
 
 export default function UseMe() {
     const blocklyRef = useRef<HTMLDivElement>(null);
@@ -14,21 +15,65 @@ export default function UseMe() {
     const actions = blockControls()
     const key = 'workspace-state'
     const [gen, setGen] = useState<JavascriptGenerator | undefined>()
+    const [curTool, setCurTool] = useState(toolbox)
+
+    function inject(x: string) {
+        if (blocklyRef.current && !workspaceRef.current) {
+            toast.success(x)
+            workspaceRef.current = Blockly.inject((blocklyRef.current), {
+                toolbox: curTool,
+                move: {
+                    scrollbars: {
+                        horizontal: true,
+                        vertical: true
+                    },
+                    drag: true,
+                    wheel: true
+                },
+                trashcan: true
+            });
+            console.log(workspaceRef);
+            
+        }
+    }
+
     useEffect(() => {
-        console.log('UseMe component mounted');
         async function fn() {
-            Blockly.common.defineBlocks(customBlocks)
-            const s = await buildCodeGeneratorForModelId('abc', 'abc')
-            setGen(s)
-            if (blocklyRef.current && !workspaceRef.current) {
-                // Only initialize if not already initialized
-                workspaceRef.current = Blockly.inject(blocklyRef.current, {
-                    toolbox: toolbox
-                });
-            }
+            setTimeout(async () => {
+                const x = actions.serialize(workspaceRef.current)
+                Blockly.common.defineBlocks(customBlocks)
+                if (!curTool.contents.find(x => x.name == 'Robot')) {
+                    setCurTool(addRobotActions(curTool))
+                }
+                const s = await buildCodeGeneratorForModelId('abc', 'abc')
+                setGen(s)
+                if (workspaceRef.current) {
+                    workspaceRef.current.dispose();
+                    workspaceRef.current = null;
+                }
+                inject('Load')
+                actions.loadFromJson(x ?? {}, workspaceRef.current)
+            }, 2000);
+            inject('Init')
         }
 
         fn()
+
+        workspaceRef.current.addChangeListener((event: Blockly.Events.Abstract) => {
+            console.log('Event!', event.type);
+            
+            if (event.type === Blockly.Events.UI) {
+                console.log('Select item');
+                
+                // Small delay to let Blockly finish its internal updates
+                setTimeout(() => {
+                    Blockly.svgResize(workspaceRef.current);
+                    if (workspaceRef.current.scrollbar) {
+                        workspaceRef.current.scrollbar.resize();
+                    }
+                }, 150);
+            }
+        });
 
         return () => {
             console.log('UseMe component unmounted');
@@ -61,6 +106,15 @@ export default function UseMe() {
                     setCode(c)
                     alert(c)
                 }}>Translate to code</button>
+
+                <div>
+                    {gen &&
+                        <p>
+                            Loaded!
+                        </p>
+                    }
+                </div>
+
             </div>
             <div ref={blocklyRef} style={{ height: 600, width: 1000 }}></div>
             <div className='grid grid-cols-2 *:border-2 *:p-2'>

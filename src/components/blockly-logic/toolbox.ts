@@ -1,4 +1,10 @@
-export const toolbox = {
+import * as Blockly from 'blockly'
+
+type L = {
+    kind: string,
+    contents: Blockly.ToolboxItemInfo[]
+}
+export const toolbox: L = {
     kind: 'categoryToolbox',
     contents: [
         {
@@ -307,36 +313,9 @@ export const toolbox = {
         },
         {
             kind: 'category',
-            name: 'Robot',
-            colour: '255',
-            contents: [
-                {
-                    kind: 'block',
-                    type: 'action'
-                },
-                {
-                    kind: 'block',
-                    type: 'extended_action'
-                },
-                {
-                    kind: 'block',
-                    type: 'skill_helper'
-                },
-                {
-                    kind: 'block',
-                    type: 'expression'
-                },
-                {
-                    kind: 'block',
-                    type: 'tts'
-                }
-            ]
-        },
-        {
-            kind: 'category',
             name: 'Text',
             categorystyle: 'text_category',
-            contents: [                
+            contents: [
                 {
                     kind: 'block',
                     type: 'text',
@@ -503,7 +482,7 @@ export const toolbox = {
                             },
                         },
                     },
-                }                
+                }
             ],
         },
         {
@@ -626,3 +605,34 @@ export const toolbox = {
         },
     ],
 };
+
+export function addRobotActions(toobox: L) {
+    toolbox.contents.push({
+        kind: 'category',
+        name: 'Robot',
+        colour: '255',
+        contents: [
+            {
+                kind: 'block',
+                type: 'action'
+            },
+            {
+                kind: 'block',
+                type: 'extended_action'
+            },
+            {
+                kind: 'block',
+                type: 'skill_helper'
+            },
+            {
+                kind: 'block',
+                type: 'expression'
+            },
+            {
+                kind: 'block',
+                type: 'tts'
+            }
+        ]
+    })
+    return toobox
+}

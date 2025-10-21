@@ -11,12 +11,12 @@ const customBlockData = [
                 "name": "ACTION_NAME",
                 "options": [
                     [
-                        "option",
-                        "OPTIONNAME1"
+                        "dance_0001",
+                        "dance_0001"
                     ],
                     [
-                        "option",
-                        "OPTIONNAME2"
+                        "dance_0002en",
+                        "dance_0002en"
                     ],
                     [
                         "option",
