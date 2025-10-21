@@ -381,22 +381,96 @@ export default function CourseDetailPage() {
           <CardTitle>Thông tin khóa học</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <div>
-              <p className="text-sm text-muted-foreground">Danh mục</p>
-              <p className="font-medium">{course.categoryName || 'N/A'}</p>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+            {/* Danh mục */}
+            <div className="space-y-2">
+              <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Danh mục</p>
+              <div className="flex items-center gap-2">
+                <Badge variant="outline" className="text-sm font-semibold">
+                  {course.categoryName || 'N/A'}
+                </Badge>
+              </div>
             </div>
-            <div>
-              <p className="text-sm text-muted-foreground">Số chương</p>
-              <p className="font-medium">{Array.isArray(sectionsData) ? sectionsData.length : 0} chương</p>
+            
+            {/* Cấp độ */}
+            <div className="space-y-2">
+              <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Cấp độ</p>
+              <Badge 
+                variant="secondary"
+                className={
+                  course.level === 1 
+                    ? "bg-blue-500/10 text-blue-700 border-blue-500/20 font-semibold" 
+                    : course.level === 2 
+                    ? "bg-green-500/10 text-green-700 border-green-500/20 font-semibold" 
+                    : "bg-yellow-500/10 text-yellow-700 border-yellow-500/20 font-semibold"
+                }
+              >
+                {course.level === 1 ? '🎯 Cơ bản' : course.level === 2 ? '⚡ Trung bình' : '🚀 Nâng cao'}
+              </Badge>
             </div>
-            <div>
-              <p className="text-sm text-muted-foreground">Số bài học</p>
-              <p className="font-medium">{totalLessons} bài</p>
+            
+            {/* Giá */}
+            <div className="space-y-2">
+              <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Giá</p>
+              <p className="text-lg font-bold">
+                {course.price?.toLocaleString('vi-VN')} ₫
+              </p>
             </div>
-            <div>
-              <p className="text-sm text-muted-foreground">Thời lượng</p>
-              <p className="font-medium">{formatDuration(course.totalDuration)}</p>
+            
+            {/* Yêu cầu giấy phép */}
+            <div className="space-y-2">
+              <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Yêu cầu giấy phép</p>
+              <Badge 
+                variant={course.requireLicense ? "default" : "secondary"}
+                className={course.requireLicense ? "bg-purple-500/10 text-purple-700 border-purple-500/20 font-semibold" : "font-semibold"}
+              >
+                {course.requireLicense ? '✓ Có' : '✗ Không'}
+              </Badge>
+            </div>
+            
+            {/* Số chương */}
+            <div className="space-y-2">
+              <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Số chương</p>
+              <div className="flex items-center gap-2">
+                <Layers className="h-4 w-4 text-muted-foreground" />
+                <p className="text-lg font-bold">{Array.isArray(sectionsData) ? sectionsData.length : 0}</p>
+                <span className="text-sm text-muted-foreground">chương</span>
+              </div>
+            </div>
+            
+            {/* Số bài học */}
+            <div className="space-y-2">
+              <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Số bài học</p>
+              <div className="flex items-center gap-2">
+                <FileText className="h-4 w-4 text-muted-foreground" />
+                <p className="text-lg font-bold">{totalLessons}</p>
+                <span className="text-sm text-muted-foreground">bài</span>
+              </div>
+            </div>
+            
+            {/* Thời lượng */}
+            <div className="space-y-2">
+              <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Thời lượng</p>
+              <p className="text-lg font-bold text-indigo-600">
+                {formatDuration(course.totalDuration)}
+              </p>
+            </div>
+            
+            {/* Trạng thái */}
+            <div className="space-y-2">
+              <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Trạng thái</p>
+              <Badge 
+                variant={course.status === 1 ? "default" : "secondary"}
+                className={
+                  course.status === 1 
+                    ? "bg-green-500/10 text-green-700 border-green-500/20 font-semibold" 
+                    : course.status === 2
+                    ? "bg-gray-500/10 text-gray-700 border-gray-500/20 font-semibold"
+                    : "bg-red-500/10 text-red-700 border-red-500/20 font-semibold"
+                }
+              >
+                {course.status === 1 ? '✓ Hoạt động' : course.status === 2 ? '⏸ Không hoạt động' : '✗ Đã xóa'}
+              </Badge>
             </div>
           </div>
         </CardContent>

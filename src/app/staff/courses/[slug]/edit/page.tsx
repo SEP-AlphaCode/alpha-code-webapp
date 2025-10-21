@@ -7,6 +7,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
+import { Switch } from "@/components/ui/switch"
 import {
   Select,
   SelectContent,
@@ -18,6 +19,7 @@ import { ArrowLeft, Loader2, Upload } from "lucide-react"
 import Link from "next/link"
 import { useStaffCourse, useUpdateCourse, useCourse } from "@/features/courses/hooks"
 import { toast } from "sonner"
+import { Course, Category } from "@/types/courses"
 
 const levelOptions = [
   { value: "1", label: "Cơ bản" },
@@ -26,8 +28,9 @@ const levelOptions = [
 ]
 
 const statusOptions = [
-  { value: "1", label: "Hoạt động" },
-  { value: "0", label: "Ẩn" },
+  { value: "1", label: "Đang hoạt động" },
+  { value: "2", label: "Không hoạt động" },
+  { value: "0", label: "Đã xóa" },
 ]
 
 export default function EditCoursePage() {
@@ -35,41 +38,119 @@ export default function EditCoursePage() {
   const courseSlug = params.slug as string
 
   const { data: course, isLoading: courseLoading } = useStaffCourse(courseSlug)
-  const updateCourse = useUpdateCourse(courseSlug)
   const { useGetCategories } = useCourse()
-  const { data: categoriesData, isLoading: categoriesLoading } = useGetCategories(0, 100)
+  const { data: categoriesData, isLoading: categoriesLoading } = useGetCategories(1, 100)
   
   const categories = categoriesData?.data || []
+
+  // Wait for course to load before rendering the form
+  if (courseLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+      </div>
+    )
+  }
+
+  if (!course) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <p className="text-muted-foreground">Không tìm thấy khóa học</p>
+      </div>
+    )
+  }
+
+  return <EditCourseForm course={course} categories={categories} categoriesLoading={categoriesLoading} />
+}
+
+function EditCourseForm({ 
+  course, 
+  categories, 
+  categoriesLoading 
+}: { 
+  course: Course
+  categories: Category[]
+  categoriesLoading: boolean
+}) {
+  const router = useRouter()
+  const updateCourse = useUpdateCourse(course.id)
 
   const [formData, setFormData] = useState({
     name: "",
     description: "",
     categoryId: "",
-    level: "3",
+    level: "1", // Default to "Cơ bản"
     price: "",
     image: "",
     status: "1",
+    requireLicense: false,
   })
 
+  const [imageFile, setImageFile] = useState<File | null>(null)
+  const [imagePreview, setImagePreview] = useState<string>("")
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [isInitialized, setIsInitialized] = useState(false)
 
-  // Load course data into form
+  // Load course data into form when course is loaded (only once)
   useEffect(() => {
-    if (course) {
+    if (course && course.id && !isInitialized) {
       setFormData({
         name: course.name || "",
         description: course.description || "",
         categoryId: course.categoryId || "",
-        level: course.level?.toString() || "3",
+        level: course.level?.toString() || "1",
         price: course.price?.toString() || "",
         image: course.imageUrl || "",
         status: course.status?.toString() || "1",
+        requireLicense: course.requireLicense || false,
       })
+      // Set preview from existing image
+      if (course.imageUrl) {
+        setImagePreview(course.imageUrl)
+      }
+      setIsInitialized(true)
     }
-  }, [course])
+  }, [course, isInitialized, categories.length])
 
-  const handleInputChange = (field: string, value: string) => {
+  const handleInputChange = (field: string, value: string | boolean) => {
     setFormData(prev => ({ ...prev, [field]: value }))
+  }
+
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (file) {
+      // Validate file type
+      if (!file.type.startsWith('image/')) {
+        toast.error('Vui lòng chọn file ảnh')
+        return
+      }
+      
+      // Validate file size (max 5MB)
+      if (file.size > 5 * 1024 * 1024) {
+        toast.error('Kích thước ảnh không được vượt quá 5MB')
+        return
+      }
+      
+      setImageFile(file)
+      
+      // Create preview
+      const reader = new FileReader()
+      reader.onloadend = () => {
+        setImagePreview(reader.result as string)
+      }
+      reader.readAsDataURL(file)
+      
+      // Clear URL input when file is selected
+      setFormData(prev => ({ ...prev, image: '' }))
+    }
+  }
+
+  const handleImageUrlChange = (url: string) => {
+    handleInputChange("image", url)
+    if (url) {
+      setImagePreview(url)
+      setImageFile(null) // Clear file when URL is entered
+    }
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -105,8 +186,9 @@ export default function EditCoursePage() {
         categoryId: formData.categoryId,
         level: parseInt(formData.level),
         price: parseInt(formData.price),
-        image: formData.image || undefined,
+        image: imageFile || formData.image || undefined,
         status: parseInt(formData.status),
+        requireLicense: formData.requireLicense,
       })
       
       toast.success("Cập nhật khóa học thành công!")
@@ -116,22 +198,6 @@ export default function EditCoursePage() {
       console.error("Error updating course:", error)
       setIsSubmitting(false)
     }
-  }
-
-  if (courseLoading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-      </div>
-    )
-  }
-
-  if (!course) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <p className="text-muted-foreground">Không tìm thấy khóa học</p>
-      </div>
-    )
   }
 
   return (
@@ -195,7 +261,11 @@ export default function EditCoursePage() {
               </Label>
               <Select
                 value={formData.categoryId}
-                onValueChange={(value) => handleInputChange("categoryId", value)}
+                onValueChange={(value) => {
+                  if (value) {
+                    handleInputChange("categoryId", value)
+                  }
+                }}
               >
                 <SelectTrigger>
                   <SelectValue placeholder="Chọn danh mục" />
@@ -224,7 +294,11 @@ export default function EditCoursePage() {
                 </Label>
                 <Select
                   value={formData.level}
-                  onValueChange={(value) => handleInputChange("level", value)}
+                  onValueChange={(value) => {
+                    if (value) {
+                      handleInputChange("level", value)
+                    }
+                  }}
                 >
                   <SelectTrigger>
                     <SelectValue placeholder="Chọn cấp độ" />
@@ -256,23 +330,88 @@ export default function EditCoursePage() {
               </div>
             </div>
 
+            {/* Require License */}
+            <div className="flex items-center justify-between space-x-2 rounded-lg border p-4">
+              <div className="space-y-0.5">
+                <Label htmlFor="requireLicense">Yêu cầu giấy phép</Label>
+                <p className="text-sm text-muted-foreground">
+                  Khóa học này có yêu cầu giấy phép để tham gia không?
+                </p>
+              </div>
+              <Switch
+                id="requireLicense"
+                checked={formData.requireLicense}
+                onCheckedChange={(checked) => handleInputChange("requireLicense", checked)}
+              />
+            </div>
+
             {/* Image URL */}
             <div className="space-y-2">
-              <Label htmlFor="image">URL Ảnh</Label>
+              <Label htmlFor="image">Ảnh khóa học</Label>
               <div className="flex gap-2">
                 <Input
                   id="image"
                   placeholder="https://example.com/image.jpg"
                   value={formData.image}
-                  onChange={(e) => handleInputChange("image", e.target.value)}
+                  onChange={(e) => handleImageUrlChange(e.target.value)}
+                  disabled={!!imageFile}
                 />
-                <Button type="button" variant="outline" size="icon">
+                <input
+                  type="file"
+                  ref={(input) => {
+                    if (input) {
+                      input.onclick = () => {
+                        input.value = ''
+                      }
+                    }
+                  }}
+                  onChange={handleImageChange}
+                  accept="image/*"
+                  className="hidden"
+                  id="image-file-input"
+                />
+                <Button 
+                  type="button" 
+                  variant="outline" 
+                  size="icon"
+                  onClick={() => document.getElementById('image-file-input')?.click()}
+                >
                   <Upload className="h-4 w-4" />
                 </Button>
               </div>
               <p className="text-sm text-muted-foreground">
-                Nhập URL ảnh hoặc tải lên từ máy tính
+                Nhập URL ảnh hoặc tải lên từ máy tính (tối đa 5MB)
               </p>
+              
+              {/* Image Preview */}
+              {imagePreview && (
+                <div className="relative w-full max-w-md">
+                  <img 
+                    src={imagePreview} 
+                    alt="Preview" 
+                    className="w-full h-48 object-cover rounded-lg border"
+                  />
+                  {imageFile && (
+                    <div className="mt-2 flex items-center gap-2">
+                      <p className="text-sm text-muted-foreground">
+                        File: {imageFile.name} ({(imageFile.size / 1024).toFixed(2)} KB)
+                      </p>
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => {
+                          setImageFile(null)
+                          setImagePreview(course?.imageUrl || "")
+                          setFormData(prev => ({ ...prev, image: course?.imageUrl || "" }))
+                        }}
+                      >
+                        Xóa
+                      </Button>
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
 
             {/* Status */}
@@ -280,7 +419,11 @@ export default function EditCoursePage() {
               <Label htmlFor="status">Trạng thái</Label>
               <Select
                 value={formData.status}
-                onValueChange={(value) => handleInputChange("status", value)}
+                onValueChange={(value) => {
+                  if (value) {
+                    handleInputChange("status", value)
+                  }
+                }}
               >
                 <SelectTrigger>
                   <SelectValue placeholder="Chọn trạng thái" />

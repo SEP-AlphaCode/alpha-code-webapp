@@ -93,9 +93,10 @@ export default function CoursesPage() {
     }
 
     try {
+      console.log('🗑️ Deleting course:', courseId)
       await deleteCourse.mutateAsync(courseId)
+      console.log('✅ Course deleted, cache should be invalidated')
       toast.success('Đã xóa khóa học thành công')
-      refetch()
     } catch (error) {
       toast.error('Lỗi khi xóa khóa học')
       console.error('Error deleting course:', error)

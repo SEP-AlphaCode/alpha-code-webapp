@@ -57,17 +57,18 @@ export function useCreateLesson(courseId: string, sectionId: string, courseSlug?
       solution?: object
     }) => lessonApi.createLesson(sectionId, data),
     onSuccess: () => {
+      // Invalidate all lessons queries for this course
+      queryClient.invalidateQueries({ queryKey: ['lessons', courseId] })
       queryClient.invalidateQueries({ queryKey: ['lessons', 'section', sectionId] })
       queryClient.invalidateQueries({ queryKey: ['sections', courseId] })
       queryClient.invalidateQueries({ queryKey: ['sections'] })
+      // Invalidate all course queries (both by ID and slug)
+      queryClient.invalidateQueries({ queryKey: ['staff', 'course'] })
+      queryClient.invalidateQueries({ queryKey: ['course'] })
       
       if (courseSlug) {
-        queryClient.invalidateQueries({ queryKey: ['staff', 'course', courseSlug] })
-        queryClient.invalidateQueries({ queryKey: ['course', courseSlug] })
         router.push(`/staff/courses/${courseSlug}`)
       } else {
-        queryClient.invalidateQueries({ queryKey: ['staff', 'course', courseId] })
-        queryClient.invalidateQueries({ queryKey: ['course', courseId] })
         router.push(`/staff/courses/${courseId}`)
       }
     },
@@ -91,13 +92,16 @@ export function useUpdateLesson(courseId: string, lessonId: string, sectionId?: 
       solution?: unknown
     }) => lessonApi.updateLesson(lessonId, data),
     onSuccess: () => {
+      // Invalidate all lessons queries for this course
+      queryClient.invalidateQueries({ queryKey: ['lessons', courseId] })
       queryClient.invalidateQueries({ queryKey: ['lesson', lessonId] })
       if (sectionId) {
         queryClient.invalidateQueries({ queryKey: ['lessons', 'section', sectionId] })
       }
       queryClient.invalidateQueries({ queryKey: ['sections', courseId] })
-      queryClient.invalidateQueries({ queryKey: ['staff', 'course', courseId] })
-      queryClient.invalidateQueries({ queryKey: ['course', courseId] })
+      // Invalidate all course queries (both by ID and slug)
+      queryClient.invalidateQueries({ queryKey: ['staff', 'course'] })
+      queryClient.invalidateQueries({ queryKey: ['course'] })
       router.push(`/staff/courses/${courseId}`)
     },
   })
@@ -109,12 +113,15 @@ export function useDeleteLesson(courseId: string, sectionId?: string) {
   return useMutation({
     mutationFn: (lessonId: string) => lessonApi.deleteLesson(lessonId),
     onSuccess: () => {
+      // Invalidate all lessons queries for this course
+      queryClient.invalidateQueries({ queryKey: ['lessons', courseId] })
       if (sectionId) {
         queryClient.invalidateQueries({ queryKey: ['lessons', 'section', sectionId] })
       }
       queryClient.invalidateQueries({ queryKey: ['sections', courseId] })
-      queryClient.invalidateQueries({ queryKey: ['staff', 'course', courseId] })
-      queryClient.invalidateQueries({ queryKey: ['course', courseId] })
+      // Invalidate all course queries (both by ID and slug)
+      queryClient.invalidateQueries({ queryKey: ['staff', 'course'] })
+      queryClient.invalidateQueries({ queryKey: ['course'] })
     },
   })
 }
@@ -126,10 +133,13 @@ export function useUpdateLessonOrder(courseId: string, sectionId: string) {
     mutationFn: (lessons: Array<{ id: string; orderNumber: number; sectionId: string }>) =>
       lessonApi.updateLessonOrder(sectionId, lessons),
     onSuccess: () => {
+      // Invalidate all lessons queries for this course
+      queryClient.invalidateQueries({ queryKey: ['lessons', courseId] })
       queryClient.invalidateQueries({ queryKey: ['lessons', 'section', sectionId] })
       queryClient.invalidateQueries({ queryKey: ['sections', courseId] })
-      queryClient.invalidateQueries({ queryKey: ['staff', 'course', courseId] })
-      queryClient.invalidateQueries({ queryKey: ['course', courseId] })
+      // Invalidate all course queries (both by ID and slug)
+      queryClient.invalidateQueries({ queryKey: ['staff', 'course'] })
+      queryClient.invalidateQueries({ queryKey: ['course'] })
     },
   })
 }

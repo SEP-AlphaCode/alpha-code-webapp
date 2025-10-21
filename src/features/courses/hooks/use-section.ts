@@ -28,6 +28,7 @@ export function useCreateSection(courseId: string, courseSlug?: string) {
       sectionApi.createSection(courseId, data),
     onSuccess: () => {
       // Invalidate all related queries
+      queryClient.invalidateQueries({ queryKey: ['lessons', courseId] })
       queryClient.invalidateQueries({ queryKey: ['sections', courseId] })
       queryClient.invalidateQueries({ queryKey: ['sections'] })
       
@@ -63,6 +64,7 @@ export function useDeleteSection(courseId: string) {
   return useMutation({
     mutationFn: (sectionId: string) => sectionApi.deleteSection(courseId, sectionId),
     onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['lessons', courseId] })
       queryClient.invalidateQueries({ queryKey: ['sections', courseId] })
       queryClient.invalidateQueries({ queryKey: ['staff', 'course', courseId] })
       queryClient.invalidateQueries({ queryKey: ['course', courseId] })
@@ -77,6 +79,7 @@ export function useUpdateSectionOrder(courseId: string) {
     mutationFn: (sections: Array<{ id: string; orderNumber: number }>) =>
       sectionApi.updateSectionOrder(courseId, sections),
     onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['lessons', courseId] })
       queryClient.invalidateQueries({ queryKey: ['sections', courseId] })
       queryClient.invalidateQueries({ queryKey: ['staff', 'course', courseId] })
       queryClient.invalidateQueries({ queryKey: ['course', courseId] })
