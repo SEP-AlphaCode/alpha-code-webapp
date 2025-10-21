@@ -1,4 +1,3 @@
-import { Button } from "../ui/button";
 import { useCourse } from "@/features/courses/hooks/use-course";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../ui/select";
 import { X } from "lucide-react";
