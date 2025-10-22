@@ -24,6 +24,7 @@ export interface Lesson {
     id: string; // uuid
     sectionId: string; // uuid
     title: string; // varchar(255)
+    slug: string; // varchar(255) - unique identifier for URL
     content: string; // text
     videoUrl?: string; // varchar(512) - nullable
     duration: number; // int4 (in seconds)

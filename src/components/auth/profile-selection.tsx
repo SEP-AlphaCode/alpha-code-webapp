@@ -5,6 +5,7 @@ import { Profile } from '@/types/login';
 import { useSwitchProfile } from '@/features/auth/hooks/use-switch-profile';
 import { Card, CardContent } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { InputOTP, InputOTPGroup, InputOTPSlot } from '@/components/ui/input-otp';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import logo2 from '../../../public/logo2.png';
@@ -55,18 +56,18 @@ export function ProfileSelection() {
   if (profiles.length === 0) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-600"></div>
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-600"></div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-orange-50 to-yellow-50 p-4">
+  <div className="min-h-screen flex items-center justify-center bg-gray-50 p-4">
       <Card className="w-full max-w-3xl shadow-2xl">
         <CardContent className="p-8">
           {/* Logo */}
           <div className="flex justify-center mb-6">
-            <div className="w-16 h-16 rounded-2xl flex items-center justify-center overflow-hidden">
+            <div className="w-25 h-25 rounded-2xl flex items-center justify-center overflow-hidden">
               <Image
                 src={logo2}
                 alt="Alpha Logo"
@@ -80,7 +81,7 @@ export function ProfileSelection() {
           {/* Header */}
           <div className="text-center mb-8">
             <h1 className="text-3xl font-bold text-gray-900 mb-2">
-              🤖 Chọn ai đang sử dụng?
+              Chọn ai đang sử dụng?
             </h1>
             <p className="text-gray-600">
               Chọn profile để bắt đầu học lập trình với Alpha Mini
@@ -95,15 +96,15 @@ export function ProfileSelection() {
                   key={profile.id}
                   onClick={() => handleSelectProfile(profile.id)}
                   disabled={switchProfileMutation.isPending}
-                  className="flex flex-col items-center p-6 rounded-xl border-2 border-gray-200 hover:border-orange-500 hover:bg-orange-50 transition-all duration-200 group disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="flex flex-col items-center p-6 rounded-xl border-2 border-gray-200 hover:border-gray-400 hover:bg-gray-50 transition-all duration-200 group disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  <Avatar className="w-20 h-20 mb-3 ring-2 ring-gray-200 group-hover:ring-orange-500 transition-all">
+                  <Avatar className="w-20 h-20 mb-3 ring-2 ring-gray-200 group-hover:ring-gray-400 transition-all">
                     <AvatarImage src={profile.avartarUrl} alt={profile.name} />
-                    <AvatarFallback className="bg-gradient-to-br from-orange-500 to-yellow-500 text-white text-2xl font-bold">
+                    <AvatarFallback className="bg-gradient-to-br from-gray-500 to-gray-300 text-white text-2xl font-bold">
                       {profile.name.charAt(0).toUpperCase()}
                     </AvatarFallback>
                   </Avatar>
-                  <span className="font-semibold text-gray-900 group-hover:text-orange-600 transition-colors text-center break-words w-full">
+                  <span className="font-semibold text-gray-900 group-hover:text-gray-700 transition-colors text-center break-words w-full">
                     {profile.name}
                   </span>
                   <span className="text-xs text-gray-500 mt-1 text-center">
@@ -119,12 +120,12 @@ export function ProfileSelection() {
 
               {/* Add profile button */}
               <button
-                className="flex flex-col items-center justify-center p-6 rounded-xl border-2 border-dashed border-gray-300 hover:border-orange-500 hover:bg-orange-50 transition-all duration-200"
+                className="flex flex-col items-center justify-center p-6 rounded-xl border-2 border-dashed border-gray-300 hover:border-gray-400 hover:bg-gray-50 transition-all duration-200"
                 onClick={() => router.push('/create-parent-profile')}
                 disabled={switchProfileMutation.isPending}
               >
-                <div className="w-20 h-20 mb-3 rounded-full bg-gray-200 flex items-center justify-center hover:bg-orange-100 transition-colors">
-                  <span className="text-4xl text-gray-400">+</span>
+                <div className="w-20 h-20 mb-3 rounded-full bg-gray-200 flex items-center justify-center hover:bg-gray-300 transition-colors">
+                  <span className="text-4xl text-gray-500">+</span>
                 </div>
                 <span className="font-semibold text-gray-600 text-center">
                   Thêm profile
@@ -132,15 +133,15 @@ export function ProfileSelection() {
               </button>
             </div>
           ) : (
-            <form onSubmit={handleLoginProfile} className="max-w-sm mx-auto mt-8 p-6 rounded-xl border-2 border-orange-200 bg-white shadow-lg">
+            <form onSubmit={handleLoginProfile} className="max-w-sm mx-auto mt-8 p-6 rounded-xl border-2 border-gray-200 bg-white shadow-lg">
               {(() => {
                 const profile = profiles.find(p => p.id === selectedProfileId);
                 if (!profile) return null;
                 return (
                   <div className="flex flex-col items-center mb-6">
-                    <Avatar className="w-20 h-20 mb-3 ring-2 ring-orange-300">
+                    <Avatar className="w-20 h-20 mb-3 ring-2 ring-gray-300">
                       <AvatarImage src={profile.avartarUrl} alt={profile.name} />
-                      <AvatarFallback className="bg-gradient-to-br from-orange-500 to-yellow-500 text-white text-2xl font-bold">
+                      <AvatarFallback className="bg-gradient-to-br from-gray-500 to-gray-300 text-white text-2xl font-bold">
                         {profile.name.charAt(0).toUpperCase()}
                       </AvatarFallback>
                     </Avatar>
@@ -153,21 +154,26 @@ export function ProfileSelection() {
                   </div>
                 );
               })()}
-              <label htmlFor="passcode" className="block text-base font-medium mb-2 text-gray-700">Nhập mã PIN (Passcode)</label>
-              <input
-                id="passcode"
-                type="password"
-                value={passCodeInput}
-                onChange={e => setPassCodeInput(e.target.value.replace(/\D/g, '').slice(0, 4))}
-                maxLength={4}
-                className="w-full h-12 px-4 border rounded-lg text-lg mb-4 focus:outline-none focus:ring-2 focus:ring-orange-400"
-                placeholder="Nhập 4 số mã PIN"
-                disabled={switchProfileMutation.isPending}
-                autoFocus
-              />
+              <label className="block text-base font-medium mb-2 text-gray-700 text-center">Nhập mã PIN (Passcode)</label>
+              <div className="mb-4 flex justify-center">
+                <InputOTP
+                  maxLength={4}
+                  value={passCodeInput}
+                  onChange={(val: string) => setPassCodeInput((val || '').replace(/\D/g, '').slice(0, 4))}
+                  disabled={switchProfileMutation.isPending}
+                  className="mx-auto"
+                >
+                  <InputOTPGroup className="justify-center">
+                    <InputOTPSlot index={0} />
+                    <InputOTPSlot index={1} />
+                    <InputOTPSlot index={2} />
+                    <InputOTPSlot index={3} />
+                  </InputOTPGroup>
+                </InputOTP>
+              </div>
               <button
                 type="submit"
-                className="w-full py-3 rounded-lg bg-gradient-to-r from-orange-500 to-yellow-500 text-white font-semibold text-lg mt-2 hover:from-orange-600 hover:to-yellow-600 transition-all"
+                className="w-full py-3 rounded-lg bg-gradient-to-r from-gray-700 to-gray-500 text-white font-semibold text-lg mt-2 hover:from-gray-800 hover:to-gray-600 transition-all"
                 disabled={switchProfileMutation.isPending || passCodeInput.length !== 4}
               >
                 Đăng nhập
@@ -186,7 +192,7 @@ export function ProfileSelection() {
           {/* Loading state */}
           {switchProfileMutation.isPending && (
             <div className="mt-6 text-center">
-              <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-orange-600"></div>
+              <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-gray-600"></div>
               <p className="mt-2 text-gray-600">Đang chuyển profile...</p>
             </div>
           )}
@@ -195,7 +201,7 @@ export function ProfileSelection() {
           <div className="mt-8 text-center">
             <button
               onClick={() => router.push('/login')}
-              className="text-sm text-gray-500 hover:text-orange-600 transition-colors"
+              className="text-sm text-gray-500 hover:text-gray-700 transition-colors"
               disabled={switchProfileMutation.isPending}
             >
               ← Quay lại đăng nhập

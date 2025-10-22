@@ -6,6 +6,7 @@ import { useSwitchProfile } from '@/features/auth/hooks/use-switch-profile';
 import { createProfileSwagger } from '@/features/users/api/profile-swagger-api';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
+import { InputOTP, InputOTPGroup, InputOTPSlot } from '@/components/ui/input-otp';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
@@ -40,7 +41,6 @@ export function CreateParentProfile() {
       let accountFullName = '';
       if (typeof window !== 'undefined') {
         accountId = sessionStorage.getItem('pendingAccountId') || '';
-        console.log('🔍 Debug - pendingAccountId:', accountId);
         // Nếu có token (trường hợp login với Admin/Staff rồi vào trang này)
         const accessToken = sessionStorage.getItem('accessToken');
         if (accessToken && !accountId) {
@@ -107,8 +107,6 @@ export function CreateParentProfile() {
       };
       const profile = await createProfileMutation.mutateAsync(profileDataOld);
       
-      console.log('✅ Profile created (Old API):', profile);
-    
       // Xóa pendingAccountId sau khi tạo xong
       sessionStorage.removeItem('pendingAccountId');
       
@@ -116,7 +114,6 @@ export function CreateParentProfile() {
       
       // Sau khi tạo xong, tự động switch sang profile đó
       if (profile?.id) {
-        console.log('🔄 Switching to profile:', profile.id);
         switchProfileMutation.mutate({
           profileId: profile.id,
           accountId: accountId,
@@ -150,7 +147,7 @@ export function CreateParentProfile() {
   const isLoading = isCreating || createProfileMutation.isPending || switchProfileMutation.isPending;
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-50 to-gray-50 p-4">
+    <div className="min-h-screen flex items-center justify-center bg-gray-50 p-4">
       <Card className="w-full max-w-md shadow-2xl">
         <CardHeader>
           {/* Logo */}
@@ -167,7 +164,7 @@ export function CreateParentProfile() {
           </div>
           
           <CardTitle className="text-center text-2xl text-gray-900">
-            🤖 Tạo Profile {isKid ? 'Trẻ Em' : 'Phụ Huynh'}
+            Tạo Profile {isKid ? 'Trẻ Em' : 'Phụ Huynh'}
           </CardTitle>
           <p className="text-center text-gray-600 text-sm mt-2">
             Đây là lần đầu tiên bạn đăng nhập. Vui lòng tạo profile để bắt đầu học lập trình với Alpha Mini!
@@ -177,8 +174,8 @@ export function CreateParentProfile() {
           <form onSubmit={handleSubmit} className="space-y-6">
             {/* Avatar Preview */}
             <div className="flex justify-center">
-              <Avatar className="w-24 h-24 ring-4 ring-orange-200">
-                <AvatarFallback className="bg-gradient-to-br from-orange-500 to-yellow-500 text-white text-3xl font-bold">
+              <Avatar className="w-24 h-24 ring-4 ring-gray-200">
+                <AvatarFallback className="bg-gradient-to-br from-gray-600 to-gray-400 text-white text-3xl font-bold">
                   {name ? name.charAt(0).toUpperCase() : '👤'}
                 </AvatarFallback>
               </Avatar>
@@ -214,8 +211,8 @@ export function CreateParentProfile() {
                   onClick={() => setIsKid(false)}
                   className={`flex-1 p-4 rounded-lg border-2 transition-all ${
                     !isKid 
-                      ? 'border-orange-500 bg-orange-50 dark:bg-orange-950' 
-                      : 'border-gray-200 dark:border-gray-700 hover:border-orange-300'
+                      ? 'border-gray-400 bg-gray-50' 
+                      : 'border-gray-200 dark:border-gray-700 hover:border-gray-300'
                   }`}
                 >
                   <div className="text-center">
@@ -229,8 +226,8 @@ export function CreateParentProfile() {
                   onClick={() => setIsKid(true)}
                   className={`flex-1 p-4 rounded-lg border-2 transition-all ${
                     isKid 
-                      ? 'border-orange-500 bg-orange-50 dark:bg-orange-950' 
-                      : 'border-gray-200 dark:border-gray-700 hover:border-orange-300'
+                      ? 'border-gray-400 bg-gray-50' 
+                      : 'border-gray-200 dark:border-gray-700 hover:border-gray-300'
                   }`}
                 >
                   <div className="text-center">
@@ -244,32 +241,30 @@ export function CreateParentProfile() {
 
             {/* Passcode Input (Optional) */}
             <div className="space-y-2">
-              <Label htmlFor="passcode" className="text-gray-700 font-medium">
-                Mã PIN
-              </Label>
-              <Input
-                id="passcode"
-                type="text"
-                placeholder="Nhập 4 chữ số (mặc định: 0000)"
-                value={passcode}
-                onChange={(e) => {
-                  // Chỉ cho phép nhập số và tối đa 4 ký tự
-                  const value = e.target.value.replace(/\D/g, '').slice(0, 4);
-                  setPasscode(value);
-                }}
-                maxLength={4}
-                disabled={isLoading}
-                className="h-12"
-              />
-              <p className="text-xs text-gray-500">
-                Mã PIN 4 số để bảo vệ profile của bạn
-              </p>
+              <Label className="text-gray-700 font-medium">Mã PIN</Label>
+              <div>
+                <InputOTP
+                  maxLength={4}
+                  value={passcode}
+                  onChange={(val: string) => setPasscode((val || '').replace(/\D/g, '').slice(0, 4))}
+                  disabled={isLoading}
+                  className="mx-auto"
+                >
+                  <InputOTPGroup className="justify-center">
+                    <InputOTPSlot index={0} />
+                    <InputOTPSlot index={1} />
+                    <InputOTPSlot index={2} />
+                    <InputOTPSlot index={3} />
+                  </InputOTPGroup>
+                </InputOTP>
+              </div>
+              <p className="text-xs text-gray-500">Mã PIN 4 số để bảo vệ profile của bạn</p>
             </div>
 
             {/* Submit Button */}
             <Button
               type="submit"
-              className="w-full bg-gradient-to-r from-orange-500 to-yellow-500 hover:from-orange-600 hover:to-yellow-600 text-white font-semibold py-6 rounded-xl transition-all duration-200"
+              className="w-full bg-gray-700 hover:bg-gray-800 text-white font-semibold py-6 rounded-xl transition-all duration-200"
               disabled={!name.trim() || isLoading}
             >
               {isLoading ? (
@@ -297,25 +292,13 @@ export function CreateParentProfile() {
                 </p>
               </div>
             )}
-
-            {/* Debug Info (chỉ hiển thị trong development) */}
-            {process.env.NODE_ENV === 'development' && (
-              <div className="p-3 rounded-lg bg-blue-50 border border-blue-200">
-                <p className="text-xs text-blue-600 font-mono">
-                  Debug: pendingAccountId = {sessionStorage.getItem('pendingAccountId') || 'không có'}
-                </p>
-                <p className="text-xs text-blue-600 font-mono">
-                  accessToken = {sessionStorage.getItem('accessToken') ? 'có' : 'không có'}
-                </p>
-              </div>
-            )}
           </form>
 
           {/* Back to login */}
           <div className="mt-6 text-center">
             <button
               onClick={() => router.push('/login')}
-              className="text-sm text-gray-500 hover:text-orange-600 transition-colors"
+              className="text-sm text-gray-500 hover:text-gray-700 transition-colors"
               disabled={isLoading}
             >
               ← Quay lại đăng nhập

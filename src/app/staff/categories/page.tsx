@@ -27,11 +27,14 @@ import Image from "next/image"
 import { useNoneDeleteCategories, useDeleteCategory } from "@/features/courses/hooks"
 import { toast } from "sonner"
 import { Pagination } from "@/components/ui/pagination"
+import { DeleteCategoryDialog } from "@/components/course/delete-category-dialog"
 
 export default function CategoriesPage() {
   const [searchQuery, setSearchQuery] = useState("")
   const [page, setPage] = useState(1) // UI uses 1-based pages
   const pageSize = 20
+  const [deletingCategoryId, setDeletingCategoryId] = useState<string | null>(null)
+  const [deletingCategoryName, setDeletingCategoryName] = useState("")
   
   const { data, isLoading, error } = useNoneDeleteCategories({
     page: page, // API uses 0-based pages
@@ -42,19 +45,24 @@ export default function CategoriesPage() {
   const deleteCategory = useDeleteCategory()
 
   const handleDelete = (id: string, name: string) => {
-    if (!confirm(`Bạn có chắc chắn muốn xóa danh mục "${name}"?`)) {
-      return
-    }
+    setDeletingCategoryId(id)
+    setDeletingCategoryName(name)
+  }
 
-    deleteCategory.mutate(id, {
+  const handleDeleteConfirm = () => {
+    if (!deletingCategoryId) return
+
+    deleteCategory.mutate(deletingCategoryId, {
       onSuccess: () => {
+        setDeletingCategoryId(null)
+        setDeletingCategoryName("")
         toast.success("Xóa danh mục thành công!")
       },
       onError: (error: unknown) => {
         const errorMessage = error && typeof error === 'object' && 'response' in error 
           ? (error as { response?: { data?: { message?: string } } }).response?.data?.message 
           : undefined;
-        toast.error(errorMessage || "Có lỗi xảy ra khi tạo danh mục")
+        toast.error(errorMessage || "Có lỗi xảy ra khi xóa danh mục")
       }
     })
   }
@@ -232,6 +240,19 @@ export default function CategoriesPage() {
           )}
         </CardContent>
       </Card>
+
+      <DeleteCategoryDialog
+        open={!!deletingCategoryId}
+        categoryName={deletingCategoryName}
+        onOpenChange={(open) => {
+          if (!open) {
+            setDeletingCategoryId(null)
+            setDeletingCategoryName("")
+          }
+        }}
+        onConfirm={handleDeleteConfirm}
+        isDeleting={deleteCategory.isPending}
+      />
     </div>
   )
 }

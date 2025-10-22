@@ -89,6 +89,8 @@ function StaffBreadcrumb() {
             segmentName = 'Khóa học'; break;
           case 'sections':
             segmentName = 'Chương'; break;
+          case 'lessons':
+            segmentName = 'Bài học'; break;
           default:
             // Nếu là UUID, bỏ qua
             if (segment.length === 36 && segment.includes('-')) {

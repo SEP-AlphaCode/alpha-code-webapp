@@ -34,7 +34,15 @@ export function useLesson(lessonId: string) {
   })
 }
 
-export function useCreateLesson(courseId: string, sectionId: string) {
+export function useLessonBySlug(slug: string) {
+  return useQuery({
+    queryKey: ['lesson', 'slug', slug],
+    queryFn: ({ signal }) => lessonApi.getLessonBySlug(slug, signal),
+    enabled: !!slug,
+  })
+}
+
+export function useCreateLesson(courseId: string, sectionId: string, courseSlug?: string) {
   const queryClient = useQueryClient()
   const router = useRouter()
 
@@ -42,19 +50,33 @@ export function useCreateLesson(courseId: string, sectionId: string) {
     mutationFn: (data: {
       title: string
       content: string
-      videoUrl?: string
+      videoFile?: File
       duration: number
       requireRobot: boolean
       type: number
-      orderNumber: number
       solution?: object
-    }) => lessonApi.createLesson(courseId, sectionId, data),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['lessons', 'section', sectionId] })
-      queryClient.invalidateQueries({ queryKey: ['sections', courseId] })
-      queryClient.invalidateQueries({ queryKey: ['staff', 'course', courseId] })
-      queryClient.invalidateQueries({ queryKey: ['course', courseId] })
-      router.push(`/staff/courses/${courseId}`)
+    }) => lessonApi.createLesson(sectionId, data),
+    onSuccess: async () => {
+      // Invalidate queries - the target page will refetch them automatically
+      await queryClient.invalidateQueries({ 
+        queryKey: ['lessons', courseId]
+      })
+      await queryClient.invalidateQueries({ 
+        queryKey: ['sections', courseId]
+      })
+      await queryClient.invalidateQueries({ 
+        queryKey: ['staff', 'course']
+      })
+      await queryClient.invalidateQueries({ 
+        queryKey: ['course']
+      })
+      
+      // Navigate - the course detail page will refetch invalidated queries
+      if (courseSlug) {
+        router.push(`/staff/courses/${courseSlug}`)
+      } else {
+        router.push(`/staff/courses/${courseId}`)
+      }
     },
   })
 }
@@ -75,14 +97,25 @@ export function useUpdateLesson(courseId: string, lessonId: string, sectionId?: 
       sectionId?: string
       solution?: unknown
     }) => lessonApi.updateLesson(lessonId, data),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['lesson', lessonId] })
-      if (sectionId) {
-        queryClient.invalidateQueries({ queryKey: ['lessons', 'section', sectionId] })
-      }
-      queryClient.invalidateQueries({ queryKey: ['sections', courseId] })
-      queryClient.invalidateQueries({ queryKey: ['staff', 'course', courseId] })
-      queryClient.invalidateQueries({ queryKey: ['course', courseId] })
+    onSuccess: async () => {
+      // Invalidate queries - the target page will refetch them automatically
+      await queryClient.invalidateQueries({ 
+        queryKey: ['lessons', courseId]
+      })
+      await queryClient.invalidateQueries({ 
+        queryKey: ['lesson', lessonId]
+      })
+      await queryClient.invalidateQueries({ 
+        queryKey: ['sections', courseId]
+      })
+      await queryClient.invalidateQueries({ 
+        queryKey: ['staff', 'course']
+      })
+      await queryClient.invalidateQueries({ 
+        queryKey: ['course']
+      })
+      
+      // Navigate - the course detail page will refetch invalidated queries
       router.push(`/staff/courses/${courseId}`)
     },
   })
@@ -93,13 +126,31 @@ export function useDeleteLesson(courseId: string, sectionId?: string) {
 
   return useMutation({
     mutationFn: (lessonId: string) => lessonApi.deleteLesson(lessonId),
-    onSuccess: () => {
+    onSuccess: async () => {
+      // Invalidate all lessons queries for this course
+      await queryClient.invalidateQueries({ 
+        queryKey: ['lessons', courseId],
+        refetchType: 'active'
+      })
       if (sectionId) {
-        queryClient.invalidateQueries({ queryKey: ['lessons', 'section', sectionId] })
+        await queryClient.invalidateQueries({ 
+          queryKey: ['lessons', 'section', sectionId],
+          refetchType: 'active'
+        })
       }
-      queryClient.invalidateQueries({ queryKey: ['sections', courseId] })
-      queryClient.invalidateQueries({ queryKey: ['staff', 'course', courseId] })
-      queryClient.invalidateQueries({ queryKey: ['course', courseId] })
+      await queryClient.invalidateQueries({ 
+        queryKey: ['sections', courseId],
+        refetchType: 'active'
+      })
+      // Invalidate all course queries (both by ID and slug)
+      await queryClient.invalidateQueries({ 
+        queryKey: ['staff', 'course'],
+        refetchType: 'active'
+      })
+      await queryClient.invalidateQueries({ 
+        queryKey: ['course'],
+        refetchType: 'active'
+      })
     },
   })
 }
@@ -110,11 +161,29 @@ export function useUpdateLessonOrder(courseId: string, sectionId: string) {
   return useMutation({
     mutationFn: (lessons: Array<{ id: string; orderNumber: number; sectionId: string }>) =>
       lessonApi.updateLessonOrder(sectionId, lessons),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['lessons', 'section', sectionId] })
-      queryClient.invalidateQueries({ queryKey: ['sections', courseId] })
-      queryClient.invalidateQueries({ queryKey: ['staff', 'course', courseId] })
-      queryClient.invalidateQueries({ queryKey: ['course', courseId] })
+    onSuccess: async () => {
+      // Invalidate all lessons queries for this course and wait for refetch
+      await queryClient.invalidateQueries({ 
+        queryKey: ['lessons', courseId],
+        refetchType: 'active'
+      })
+      await queryClient.invalidateQueries({ 
+        queryKey: ['lessons', 'section', sectionId],
+        refetchType: 'active'
+      })
+      await queryClient.invalidateQueries({ 
+        queryKey: ['sections', courseId],
+        refetchType: 'active'
+      })
+      // Invalidate all course queries (both by ID and slug)
+      await queryClient.invalidateQueries({ 
+        queryKey: ['staff', 'course'],
+        refetchType: 'active'
+      })
+      await queryClient.invalidateQueries({ 
+        queryKey: ['course'],
+        refetchType: 'active'
+      })
     },
   })
 }
