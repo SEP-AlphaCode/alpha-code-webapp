@@ -49,7 +49,22 @@ export const buildCodeGeneratorForModelId = async (modelId: string, serial: stri
     alphaCodeGenerator.forBlock['tts'] = (block) => {
         const text_text_input = block.getFieldValue('TEXT_INPUT');
         const body = JSON.stringify({
-            type: '',
+            type: 'talk',
+            lang: 'vi',
+            data: {
+                text: text_text_input
+            }
+        })
+        const comment = `// calling function ${block.type}\n`
+        const inner = baseRequest(body)
+        // TODO: Assemble javascript into the code variable.
+        const code = comment + inner + '\n';
+        return code;
+    }
+    alphaCodeGenerator.forBlock['tts_en'] = (block) => {
+        const text_text_input = block.getFieldValue('TEXT_INPUT');
+        const body = JSON.stringify({
+            type: 'talk',
             lang: 'en',
             data: {
                 text: text_text_input

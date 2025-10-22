@@ -7,7 +7,13 @@ export const blockControls = (ws: Blockly.Workspace) => {
     const loadFromJson = (json: { [key: string]: any }) => Blockly
         .serialization.workspaces.load(json, ws)
 
-    const translate = (gen: JavascriptGenerator) => gen.workspaceToCode(ws)
+    const translate = (gen: JavascriptGenerator) => { 
+        const main = gen.workspaceToCode(ws) 
+        return `async function main(){
+        ${main}
+        }
+        main()`
+    }
 
     return {
         serialize,

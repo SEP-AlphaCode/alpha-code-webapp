@@ -7,7 +7,7 @@ import { JavascriptGenerator, javascriptGenerator } from 'blockly/javascript';
 import { buildCodeGeneratorForModelId } from '@/components/blockly-logic/js-generator';
 import { toast } from 'sonner';
 import { StaticCategoryInfo } from '@/types/blockly';
-type CodeActionKV = {code: string, name: string}
+type CodeActionKV = { code: string, name: string }
 type BlocklyUIProps = {
     robotModelId: string,
     serialId: string,
@@ -28,7 +28,7 @@ export default function BlocklyUI() {
     const [curTool, setCurTool] = useState(toolbox)
 
     function inject(x: string) {
-        if (!blocklyRef.current || !workspaceRef.current) { return; }
+        if (!blocklyRef.current || workspaceRef.current) { return; }
         toast.success(x)
         workspaceRef.current = Blockly.inject((blocklyRef.current), {
             toolbox: curTool
@@ -77,7 +77,7 @@ export default function BlocklyUI() {
                 inject('Load');
                 (workspaceRef.current as Blockly.WorkspaceSvg).getToolbox();
                 actions.loadFromJson(x ?? {})
-            }, 100);
+            }, 1000);
             inject('Init')
         }
 
@@ -94,6 +94,15 @@ export default function BlocklyUI() {
         };
     }, []);
 
+    const executeCode = (code: string) => {
+        try {
+            const fn = new Function(code);
+            fn();
+        } catch (err) {
+            console.log(err);
+        } finally {
+        }
+    }
     return (
         <div>
             <div className='*:border-2 space-x-5 mb-4'>
@@ -113,11 +122,15 @@ export default function BlocklyUI() {
                     if (!gen) return;
                     const c = actions.translate(gen)
                     setCode(c)
-                    alert(c)
                 }}>Translate to code</button>
                 <button onClick={(e) => {
-                    Blockly.svgResize(workspaceRef.current)
-                }}>Resize</button>
+                    if (!gen) return;
+                    const state = actions.serialize()
+                    localStorage.setItem(key, JSON.stringify(state))
+                    setSaved(state)
+                    const code = actions.translate(gen)
+                    executeCode(code)
+                }}>Run code</button>
                 <div>
                     {gen &&
                         <p>

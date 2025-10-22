@@ -158,7 +158,7 @@ const customBlockData = [
     },
     {
         "type": "tts",
-        "tooltip": "Không hỗ trợ dịch sang tiếng Anh",
+        "tooltip": "Nói bằng TIẾNG VIỆT",
         "helpUrl": "",
         "message0": "nói %1 %2",
         "args0": [
@@ -175,8 +175,27 @@ const customBlockData = [
         "previousStatement": null,
         "nextStatement": null,
         "colour": 225
+    },
+    {
+        "type": "tts_en",
+        "tooltip": "Nói bằng TIẾNG ANH (spoken in ENGLISH)",
+        "helpUrl": "",
+        "message0": "say %1 %2",
+        "args0": [
+            {
+                "type": "field_input",
+                "name": "TEXT_INPUT",
+                "text": "I am Alpha Mini"
+            },
+            {
+                "type": "input_dummy",
+                "name": "NAME"
+            }
+        ],
+        "previousStatement": null,
+        "nextStatement": null,
+        "colour": 225
     }
-
 ]
 
 export const customBlocks = Blockly.common.createBlockDefinitionsFromJsonArray(customBlockData)
