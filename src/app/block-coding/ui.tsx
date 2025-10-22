@@ -2,27 +2,27 @@ import * as Blockly from 'blockly'
 import { useEffect, useRef, useState } from 'react';
 import { addRobotActions, toolbox } from '../../components/blockly-logic/toolbox';
 import { blockControls } from '@/components/blockly-logic/control';
-import { customBlocks } from '@/components/blockly-logic/custom-blocks';
 import { JavascriptGenerator, javascriptGenerator } from 'blockly/javascript';
 import { buildCodeGeneratorForModelId } from '@/components/blockly-logic/js-generator';
 import { toast } from 'sonner';
 import { StaticCategoryInfo } from '@/types/blockly';
-type CodeActionKV = { code: string, name: string }
+type CodeActionKV = string[][]
 type BlocklyUIProps = {
     robotModelId: string,
     serialId: string,
-    actions: CodeActionKV[],
-    extendedActions: CodeActionKV[],
-    skillHelpers: CodeActionKV[],
-    expressions: CodeActionKV[]
+    actions: CodeActionKV,
+    extendedActions: CodeActionKV,
+    skillHelpers: CodeActionKV,
+    expressions: CodeActionKV,
+    completedLoad: boolean
 }
 
-export default function BlocklyUI() {
+export default function BlocklyUI({robotModelId, serialId, extendedActions, skillHelpers, expressions, completedLoad, actions}: BlocklyUIProps) {
     const blocklyRef = useRef<HTMLDivElement>(null);
     const workspaceRef = useRef<any>(null);
     const [saved, setSaved] = useState<undefined | { [key: string]: any }>()
     const [code, setCode] = useState('')
-    const actions = blockControls(workspaceRef.current)
+    const blocklyOperations = blockControls(workspaceRef.current)
     const key = 'workspace-state'
     const [gen, setGen] = useState<JavascriptGenerator | undefined>()
     const [curTool, setCurTool] = useState(toolbox)
@@ -62,8 +62,8 @@ export default function BlocklyUI() {
     useEffect(() => {
         async function fn() {
             setTimeout(async () => {
-                const x = actions.serialize()
-                Blockly.common.defineBlocks(customBlocks)
+                const x = blocklyOperations.serialize()
+                // Blockly.common.defineBlocks(customBlocks)
                 if (!curTool.contents.find(x => (x as StaticCategoryInfo).name == 'Robot')) {
                     var t = curTool
                     t = addRobotActions(t)
@@ -76,7 +76,7 @@ export default function BlocklyUI() {
                 }
                 inject('Load');
                 (workspaceRef.current as Blockly.WorkspaceSvg).getToolbox();
-                actions.loadFromJson(x ?? {})
+                blocklyOperations.loadFromJson(x ?? {})
             }, 1000);
             inject('Init')
         }
@@ -107,7 +107,7 @@ export default function BlocklyUI() {
         <div>
             <div className='*:border-2 space-x-5 mb-4'>
                 <button onClick={(e) => {
-                    const state = actions.serialize()
+                    const state = blocklyOperations.serialize()
                     localStorage.setItem(key, JSON.stringify(state))
                     setSaved(state)
                 }}>Save</button>
@@ -115,20 +115,20 @@ export default function BlocklyUI() {
                     const state = localStorage.getItem(key)
                     if (!state) return;
                     const json = JSON.parse(state)
-                    actions.loadFromJson(json)
+                    blocklyOperations.loadFromJson(json)
                     setSaved(json)
                 }}>Load</button>
                 <button onClick={(e) => {
                     if (!gen) return;
-                    const c = actions.translate(gen)
+                    const c = blocklyOperations.translate(gen)
                     setCode(c)
                 }}>Translate to code</button>
                 <button onClick={(e) => {
                     if (!gen) return;
-                    const state = actions.serialize()
+                    const state = blocklyOperations.serialize()
                     localStorage.setItem(key, JSON.stringify(state))
                     setSaved(state)
-                    const code = actions.translate(gen)
+                    const code = blocklyOperations.translate(gen)
                     executeCode(code)
                 }}>Run code</button>
                 <div>

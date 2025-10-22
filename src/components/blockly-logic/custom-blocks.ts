@@ -1,5 +1,5 @@
 import * as Blockly from 'blockly';
-const customBlockData = [
+export const customBlockTemplate = [
     {
         "type": "action",
         "tooltip": "",
@@ -10,18 +10,8 @@ const customBlockData = [
                 "type": "field_dropdown",
                 "name": "ACTION_NAME",
                 "options": [
-                    [
-                        "dance_0001",
-                        "dance_0001"
-                    ],
-                    [
-                        "dance_0002en",
-                        "dance_0002en"
-                    ],
-                    [
-                        "Drive_015",
-                        "Drive_015"
-                    ]
+                    // Put the actions here
+                    // [name, code]
                 ]
             },
             {
@@ -49,18 +39,8 @@ const customBlockData = [
                 "type": "field_dropdown",
                 "name": "ACTION_NAME",
                 "options": [
-                    [
-                        "option",
-                        "OPTIONNAME1"
-                    ],
-                    [
-                        "option",
-                        "OPTIONNAME2"
-                    ],
-                    [
-                        "option",
-                        "OPTIONNAME3"
-                    ]
+                    // Put the actions here
+                    // [name, code]
                 ]
             },
             {
@@ -88,18 +68,8 @@ const customBlockData = [
                 "type": "field_dropdown",
                 "name": "ACTION_NAME",
                 "options": [
-                    [
-                        "option",
-                        "OPTIONNAME1"
-                    ],
-                    [
-                        "option",
-                        "OPTIONNAME2"
-                    ],
-                    [
-                        "option",
-                        "OPTIONNAME3"
-                    ]
+                    // Put the actions here
+                    // [name, code]
                 ]
             },
             {
@@ -127,18 +97,8 @@ const customBlockData = [
                 "type": "field_dropdown",
                 "name": "ACTION_NAME",
                 "options": [
-                    [
-                        "option",
-                        "OPTIONNAME1"
-                    ],
-                    [
-                        "option",
-                        "OPTIONNAME2"
-                    ],
-                    [
-                        "option",
-                        "OPTIONNAME3"
-                    ]
+                    // Put the actions here
+                    // [name, code]
                 ]
             },
             {
@@ -197,5 +157,3 @@ const customBlockData = [
         "colour": 225
     }
 ]
-
-export const customBlocks = Blockly.common.createBlockDefinitionsFromJsonArray(customBlockData)
