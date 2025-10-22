@@ -35,8 +35,11 @@ export const useLogin = () => {
           router.push('/admin');
         } else if (roleNameLower === 'staff') {
           router.push('/staff');
+        } else if (roleNameLower === 'parent' || roleNameLower === 'children' || roleNameLower === 'user') {
+          router.push('/user');
         } else {
-          router.push('/courses');
+          // fallback for other roles
+          router.push('/user');
         }
         return;
       }

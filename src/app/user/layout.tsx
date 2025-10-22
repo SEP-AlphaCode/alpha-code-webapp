@@ -74,7 +74,7 @@ export default function UserLayout({ children }: UserLayoutProps) {
   // };
 
   return (
-    <AuthGuard allowedRoles={['user', 'user']}>
+    <AuthGuard allowedRoles={['Parent']}>
       <div className="min-h-screen bg-gray-50">
         {/* Header */}
         <UserHeader
