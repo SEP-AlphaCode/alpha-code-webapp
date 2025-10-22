@@ -1,6 +1,7 @@
 import { useMutation } from '@tanstack/react-query';
 import { switchProfile } from '@/features/auth/api/auth-api';
 import { toast } from 'sonner';
+import axios from 'axios';
 import { useRouter } from 'next/navigation';
 import { SwitchProfileResponse } from '@/types/login';
 import { getTokenPayload } from '@/utils/tokenUtils';
@@ -51,7 +52,32 @@ export const useSwitchProfile = () => {
     },
     onError: (error) => {
       console.error('Switch profile error:', error);
-      toast.error('Không thể chuyển profile. Vui lòng thử lại.');
+      let message = 'Không thể chuyển profile. Vui lòng thử lại.';
+      try {
+        const anyErr: any = error;
+
+        // If it's an axios error, inspect response data for message
+        if (axios.isAxiosError(anyErr)) {
+          const resp = anyErr.response;
+          const data = resp?.data;
+          // Common shapes: { message }, { error }, { data: { message } }, string
+          if (data) {
+            if (typeof data === 'string') message = data;
+            else if (data.message) message = data.message;
+            else if (data.error) message = data.error;
+            else if (data.data && data.data.message) message = data.data.message;
+          } else if (resp && resp.status >= 500) {
+            message = 'Lỗi máy chủ. Vui lòng thử lại sau.';
+          }
+        } else if (anyErr && anyErr.message) {
+          // Fallback to generic Error.message
+          message = anyErr.message;
+        }
+      } catch (e) {
+        // ignore extraction errors
+      }
+
+      toast.error(message);
     }
   });
 };

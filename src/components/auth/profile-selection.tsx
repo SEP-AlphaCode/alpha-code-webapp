@@ -5,6 +5,7 @@ import { Profile } from '@/types/login';
 import { useSwitchProfile } from '@/features/auth/hooks/use-switch-profile';
 import { Card, CardContent } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { InputOTP, InputOTPGroup, InputOTPSlot } from '@/components/ui/input-otp';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import logo2 from '../../../public/logo2.png';
@@ -153,18 +154,23 @@ export function ProfileSelection() {
                   </div>
                 );
               })()}
-              <label htmlFor="passcode" className="block text-base font-medium mb-2 text-gray-700">Nhập mã PIN (Passcode)</label>
-              <input
-                id="passcode"
-                type="password"
-                value={passCodeInput}
-                onChange={e => setPassCodeInput(e.target.value.replace(/\D/g, '').slice(0, 4))}
-                maxLength={4}
-                className="w-full h-12 px-4 border rounded-lg text-lg mb-4 focus:outline-none focus:ring-2 focus:ring-gray-400"
-                placeholder="Nhập 4 số mã PIN"
-                disabled={switchProfileMutation.isPending}
-                autoFocus
-              />
+              <label className="block text-base font-medium mb-2 text-gray-700 text-center">Nhập mã PIN (Passcode)</label>
+              <div className="mb-4 flex justify-center">
+                <InputOTP
+                  maxLength={4}
+                  value={passCodeInput}
+                  onChange={(val: string) => setPassCodeInput((val || '').replace(/\D/g, '').slice(0, 4))}
+                  disabled={switchProfileMutation.isPending}
+                  className="mx-auto"
+                >
+                  <InputOTPGroup className="justify-center">
+                    <InputOTPSlot index={0} />
+                    <InputOTPSlot index={1} />
+                    <InputOTPSlot index={2} />
+                    <InputOTPSlot index={3} />
+                  </InputOTPGroup>
+                </InputOTP>
+              </div>
               <button
                 type="submit"
                 className="w-full py-3 rounded-lg bg-gradient-to-r from-gray-700 to-gray-500 text-white font-semibold text-lg mt-2 hover:from-gray-800 hover:to-gray-600 transition-all"

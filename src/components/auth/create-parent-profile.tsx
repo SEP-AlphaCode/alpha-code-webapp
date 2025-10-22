@@ -6,6 +6,7 @@ import { useSwitchProfile } from '@/features/auth/hooks/use-switch-profile';
 import { createProfileSwagger } from '@/features/users/api/profile-swagger-api';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
+import { InputOTP, InputOTPGroup, InputOTPSlot } from '@/components/ui/input-otp';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
@@ -240,26 +241,24 @@ export function CreateParentProfile() {
 
             {/* Passcode Input (Optional) */}
             <div className="space-y-2">
-              <Label htmlFor="passcode" className="text-gray-700 font-medium">
-                Mã PIN
-              </Label>
-              <Input
-                id="passcode"
-                type="text"
-                placeholder="Nhập 4 chữ số (mặc định: 0000)"
-                value={passcode}
-                onChange={(e) => {
-                  // Chỉ cho phép nhập số và tối đa 4 ký tự
-                  const value = e.target.value.replace(/\D/g, '').slice(0, 4);
-                  setPasscode(value);
-                }}
-                maxLength={4}
-                disabled={isLoading}
-                className="h-12"
-              />
-              <p className="text-xs text-gray-500">
-                Mã PIN 4 số để bảo vệ profile của bạn
-              </p>
+              <Label className="text-gray-700 font-medium">Mã PIN</Label>
+              <div>
+                <InputOTP
+                  maxLength={4}
+                  value={passcode}
+                  onChange={(val: string) => setPasscode((val || '').replace(/\D/g, '').slice(0, 4))}
+                  disabled={isLoading}
+                  className="mx-auto"
+                >
+                  <InputOTPGroup className="justify-center">
+                    <InputOTPSlot index={0} />
+                    <InputOTPSlot index={1} />
+                    <InputOTPSlot index={2} />
+                    <InputOTPSlot index={3} />
+                  </InputOTPGroup>
+                </InputOTP>
+              </div>
+              <p className="text-xs text-gray-500">Mã PIN 4 số để bảo vệ profile của bạn</p>
             </div>
 
             {/* Submit Button */}
