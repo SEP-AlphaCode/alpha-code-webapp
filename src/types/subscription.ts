@@ -15,7 +15,7 @@ export type SubscriptionPlanModal = {
   description: string
   price: number
   billingCycle: number
-  status?: number
+  // status?: number
 }
 
 export type SubscriptionActivity = {

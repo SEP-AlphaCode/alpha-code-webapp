@@ -2,14 +2,14 @@
 
 import { createColumns } from "./columns"
 import { DataTable } from "@/components/ui/data-table"
-import { useQuery } from "@tanstack/react-query"
+import { useQuery, useQueryClient } from "@tanstack/react-query"
 import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { CreateAddonModal } from "./addon-modal"
 import { DeleteAddonModal } from "./delete-subscription-modal"
 import { ViewAddonModal } from "./view-addon-modal"
 import { Addon } from "@/types/addon"
-import { getPagedAddons } from "@/features/plan/api/addon-api"
+import { getNoneDeletedAddons } from "@/features/plan/api/addon-api"
 import { toast } from "sonner"
 import LoadingGif from "@/components/ui/loading-gif"
 
@@ -24,6 +24,7 @@ export default function AddonsPage() {
   const [deleteAddon, setDeleteAddon] = useState<Addon | null>(null)
   const [isViewModalOpen, setIsViewModalOpen] = useState(false)
   const [viewAddon, setViewAddon] = useState<Addon | null>(null)
+  const queryClient = useQueryClient()
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -38,7 +39,7 @@ export default function AddonsPage() {
       const controller = new AbortController()
       setTimeout(() => controller.abort(), 10000)
       const [, currentPage, currentSize, search] = queryKey
-      return await getPagedAddons(
+      return await getNoneDeletedAddons(
         currentPage as number,
         currentSize as number,
         search as string,
@@ -137,6 +138,7 @@ export default function AddonsPage() {
         onClose={() => setIsCreateModalOpen(false)}
         editAddon={editAddon}
         mode={editAddon ? "edit" : "create"}
+        onSuccess={() => queryClient.invalidateQueries({ queryKey: ["addons-paged"] })}
       />
       <ViewAddonModal
         isOpen={isViewModalOpen}

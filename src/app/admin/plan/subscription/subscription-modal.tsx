@@ -1,6 +1,8 @@
-'use client'
+"use client"
 
 import { useForm } from "react-hook-form"
+import { useEffect, useState } from "react"
+import dynamic from "next/dynamic"
 import {
   Dialog,
   DialogContent,
@@ -12,12 +14,14 @@ import {
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { useSubscription } from "@/features/plan/hooks/use-subscription"
 import { SubscriptionPlan, SubscriptionPlanModal } from "@/types/subscription"
-import { useEffect } from "react"
 import { toast } from "sonner"
+import "react-quill-new/dist/quill.snow.css"
+
+// ✅ Dynamic import ReactQuill (chỉ load khi cần)
+const ReactQuill = dynamic(() => import("react-quill-new"), { ssr: false })
 
 interface CreateSubscriptionModalProps {
   isOpen: boolean
@@ -37,6 +41,7 @@ export function CreateSubscriptionModal({
   const updateSubscriptionMutation = useUpdateSubscription()
 
   const isEditMode = mode === "edit" && !!editSubscription
+  const [isQuillReady, setIsQuillReady] = useState(false)
 
   const {
     register,
@@ -51,11 +56,10 @@ export function CreateSubscriptionModal({
       description: "",
       price: 0,
       billingCycle: 1,
-      status: 1,
     },
   })
 
-  // 🧩 Cập nhật dữ liệu khi vào chế độ edit
+  // 🔁 Load dữ liệu vào form khi mở modal
   useEffect(() => {
     if (isEditMode && editSubscription) {
       reset({
@@ -63,7 +67,6 @@ export function CreateSubscriptionModal({
         description: editSubscription.description,
         price: editSubscription.price,
         billingCycle: editSubscription.billingCycle,
-        status: editSubscription.status,
       })
     } else {
       reset({
@@ -71,12 +74,20 @@ export function CreateSubscriptionModal({
         description: "",
         price: 0,
         billingCycle: 1,
-        status: 1,
       })
     }
   }, [isEditMode, editSubscription, reset])
 
-  const status = watch("status")
+  // ✅ Chỉ render ReactQuill khi modal đang mở
+  useEffect(() => {
+    if (isOpen) {
+      const timer = setTimeout(() => setIsQuillReady(true), 50)
+      return () => clearTimeout(timer)
+    } else {
+      setIsQuillReady(false)
+    }
+  }, [isOpen])
+
   const billingCycle = watch("billingCycle")
 
   const onSubmit = async (data: SubscriptionPlanModal) => {
@@ -103,7 +114,7 @@ export function CreateSubscriptionModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
-      <DialogContent className="sm:max-w-[425px]">
+      <DialogContent className="sm:max-w-[600px]">
         <DialogHeader>
           <DialogTitle>
             {isEditMode ? "Chỉnh sửa gói đăng ký" : "Tạo gói đăng ký mới"}
@@ -134,12 +145,15 @@ export function CreateSubscriptionModal({
           {/* Description */}
           <div className="space-y-2">
             <Label htmlFor="description">Mô tả</Label>
-            <Textarea
-              id="description"
-              {...register("description")}
-              placeholder="Nhập mô tả cho gói đăng ký"
-              rows={3}
-            />
+            {isQuillReady && (
+              <ReactQuill
+                theme="snow"
+                value={watch("description") || ""}
+                onChange={(value) => setValue("description", value)}
+                placeholder="Nhập mô tả cho gói đăng ký..."
+                className="bg-white rounded-md"
+              />
+            )}
           </div>
 
           {/* Price */}
@@ -159,7 +173,7 @@ export function CreateSubscriptionModal({
             {errors.price && <p className="text-sm text-red-500">{errors.price.message}</p>}
           </div>
 
-         {/* Billing Cycle */}
+          {/* Billing Cycle */}
           <div className="space-y-2">
             <Label htmlFor="billingCycle">Chu kỳ thanh toán *</Label>
             <Select
@@ -174,31 +188,6 @@ export function CreateSubscriptionModal({
                 <SelectItem value="3">3 tháng</SelectItem>
                 <SelectItem value="9">9 tháng</SelectItem>
                 <SelectItem value="12">1 năm</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-
-          {/* Status */}
-          <div className="space-y-2">
-            <Label htmlFor="status">Trạng thái</Label>
-            <Select
-              value={status?.toString()}
-              onValueChange={(v) => setValue("status", parseInt(v))}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="Chọn trạng thái" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="1">
-                  <span className="flex items-center gap-2">
-                    <span className="w-2 h-2 bg-green-500 rounded-full"></span>Kích hoạt
-                  </span>
-                </SelectItem>
-                <SelectItem value="0">
-                  <span className="flex items-center gap-2">
-                    <span className="w-2 h-2 bg-red-500 rounded-full"></span>Không kích hoạt
-                  </span>
-                </SelectItem>
               </SelectContent>
             </Select>
           </div>

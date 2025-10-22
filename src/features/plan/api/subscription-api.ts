@@ -1,4 +1,4 @@
-import { Action, ActionModal } from "@/types/action";
+import { SubscriptionPlan, SubscriptionPlanModal } from "@/types/subscription";
 import { PagedResult } from "@/types/page-result";
 import { paymentsHttp } from "@/utils/http";
 
@@ -9,7 +9,7 @@ export const getPagedSubscriptions = async (
   signal?: AbortSignal,
 ) => {
   try {
-    const response = await paymentsHttp.get<PagedResult<Action>>("/subscription-plans", {
+    const response = await paymentsHttp.get<PagedResult<SubscriptionPlan>>("/subscription-plans", {
       params: {
         page,
         size,
@@ -25,13 +25,13 @@ export const getPagedSubscriptions = async (
   }
 };
 
-export const createSubscription = async (actionData: ActionModal) => {
-  const response = await paymentsHttp.post('/subscription-plans', actionData);
+export const createSubscription = async (subscriptionData: SubscriptionPlanModal) => {
+  const response = await paymentsHttp.post('/subscription-plans', subscriptionData);
   return response.data;
 };
 
-export const updateSubscription = async (id: string, actionData: ActionModal) => {
-  const response = await paymentsHttp.put(`/subscription-plans/${id}`, actionData);
+export const updateSubscription = async (id: string, subscriptionData: SubscriptionPlanModal) => {
+  const response = await paymentsHttp.put(`/subscription-plans/${id}`, subscriptionData);
   return response.data;
 };
 

@@ -20,17 +20,18 @@ const formatPrice = (price: number) =>
 
 const formatBillingCycle = (cycle: number) => {
   switch (cycle) {
-    case 0:
-      return "Theo ngày"
     case 1:
-      return "Theo tháng"
-    case 2:
-      return "Theo năm"
+      return "1 tháng"
+    case 3:
+      return "3 tháng"
+    case 9:
+      return "9 tháng"
+    case 12:
+      return "1 năm"
     default:
       return "Không xác định"
   }
 }
-
 // Header cells
 const IdHeaderCell = () => (
   <span className="flex items-center gap-1 text-gray-700 font-semibold">ID</span>
@@ -71,11 +72,12 @@ const StatusHeaderCell = () => (
 
 // Cells
 const DescriptionCell = ({ description }: { description?: string }) => (
-  <div className="max-w-xs">
-    <p className="text-sm text-gray-700 line-clamp-5 whitespace-normal break-words">
-      {description || "Không có dữ liệu"}
-    </p>
-  </div>
+  <div
+    className="prose prose-sm max-w-xs text-gray-700 line-clamp-5 overflow-hidden"
+    dangerouslySetInnerHTML={{
+      __html: description || "<p><i>Không có dữ liệu</i></p>",
+    }}
+  />
 )
 
 const PriceCell = ({ price }: { price: number }) => (

@@ -1,6 +1,8 @@
 'use client'
 
+import { useEffect } from "react"
 import { useForm } from "react-hook-form"
+import dynamic from "next/dynamic"
 import {
   Dialog,
   DialogContent,
@@ -12,25 +14,45 @@ import {
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Textarea } from "@/components/ui/textarea"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
 import { useAddon } from "@/features/plan/hooks/use-addon"
-import { AddonModal, Addon } from "@/types/addon"
-import { useEffect } from "react"
+import { Addon, AddonModal } from "@/types/addon"
 import { toast } from "sonner"
+import "react-quill-new/dist/quill.snow.css"
+
+const ReactQuill = dynamic(() => import("react-quill-new"), { ssr: false })
 
 interface CreateAddonModalProps {
   isOpen: boolean
   onClose: () => void
   editAddon?: Addon | null
   mode?: "create" | "edit"
+  // ✅ thêm dòng này
+  onSuccess?: () => void
 }
+
+const CATEGORY_MAP = [
+  { value: 1, label: "OSMO" },
+  { value: 2, label: "QR CODE" },
+  { value: 3, label: "NHẢY THEO NHẠC" },
+  { value: 4, label: "NÓI SONG NGỮ" },
+  { value: 5, label: "ĐIỀU KHIỂN BẰNG CẦN ĐIỀU KHIỂN" },
+  { value: 6, label: "ĐIỀU KHIỂN BẰNG GIỌNG NÓI" },
+  { value: 7, label: "NHÀ THÔNG MINH" },
+]
 
 export function CreateAddonModal({
   isOpen,
   onClose,
   editAddon = null,
   mode = "create",
+  onSuccess, // ✅ nhận thêm prop này
 }: CreateAddonModalProps) {
   const { useCreateAddon, useUpdateAddon } = useAddon()
   const createAddonMutation = useCreateAddon()
@@ -50,46 +72,43 @@ export function CreateAddonModal({
       name: "",
       description: "",
       price: 0,
-      status: 1,
-      type: "feature",
+      category: 1,
     },
   })
 
-  // 🧩 Cập nhật dữ liệu khi edit
   useEffect(() => {
     if (isEditMode && editAddon) {
       reset({
         name: editAddon.name,
         description: editAddon.description,
         price: editAddon.price,
-        status: editAddon.status,
-        type: editAddon.type,
+        category: editAddon.category,
       })
     } else {
       reset({
         name: "",
         description: "",
         price: 0,
-        status: 1,
-        type: "feature",
+        category: 1,
       })
     }
   }, [isEditMode, editAddon, reset])
 
-  const status = watch("status")
-  const type = watch("type")
+  const category = watch("category")
 
   const onSubmit = async (data: AddonModal) => {
     try {
       if (isEditMode && editAddon) {
         await updateAddonMutation.mutateAsync({ id: editAddon.id, data })
-        toast.success("Cập nhật addon thành công!")
+        toast.success("Cập nhật Addon thành công!")
       } else {
         await createAddonMutation.mutateAsync(data)
-        toast.success("Tạo addon mới thành công!")
+        toast.success("Tạo Addon mới thành công!")
       }
+
       reset()
       onClose()
+      onSuccess?.() // ✅ gọi callback để refresh danh sách
     } catch (error) {
       console.error("Error saving addon:", error)
       toast.error(isEditMode ? "Cập nhật thất bại" : "Tạo mới thất bại")
@@ -103,7 +122,7 @@ export function CreateAddonModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
-      <DialogContent className="sm:max-w-[425px]">
+      <DialogContent className="sm:max-w-[550px]">
         <DialogHeader>
           <DialogTitle>
             {isEditMode ? "Chỉnh sửa Addon" : "Tạo Addon mới"}
@@ -128,18 +147,23 @@ export function CreateAddonModal({
               placeholder="Nhập tên addon"
               className={errors.name ? "border-red-500" : ""}
             />
-            {errors.name && <p className="text-sm text-red-500">{errors.name.message}</p>}
+            {errors.name && (
+              <p className="text-sm text-red-500">{errors.name.message}</p>
+            )}
           </div>
 
           {/* Description */}
           <div className="space-y-2">
             <Label htmlFor="description">Mô tả</Label>
-            <Textarea
-              id="description"
-              {...register("description")}
-              placeholder="Nhập mô tả cho addon"
-              rows={3}
-            />
+            {isOpen && (
+              <ReactQuill
+                theme="snow"
+                value={watch("description") || ""}
+                onChange={(value) => setValue("description", value)}
+                placeholder="Nhập mô tả cho addon..."
+                className="bg-white rounded-md"
+              />
+            )}
           </div>
 
           {/* Price */}
@@ -156,53 +180,38 @@ export function CreateAddonModal({
               placeholder="Nhập giá addon"
               className={errors.price ? "border-red-500" : ""}
             />
-            {errors.price && <p className="text-sm text-red-500">{errors.price.message}</p>}
+            {errors.price && (
+              <p className="text-sm text-red-500">{errors.price.message}</p>
+            )}
           </div>
 
-          {/* Type */}
+          {/* Category */}
           <div className="space-y-2">
-            <Label htmlFor="type">Loại Addon *</Label>
+            <Label htmlFor="category">Danh mục *</Label>
             <Select
-              value={type}
-              onValueChange={(v) => setValue("type", v)}
+              value={category?.toString()}
+              onValueChange={(v) => setValue("category", parseInt(v))}
             >
               <SelectTrigger>
-                <SelectValue placeholder="Chọn loại addon" />
+                <SelectValue placeholder="Chọn danh mục" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="feature">Tính năng thêm</SelectItem>
-                <SelectItem value="service">Dịch vụ mở rộng</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-
-          {/* Status */}
-          <div className="space-y-2">
-            <Label htmlFor="status">Trạng thái</Label>
-            <Select
-              value={status?.toString()}
-              onValueChange={(v) => setValue("status", parseInt(v))}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="Chọn trạng thái" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="1">
-                  <span className="flex items-center gap-2">
-                    <span className="w-2 h-2 bg-green-500 rounded-full"></span>Kích hoạt
-                  </span>
-                </SelectItem>
-                <SelectItem value="0">
-                  <span className="flex items-center gap-2">
-                    <span className="w-2 h-2 bg-red-500 rounded-full"></span>Không kích hoạt
-                  </span>
-                </SelectItem>
+                {CATEGORY_MAP.map((c) => (
+                  <SelectItem key={c.value} value={c.value.toString()}>
+                    {c.label}
+                  </SelectItem>
+                ))}
               </SelectContent>
             </Select>
           </div>
 
           <DialogFooter>
-            <Button type="button" variant="outline" onClick={handleClose} disabled={isSubmitting}>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={handleClose}
+              disabled={isSubmitting}
+            >
               Đóng
             </Button>
             <Button type="submit" disabled={isSubmitting}>

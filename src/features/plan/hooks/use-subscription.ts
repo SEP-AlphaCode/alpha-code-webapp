@@ -13,7 +13,7 @@ export const useSubscription = () => {
         });
     }
 
-    // Create action mutation
+
     const useCreateSubscription = () => {
         return useMutation({
             mutationFn: createSubscription,
@@ -23,7 +23,6 @@ export const useSubscription = () => {
         });
     };
 
-    // Update action mutation
     const useUpdateSubscription = () => {
         return useMutation({
             mutationFn: ({ id, data }: { id: string, data: SubscriptionPlanModal }) => updateSubscription(id, data),
@@ -33,7 +32,6 @@ export const useSubscription = () => {
         });
     };
 
-    // Delete action mutation
     const useDeleteSubscription = () => {
         return useMutation({
             mutationFn: deleteSubscription,

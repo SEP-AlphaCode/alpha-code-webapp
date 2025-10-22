@@ -85,7 +85,7 @@ export function UserHeader({
           </Button> */}
 
           {/* Robot Selector Dropdown */}
-          <RobotSelector className="hidden sm:block" />
+          <RobotSelector className="" />
         </div>
       </div>
     </header>
