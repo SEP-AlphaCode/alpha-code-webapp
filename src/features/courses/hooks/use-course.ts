@@ -26,7 +26,7 @@ export const useCourse = () => {
     };
 
     const useGetCourses = (page: number, size: number, search?: string, signal?: AbortSignal) => {
-        return useQuery<PagedResult<Course>>({
+        return useQuery<PagedResult<Course> | null>({
             queryKey: ['courses', page, size, search],
             staleTime: STALE_TIME,
             queryFn: () => getCourses(page, size, search, signal),
@@ -123,6 +123,16 @@ export function useStaffCourse(slug: string) {
     queryKey: ['staff', 'course', slug],
     queryFn: ({ signal }) => courseApi.getCourseBySlug(slug, signal),
     enabled: !!slug,
+    staleTime: 0, // Always refetch on mount to get fresh data
+    retry: (failureCount, error) => {
+      // Don't retry if request was canceled
+      if (error && 'code' in error && error.code === 'ERR_CANCELED') {
+        return false
+      }
+      // Only retry once for other errors
+      return failureCount < 1
+    },
+    retryDelay: 500, // Wait 500ms before retry
   })
 }
 
@@ -140,7 +150,7 @@ export function useCreateCourse() {
   })
 }
 
-export function useUpdateCourse(id: string) {
+export function useUpdateCourse(id: string, courseSlug?: string) {
   const queryClient = useQueryClient()
   const router = useRouter()
 
@@ -151,14 +161,23 @@ export function useUpdateCourse(id: string) {
       categoryId: string
       level: number
       price: number
-      image?: string
+      image?: string | File
       status?: number
+      requireLicense: boolean
     }) => courseApi.updateCourse(id, data),
     onSuccess: () => {
+      // Invalidate all course-related queries
       queryClient.invalidateQueries({ queryKey: ['staff', 'courses'] })
-      queryClient.invalidateQueries({ queryKey: ['staff', 'course', id] })
+      queryClient.invalidateQueries({ queryKey: ['staff', 'course'] }) // This will match both ID and slug
       queryClient.invalidateQueries({ queryKey: ['courses'] })
-      router.push('/staff/courses')
+      queryClient.invalidateQueries({ queryKey: ['course'] })
+      queryClient.invalidateQueries({ queryKey: ['sections'] })
+      // Redirect to detail page if slug provided, otherwise to list
+      if (courseSlug) {
+        router.push(`/staff/courses/${courseSlug}`)
+      } else {
+        router.push('/staff/courses')
+      }
     },
   })
 }
@@ -169,8 +188,15 @@ export function useDeleteCourse() {
   return useMutation({
     mutationFn: (id: string) => courseApi.deleteCourse(id),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['staff', 'courses'] })
-      queryClient.invalidateQueries({ queryKey: ['courses'] })
+      // Invalidate all queries that start with ['staff', 'courses']
+      queryClient.invalidateQueries({ 
+        queryKey: ['staff', 'courses'],
+        refetchType: 'active' // Refetch all active queries immediately
+      })
+      queryClient.invalidateQueries({ 
+        queryKey: ['courses'],
+        refetchType: 'active'
+      })
     },
   })
 }

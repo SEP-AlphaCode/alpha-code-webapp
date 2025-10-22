@@ -3,6 +3,7 @@ import { switchProfile } from '@/features/auth/api/auth-api';
 import { toast } from 'sonner';
 import { useRouter } from 'next/navigation';
 import { SwitchProfileResponse } from '@/types/login';
+import { getTokenPayload } from '@/utils/tokenUtils';
 
 export const useSwitchProfile = () => {
   const router = useRouter();
@@ -27,8 +28,26 @@ export const useSwitchProfile = () => {
       sessionStorage.removeItem('availableProfiles');
       sessionStorage.removeItem('pendingAccountId');
 
-      // Redirect đến trang user (có thể tùy chỉnh theo profileType sau)
-      router.push('/user');
+      // Determine redirect based on roleName inside the returned access token
+      try {
+        const accountData = getTokenPayload(data.accessToken);
+        const roleNameLower = accountData?.roleName?.toLowerCase();
+        if (roleNameLower === 'admin') {
+          router.push('/admin');
+        } else if (roleNameLower === 'staff') {
+          router.push('/staff');
+        } else if (roleNameLower === 'parent'|| roleNameLower === 'user') {
+          router.push('/parent');
+        } else if (roleNameLower === 'children') {
+          router.push('/children');
+        } else {
+          // default to /user for unknown or new user-like roles
+          router.push('/');
+        }
+      } catch (err) {
+        console.error('Error determining redirect after switchProfile:', err);
+        router.push('/user');
+      }
     },
     onError: (error) => {
       console.error('Switch profile error:', error);

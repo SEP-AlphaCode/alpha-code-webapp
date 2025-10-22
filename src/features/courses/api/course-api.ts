@@ -1,6 +1,7 @@
 import { Course } from "@/types/courses";
 import { PagedResult } from "@/types/page-result";
 import { coursesHttp } from "@/utils/http";
+import axios from "axios";
 
 
 // Get none delete courses with pagination
@@ -18,6 +19,11 @@ export const getNoneDeleteCourses = async (page: number, size: number, search?: 
         return response.data;
 
     } catch (error) {
+        // Ignore canceled errors - this is expected when component unmounts or navigation occurs
+        if (axios.isCancel(error)) {
+            console.log("Request canceled for getNoneDeleteCourses");
+            return null;
+        }
         console.error("API Error in getNoneDeleteCourses:", error);
         throw error;
     }
@@ -37,6 +43,11 @@ export const getCourses = async (page: number, size: number, search?: string, si
         return response.data;
 
     } catch (error) {
+        // Ignore canceled errors - this is expected when component unmounts or navigation occurs
+        if (axios.isCancel(error)) {
+            console.log("Request canceled for getCourses");
+            return null;
+        }
         console.error("API Error in getAllActiveCourses:", error);
         throw error;
     }
@@ -51,6 +62,11 @@ export const getCourseBySlug = async (slug: string, signal?: AbortSignal) => {
         return response.data;
 
     } catch (error) {
+        // Ignore canceled errors - this is expected when component unmounts or navigation occurs
+        if (axios.isCancel(error)) {
+            console.log("Request canceled for slug:", slug);
+            throw error; // Throw to let React Query handle retry
+        }
         console.error("API Error in getActiveCourseBySlug:", error);
         throw error;
     }
@@ -79,11 +95,36 @@ export const updateCourse = async (id: string, data: {
     categoryId: string;
     level: number;
     price: number;
-    image?: string;
+    image?: string | File;
     status?: number;
+    requireLicense: boolean;
 }) => {
     try {
-        const response = await coursesHttp.put<Course>(`/courses/${id}`, data);
+        // Always use FormData for update
+        const formData = new FormData();
+        formData.append('name', data.name);
+        formData.append('description', data.description);
+        formData.append('categoryId', data.categoryId);
+        formData.append('level', data.level.toString());
+        formData.append('price', data.price.toString());
+        formData.append('requireLicense', data.requireLicense.toString());
+        
+        // Handle image - either File or URL string
+        if (data.image instanceof File) {
+            formData.append('image', data.image);
+        } else if (data.image && typeof data.image === 'string') {
+            formData.append('imageUrl', data.image);
+        }
+        
+        if (data.status !== undefined) {
+            formData.append('status', data.status.toString());
+        }
+        
+        const response = await coursesHttp.put<Course>(`/courses/${id}`, formData, {
+            headers: {
+                'Content-Type': 'multipart/form-data',
+            },
+        });
         return response.data;
     } catch (error) {
         console.error("API Error in updateCourse:", error);

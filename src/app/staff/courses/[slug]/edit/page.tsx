@@ -1,6 +1,7 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
+import { useParams, useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
@@ -14,11 +15,11 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
-import { ArrowLeft, Loader2, Upload, X } from "lucide-react"
+import { ArrowLeft, Loader2, Upload } from "lucide-react"
 import Link from "next/link"
-import Image from "next/image"
-import { useCreateCourse, useCourse } from "@/features/courses/hooks"
+import { useStaffCourse, useUpdateCourse, useCourse } from "@/features/courses/hooks"
 import { toast } from "sonner"
+import { Course, Category } from "@/types/courses"
 
 const levelOptions = [
   { value: "1", label: "Cơ bản" },
@@ -26,25 +27,90 @@ const levelOptions = [
   { value: "3", label: "Nâng cao" },
 ]
 
-export default function NewCoursePage() {
-  const createCourse = useCreateCourse()
+const statusOptions = [
+  { value: "1", label: "Đang hoạt động" },
+  { value: "2", label: "Không hoạt động" },
+  { value: "0", label: "Đã xóa" },
+]
+
+export default function EditCoursePage() {
+  const params = useParams()
+  const courseSlug = params.slug as string
+
+  const { data: course, isLoading: courseLoading } = useStaffCourse(courseSlug)
   const { useGetCategories } = useCourse()
   const { data: categoriesData, isLoading: categoriesLoading } = useGetCategories(1, 100)
   
   const categories = categoriesData?.data || []
 
+  // Wait for course to load before rendering the form
+  if (courseLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+      </div>
+    )
+  }
+
+  if (!course) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <p className="text-muted-foreground">Không tìm thấy khóa học</p>
+      </div>
+    )
+  }
+
+  return <EditCourseForm course={course} categories={categories} categoriesLoading={categoriesLoading} />
+}
+
+function EditCourseForm({ 
+  course, 
+  categories, 
+  categoriesLoading 
+}: { 
+  course: Course
+  categories: Category[]
+  categoriesLoading: boolean
+}) {
+  const router = useRouter()
+  const updateCourse = useUpdateCourse(course.id, course.slug)
+
   const [formData, setFormData] = useState({
     name: "",
     description: "",
     categoryId: "",
-    level: "1",
+    level: "1", // Default to "Cơ bản"
     price: "",
+    image: "",
+    status: "1",
     requireLicense: false,
   })
 
   const [imageFile, setImageFile] = useState<File | null>(null)
   const [imagePreview, setImagePreview] = useState<string>("")
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [isInitialized, setIsInitialized] = useState(false)
+
+  // Load course data into form when course is loaded (only once)
+  useEffect(() => {
+    if (course && course.id && !isInitialized) {
+      setFormData({
+        name: course.name || "",
+        description: course.description || "",
+        categoryId: course.categoryId || "",
+        level: course.level?.toString() || "1",
+        price: course.price?.toString() || "",
+        image: course.imageUrl || "",
+        status: course.status?.toString() || "1",
+        requireLicense: course.requireLicense || false,
+      })
+      // Set preview from existing image
+      if (course.imageUrl) {
+        setImagePreview(course.imageUrl)
+      }
+      setIsInitialized(true)
+    }
+  }, [course, isInitialized, categories.length])
 
   const handleInputChange = (field: string, value: string | boolean) => {
     setFormData(prev => ({ ...prev, [field]: value }))
@@ -55,16 +121,16 @@ export default function NewCoursePage() {
     if (file) {
       // Validate file type
       if (!file.type.startsWith('image/')) {
-        toast.error("Vui lòng chọn file ảnh")
+        toast.error('Vui lòng chọn file ảnh')
         return
       }
       
       // Validate file size (max 5MB)
       if (file.size > 5 * 1024 * 1024) {
-        toast.error("Kích thước ảnh không được vượt quá 5MB")
+        toast.error('Kích thước ảnh không được vượt quá 5MB')
         return
       }
-
+      
       setImageFile(file)
       
       // Create preview
@@ -73,12 +139,18 @@ export default function NewCoursePage() {
         setImagePreview(reader.result as string)
       }
       reader.readAsDataURL(file)
+      
+      // Clear URL input when file is selected
+      setFormData(prev => ({ ...prev, image: '' }))
     }
   }
 
-  const handleRemoveImage = () => {
-    setImageFile(null)
-    setImagePreview("")
+  const handleImageUrlChange = (url: string) => {
+    handleInputChange("image", url)
+    if (url) {
+      setImagePreview(url)
+      setImageFile(null) // Clear file when URL is entered
+    }
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -86,58 +158,44 @@ export default function NewCoursePage() {
     
     // Validation
     if (!formData.name.trim()) {
-      toast.error("Tên khóa học là bắt buộc")
-      return
-    }
-
-    if (formData.name.length > 255) {
-      toast.error("Tên khóa học không được vượt quá 255 ký tự")
+      toast.error("Vui lòng nhập tên khóa học")
       return
     }
     
     if (!formData.description.trim()) {
-      toast.error("Mô tả khóa học là bắt buộc")
+      toast.error("Vui lòng nhập mô tả khóa học")
       return
     }
     
     if (!formData.categoryId) {
-      toast.error("Danh mục là bắt buộc")
+      toast.error("Vui lòng chọn danh mục")
       return
     }
     
-    if (!formData.price || parseInt(formData.price) < 1) {
-      toast.error("Giá khóa học là bắt buộc và phải lớn hơn 0")
-      return
-    }
-
-    if (!imageFile) {
-      toast.error("Ảnh danh mục là bắt buộc")
+    if (!formData.price || parseInt(formData.price) < 0) {
+      toast.error("Vui lòng nhập giá hợp lệ")
       return
     }
 
     setIsSubmitting(true)
 
     try {
-      // Create FormData for multipart/form-data
-      const submitData = new FormData()
-      submitData.append('name', formData.name)
-      submitData.append('description', formData.description)
-      submitData.append('categoryId', formData.categoryId)
-      submitData.append('level', formData.level)
-      submitData.append('price', formData.price)
-      submitData.append('requireLicense', formData.requireLicense.toString())
-      submitData.append('image', imageFile)
-
-      await createCourse.mutateAsync(submitData)
+      await updateCourse.mutateAsync({
+        name: formData.name,
+        description: formData.description,
+        categoryId: formData.categoryId,
+        level: parseInt(formData.level),
+        price: parseInt(formData.price),
+        image: imageFile || formData.image || undefined,
+        status: parseInt(formData.status),
+        requireLicense: formData.requireLicense,
+      })
       
-      toast.success("Tạo khóa học thành công!")
+      toast.success("Cập nhật khóa học thành công!")
       // Router will be handled by the mutation's onSuccess
-    } catch (error: unknown) {
-      const errorMessage = error && typeof error === 'object' && 'response' in error 
-        ? (error as { response?: { data?: { message?: string } } }).response?.data?.message 
-        : undefined;
-      toast.error(errorMessage || "Lỗi khi tạo khóa học")
-      console.error("Error creating course:", error)
+    } catch (error) {
+      toast.error("Lỗi khi cập nhật khóa học")
+      console.error("Error updating course:", error)
       setIsSubmitting(false)
     }
   }
@@ -151,9 +209,9 @@ export default function NewCoursePage() {
           </Button>
         </Link>
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Tạo khóa học mới</h1>
+          <h1 className="text-3xl font-bold tracking-tight">Chỉnh sửa khóa học</h1>
           <p className="text-muted-foreground">
-            Điền thông tin để tạo khóa học mới
+            Cập nhật thông tin khóa học: {course.name}
           </p>
         </div>
       </div>
@@ -163,7 +221,7 @@ export default function NewCoursePage() {
           <CardHeader>
             <CardTitle>Thông tin khóa học</CardTitle>
             <CardDescription>
-              Nhập đầy đủ thông tin về khóa học
+              Chỉnh sửa thông tin về khóa học
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
@@ -203,7 +261,11 @@ export default function NewCoursePage() {
               </Label>
               <Select
                 value={formData.categoryId}
-                onValueChange={(value) => handleInputChange("categoryId", value)}
+                onValueChange={(value) => {
+                  if (value) {
+                    handleInputChange("categoryId", value)
+                  }
+                }}
               >
                 <SelectTrigger>
                   <SelectValue placeholder="Chọn danh mục" />
@@ -232,7 +294,11 @@ export default function NewCoursePage() {
                 </Label>
                 <Select
                   value={formData.level}
-                  onValueChange={(value) => handleInputChange("level", value)}
+                  onValueChange={(value) => {
+                    if (value) {
+                      handleInputChange("level", value)
+                    }
+                  }}
                 >
                   <SelectTrigger>
                     <SelectValue placeholder="Chọn cấp độ" />
@@ -279,77 +345,116 @@ export default function NewCoursePage() {
               />
             </div>
 
-            {/* Image Upload */}
+            {/* Image URL */}
             <div className="space-y-2">
-              <Label htmlFor="image">
-                Ảnh khóa học <span className="text-destructive">*</span>
-              </Label>
+              <Label htmlFor="image">Ảnh khóa học</Label>
+              <div className="flex gap-2">
+                <Input
+                  id="image"
+                  placeholder="https://example.com/image.jpg"
+                  value={formData.image}
+                  onChange={(e) => handleImageUrlChange(e.target.value)}
+                  disabled={!!imageFile}
+                />
+                <input
+                  type="file"
+                  ref={(input) => {
+                    if (input) {
+                      input.onclick = () => {
+                        input.value = ''
+                      }
+                    }
+                  }}
+                  onChange={handleImageChange}
+                  accept="image/*"
+                  className="hidden"
+                  id="image-file-input"
+                />
+                <Button 
+                  type="button" 
+                  variant="outline" 
+                  size="icon"
+                  onClick={() => document.getElementById('image-file-input')?.click()}
+                >
+                  <Upload className="h-4 w-4" />
+                </Button>
+              </div>
+              <p className="text-sm text-muted-foreground">
+                Nhập URL ảnh hoặc tải lên từ máy tính (tối đa 5MB)
+              </p>
               
-              {imagePreview ? (
-                <div className="relative w-full h-48 border rounded-lg overflow-hidden">
-                  <Image
-                    src={imagePreview}
-                    alt="Preview"
-                    fill
-                    className="object-cover"
+              {/* Image Preview */}
+              {imagePreview && (
+                <div className="relative w-full max-w-md">
+                  <img 
+                    src={imagePreview} 
+                    alt="Preview" 
+                    className="w-full h-48 object-cover rounded-lg border"
                   />
-                  <Button
-                    type="button"
-                    variant="destructive"
-                    size="icon"
-                    className="absolute top-2 right-2"
-                    onClick={handleRemoveImage}
-                  >
-                    <X className="h-4 w-4" />
-                  </Button>
-                </div>
-              ) : (
-                <div className="flex items-center justify-center w-full">
-                  <label
-                    htmlFor="image"
-                    className="flex flex-col items-center justify-center w-full h-48 border-2 border-dashed rounded-lg cursor-pointer bg-muted/50 hover:bg-muted/80 transition-colors"
-                  >
-                    <div className="flex flex-col items-center justify-center pt-5 pb-6">
-                      <Upload className="h-10 w-10 mb-3 text-muted-foreground" />
-                      <p className="mb-2 text-sm text-muted-foreground">
-                        <span className="font-semibold">Click để tải ảnh lên</span>
+                  {imageFile && (
+                    <div className="mt-2 flex items-center gap-2">
+                      <p className="text-sm text-muted-foreground">
+                        File: {imageFile.name} ({(imageFile.size / 1024).toFixed(2)} KB)
                       </p>
-                      <p className="text-xs text-muted-foreground">
-                        PNG, JPG, GIF (MAX. 5MB)
-                      </p>
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => {
+                          setImageFile(null)
+                          setImagePreview(course?.imageUrl || "")
+                          setFormData(prev => ({ ...prev, image: course?.imageUrl || "" }))
+                        }}
+                      >
+                        Xóa
+                      </Button>
                     </div>
-                    <Input
-                      id="image"
-                      type="file"
-                      className="hidden"
-                      accept="image/*"
-                      onChange={handleImageChange}
-                    />
-                  </label>
+                  )}
                 </div>
               )}
-              <p className="text-sm text-muted-foreground">
-                Tải lên ảnh đại diện cho khóa học (bắt buộc)
-              </p>
+            </div>
+
+            {/* Status */}
+            <div className="space-y-2">
+              <Label htmlFor="status">Trạng thái</Label>
+              <Select
+                value={formData.status}
+                onValueChange={(value) => {
+                  if (value) {
+                    handleInputChange("status", value)
+                  }
+                }}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Chọn trạng thái" />
+                </SelectTrigger>
+                <SelectContent>
+                  {statusOptions.map((option) => (
+                    <SelectItem key={option.value} value={option.value}>
+                      {option.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
 
             {/* Action Buttons */}
             <div className="flex gap-4 pt-4">
               <Button
                 type="submit"
-                disabled={isSubmitting || createCourse.isPending}
+                disabled={isSubmitting || updateCourse.isPending}
                 className="min-w-[120px]"
               >
-                {(isSubmitting || createCourse.isPending) && (
+                {(isSubmitting || updateCourse.isPending) && (
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                 )}
-                Tạo khóa học
+                Lưu thay đổi
               </Button>
               <Link href="/staff/courses">
                 <Button
                   type="button"
                   variant="outline"
-                  disabled={isSubmitting || createCourse.isPending}
+                  disabled={isSubmitting || updateCourse.isPending}
                 >
                   Hủy
                 </Button>
