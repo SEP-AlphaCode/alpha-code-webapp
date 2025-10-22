@@ -41,21 +41,21 @@ export default function UserLayout({ children }: UserLayoutProps) {
   }, []);
 
   const navigationItems = [
-    { name: "Dashboard", href: "/user", icon: "📊" },
-    { name: "Robots", href: "/user/robot", icon: "🤖" },
-    { name: "Joysticks Control", href: "/user/joystick", icon: "🕹️" },
-    { name: "Students", href: "/user/student", icon: "👥" },
-    { name: "Programming", href: "/user/programming", icon: "💻" },
-    { name: "Classroom", href: "/user/classroom", icon: "🏫" },
-    { name: "Activities", href: "/user/activities", icon: "🎯" },
-    { name: "Music", href: "/user/music", icon: "🎵" },
-    { name: "Courses", href: "/user/courses", icon: "📖" },
-    { name: "Videos", href: "/user/videos", icon: "🎬" },
+    { name: "Dashboard", href: "/parent", icon: "📊" },
+    { name: "Robots", href: "/parent/robot", icon: "🤖" },
+    { name: "Joysticks Control", href: "/parent/joystick", icon: "🕹️" },
+    { name: "Students", href: "/parent/student", icon: "👥" },
+    { name: "Programming", href: "/parent/programming", icon: "💻" },
+    { name: "Classroom", href: "/parent/classroom", icon: "🏫" },
+    { name: "Activities", href: "/parent/activities", icon: "🎯" },
+    { name: "Music", href: "/parent/music", icon: "🎵" },
+    { name: "Courses", href: "/parent/courses", icon: "📖" },
+    { name: "Videos", href: "/parent/videos", icon: "🎬" },
   ];
 
   const isActiveRoute = (href: string) => {
-    if (href === "/user") {
-      return pathname === "/user";
+    if (href === "/parent") {
+      return pathname === "/parent";
     }
     return pathname?.startsWith(href);
   };
