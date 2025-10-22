@@ -40,7 +40,6 @@ export function CreateParentProfile() {
       let accountFullName = '';
       if (typeof window !== 'undefined') {
         accountId = sessionStorage.getItem('pendingAccountId') || '';
-        console.log('🔍 Debug - pendingAccountId:', accountId);
         // Nếu có token (trường hợp login với Admin/Staff rồi vào trang này)
         const accessToken = sessionStorage.getItem('accessToken');
         if (accessToken && !accountId) {
@@ -107,8 +106,6 @@ export function CreateParentProfile() {
       };
       const profile = await createProfileMutation.mutateAsync(profileDataOld);
       
-      console.log('✅ Profile created (Old API):', profile);
-    
       // Xóa pendingAccountId sau khi tạo xong
       sessionStorage.removeItem('pendingAccountId');
       
@@ -116,7 +113,6 @@ export function CreateParentProfile() {
       
       // Sau khi tạo xong, tự động switch sang profile đó
       if (profile?.id) {
-        console.log('🔄 Switching to profile:', profile.id);
         switchProfileMutation.mutate({
           profileId: profile.id,
           accountId: accountId,
@@ -294,18 +290,6 @@ export function CreateParentProfile() {
                   {createProfileMutation.error instanceof Error 
                     ? createProfileMutation.error.message 
                     : 'Vui lòng kiểm tra console để biết thêm chi tiết'}
-                </p>
-              </div>
-            )}
-
-            {/* Debug Info (chỉ hiển thị trong development) */}
-            {process.env.NODE_ENV === 'development' && (
-              <div className="p-3 rounded-lg bg-blue-50 border border-blue-200">
-                <p className="text-xs text-blue-600 font-mono">
-                  Debug: pendingAccountId = {sessionStorage.getItem('pendingAccountId') || 'không có'}
-                </p>
-                <p className="text-xs text-blue-600 font-mono">
-                  accessToken = {sessionStorage.getItem('accessToken') ? 'có' : 'không có'}
                 </p>
               </div>
             )}

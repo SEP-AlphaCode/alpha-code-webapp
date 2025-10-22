@@ -3,9 +3,9 @@
 
 import { useEffect, useState, useRef, useCallback } from "react";
 import Image from "next/image";
-import { RobotActionHeader } from "@/components/user/robot/action/robot-action-header";
-import { RobotActionDetail } from "@/components/user/robot/action/robot-action-detail";
-import { RobotActionGrid } from "@/components/user/robot/action/robot-action-grid";
+import { RobotActionHeader } from "@/components/parent/robot/action/robot-action-header";
+import { RobotActionDetail } from "@/components/parent/robot/action/robot-action-detail";
+import { RobotActionGrid } from "@/components/parent/robot/action/robot-action-grid";
 import { useRobotCommand } from "@/hooks/use-robot-command";
 import { useRobotStore } from "@/hooks/use-robot-store";
 import { AnimatePresence, motion } from "framer-motion";

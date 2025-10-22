@@ -36,11 +36,13 @@ export const useSwitchProfile = () => {
           router.push('/admin');
         } else if (roleNameLower === 'staff') {
           router.push('/staff');
-        } else if (roleNameLower === 'parent' || roleNameLower === 'children' || roleNameLower === 'user') {
-          router.push('/user');
+        } else if (roleNameLower === 'parent'|| roleNameLower === 'user') {
+          router.push('/parent');
+        } else if (roleNameLower === 'children') {
+          router.push('/children');
         } else {
           // default to /user for unknown or new user-like roles
-          router.push('/user');
+          router.push('/');
         }
       } catch (err) {
         console.error('Error determining redirect after switchProfile:', err);

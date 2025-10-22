@@ -3,12 +3,12 @@ import { useCourse } from '@/features/courses/hooks/use-course';
 import React, { useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux';
 import { AppDispatch, RootState } from '@/store/store';
-import { CourseFilter } from '@/components/user/course/category-list';
+import { CourseFilter } from '@/components/parent/course/category-list';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent } from '@radix-ui/react-dialog';
 import { ChevronDown } from 'lucide-react';
-import { CourseGrid } from '@/components/user/course/course-grid';
-import { Pagination } from '@/components/user/course/pagination';
+import { CourseGrid } from '@/components/parent/course/course-grid';
+import { Pagination } from '@/components/parent/course/pagination';
 import { setCategoryFilter, setPage, setSearch } from '@/store/user-course-slice';
 
 export default function CoursePage() {

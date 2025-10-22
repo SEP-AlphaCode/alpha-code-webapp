@@ -5,12 +5,12 @@ import React, { useState, useEffect } from "react";
 import { useRobotStore } from "@/hooks/use-robot-store";
 
 // Import extracted components
-import { RobotPageHeader } from "@/components/user/robot/robot-page-header";
-import { RobotGrid } from "@/components/user/robot/robot-grid";
-import { RobotDetails } from "@/components/user/robot/robot-details";
-import { ProgrammingSection } from "@/components/user/robot/programming-section";
-import { EntertainmentSection } from "@/components/user/robot/entertainment-section";
-import { ThingsToTrySection } from "@/components/user/robot/things-to-try-section";
+import { RobotPageHeader } from "@/components/parent/robot/robot-page-header";
+import { RobotGrid } from "@/components/parent/robot/robot-grid";
+import { RobotDetails } from "@/components/parent/robot/robot-details";
+import { ProgrammingSection } from "@/components/parent/robot/programming-section";
+import { EntertainmentSection } from "@/components/parent/robot/entertainment-section";
+import { ThingsToTrySection } from "@/components/parent/robot/things-to-try-section";
 
 // Import tĩnh cả hai file ngôn ngữ
 

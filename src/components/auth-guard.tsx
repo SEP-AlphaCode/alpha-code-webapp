@@ -83,13 +83,13 @@ export const AuthGuard = ({ children, allowedRoles }: AuthGuardProps) => {
               if (userRole === 'admin') {
                 router.push('/admin');
               } else if (userRole === 'parent' || userRole === 'user') {
-                router.push('/user');
+                router.push('/parent');
               } else if (userRole === 'staff') {
                 router.push('/staff');
               } else if (userRole === 'children') {
                 router.push('/children');
               } else {
-                router.push('/user');
+                router.push('/');
               }
               return;
             }
@@ -108,13 +108,13 @@ export const AuthGuard = ({ children, allowedRoles }: AuthGuardProps) => {
                 if (userRole === 'admin') {
                   router.push('/admin');
                 } else if (userRole === 'parent' || userRole === 'user') {
-                  router.push('/user');
+                  router.push('/parent');
                 } else if (userRole === 'staff') {
                   router.push('/staff');
                 } else if (userRole === 'children') {
                   router.push('/children');
                 } else {
-                  router.push('/user');
+                  router.push('/');
                 }
                 return;
               }

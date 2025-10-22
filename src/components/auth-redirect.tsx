@@ -24,11 +24,11 @@ export const AuthRedirect = () => {
           } else if (roleNameLower === 'staff') {
             router.push('/staff');
           } else if (roleNameLower === 'parent' || roleNameLower === 'user') {
-            router.push('/user');
+            router.push('/parent');
           } else if (roleNameLower === 'children') {
             router.push('/children');
           } else {
-            router.push('/user');
+            router.push('/');
           }
         } else {
           // Fallback: get role from token
@@ -41,11 +41,11 @@ export const AuthRedirect = () => {
             } else if (roleNameLower === 'staff') {
               router.push('/staff');
             } else if (roleNameLower === 'parent' || roleNameLower === 'user') {
-              router.push('/user');
+              router.push('/parent');
             } else if (roleNameLower === 'children') {
               router.push('/children');
             } else {
-              router.push('/user');
+              router.push('/');
             }
           } else {
             // If no role found, redirect to login as safe default

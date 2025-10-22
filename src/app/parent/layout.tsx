@@ -6,8 +6,8 @@ import { AuthGuard } from "@/components/auth-guard";
 import { useLogout } from "@/features/auth/hooks/use-logout";
 import { getUserInfoFromToken } from "@/utils/tokenUtils";
 import { AccountData } from "@/types/account";
-import { UserHeader } from "@/components/user/user-header";
-import { UserSidebar } from "@/components/user/user-sidebar";
+import { UserHeader } from "@/components/parent/user-header";
+import { UserSidebar } from "@/components/parent/user-sidebar";
 
 interface UserLayoutProps {
   children: React.ReactNode;
