@@ -54,26 +54,31 @@ export const useSwitchProfile = () => {
       console.error('Switch profile error:', error);
       let message = 'Không thể chuyển profile. Vui lòng thử lại.';
       try {
-        const anyErr: any = error;
+        const anyErr = error as unknown;
 
         // If it's an axios error, inspect response data for message
         if (axios.isAxiosError(anyErr)) {
           const resp = anyErr.response;
-          const data = resp?.data;
+          const data = resp?.data as unknown;
           // Common shapes: { message }, { error }, { data: { message } }, string
           if (data) {
             if (typeof data === 'string') message = data;
-            else if (data.message) message = data.message;
-            else if (data.error) message = data.error;
-            else if (data.data && data.data.message) message = data.data.message;
+            else if (typeof data === 'object' && data !== null) {
+              type ErrorResponse = { message?: string; error?: string; data?: { message?: string } };
+              const d = data as ErrorResponse;
+              if (d.message) message = d.message;
+              else if (d.error) message = d.error;
+              else if (d.data && d.data.message) message = d.data.message;
+            }
           } else if (resp && resp.status >= 500) {
             message = 'Lỗi máy chủ. Vui lòng thử lại sau.';
           }
-        } else if (anyErr && anyErr.message) {
+        } else if (typeof anyErr === 'object' && anyErr !== null && 'message' in anyErr) {
           // Fallback to generic Error.message
-          message = anyErr.message;
+          const obj = anyErr as Record<string, unknown> & { message?: unknown };
+          if (typeof obj.message === 'string') message = obj.message;
         }
-      } catch (e) {
+      } catch {
         // ignore extraction errors
       }
 
