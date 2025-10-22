@@ -146,7 +146,7 @@ export function CreateParentProfile() {
   const isLoading = isCreating || createProfileMutation.isPending || switchProfileMutation.isPending;
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-50 to-gray-50 p-4">
+    <div className="min-h-screen flex items-center justify-center bg-gray-50 p-4">
       <Card className="w-full max-w-md shadow-2xl">
         <CardHeader>
           {/* Logo */}
@@ -163,7 +163,7 @@ export function CreateParentProfile() {
           </div>
           
           <CardTitle className="text-center text-2xl text-gray-900">
-            🤖 Tạo Profile {isKid ? 'Trẻ Em' : 'Phụ Huynh'}
+            Tạo Profile {isKid ? 'Trẻ Em' : 'Phụ Huynh'}
           </CardTitle>
           <p className="text-center text-gray-600 text-sm mt-2">
             Đây là lần đầu tiên bạn đăng nhập. Vui lòng tạo profile để bắt đầu học lập trình với Alpha Mini!
@@ -173,8 +173,8 @@ export function CreateParentProfile() {
           <form onSubmit={handleSubmit} className="space-y-6">
             {/* Avatar Preview */}
             <div className="flex justify-center">
-              <Avatar className="w-24 h-24 ring-4 ring-orange-200">
-                <AvatarFallback className="bg-gradient-to-br from-orange-500 to-yellow-500 text-white text-3xl font-bold">
+              <Avatar className="w-24 h-24 ring-4 ring-gray-200">
+                <AvatarFallback className="bg-gradient-to-br from-gray-600 to-gray-400 text-white text-3xl font-bold">
                   {name ? name.charAt(0).toUpperCase() : '👤'}
                 </AvatarFallback>
               </Avatar>
@@ -210,8 +210,8 @@ export function CreateParentProfile() {
                   onClick={() => setIsKid(false)}
                   className={`flex-1 p-4 rounded-lg border-2 transition-all ${
                     !isKid 
-                      ? 'border-orange-500 bg-orange-50 dark:bg-orange-950' 
-                      : 'border-gray-200 dark:border-gray-700 hover:border-orange-300'
+                      ? 'border-gray-400 bg-gray-50' 
+                      : 'border-gray-200 dark:border-gray-700 hover:border-gray-300'
                   }`}
                 >
                   <div className="text-center">
@@ -225,8 +225,8 @@ export function CreateParentProfile() {
                   onClick={() => setIsKid(true)}
                   className={`flex-1 p-4 rounded-lg border-2 transition-all ${
                     isKid 
-                      ? 'border-orange-500 bg-orange-50 dark:bg-orange-950' 
-                      : 'border-gray-200 dark:border-gray-700 hover:border-orange-300'
+                      ? 'border-gray-400 bg-gray-50' 
+                      : 'border-gray-200 dark:border-gray-700 hover:border-gray-300'
                   }`}
                 >
                   <div className="text-center">
@@ -265,7 +265,7 @@ export function CreateParentProfile() {
             {/* Submit Button */}
             <Button
               type="submit"
-              className="w-full bg-gradient-to-r from-orange-500 to-yellow-500 hover:from-orange-600 hover:to-yellow-600 text-white font-semibold py-6 rounded-xl transition-all duration-200"
+              className="w-full bg-gray-700 hover:bg-gray-800 text-white font-semibold py-6 rounded-xl transition-all duration-200"
               disabled={!name.trim() || isLoading}
             >
               {isLoading ? (
@@ -299,7 +299,7 @@ export function CreateParentProfile() {
           <div className="mt-6 text-center">
             <button
               onClick={() => router.push('/login')}
-              className="text-sm text-gray-500 hover:text-orange-600 transition-colors"
+              className="text-sm text-gray-500 hover:text-gray-700 transition-colors"
               disabled={isLoading}
             >
               ← Quay lại đăng nhập
