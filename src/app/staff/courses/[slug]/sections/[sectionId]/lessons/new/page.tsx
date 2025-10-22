@@ -15,39 +15,92 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import { Switch } from "@/components/ui/switch"
-import { ArrowLeft, Save, Upload } from "lucide-react"
+import { ArrowLeft, Save, Upload, Loader2 } from "lucide-react"
 import Link from "next/link"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { useStaffCourse } from "@/features/courses/hooks/use-course"
+import { useCreateLesson } from "@/features/courses/hooks/use-lesson"
+import { toast } from "sonner"
 
 export default function NewLessonPage() {
   const router = useRouter()
   const params = useParams()
-  const courseId = params.id as string
+  const courseSlug = params.slug as string
   const sectionId = params.sectionId as string
   
+  const { data: course } = useStaffCourse(courseSlug)
+  const courseId = course?.id ?? ''
+  
+  const createLessonMutation = useCreateLesson(courseId, sectionId, courseSlug)
+  
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [videoFile, setVideoFile] = useState<File | null>(null)
   const [formData, setFormData] = useState({
     title: "",
     content: "",
-    videoUrl: "",
     duration: 0,
     requireRobot: false,
-    type: "1", // 1: video, 2: coding, 3: quiz
-    solution: "{}"
+    type: "1", // 1: Bài học, 2: Video, 3: Kiểm tra
+    solution: ""
   })
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    setIsSubmitting(true)
     
-    // TODO: Call API để tạo lesson
-    console.log("Creating lesson:", formData)
+    if (!formData.title.trim()) {
+      toast.error("Vui lòng nhập tiêu đề bài học")
+      return
+    }
     
-    // Simulate API call
-    setTimeout(() => {
-      setIsSubmitting(false)
-      router.push(`/staff/courses/${courseId}/sections/${sectionId}/lessons`)
-    }, 1000)
+    if (!formData.content.trim()) {
+      toast.error("Vui lòng nhập nội dung bài học")
+      return
+    }
+    
+    if (formData.duration <= 0) {
+      toast.error("Thời lượng phải lớn hơn 0")
+      return
+    }
+    
+    // Validate video file for video type
+    if (formData.type === "2" && !videoFile) {
+      toast.error("Vui lòng tải lên file video")
+      return
+    }
+
+    try {
+      let solutionObject = undefined
+      if (formData.solution.trim()) {
+        try {
+          solutionObject = JSON.parse(formData.solution)
+        } catch (error) {
+          toast.error("Solution JSON không hợp lệ")
+          return
+        }
+      }
+
+      await createLessonMutation.mutateAsync({
+        title: formData.title.trim(),
+        content: formData.content.trim(),
+        videoFile: videoFile || undefined,
+        duration: formData.duration,
+        requireRobot: formData.requireRobot,
+        type: parseInt(formData.type),
+        solution: solutionObject
+      })
+      
+      toast.success("Tạo bài học thành công!")
+      // Router push is handled in the mutation hook
+    } catch (error: unknown) {
+      console.error("Error creating lesson:", error)
+      // Extract error message from API response
+      const errorMessage = error && typeof error === 'object' && 'response' in error
+        ? (error as { response?: { data?: { message?: string } } }).response?.data?.message || "Lỗi khi tạo bài học"
+        : error && typeof error === 'object' && 'message' in error
+        ? (error as { message: string }).message
+        : "Lỗi khi tạo bài học"
+      toast.error(errorMessage)
+    }
   }
 
   const handleChange = (field: string, value: string | boolean | number) => {
@@ -60,7 +113,7 @@ export default function NewLessonPage() {
   return (
     <div className="space-y-6">
       <div className="flex items-center gap-4">
-        <Link href={`/staff/courses/${courseId}/sections/${sectionId}/lessons`}>
+        <Link href={`/staff/courses/${courseSlug}`}>
           <Button variant="outline" size="icon">
             <ArrowLeft className="h-4 w-4" />
           </Button>
@@ -105,8 +158,8 @@ export default function NewLessonPage() {
                     <SelectValue placeholder="Chọn loại bài học" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="1">Video</SelectItem>
-                    <SelectItem value="2">Lập trình</SelectItem>
+                    <SelectItem value="1">Bài học</SelectItem>
+                    <SelectItem value="2">Video</SelectItem>
                     <SelectItem value="3">Kiểm tra</SelectItem>
                   </SelectContent>
                 </Select>
@@ -160,8 +213,8 @@ export default function NewLessonPage() {
             </CardContent>
           </Card>
 
-          {/* Media Content */}
-          {formData.type === "1" && (
+          {/* Video Content - Only for type 2 (Video) */}
+          {formData.type === "2" && (
             <Card>
               <CardHeader>
                 <CardTitle>Nội dung Video</CardTitle>
@@ -171,32 +224,36 @@ export default function NewLessonPage() {
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="videoUrl">URL Video</Label>
-                  <div className="flex gap-2">
-                    <Input
-                      id="videoUrl"
-                      placeholder="https://example.com/video.mp4"
-                      value={formData.videoUrl}
-                      onChange={(e) => handleChange("videoUrl", e.target.value)}
-                    />
-                    <Button type="button" variant="outline">
-                      <Upload className="h-4 w-4 mr-2" />
-                      Tải lên
-                    </Button>
-                  </div>
+                  <Label htmlFor="videoFile">Tải lên Video</Label>
+                  <Input
+                    id="videoFile"
+                    type="file"
+                    accept="video/*"
+                    onChange={(e) => {
+                      const file = e.target.files?.[0]
+                      if (file) {
+                        setVideoFile(file)
+                      }
+                    }}
+                  />
+                  {videoFile && (
+                    <p className="text-sm text-green-600">
+                      Đã chọn: {videoFile.name} ({(videoFile.size / 1024 / 1024).toFixed(2)} MB)
+                    </p>
+                  )}
                   <p className="text-sm text-muted-foreground">
-                    Hoặc tải lên video từ máy tính
+                    Chọn file video từ máy tính (MP4, AVI, MOV, etc.)
                   </p>
                 </div>
               </CardContent>
             </Card>
           )}
 
-          {/* Coding Content */}
-          {formData.type === "2" && (
+          {/* Coding Content
+          {formData.type === "1" && (
             <Card>
               <CardHeader>
-                <CardTitle>Nội dung Lập trình</CardTitle>
+                <CardTitle>Nội dung bài học</CardTitle>
                 <CardDescription>
                   Cấu hình bài tập lập trình
                 </CardDescription>
@@ -235,7 +292,7 @@ export default function NewLessonPage() {
                 </Tabs>
               </CardContent>
             </Card>
-          )}
+          )} */}
 
           {/* Quiz Content */}
           {formData.type === "3" && (
@@ -269,7 +326,7 @@ export default function NewLessonPage() {
           <Card>
             <CardContent className="pt-6">
               <div className="flex justify-end gap-4">
-                <Link href={`/staff/courses/${courseId}/sections/${sectionId}/lessons`}>
+                <Link href={`/staff/courses/${courseSlug}`}>
                   <Button type="button" variant="outline">
                     Hủy
                   </Button>
