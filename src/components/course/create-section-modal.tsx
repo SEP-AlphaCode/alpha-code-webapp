@@ -53,10 +53,18 @@ export function CreateSectionModal({
       setTitle("")
       setError("")
       onOpenChange(false)
+      toast.success("Đã tạo chương thành công")
       onSuccess?.()
-    } catch (error) {
+    } catch (error: unknown) {
       console.error("Error creating section:", error)
-      toast.error("Lỗi khi tạo chương")
+      // Extract error message from API response
+      const errorMessage = error && typeof error === 'object' && 'response' in error
+        ? (error as { response?: { data?: { message?: string } } }).response?.data?.message || "Lỗi khi tạo chương"
+        : error && typeof error === 'object' && 'message' in error
+        ? (error as { message: string }).message
+        : "Lỗi khi tạo chương"
+      toast.error(errorMessage)
+      setError(errorMessage)
     }
   }
 

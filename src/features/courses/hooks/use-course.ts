@@ -123,14 +123,16 @@ export function useStaffCourse(slug: string) {
     queryKey: ['staff', 'course', slug],
     queryFn: ({ signal }) => courseApi.getCourseBySlug(slug, signal),
     enabled: !!slug,
+    staleTime: 0, // Always refetch on mount to get fresh data
     retry: (failureCount, error) => {
       // Don't retry if request was canceled
       if (error && 'code' in error && error.code === 'ERR_CANCELED') {
         return false
       }
-      // Retry up to 2 times for other errors
-      return failureCount < 2
+      // Only retry once for other errors
+      return failureCount < 1
     },
+    retryDelay: 500, // Wait 500ms before retry
   })
 }
 
@@ -148,7 +150,7 @@ export function useCreateCourse() {
   })
 }
 
-export function useUpdateCourse(id: string) {
+export function useUpdateCourse(id: string, courseSlug?: string) {
   const queryClient = useQueryClient()
   const router = useRouter()
 
@@ -170,7 +172,12 @@ export function useUpdateCourse(id: string) {
       queryClient.invalidateQueries({ queryKey: ['courses'] })
       queryClient.invalidateQueries({ queryKey: ['course'] })
       queryClient.invalidateQueries({ queryKey: ['sections'] })
-      router.push('/staff/courses')
+      // Redirect to detail page if slug provided, otherwise to list
+      if (courseSlug) {
+        router.push(`/staff/courses/${courseSlug}`)
+      } else {
+        router.push('/staff/courses')
+      }
     },
   })
 }

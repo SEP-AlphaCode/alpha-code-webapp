@@ -61,9 +61,9 @@ export const updateSection = async (sectionId: string, data: {
 };
 
 // Delete section
-export const deleteSection = async (courseId: string, sectionId: string) => {
+export const deleteSection = async (sectionId: string) => {
     try {
-        const response = await coursesHttp.delete(`/courses/${courseId}/sections/${sectionId}`);
+        const response = await coursesHttp.delete(`/sections/${sectionId}`);
         return response.data;
     } catch (error) {
         console.error("API Error in deleteSection:", error);
@@ -74,7 +74,7 @@ export const deleteSection = async (courseId: string, sectionId: string) => {
 // Update section order (reorder sections)
 export const updateSectionOrder = async (courseId: string, sections: Array<{ id: string; orderNumber: number }>) => {
     try {
-        const response = await coursesHttp.put(`/courses/${courseId}/sections/reorder`, { sections });
+        const response = await coursesHttp.put(`/sections/${courseId}/sections/reorder`, { sections });
         return response.data;
     } catch (error) {
         console.error("API Error in updateSectionOrder:", error);

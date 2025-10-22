@@ -90,9 +90,16 @@ export default function NewLessonPage() {
       })
       
       toast.success("Tạo bài học thành công!")
-    } catch (error) {
+      // Router push is handled in the mutation hook
+    } catch (error: unknown) {
       console.error("Error creating lesson:", error)
-      toast.error("Lỗi khi tạo bài học")
+      // Extract error message from API response
+      const errorMessage = error && typeof error === 'object' && 'response' in error
+        ? (error as { response?: { data?: { message?: string } } }).response?.data?.message || "Lỗi khi tạo bài học"
+        : error && typeof error === 'object' && 'message' in error
+        ? (error as { message: string }).message
+        : "Lỗi khi tạo bài học"
+      toast.error(errorMessage)
     }
   }
 

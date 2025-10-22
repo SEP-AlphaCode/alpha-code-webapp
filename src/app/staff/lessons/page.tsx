@@ -48,6 +48,7 @@ import { useRouter } from "next/navigation"
 import { useAllLessons, useDeleteLesson } from "@/features/courses/hooks/use-lesson"
 import { useStaffCourses } from "@/features/courses/hooks"
 import { toast } from "sonner"
+import { DeleteLessonDialog } from "@/components/course/delete-lesson-dialog"
 
 const lessonTypeMap: { [key: number]: { text: string; icon: LucideIcon; color: string } } = {
   1: { text: "Bài học", icon: Code, color: "bg-green-500/10 text-green-500" },
@@ -61,6 +62,8 @@ export default function AllLessonsPage() {
   const [selectedType, setSelectedType] = useState("all")
   const [currentPage, setCurrentPage] = useState(0)
   const pageSize = 20
+  const [deletingLessonId, setDeletingLessonId] = useState<string | null>(null)
+  const [deletingLessonName, setDeletingLessonName] = useState("")
 
   // Fetch all lessons with pagination
   const { data: lessonsData, isLoading: lessonsLoading } = useAllLessons({
@@ -72,15 +75,27 @@ export default function AllLessonsPage() {
   const lessons = lessonsData?.data || []
   const deleteLessonMutation = useDeleteLesson('')
 
-  const handleDeleteLesson = async (lessonId: string, lessonTitle: string) => {
-    if (confirm(`Bạn có chắc chắn muốn xóa bài học "${lessonTitle}"?`)) {
-      try {
-        await deleteLessonMutation.mutateAsync(lessonId)
-        toast.success('Đã xóa bài học')
-      } catch (error) {
-        toast.error('Lỗi khi xóa bài học')
-        console.error('Error deleting lesson:', error)
-      }
+  const handleDeleteLesson = (lessonId: string, lessonTitle: string) => {
+    setDeletingLessonId(lessonId)
+    setDeletingLessonName(lessonTitle)
+  }
+
+  const handleDeleteLessonConfirm = async () => {
+    if (!deletingLessonId) return
+
+    try {
+      await deleteLessonMutation.mutateAsync(deletingLessonId)
+      setDeletingLessonId(null)
+      setDeletingLessonName("")
+      toast.success('Đã xóa bài học')
+    } catch (error: unknown) {
+      const errorMessage = error && typeof error === 'object' && 'response' in error
+        ? (error as { response?: { data?: { message?: string } } }).response?.data?.message || 'Lỗi khi xóa bài học'
+        : error && typeof error === 'object' && 'message' in error
+        ? (error as { message: string }).message
+        : 'Lỗi khi xóa bài học'
+      toast.error(errorMessage)
+      console.error('Error deleting lesson:', error)
     }
   }
 
@@ -299,6 +314,19 @@ export default function AllLessonsPage() {
           </div>
         </CardContent>
       </Card>
+
+      <DeleteLessonDialog
+        open={!!deletingLessonId}
+        lessonTitle={deletingLessonName}
+        onOpenChange={(open) => {
+          if (!open) {
+            setDeletingLessonId(null)
+            setDeletingLessonName("")
+          }
+        }}
+        onConfirm={handleDeleteLessonConfirm}
+        isDeleting={deleteLessonMutation.isPending}
+      />
     </div>
   )
 }

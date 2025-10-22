@@ -37,8 +37,9 @@ import {
 import Link from "next/link"
 import { Section, Lesson } from "@/types/courses"
 import { useStaffCourse, useSections, useUpdateSectionOrder, useDeleteSection, useDeleteLesson } from "@/features/courses/hooks"
-import { useQueries } from "@tanstack/react-query"
+import { useQueryClient } from "@tanstack/react-query"
 import * as lessonApi from "@/features/courses/api/lesson-api"
+import * as sectionApi from "@/features/courses/api/section-api"
 import { toast } from "sonner"
 import { CreateSectionModal } from "@/components/course/create-section-modal"
 import { EditSectionModal } from "@/components/course/edit-section-modal"
@@ -56,51 +57,22 @@ export default function CourseDetailPage() {
   const params = useParams()
   const router = useRouter()
   const courseSlug = params.slug as string
+  const queryClient = useQueryClient()
   
   const { data: course, isLoading: courseLoading } = useStaffCourse(courseSlug)
   const courseId = course?.id ?? '' // Get actual ID from course data for API calls
   
-  const { data: sections = [], isLoading: sectionsLoading, refetch: refetchSections } = useSections(courseId || '')
-  const updateSectionOrderMutation = useUpdateSectionOrder(courseId || '')
+  const { data: sections = [], isLoading: sectionsLoading } = useSections(courseId || '')
   const deleteSectionMutation = useDeleteSection(courseId || '')
   const deleteLessonMutation = useDeleteLesson(courseId || '')
 
-  // Fetch lessons for each section
-  const lessonsQueries = useQueries({
-    queries: sections.map((section) => ({
-      queryKey: ['lessons', courseId, section.id],
-      queryFn: ({ signal }: { signal?: AbortSignal }) => 
-        lessonApi.getLessonsBySectionId(courseId, section.id, signal),
-      enabled: !!courseId && !!section.id,
-    })),
-  })
-
-  // Combine sections with their lessons
+  // Sections already include lessons from the API, no need to fetch separately
   const sectionsWithLessons: Section[] = useMemo(() => {
-    const result = sections.map((section, index) => {
-      const lessonsData = lessonsQueries[index]?.data
-      
-      // Handle both array and PagedResult format
-      let lessons: Lesson[] = []
-      if (Array.isArray(lessonsData)) {
-        lessons = lessonsData
-      } else if (lessonsData && typeof lessonsData === 'object') {
-        // If it's a PagedResult or object with data property, extract the data array
-        const dataObj = lessonsData as any
-        if ('data' in dataObj && Array.isArray(dataObj.data)) {
-          lessons = dataObj.data
-        } else if ('content' in dataObj && Array.isArray(dataObj.content)) {
-          lessons = dataObj.content
-        }
-      }
-      
-      return {
-        ...section,
-        lessons: lessons
-      }
-    })
-    return result
-  }, [sections, ...lessonsQueries.map(q => q.data)])
+    return sections.map((section) => ({
+      ...section,
+      lessons: section.lessons || [] // Use lessons from API or empty array
+    }))
+  }, [sections])
 
   const [sectionsData, setSectionsData] = useState<Section[]>([])
   const [draggedLesson, setDraggedLesson] = useState<{ lesson: Lesson; sectionId: string } | null>(null)
@@ -121,7 +93,8 @@ export default function CourseDetailPage() {
     }
   }, [sectionsWithLessons])
 
-  const isLoading = courseLoading || sectionsLoading || lessonsQueries.some(q => q.isLoading)
+  // Only show loading on initial load
+  const isInitialLoading = courseLoading || sectionsLoading
 
   const formatDuration = (seconds: number) => {
     const minutes = Math.floor(seconds / 60)
@@ -140,9 +113,13 @@ export default function CourseDetailPage() {
   const handleDrop = async (targetSectionId: string, targetIndex: number) => {
     if (!draggedLesson || !Array.isArray(sectionsData)) return
 
+    // Clear dragged state immediately to remove blur effect
+    const draggedLessonData = draggedLesson
+    setDraggedLesson(null)
+
     const newSectionsData = [...sectionsData]
     const sourceSectionIndex = newSectionsData.findIndex(
-      s => s.id === draggedLesson.sectionId
+      s => s.id === draggedLessonData.sectionId
     )
     const targetSectionIndex = newSectionsData.findIndex(
       s => s.id === targetSectionId
@@ -152,7 +129,7 @@ export default function CourseDetailPage() {
 
     // Remove lesson from source
     const sourceLessons = [...(newSectionsData[sourceSectionIndex].lessons || [])]
-    const lessonIndex = sourceLessons.findIndex(l => l.id === draggedLesson.lesson.id)
+    const lessonIndex = sourceLessons.findIndex(l => l.id === draggedLessonData.lesson.id)
     const [movedLesson] = sourceLessons.splice(lessonIndex, 1)
 
     // Update order numbers in source section
@@ -184,9 +161,8 @@ export default function CourseDetailPage() {
     }
 
     setSectionsData(newSectionsData)
-    setDraggedLesson(null)
 
-    // Call API to update lesson order
+    // Call API to update lesson order in background
     try {
       await lessonApi.updateLessonOrder(
         targetSectionId,
@@ -209,11 +185,18 @@ export default function CourseDetailPage() {
         )
       }
       
+      // Silently update cache without triggering loading state
+      queryClient.setQueryData(['lessons', courseId, targetSectionId], targetLessons)
+      if (sourceSectionIndex !== targetSectionIndex) {
+        queryClient.setQueryData(['lessons', courseId, draggedLesson.sectionId], sourceLessons)
+      }
+      
       toast.success('Đã cập nhật thứ tự bài học')
-      refetchSections()
     } catch (error) {
       toast.error('Lỗi khi cập nhật thứ tự bài học')
       console.error('Error updating lesson order:', error)
+      // Revert local state on error
+      setSectionsData(sectionsWithLessons)
     }
   }
 
@@ -253,17 +236,24 @@ export default function CourseDetailPage() {
 
   const updateSectionOrder = async (sections: Section[]) => {
     try {
-      await updateSectionOrderMutation.mutateAsync(
+      // Call API directly without triggering mutation loading state
+      await sectionApi.updateSectionOrder(
+        courseId,
         sections.map(s => ({
           id: s.id,
           orderNumber: s.orderNumber
         }))
       )
+      
+      // Silently update cache without refetch
+      queryClient.setQueryData(['sections', courseId], sections)
+      
       toast.success('Đã cập nhật thứ tự chương')
-      refetchSections()
     } catch (error) {
       toast.error('Lỗi khi cập nhật thứ tự chương')
       console.error('Error updating section order:', error)
+      // Revert local state on error
+      setSectionsData(sectionsWithLessons)
     }
   }
 
@@ -281,8 +271,12 @@ export default function CourseDetailPage() {
       return
     }
 
+    // Clear dragged state immediately to remove blur effect
+    const draggedSectionIndex = draggedSection
+    setDraggedSection(null)
+
     const newSectionsData = [...sectionsData]
-    const [movedSection] = newSectionsData.splice(draggedSection, 1)
+    const [movedSection] = newSectionsData.splice(draggedSectionIndex, 1)
     newSectionsData.splice(targetIndex, 0, movedSection)
 
     // Update order numbers
@@ -291,7 +285,6 @@ export default function CourseDetailPage() {
     })
 
     setSectionsData(newSectionsData)
-    setDraggedSection(null)
 
     // Call API to update section order
     await updateSectionOrder(newSectionsData)
@@ -305,7 +298,6 @@ export default function CourseDetailPage() {
       setDeleteSectionId(null)
       setDeleteSectionTitle("")
       toast.success('Đã xóa chương thành công')
-      refetchSections()
     } catch (error) {
       toast.error('Lỗi khi xóa chương')
       console.error('Error deleting section:', error)
@@ -320,7 +312,6 @@ export default function CourseDetailPage() {
       setDeleteLessonId(null)
       setDeleteLessonTitle("")
       toast.success('Đã xóa bài học thành công')
-      refetchSections()
     } catch (error) {
       toast.error('Lỗi khi xóa bài học')
       console.error('Error deleting lesson:', error)
@@ -331,7 +322,7 @@ export default function CourseDetailPage() {
     ? sectionsData.reduce((sum, s) => sum + (s.lessons?.length || 0), 0)
     : 0
 
-  if (isLoading) {
+  if (isInitialLoading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
@@ -497,6 +488,7 @@ export default function CourseDetailPage() {
                 }`}
                 draggable
                 onDragStart={() => handleSectionDragStart(sectionIndex)}
+                onDragEnd={() => setDraggedSection(null)}
                 onDragOver={handleSectionDragOver}
                 onDrop={() => handleSectionDrop(sectionIndex)}
               >
@@ -605,6 +597,7 @@ export default function CourseDetailPage() {
                             key={lesson.id}
                             draggable
                             onDragStart={() => handleDragStart(lesson, sectionData.id)}
+                            onDragEnd={() => setDraggedLesson(null)}
                             onDragOver={handleDragOver}
                             onDrop={(e) => {
                               e.stopPropagation()
@@ -704,10 +697,6 @@ export default function CourseDetailPage() {
         onOpenChange={setIsCreateSectionModalOpen}
         courseId={courseId}
         courseSlug={courseSlug}
-        onSuccess={() => {
-          refetchSections()
-          toast.success('Đã tạo chương thành công')
-        }}
       />
 
       {/* Edit Section Modal */}
@@ -724,7 +713,7 @@ export default function CourseDetailPage() {
         currentTitle={editingSectionTitle}
         currentOrderNumber={editingSectionOrderNumber}
         onSuccess={() => {
-          refetchSections()
+          // Mutation will auto-invalidate cache
         }}
       />
 

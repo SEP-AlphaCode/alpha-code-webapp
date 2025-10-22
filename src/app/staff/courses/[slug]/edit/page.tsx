@@ -73,7 +73,7 @@ function EditCourseForm({
   categoriesLoading: boolean
 }) {
   const router = useRouter()
-  const updateCourse = useUpdateCourse(course.id)
+  const updateCourse = useUpdateCourse(course.id, course.slug)
 
   const [formData, setFormData] = useState({
     name: "",

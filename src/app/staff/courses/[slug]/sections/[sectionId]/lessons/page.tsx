@@ -1,5 +1,6 @@
 "use client"
 
+import { useState } from "react"
 import { useParams } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -42,6 +43,7 @@ import { useLessonsBySection, useDeleteLesson, useUpdateLessonOrder } from "@/fe
 import { useSection } from "@/features/courses/hooks/use-section"
 import { toast } from "sonner"
 import { Lesson } from "@/types/courses"
+import { DeleteLessonDialog } from "@/components/course/delete-lesson-dialog"
 
 const lessonTypeMap: { [key: number]: { text: string; icon: LucideIcon; color: string } } = {
   1: { text: "Bài học", icon: Code, color: "bg-green-500/10 text-green-500" },
@@ -53,12 +55,14 @@ export default function SectionLessonsPage() {
   const params = useParams()
   const courseSlug = params.slug as string
   const sectionId = params.sectionId as string
+  const [deletingLessonId, setDeletingLessonId] = useState<string | null>(null)
+  const [deletingLessonName, setDeletingLessonName] = useState("")
   
   const { data: course, isLoading: courseLoading } = useStaffCourse(courseSlug)
   const courseId = course?.id ?? ''
   
   const { data: section, isLoading: sectionLoading } = useSection(courseId, sectionId)
-  const { data: lessons = [], isLoading: lessonsLoading, refetch: refetchLessons } = useLessonsBySection(courseId, sectionId)
+  const { data: lessons = [], isLoading: lessonsLoading } = useLessonsBySection(courseId, sectionId)
   const deleteLessonMutation = useDeleteLesson(courseId, sectionId)
   const updateLessonOrderMutation = useUpdateLessonOrder(courseId, sectionId)
   
@@ -92,22 +96,32 @@ export default function SectionLessonsPage() {
         }))
       )
       toast.success('Đã cập nhật thứ tự bài học')
-      refetchLessons()
     } catch (error) {
       toast.error('Lỗi khi cập nhật thứ tự bài học')
       console.error('Error updating lesson order:', error)
     }
   }
 
-  const handleDeleteLesson = async (lessonId: string) => {
-    if (!confirm('Bạn có chắc chắn muốn xóa bài học này?')) return
+  const handleDeleteLesson = (lessonId: string, lessonName: string) => {
+    setDeletingLessonId(lessonId)
+    setDeletingLessonName(lessonName)
+  }
+
+  const handleDeleteLessonConfirm = async () => {
+    if (!deletingLessonId) return
     
     try {
-      await deleteLessonMutation.mutateAsync(lessonId)
+      await deleteLessonMutation.mutateAsync(deletingLessonId)
+      setDeletingLessonId(null)
+      setDeletingLessonName("")
       toast.success('Đã xóa bài học thành công')
-      refetchLessons()
-    } catch (error) {
-      toast.error('Lỗi khi xóa bài học')
+    } catch (error: unknown) {
+      const errorMessage = error && typeof error === 'object' && 'response' in error
+        ? (error as { response?: { data?: { message?: string } } }).response?.data?.message || 'Lỗi khi xóa bài học'
+        : error && typeof error === 'object' && 'message' in error
+        ? (error as { message: string }).message
+        : 'Lỗi khi xóa bài học'
+      toast.error(errorMessage)
       console.error('Error deleting lesson:', error)
     }
   }
@@ -290,7 +304,7 @@ export default function SectionLessonsPage() {
                                 <DropdownMenuSeparator />
                                 <DropdownMenuItem 
                                   className="text-destructive"
-                                  onClick={() => handleDeleteLesson(lesson.id)}
+                                  onClick={() => handleDeleteLesson(lesson.id, lesson.title)}
                                 >
                                   <Trash2 className="mr-2 h-4 w-4" />
                                   Xóa
@@ -308,6 +322,19 @@ export default function SectionLessonsPage() {
           </div>
         </CardContent>
       </Card>
+
+      <DeleteLessonDialog
+        open={!!deletingLessonId}
+        lessonTitle={deletingLessonName}
+        onOpenChange={(open) => {
+          if (!open) {
+            setDeletingLessonId(null)
+            setDeletingLessonName("")
+          }
+        }}
+        onConfirm={handleDeleteLessonConfirm}
+        isDeleting={deleteLessonMutation.isPending}
+      />
     </div>
   )
 }

@@ -66,9 +66,16 @@ export function EditSectionModal({
       onOpenChange(false)
       onSuccess?.()
       toast.success("Đã cập nhật chương thành công")
-    } catch (error) {
+    } catch (error: unknown) {
       console.error("Error updating section:", error)
-      toast.error("Lỗi khi cập nhật chương")
+      // Extract error message from API response
+      const errorMessage = error && typeof error === 'object' && 'response' in error
+        ? (error as { response?: { data?: { message?: string } } }).response?.data?.message || "Lỗi khi cập nhật chương"
+        : error && typeof error === 'object' && 'message' in error
+        ? (error as { message: string }).message
+        : "Lỗi khi cập nhật chương"
+      toast.error(errorMessage)
+      setError(errorMessage)
     }
   }
 

@@ -160,7 +160,7 @@ export const updateLessonOrder = async (
     lessons: Array<{ id: string; orderNumber: number; sectionId: string }>
 ) => {
     try {
-        const response = await coursesHttp.put(`/sections/${sectionId}/lessons/reorder`, { lessons });
+        const response = await coursesHttp.put(`/lessons/${sectionId}/lessons/reorder`, { lessons });
         return response.data;
     } catch (error) {
         console.error("API Error in updateLessonOrder:", error);

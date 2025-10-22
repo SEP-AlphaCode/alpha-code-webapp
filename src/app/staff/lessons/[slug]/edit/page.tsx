@@ -73,9 +73,15 @@ export default function EditLessonPage() {
       
       toast.success('Đã cập nhật bài học')
       router.push(`/staff/lessons/${lessonSlug}`)
-    } catch (error) {
-      toast.error('Lỗi khi cập nhật bài học')
+    } catch (error: unknown) {
       console.error('Error updating lesson:', error)
+      // Extract error message from API response
+      const errorMessage = error && typeof error === 'object' && 'response' in error
+        ? (error as { response?: { data?: { message?: string } } }).response?.data?.message || 'Lỗi khi cập nhật bài học'
+        : error && typeof error === 'object' && 'message' in error
+        ? (error as { message: string }).message
+        : 'Lỗi khi cập nhật bài học'
+      toast.error(errorMessage)
     }
   }
 

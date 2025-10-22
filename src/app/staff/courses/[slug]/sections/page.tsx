@@ -1,5 +1,6 @@
 "use client"
 
+import { useState } from "react"
 import { useParams } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -38,10 +39,13 @@ import { useStaffCourse } from "@/features/courses/hooks/use-course"
 import { useSections, useDeleteSection, useUpdateSectionOrder } from "@/features/courses/hooks/use-section"
 import { toast } from "sonner"
 import { Section } from "@/types/courses"
+import { DeleteSectionDialog } from "@/components/course/delete-section-dialog"
 
 export default function CourseSectionsPage() {
   const params = useParams()
   const courseSlug = params.slug as string
+  const [deletingSectionId, setDeletingSectionId] = useState<string | null>(null)
+  const [deletingSectionName, setDeletingSectionName] = useState("")
   
   const { data: course, isLoading: courseLoading } = useStaffCourse(courseSlug)
   const courseId = course?.id ?? ''
@@ -86,15 +90,27 @@ export default function CourseSectionsPage() {
     }
   }
 
-  const handleDeleteSection = async (sectionId: string) => {
-    if (!confirm('Bạn có chắc chắn muốn xóa chương này? Tất cả bài học trong chương cũng sẽ bị xóa.')) return
+  const handleDeleteSection = (sectionId: string, sectionName: string) => {
+    setDeletingSectionId(sectionId)
+    setDeletingSectionName(sectionName)
+  }
+
+  const handleDeleteSectionConfirm = async () => {
+    if (!deletingSectionId) return
     
     try {
-      await deleteSectionMutation.mutateAsync(sectionId)
+      await deleteSectionMutation.mutateAsync(deletingSectionId)
+      setDeletingSectionId(null)
+      setDeletingSectionName("")
       toast.success('Đã xóa chương thành công')
-      refetchSections()
-    } catch (error) {
-      toast.error('Lỗi khi xóa chương')
+      // No need to manually refetch - the mutation already invalidates queries
+    } catch (error: unknown) {
+      const errorMessage = error && typeof error === 'object' && 'response' in error
+        ? (error as { response?: { data?: { message?: string } } }).response?.data?.message || 'Lỗi khi xóa chương'
+        : error && typeof error === 'object' && 'message' in error
+        ? (error as { message: string }).message
+        : 'Lỗi khi xóa chương'
+      toast.error(errorMessage)
       console.error('Error deleting section:', error)
     }
   }
@@ -236,7 +252,7 @@ export default function CourseSectionsPage() {
                               <DropdownMenuSeparator />
                               <DropdownMenuItem 
                                 className="text-destructive"
-                                onClick={() => handleDeleteSection(section.id)}
+                                onClick={() => handleDeleteSection(section.id, section.title)}
                               >
                                 <Trash2 className="mr-2 h-4 w-4" />
                                 Xóa
@@ -253,6 +269,19 @@ export default function CourseSectionsPage() {
           </div>
         </CardContent>
       </Card>
+
+      <DeleteSectionDialog
+        open={!!deletingSectionId}
+        sectionTitle={deletingSectionName}
+        onOpenChange={(open) => {
+          if (!open) {
+            setDeletingSectionId(null)
+            setDeletingSectionName("")
+          }
+        }}
+        onConfirm={handleDeleteSectionConfirm}
+        isDeleting={deleteSectionMutation.isPending}
+      />
     </div>
   )
 }

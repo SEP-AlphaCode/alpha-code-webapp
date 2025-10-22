@@ -9,6 +9,7 @@ export function useSections(courseId: string) {
     queryKey: ['sections', courseId],
     queryFn: ({ signal }) => sectionApi.getSectionsByCourseId(courseId, signal),
     enabled: !!courseId,
+    staleTime: 0, // Always refetch on mount to get fresh data
   })
 }
 
@@ -26,19 +27,28 @@ export function useCreateSection(courseId: string, courseSlug?: string) {
   return useMutation({
     mutationFn: (data: { title: string; }) =>
       sectionApi.createSection(courseId, data),
-    onSuccess: () => {
+    onSuccess: async () => {
       // Invalidate all related queries
-      queryClient.invalidateQueries({ queryKey: ['lessons', courseId] })
-      queryClient.invalidateQueries({ queryKey: ['sections', courseId] })
-      queryClient.invalidateQueries({ queryKey: ['sections'] })
-      
-      if (courseSlug) {
-        queryClient.invalidateQueries({ queryKey: ['staff', 'course', courseSlug] })
-        queryClient.invalidateQueries({ queryKey: ['course', courseSlug] })
-      }
-      
-      queryClient.invalidateQueries({ queryKey: ['staff', 'course'] })
-      queryClient.invalidateQueries({ queryKey: ['course'] })
+      await queryClient.invalidateQueries({ 
+        queryKey: ['lessons', courseId],
+        refetchType: 'active'
+      })
+      await queryClient.invalidateQueries({ 
+        queryKey: ['sections', courseId],
+        refetchType: 'active'
+      })
+      await queryClient.invalidateQueries({ 
+        queryKey: ['sections'],
+        refetchType: 'active'
+      })
+      await queryClient.invalidateQueries({ 
+        queryKey: ['staff', 'course'],
+        refetchType: 'active'
+      })
+      await queryClient.invalidateQueries({ 
+        queryKey: ['course'],
+        refetchType: 'active'
+      })
     },
   })
 }
@@ -49,11 +59,23 @@ export function useUpdateSection(sectionId: string) {
   return useMutation({
     mutationFn: (data: { title: string; orderNumber: number }) =>
       sectionApi.updateSection(sectionId, data),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['sections'] })
-      queryClient.invalidateQueries({ queryKey: ['section', sectionId] })
-      queryClient.invalidateQueries({ queryKey: ['staff', 'course'] })
-      queryClient.invalidateQueries({ queryKey: ['course'] })
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ 
+        queryKey: ['sections'],
+        refetchType: 'active'
+      })
+      await queryClient.invalidateQueries({ 
+        queryKey: ['section', sectionId],
+        refetchType: 'active'
+      })
+      await queryClient.invalidateQueries({ 
+        queryKey: ['staff', 'course'],
+        refetchType: 'active'
+      })
+      await queryClient.invalidateQueries({ 
+        queryKey: ['course'],
+        refetchType: 'active'
+      })
     },
   })
 }
@@ -62,12 +84,29 @@ export function useDeleteSection(courseId: string) {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: (sectionId: string) => sectionApi.deleteSection(courseId, sectionId),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['lessons', courseId] })
-      queryClient.invalidateQueries({ queryKey: ['sections', courseId] })
-      queryClient.invalidateQueries({ queryKey: ['staff', 'course', courseId] })
-      queryClient.invalidateQueries({ queryKey: ['course', courseId] })
+    mutationFn: (sectionId: string) => sectionApi.deleteSection(sectionId),
+    onSuccess: async () => {
+      // Invalidate all section-related queries
+      await queryClient.invalidateQueries({ 
+        queryKey: ['sections'],
+        refetchType: 'active'
+      })
+      await queryClient.invalidateQueries({ 
+        queryKey: ['sections', courseId],
+        refetchType: 'active'
+      })
+      await queryClient.invalidateQueries({ 
+        queryKey: ['lessons', courseId],
+        refetchType: 'active'
+      })
+      await queryClient.invalidateQueries({ 
+        queryKey: ['staff', 'course'],
+        refetchType: 'active'
+      })
+      await queryClient.invalidateQueries({ 
+        queryKey: ['course'],
+        refetchType: 'active'
+      })
     },
   })
 }
@@ -78,11 +117,24 @@ export function useUpdateSectionOrder(courseId: string) {
   return useMutation({
     mutationFn: (sections: Array<{ id: string; orderNumber: number }>) =>
       sectionApi.updateSectionOrder(courseId, sections),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['lessons', courseId] })
-      queryClient.invalidateQueries({ queryKey: ['sections', courseId] })
-      queryClient.invalidateQueries({ queryKey: ['staff', 'course', courseId] })
-      queryClient.invalidateQueries({ queryKey: ['course', courseId] })
+    onSuccess: async () => {
+      // Invalidate all related queries and wait for refetch
+      await queryClient.invalidateQueries({ 
+        queryKey: ['lessons', courseId],
+        refetchType: 'active'
+      })
+      await queryClient.invalidateQueries({ 
+        queryKey: ['sections', courseId],
+        refetchType: 'active'
+      })
+      await queryClient.invalidateQueries({ 
+        queryKey: ['staff', 'course'],
+        refetchType: 'active'
+      })
+      await queryClient.invalidateQueries({ 
+        queryKey: ['course'],
+        refetchType: 'active'
+      })
     },
   })
 }
