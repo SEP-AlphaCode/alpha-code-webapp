@@ -28,6 +28,7 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import { Badge } from "@/components/ui/badge"
+import { DeleteCourseDialog } from "@/components/course/delete-course-dialog"
 import { Pagination } from "@/components/ui/pagination"
 import { Plus, Search, MoreHorizontal, Pencil, Trash2, Eye, Layers, BookOpen, Loader2 } from "lucide-react"
 import Link from "next/link"
@@ -47,6 +48,8 @@ export default function CoursesPage() {
   const [page, setPage] = useState(1)
   const [size] = useState(10)
   const [debouncedSearch, setDebouncedSearch] = useState("")
+  const [deletingCourseId, setDeletingCourseId] = useState<string | null>(null)
+  const [deletingCourseName, setDeletingCourseName] = useState("")
   
   // Debounce search query
   useEffect(() => {
@@ -87,17 +90,28 @@ export default function CoursesPage() {
     return courses.filter(course => course.categoryId === selectedCategory)
   }, [courses, selectedCategory])
 
-  const handleDeleteCourse = async (courseId: string, courseName: string) => {
-    if (!confirm(`Bạn có chắc chắn muốn xóa khóa học "${courseName}"? Tất cả các chương và bài học cũng sẽ bị xóa.`)) {
-      return
-    }
+  const handleDeleteCourse = (courseId: string, courseName: string) => {
+    setDeletingCourseId(courseId)
+    setDeletingCourseName(courseName)
+  }
+
+  const handleDeleteCourseConfirm = async () => {
+    if (!deletingCourseId) return
 
     try {
-      await deleteCourse.mutateAsync(courseId)
+      console.log('🗑️ Deleting course:', deletingCourseId)
+      await deleteCourse.mutateAsync(deletingCourseId)
+      console.log('✅ Course deleted, cache should be invalidated')
+      setDeletingCourseId(null)
+      setDeletingCourseName("")
       toast.success('Đã xóa khóa học thành công')
-      refetch()
-    } catch (error) {
-      toast.error('Lỗi khi xóa khóa học')
+    } catch (error: unknown) {
+      const errorMessage = error && typeof error === 'object' && 'response' in error
+        ? (error as { response?: { data?: { message?: string } } }).response?.data?.message || 'Lỗi khi xóa khóa học'
+        : error && typeof error === 'object' && 'message' in error
+        ? (error as { message: string }).message
+        : 'Lỗi khi xóa khóa học'
+      toast.error(errorMessage)
       console.error('Error deleting course:', error)
     }
   }
@@ -179,10 +193,7 @@ export default function CoursesPage() {
                   <TableHead className="w-[80px]">Ảnh</TableHead>
                   <TableHead>Tên khóa học</TableHead>
                   <TableHead>Danh mục</TableHead>
-                  <TableHead>Cấp độ</TableHead>
-                  <TableHead>Bài học</TableHead>
-                  <TableHead>Chương</TableHead>
-                  <TableHead>Thời lượng</TableHead>
+                  <TableHead>Thông tin</TableHead>
                   <TableHead>Giá</TableHead>
                   <TableHead>Trạng thái</TableHead>
                   <TableHead className="text-right">Thao tác</TableHead>
@@ -191,13 +202,13 @@ export default function CoursesPage() {
               <TableBody>
                 {isLoading ? (
                   <TableRow>
-                    <TableCell colSpan={10} className="text-center py-8">
+                    <TableCell colSpan={7} className="text-center py-8">
                       <Loader2 className="h-6 w-6 animate-spin mx-auto text-muted-foreground" />
                     </TableCell>
                   </TableRow>
                 ) : filteredCourses.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={10} className="text-center py-8 text-muted-foreground">
+                    <TableCell colSpan={7} className="text-center py-8 text-muted-foreground">
                       Không tìm thấy khóa học nào
                     </TableCell>
                   </TableRow>
@@ -232,15 +243,26 @@ export default function CoursesPage() {
                         <Badge variant="outline">{course.categoryName|| 'N/A'}</Badge>
                       </TableCell>
                       <TableCell>
-                        <Badge className={levelMap[course.level]?.color}>
-                          {levelMap[course.level]?.text}
-                        </Badge>
+                        <div className="space-y-1 min-w-[160px]">
+                          <div className="flex items-center gap-2">
+                            <Badge className={levelMap[course.level]?.color}>
+                              {levelMap[course.level]?.text}
+                            </Badge>
+                            {course.requireLicense && (
+                              <Badge variant="outline" className="bg-blue-500/10 text-blue-700 border-blue-500/20">
+                                License
+                              </Badge>
+                            )}
+                          </div>
+                          <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                            <span>{course.sectionCount || 0} chương</span>
+                            <span>•</span>
+                            <span>{course.totalLessons} bài</span>
+                            <span>•</span>
+                            <span>{formatDuration(course.totalDuration)}</span>
+                          </div>
+                        </div>
                       </TableCell>
-                      <TableCell>{course.totalLessons}</TableCell>
-                      <TableCell>
-                        <Badge variant="secondary">{course.sectionCount || 0}</Badge>
-                      </TableCell>
-                      <TableCell>{formatDuration(course.totalDuration)}</TableCell>
                       <TableCell className="font-medium">
                         {formatPrice(course.price)}
                       </TableCell>
@@ -315,6 +337,19 @@ export default function CoursesPage() {
           )}
         </CardContent>
       </Card>
+
+      <DeleteCourseDialog
+        open={!!deletingCourseId}
+        courseName={deletingCourseName}
+        onOpenChange={(open) => {
+          if (!open) {
+            setDeletingCourseId(null)
+            setDeletingCourseName("")
+          }
+        }}
+        onConfirm={handleDeleteCourseConfirm}
+        isDeleting={deleteCourse.isPending}
+      />
     </div>
   )
 }

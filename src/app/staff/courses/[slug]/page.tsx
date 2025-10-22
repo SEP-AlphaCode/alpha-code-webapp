@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useMemo } from "react"
 import { useParams, useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -37,9 +37,10 @@ import {
 import Link from "next/link"
 import { Section, Lesson } from "@/types/courses"
 import { useStaffCourse, useSections, useUpdateSectionOrder, useDeleteSection, useDeleteLesson } from "@/features/courses/hooks"
+import { useQueryClient } from "@tanstack/react-query"
 import * as lessonApi from "@/features/courses/api/lesson-api"
+import * as sectionApi from "@/features/courses/api/section-api"
 import { toast } from "sonner"
-import { UUID } from "crypto"
 import { CreateSectionModal } from "@/components/course/create-section-modal"
 import { EditSectionModal } from "@/components/course/edit-section-modal"
 import { DeleteSectionDialog } from "@/components/course/delete-section-dialog"
@@ -56,14 +57,22 @@ export default function CourseDetailPage() {
   const params = useParams()
   const router = useRouter()
   const courseSlug = params.slug as string
+  const queryClient = useQueryClient()
   
   const { data: course, isLoading: courseLoading } = useStaffCourse(courseSlug)
   const courseId = course?.id ?? '' // Get actual ID from course data for API calls
   
-  const { data: sections, isLoading: sectionsLoading, refetch: refetchSections } = useSections(courseId || '')
-  const updateSectionOrderMutation = useUpdateSectionOrder(courseId || '')
+  const { data: sections = [], isLoading: sectionsLoading } = useSections(courseId || '')
   const deleteSectionMutation = useDeleteSection(courseId || '')
   const deleteLessonMutation = useDeleteLesson(courseId || '')
+
+  // Sections already include lessons from the API, no need to fetch separately
+  const sectionsWithLessons: Section[] = useMemo(() => {
+    return sections.map((section) => ({
+      ...section,
+      lessons: section.lessons || [] // Use lessons from API or empty array
+    }))
+  }, [sections])
 
   const [sectionsData, setSectionsData] = useState<Section[]>([])
   const [draggedLesson, setDraggedLesson] = useState<{ lesson: Lesson; sectionId: string } | null>(null)
@@ -79,12 +88,13 @@ export default function CourseDetailPage() {
 
   // Update local state when sections data changes
   useEffect(() => {
-    if (sections && Array.isArray(sections)) {
-      setSectionsData(sections)
+    if (sectionsWithLessons && Array.isArray(sectionsWithLessons)) {
+      setSectionsData(sectionsWithLessons)
     }
-  }, [sections])
+  }, [sectionsWithLessons])
 
-  const isLoading = courseLoading || sectionsLoading
+  // Only show loading on initial load
+  const isInitialLoading = courseLoading || sectionsLoading
 
   const formatDuration = (seconds: number) => {
     const minutes = Math.floor(seconds / 60)
@@ -103,9 +113,13 @@ export default function CourseDetailPage() {
   const handleDrop = async (targetSectionId: string, targetIndex: number) => {
     if (!draggedLesson || !Array.isArray(sectionsData)) return
 
+    // Clear dragged state immediately to remove blur effect
+    const draggedLessonData = draggedLesson
+    setDraggedLesson(null)
+
     const newSectionsData = [...sectionsData]
     const sourceSectionIndex = newSectionsData.findIndex(
-      s => s.id === draggedLesson.sectionId
+      s => s.id === draggedLessonData.sectionId
     )
     const targetSectionIndex = newSectionsData.findIndex(
       s => s.id === targetSectionId
@@ -115,7 +129,7 @@ export default function CourseDetailPage() {
 
     // Remove lesson from source
     const sourceLessons = [...(newSectionsData[sourceSectionIndex].lessons || [])]
-    const lessonIndex = sourceLessons.findIndex(l => l.id === draggedLesson.lesson.id)
+    const lessonIndex = sourceLessons.findIndex(l => l.id === draggedLessonData.lesson.id)
     const [movedLesson] = sourceLessons.splice(lessonIndex, 1)
 
     // Update order numbers in source section
@@ -147,9 +161,8 @@ export default function CourseDetailPage() {
     }
 
     setSectionsData(newSectionsData)
-    setDraggedLesson(null)
 
-    // Call API to update lesson order
+    // Call API to update lesson order in background
     try {
       await lessonApi.updateLessonOrder(
         targetSectionId,
@@ -172,11 +185,18 @@ export default function CourseDetailPage() {
         )
       }
       
+      // Silently update cache without triggering loading state
+      queryClient.setQueryData(['lessons', courseId, targetSectionId], targetLessons)
+      if (sourceSectionIndex !== targetSectionIndex) {
+        queryClient.setQueryData(['lessons', courseId, draggedLesson.sectionId], sourceLessons)
+      }
+      
       toast.success('Đã cập nhật thứ tự bài học')
-      refetchSections()
     } catch (error) {
       toast.error('Lỗi khi cập nhật thứ tự bài học')
       console.error('Error updating lesson order:', error)
+      // Revert local state on error
+      setSectionsData(sectionsWithLessons)
     }
   }
 
@@ -216,17 +236,24 @@ export default function CourseDetailPage() {
 
   const updateSectionOrder = async (sections: Section[]) => {
     try {
-      await updateSectionOrderMutation.mutateAsync(
+      // Call API directly without triggering mutation loading state
+      await sectionApi.updateSectionOrder(
+        courseId,
         sections.map(s => ({
           id: s.id,
           orderNumber: s.orderNumber
         }))
       )
+      
+      // Silently update cache without refetch
+      queryClient.setQueryData(['sections', courseId], sections)
+      
       toast.success('Đã cập nhật thứ tự chương')
-      refetchSections()
     } catch (error) {
       toast.error('Lỗi khi cập nhật thứ tự chương')
       console.error('Error updating section order:', error)
+      // Revert local state on error
+      setSectionsData(sectionsWithLessons)
     }
   }
 
@@ -244,8 +271,12 @@ export default function CourseDetailPage() {
       return
     }
 
+    // Clear dragged state immediately to remove blur effect
+    const draggedSectionIndex = draggedSection
+    setDraggedSection(null)
+
     const newSectionsData = [...sectionsData]
-    const [movedSection] = newSectionsData.splice(draggedSection, 1)
+    const [movedSection] = newSectionsData.splice(draggedSectionIndex, 1)
     newSectionsData.splice(targetIndex, 0, movedSection)
 
     // Update order numbers
@@ -254,7 +285,6 @@ export default function CourseDetailPage() {
     })
 
     setSectionsData(newSectionsData)
-    setDraggedSection(null)
 
     // Call API to update section order
     await updateSectionOrder(newSectionsData)
@@ -268,7 +298,6 @@ export default function CourseDetailPage() {
       setDeleteSectionId(null)
       setDeleteSectionTitle("")
       toast.success('Đã xóa chương thành công')
-      refetchSections()
     } catch (error) {
       toast.error('Lỗi khi xóa chương')
       console.error('Error deleting section:', error)
@@ -283,7 +312,6 @@ export default function CourseDetailPage() {
       setDeleteLessonId(null)
       setDeleteLessonTitle("")
       toast.success('Đã xóa bài học thành công')
-      refetchSections()
     } catch (error) {
       toast.error('Lỗi khi xóa bài học')
       console.error('Error deleting lesson:', error)
@@ -294,7 +322,7 @@ export default function CourseDetailPage() {
     ? sectionsData.reduce((sum, s) => sum + (s.lessons?.length || 0), 0)
     : 0
 
-  if (isLoading) {
+  if (isInitialLoading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
@@ -344,22 +372,96 @@ export default function CourseDetailPage() {
           <CardTitle>Thông tin khóa học</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <div>
-              <p className="text-sm text-muted-foreground">Danh mục</p>
-              <p className="font-medium">{course.categoryName || 'N/A'}</p>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+            {/* Danh mục */}
+            <div className="space-y-2">
+              <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Danh mục</p>
+              <div className="flex items-center gap-2">
+                <Badge variant="outline" className="text-sm font-semibold">
+                  {course.categoryName || 'N/A'}
+                </Badge>
+              </div>
             </div>
-            <div>
-              <p className="text-sm text-muted-foreground">Số chương</p>
-              <p className="font-medium">{Array.isArray(sectionsData) ? sectionsData.length : 0} chương</p>
+            
+            {/* Cấp độ */}
+            <div className="space-y-2">
+              <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Cấp độ</p>
+              <Badge 
+                variant="secondary"
+                className={
+                  course.level === 1 
+                    ? "bg-blue-500/10 text-blue-700 border-blue-500/20 font-semibold" 
+                    : course.level === 2 
+                    ? "bg-green-500/10 text-green-700 border-green-500/20 font-semibold" 
+                    : "bg-yellow-500/10 text-yellow-700 border-yellow-500/20 font-semibold"
+                }
+              >
+                {course.level === 1 ? '🎯 Cơ bản' : course.level === 2 ? '⚡ Trung bình' : '🚀 Nâng cao'}
+              </Badge>
             </div>
-            <div>
-              <p className="text-sm text-muted-foreground">Số bài học</p>
-              <p className="font-medium">{totalLessons} bài</p>
+            
+            {/* Giá */}
+            <div className="space-y-2">
+              <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Giá</p>
+              <p className="text-lg font-bold">
+                {course.price?.toLocaleString('vi-VN')} ₫
+              </p>
             </div>
-            <div>
-              <p className="text-sm text-muted-foreground">Thời lượng</p>
-              <p className="font-medium">{formatDuration(course.totalDuration)}</p>
+            
+            {/* Yêu cầu giấy phép */}
+            <div className="space-y-2">
+              <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Yêu cầu giấy phép</p>
+              <Badge 
+                variant={course.requireLicense ? "default" : "secondary"}
+                className={course.requireLicense ? "bg-purple-500/10 text-purple-700 border-purple-500/20 font-semibold" : "font-semibold"}
+              >
+                {course.requireLicense ? '✓ Có' : '✗ Không'}
+              </Badge>
+            </div>
+            
+            {/* Số chương */}
+            <div className="space-y-2">
+              <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Số chương</p>
+              <div className="flex items-center gap-2">
+                <Layers className="h-4 w-4 text-muted-foreground" />
+                <p className="text-lg font-bold">{Array.isArray(sectionsData) ? sectionsData.length : 0}</p>
+                <span className="text-sm text-muted-foreground">chương</span>
+              </div>
+            </div>
+            
+            {/* Số bài học */}
+            <div className="space-y-2">
+              <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Số bài học</p>
+              <div className="flex items-center gap-2">
+                <FileText className="h-4 w-4 text-muted-foreground" />
+                <p className="text-lg font-bold">{totalLessons}</p>
+                <span className="text-sm text-muted-foreground">bài</span>
+              </div>
+            </div>
+            
+            {/* Thời lượng */}
+            <div className="space-y-2">
+              <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Thời lượng</p>
+              <p className="text-lg font-bold text-indigo-600">
+                {formatDuration(course.totalDuration)}
+              </p>
+            </div>
+            
+            {/* Trạng thái */}
+            <div className="space-y-2">
+              <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Trạng thái</p>
+              <Badge 
+                variant={course.status === 1 ? "default" : "secondary"}
+                className={
+                  course.status === 1 
+                    ? "bg-green-500/10 text-green-700 border-green-500/20 font-semibold" 
+                    : course.status === 2
+                    ? "bg-gray-500/10 text-gray-700 border-gray-500/20 font-semibold"
+                    : "bg-red-500/10 text-red-700 border-red-500/20 font-semibold"
+                }
+              >
+                {course.status === 1 ? '✓ Hoạt động' : course.status === 2 ? '⏸ Không hoạt động' : '✗ Đã xóa'}
+              </Badge>
             </div>
           </div>
         </CardContent>
@@ -386,6 +488,7 @@ export default function CourseDetailPage() {
                 }`}
                 draggable
                 onDragStart={() => handleSectionDragStart(sectionIndex)}
+                onDragEnd={() => setDraggedSection(null)}
                 onDragOver={handleSectionDragOver}
                 onDrop={() => handleSectionDrop(sectionIndex)}
               >
@@ -473,7 +576,7 @@ export default function CourseDetailPage() {
                       handleDrop(sectionData.id, sectionData.lessons?.length || 0)
                     }}
                   >
-                    {(!sectionData.lessons || sectionData.lessons.length === 0) ? (
+                    {(!sectionData.lessons || !Array.isArray(sectionData.lessons) || sectionData.lessons.length === 0) ? (
                       <div className="text-center py-8 text-muted-foreground border-2 border-dashed rounded-lg">
                         <FileText className="h-8 w-8 mx-auto mb-2 opacity-50" />
                         <p>Chưa có bài học. Kéo bài học vào đây hoặc tạo mới.</p>
@@ -485,7 +588,7 @@ export default function CourseDetailPage() {
                         </Link>
                       </div>
                     ) : (
-                      sectionData.lessons.map((lesson, lessonIndex) => {
+                      (sectionData.lessons || []).map((lesson, lessonIndex) => {
                         const typeInfo = lessonTypeMap[lesson.type]
                         const TypeIcon = typeInfo.icon
                         
@@ -494,13 +597,14 @@ export default function CourseDetailPage() {
                             key={lesson.id}
                             draggable
                             onDragStart={() => handleDragStart(lesson, sectionData.id)}
+                            onDragEnd={() => setDraggedLesson(null)}
                             onDragOver={handleDragOver}
                             onDrop={(e) => {
                               e.stopPropagation()
                               handleDrop(sectionData.id, lessonIndex)
                             }}
                             className={`
-                              flex items-center gap-3 p-3 rounded-lg border bg-card hover:bg-accent cursor-move
+                              flex flex-wrap items-center gap-2 p-3 rounded-lg border bg-card hover:bg-accent cursor-move
                               transition-colors
                               ${draggedLesson?.lesson.id === lesson.id ? 'opacity-50' : ''}
                             `}
@@ -510,57 +614,59 @@ export default function CourseDetailPage() {
                               {lesson.orderNumber}
                             </Badge>
                             <TypeIcon className="h-4 w-4 text-muted-foreground flex-shrink-0" />
-                            <div className="flex-1 min-w-0">
-                              <p className="font-medium truncate">{lesson.title}</p>
-                              <p className="text-sm text-muted-foreground truncate">
+                            <div className="flex-1 min-w-[200px]">
+                              <p className="font-medium break-words">{lesson.title}</p>
+                              <p className="text-sm text-muted-foreground line-clamp-2">
                                 {lesson.content}
                               </p>
                             </div>
-                            <Badge className={`${typeInfo.color} flex-shrink-0`}>
-                              {typeInfo.text}
-                            </Badge>
-                            <span className="text-sm text-muted-foreground flex-shrink-0">
-                              {formatDuration(lesson.duration)}
-                            </span>
-                            {lesson.requireRobot && (
-                              <Badge variant="secondary" className="flex-shrink-0">
-                                Robot
+                            <div className="flex flex-wrap items-center gap-2">
+                              <Badge className={`${typeInfo.color} flex-shrink-0 whitespace-nowrap`}>
+                                {typeInfo.text}
                               </Badge>
-                            )}
-                            <DropdownMenu>
-                              <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
-                                <Button variant="ghost" size="icon" className="h-8 w-8 flex-shrink-0">
-                                  <MoreHorizontal className="h-4 w-4" />
-                                </Button>
-                              </DropdownMenuTrigger>
-                              <DropdownMenuContent align="end" onClick={(e) => e.stopPropagation()}>
-                                <DropdownMenuLabel>Thao tác</DropdownMenuLabel>
-                                <DropdownMenuSeparator />
-                                <DropdownMenuItem 
-                                  onClick={() => router.push(`/staff/lessons/${lesson.id}`)}
-                                >
-                                  <Eye className="mr-2 h-4 w-4" />
-                                  Xem chi tiết
-                                </DropdownMenuItem>
-                                <DropdownMenuItem 
-                                  onClick={() => router.push(`/staff/lessons/${lesson.id}/edit`)}
-                                >
-                                  <Pencil className="mr-2 h-4 w-4" />
-                                  Chỉnh sửa
-                                </DropdownMenuItem>
-                                <DropdownMenuSeparator />
-                                <DropdownMenuItem 
-                                  className="text-destructive"
-                                  onClick={() => {
-                                    setDeleteLessonId(lesson.id)
-                                    setDeleteLessonTitle(lesson.title)
-                                  }}
-                                >
-                                  <Trash2 className="mr-2 h-4 w-4" />
-                                  Xóa
-                                </DropdownMenuItem>
-                              </DropdownMenuContent>
-                            </DropdownMenu>
+                              <span className="text-sm text-muted-foreground flex-shrink-0 whitespace-nowrap">
+                                {formatDuration(lesson.duration)}
+                              </span>
+                              {lesson.requireRobot && (
+                                <Badge variant="secondary" className="flex-shrink-0 whitespace-nowrap">
+                                  Robot
+                                </Badge>
+                              )}
+                              <DropdownMenu>
+                                <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
+                                  <Button variant="ghost" size="icon" className="h-8 w-8 flex-shrink-0">
+                                    <MoreHorizontal className="h-4 w-4" />
+                                  </Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent align="end" onClick={(e) => e.stopPropagation()}>
+                                  <DropdownMenuLabel>Thao tác</DropdownMenuLabel>
+                                  <DropdownMenuSeparator />
+                                  <DropdownMenuItem 
+                                    onClick={() => router.push(`/staff/lessons/${lesson.slug}`)}
+                                  >
+                                    <Eye className="mr-2 h-4 w-4" />
+                                    Xem chi tiết
+                                  </DropdownMenuItem>
+                                  <DropdownMenuItem 
+                                    onClick={() => router.push(`/staff/lessons/${lesson.slug}/edit`)}
+                                  >
+                                    <Pencil className="mr-2 h-4 w-4" />
+                                    Chỉnh sửa
+                                  </DropdownMenuItem>
+                                  <DropdownMenuSeparator />
+                                  <DropdownMenuItem 
+                                    className="text-destructive"
+                                    onClick={() => {
+                                      setDeleteLessonId(lesson.id)
+                                      setDeleteLessonTitle(lesson.title)
+                                    }}
+                                  >
+                                    <Trash2 className="mr-2 h-4 w-4" />
+                                    Xóa
+                                  </DropdownMenuItem>
+                                </DropdownMenuContent>
+                              </DropdownMenu>
+                            </div>
                           </div>
                         )
                       })
@@ -590,10 +696,7 @@ export default function CourseDetailPage() {
         open={isCreateSectionModalOpen}
         onOpenChange={setIsCreateSectionModalOpen}
         courseId={courseId}
-        onSuccess={() => {
-          refetchSections()
-          toast.success('Đã tạo chương thành công')
-        }}
+        courseSlug={courseSlug}
       />
 
       {/* Edit Section Modal */}
@@ -610,7 +713,7 @@ export default function CourseDetailPage() {
         currentTitle={editingSectionTitle}
         currentOrderNumber={editingSectionOrderNumber}
         onSuccess={() => {
-          refetchSections()
+          // Mutation will auto-invalidate cache
         }}
       />
 

@@ -267,9 +267,9 @@ export default function NewCoursePage() {
             {/* Require License */}
             <div className="flex items-center justify-between space-x-2 rounded-lg border p-4">
               <div className="space-y-0.5">
-                <Label htmlFor="requireLicense">Yêu cầu robot</Label>
+                <Label htmlFor="requireLicense">Yêu cầu giấy phép</Label>
                 <p className="text-sm text-muted-foreground">
-                  Khóa học này có yêu cầu robot không?
+                  Khóa học này có yêu cầu giấy phép để tham gia không?
                 </p>
               </div>
               <Switch

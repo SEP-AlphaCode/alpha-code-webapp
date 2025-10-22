@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useParams, useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -9,93 +9,110 @@ import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { Switch } from "@/components/ui/switch"
-import { ArrowLeft, Save } from "lucide-react"
+import { ArrowLeft, Save, Loader2 } from "lucide-react"
 import Link from "next/link"
-
-// Mock data
-const mockLesson = {
-  id: "l1",
-  sectionId: "s1",
-  sectionTitle: "Giới thiệu về Python",
-  courseId: "c1",
-  courseName: "Python cho người mới bắt đầu",
-  title: "Python là gì?",
-  content: `Python là một ngôn ngữ lập trình bậc cao, thông dịch và đa năng. 
-
-Được tạo ra bởi Guido van Rossum và phát hành lần đầu năm 1991, Python nhấn mạnh vào tính dễ đọc của code với việc sử dụng khoảng trắng đáng kể.
-
-**Đặc điểm chính:**
-- Cú pháp rõ ràng, dễ học
-- Hỗ trợ nhiều mô hình lập trình
-- Thư viện phong phú
-- Cộng đồng lớn và năng động
-
-**Ứng dụng:**
-- Phát triển web
-- Khoa học dữ liệu
-- Machine Learning
-- Automation`,
-  videoUrl: "https://example.com/video1.mp4",
-  duration: 600, // 10 minutes
-  requireRobot: false,
-  type: 1, // Video
-  orderNumber: 1,
-  solution: null
-}
-
-const mockSections = [
-  { id: "s1", title: "Giới thiệu về Python", orderNumber: 1 },
-  { id: "s2", title: "Biến và kiểu dữ liệu", orderNumber: 2 },
-  { id: "s3", title: "Cấu trúc điều khiển", orderNumber: 3 }
-]
+import { useLessonBySlug, useUpdateLesson } from "@/features/courses/hooks/use-lesson"
+import { toast } from "sonner"
 
 export default function EditLessonPage() {
   const params = useParams()
   const router = useRouter()
-  const lessonId = params.lessonId as string
+  const lessonSlug = params.slug as string
 
+  const { data: lesson, isLoading } = useLessonBySlug(lessonSlug)
+  
   const [formData, setFormData] = useState({
-    sectionId: mockLesson.sectionId,
-    title: mockLesson.title,
-    content: mockLesson.content,
-    videoUrl: mockLesson.videoUrl || "",
-    duration: mockLesson.duration.toString(),
-    requireRobot: mockLesson.requireRobot,
-    type: mockLesson.type.toString(),
-    solution: mockLesson.solution ? JSON.stringify(mockLesson.solution, null, 2) : ""
+    sectionId: "",
+    title: "",
+    content: "",
+    videoUrl: "",
+    duration: "",
+    requireRobot: false,
+    type: "1",
+    solution: ""
   })
 
-  const handleSubmit = (e: React.FormEvent) => {
+  // Update form when lesson data is loaded
+  useEffect(() => {
+    if (lesson) {
+      setFormData({
+        sectionId: lesson.sectionId,
+        title: lesson.title,
+        content: lesson.content,
+        videoUrl: lesson.videoUrl || "",
+        duration: lesson.duration.toString(),
+        requireRobot: lesson.requireRobot,
+        type: lesson.type.toString(),
+        solution: lesson.solution ? JSON.stringify(lesson.solution, null, 2) : ""
+      })
+    }
+  }, [lesson])
+
+  const updateLessonMutation = useUpdateLesson(
+    lesson?.sectionId || '', 
+    lesson?.id || '', 
+    lesson?.sectionId
+  )
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    console.log("Update lesson:", formData)
-    // TODO: API call to update lesson
-    router.push(`/staff/lessons/${lessonId}`)
+    
+    if (!lesson) return
+
+    try {
+      await updateLessonMutation.mutateAsync({
+        title: formData.title,
+        content: formData.content,
+        videoUrl: formData.videoUrl || undefined,
+        duration: parseInt(formData.duration),
+        requireRobot: formData.requireRobot,
+        type: parseInt(formData.type),
+        orderNumber: lesson.orderNumber,
+        solution: formData.solution ? JSON.parse(formData.solution) : undefined,
+      })
+      
+      toast.success('Đã cập nhật bài học')
+      router.push(`/staff/lessons/${lessonSlug}`)
+    } catch (error: unknown) {
+      console.error('Error updating lesson:', error)
+      // Extract error message from API response
+      const errorMessage = error && typeof error === 'object' && 'response' in error
+        ? (error as { response?: { data?: { message?: string } } }).response?.data?.message || 'Lỗi khi cập nhật bài học'
+        : error && typeof error === 'object' && 'message' in error
+        ? (error as { message: string }).message
+        : 'Lỗi khi cập nhật bài học'
+      toast.error(errorMessage)
+    }
+  }
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+      </div>
+    )
+  }
+
+  if (!lesson) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <p className="text-muted-foreground">Không tìm thấy bài học</p>
+      </div>
+    )
   }
 
   return (
     <div className="space-y-6">
       {/* Header */}
       <div className="flex items-center gap-4">
-        <Link href={`/staff/lessons/${lessonId}`}>
+        <Link href={`/staff/lessons/${lessonSlug}`}>
           <Button variant="outline" size="icon">
             <ArrowLeft className="h-4 w-4" />
           </Button>
         </Link>
         <div>
-          <div className="flex items-center gap-2 text-sm text-muted-foreground mb-1">
-            <Link href="/staff/courses" className="hover:text-foreground">
-              Khóa học
-            </Link>
-            <span>/</span>
-            <Link href={`/staff/courses/${mockLesson.courseId}`} className="hover:text-foreground">
-              {mockLesson.courseName}
-            </Link>
-            <span>/</span>
-            <Link href={`/staff/lessons/${lessonId}`} className="hover:text-foreground">
-              {mockLesson.title}
-            </Link>
-          </div>
           <h1 className="text-3xl font-bold tracking-tight">Chỉnh sửa bài học</h1>
+          <p className="text-muted-foreground">{lesson.title}</p>
         </div>
       </div>
 
@@ -112,23 +129,6 @@ export default function EditLessonPage() {
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="section">Chương</Label>
-                  <select
-                    id="section"
-                    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                    value={formData.sectionId}
-                    onChange={(e) => setFormData({ ...formData, sectionId: e.target.value })}
-                    required
-                  >
-                    {mockSections.map((section) => (
-                      <option key={section.id} value={section.id}>
-                        {section.title}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-
                 <div className="space-y-2">
                   <Label htmlFor="title">Tên bài học *</Label>
                   <Input
@@ -280,11 +280,24 @@ export default function EditLessonPage() {
                 <CardTitle>Thao tác</CardTitle>
               </CardHeader>
               <CardContent className="space-y-2">
-                <Button type="submit" className="w-full">
-                  <Save className="mr-2 h-4 w-4" />
-                  Lưu thay đổi
+                <Button 
+                  type="submit" 
+                  className="w-full"
+                  disabled={updateLessonMutation.isPending}
+                >
+                  {updateLessonMutation.isPending ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Đang lưu...
+                    </>
+                  ) : (
+                    <>
+                      <Save className="mr-2 h-4 w-4" />
+                      Lưu thay đổi
+                    </>
+                  )}
                 </Button>
-                <Link href={`/staff/lessons/${lessonId}`} className="block">
+                <Link href={`/staff/lessons/${lessonSlug}`} className="block">
                   <Button type="button" variant="outline" className="w-full">
                     Hủy
                   </Button>

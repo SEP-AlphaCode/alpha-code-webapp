@@ -34,111 +34,39 @@ import {
   Play,
   Code,
   CheckCircle2,
-  LucideIcon
+  LucideIcon,
+  Loader2
 } from "lucide-react"
 import Link from "next/link"
-
-// Mock data
-const mockCourse = {
-  id: "c1",
-  name: "Python cho người mới bắt đầu",
-}
-
-const mockSection = {
-  id: "s1",
-  courseId: "c1",
-  title: "Giới thiệu về Python",
-  orderNumber: 1,
-}
-
-const mockLessons = [
-  {
-    id: "l1",
-    sectionId: "s1",
-    title: "Python là gì?",
-    content: "Giới thiệu về ngôn ngữ lập trình Python",
-    videoUrl: "https://example.com/video1.mp4",
-    duration: 600, // 10 minutes
-    requireRobot: false,
-    type: 1, // 1: video, 2: coding, 3: quiz
-    orderNumber: 1,
-    createdDate: "2024-02-01"
-  },
-  {
-    id: "l2",
-    sectionId: "s1",
-    title: "Cài đặt môi trường Python",
-    content: "Hướng dẫn cài đặt Python và IDE",
-    videoUrl: "https://example.com/video2.mp4",
-    duration: 900, // 15 minutes
-    requireRobot: false,
-    type: 1,
-    orderNumber: 2,
-    createdDate: "2024-02-01"
-  },
-  {
-    id: "l3",
-    sectionId: "s1",
-    title: "Viết chương trình Python đầu tiên",
-    content: "Thực hành viết Hello World",
-    videoUrl: null,
-    duration: 1200, // 20 minutes
-    requireRobot: false,
-    type: 2,
-    orderNumber: 3,
-    createdDate: "2024-02-02"
-  },
-  {
-    id: "l4",
-    sectionId: "s1",
-    title: "Biến và kiểu dữ liệu",
-    content: "Tìm hiểu về biến và các kiểu dữ liệu cơ bản",
-    videoUrl: "https://example.com/video4.mp4",
-    duration: 1800, // 30 minutes
-    requireRobot: false,
-    type: 1,
-    orderNumber: 4,
-    createdDate: "2024-02-03"
-  },
-  {
-    id: "l5",
-    sectionId: "s1",
-    title: "Bài kiểm tra: Kiến thức cơ bản",
-    content: "Kiểm tra kiến thức đã học",
-    videoUrl: null,
-    duration: 600, // 10 minutes
-    requireRobot: false,
-    type: 3,
-    orderNumber: 5,
-    createdDate: "2024-02-04"
-  },
-  {
-    id: "l6",
-    sectionId: "s1",
-    title: "Thực hành với Robot Alpha",
-    content: "Lập trình điều khiển robot",
-    videoUrl: null,
-    duration: 1500, // 25 minutes
-    requireRobot: true,
-    type: 2,
-    orderNumber: 6,
-    createdDate: "2024-02-05"
-  }
-]
+import { useStaffCourse } from "@/features/courses/hooks/use-course"
+import { useLessonsBySection, useDeleteLesson, useUpdateLessonOrder } from "@/features/courses/hooks/use-lesson"
+import { useSection } from "@/features/courses/hooks/use-section"
+import { toast } from "sonner"
+import { Lesson } from "@/types/courses"
+import { DeleteLessonDialog } from "@/components/course/delete-lesson-dialog"
 
 const lessonTypeMap: { [key: number]: { text: string; icon: LucideIcon; color: string } } = {
-  1: { text: "Video", icon: Play, color: "bg-blue-500/10 text-blue-500" },
-  2: { text: "Lập trình", icon: Code, color: "bg-green-500/10 text-green-500" },
+  1: { text: "Bài học", icon: Code, color: "bg-green-500/10 text-green-500" },
+  2: { text: "Video", icon: Play, color: "bg-blue-500/10 text-blue-500" },
   3: { text: "Kiểm tra", icon: CheckCircle2, color: "bg-purple-500/10 text-purple-500" }
 }
 
 export default function SectionLessonsPage() {
   const params = useParams()
-  const courseId = params.id as string
+  const courseSlug = params.slug as string
   const sectionId = params.sectionId as string
-  const [course] = useState(mockCourse)
-  const [section] = useState(mockSection)
-  const [lessons, setLessons] = useState(mockLessons)
+  const [deletingLessonId, setDeletingLessonId] = useState<string | null>(null)
+  const [deletingLessonName, setDeletingLessonName] = useState("")
+  
+  const { data: course, isLoading: courseLoading } = useStaffCourse(courseSlug)
+  const courseId = course?.id ?? ''
+  
+  const { data: section, isLoading: sectionLoading } = useSection(courseId, sectionId)
+  const { data: lessons = [], isLoading: lessonsLoading } = useLessonsBySection(courseId, sectionId)
+  const deleteLessonMutation = useDeleteLesson(courseId, sectionId)
+  const updateLessonOrderMutation = useUpdateLessonOrder(courseId, sectionId)
+  
+  const isLoading = courseLoading || sectionLoading || lessonsLoading
 
   const formatDuration = (seconds: number) => {
     const minutes = Math.floor(seconds / 60)
@@ -146,7 +74,7 @@ export default function SectionLessonsPage() {
     return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`
   }
 
-  const moveLesson = (index: number, direction: 'up' | 'down') => {
+  const moveLesson = async (index: number, direction: 'up' | 'down') => {
     const newLessons = [...lessons]
     const targetIndex = direction === 'up' ? index - 1 : index + 1
     
@@ -159,32 +87,73 @@ export default function SectionLessonsPage() {
     newLessons[index].orderNumber = index + 1
     newLessons[targetIndex].orderNumber = targetIndex + 1
     
-    setLessons(newLessons)
+    try {
+      await updateLessonOrderMutation.mutateAsync(
+        newLessons.map(l => ({
+          id: l.id,
+          orderNumber: l.orderNumber,
+          sectionId: sectionId
+        }))
+      )
+      toast.success('Đã cập nhật thứ tự bài học')
+    } catch (error) {
+      toast.error('Lỗi khi cập nhật thứ tự bài học')
+      console.error('Error updating lesson order:', error)
+    }
+  }
+
+  const handleDeleteLesson = (lessonId: string, lessonName: string) => {
+    setDeletingLessonId(lessonId)
+    setDeletingLessonName(lessonName)
+  }
+
+  const handleDeleteLessonConfirm = async () => {
+    if (!deletingLessonId) return
     
-    // TODO: Call API to update order
-    console.log('Reordering lessons:', newLessons.map(l => l.id))
+    try {
+      await deleteLessonMutation.mutateAsync(deletingLessonId)
+      setDeletingLessonId(null)
+      setDeletingLessonName("")
+      toast.success('Đã xóa bài học thành công')
+    } catch (error: unknown) {
+      const errorMessage = error && typeof error === 'object' && 'response' in error
+        ? (error as { response?: { data?: { message?: string } } }).response?.data?.message || 'Lỗi khi xóa bài học'
+        : error && typeof error === 'object' && 'message' in error
+        ? (error as { message: string }).message
+        : 'Lỗi khi xóa bài học'
+      toast.error(errorMessage)
+      console.error('Error deleting lesson:', error)
+    }
+  }
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+      </div>
+    )
   }
 
   return (
     <div className="space-y-6">
       <div className="flex items-center gap-4">
-        <Link href={`/staff/courses/${courseId}/sections`}>
+        <Link href={`/staff/courses/${courseSlug}`}>
           <Button variant="outline" size="icon">
             <ArrowLeft className="h-4 w-4" />
           </Button>
         </Link>
         <div className="flex-1">
           <div className="flex items-center gap-2 text-sm text-muted-foreground mb-1">
-            <span>{course.name}</span>
+            <span>{course?.name}</span>
             <span>/</span>
-            <span>Chương {section.orderNumber}</span>
+            <span>Chương {section?.orderNumber}</span>
           </div>
-          <h1 className="text-3xl font-bold tracking-tight">{section.title}</h1>
+          <h1 className="text-3xl font-bold tracking-tight">{section?.title}</h1>
           <p className="text-muted-foreground">
             Quản lý các bài học trong chương
           </p>
         </div>
-        <Link href={`/staff/courses/${courseId}/sections/${sectionId}/lessons/new`}>
+        <Link href={`/staff/courses/${courseSlug}/sections/${sectionId}/lessons/new`}>
           <Button>
             <Plus className="mr-2 h-4 w-4" />
             Thêm bài học mới
@@ -243,8 +212,7 @@ export default function SectionLessonsPage() {
                   <TableHead>Loại</TableHead>
                   <TableHead>Thời lượng</TableHead>
                   <TableHead>Robot</TableHead>
-                  <TableHead>Ngày tạo</TableHead>
-                  <TableHead className="text-right">Thao tác</TableHead>
+                  <TableHead className="text-right w-[200px]">Thao tác</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -291,9 +259,6 @@ export default function SectionLessonsPage() {
                             <Badge variant="outline">Không</Badge>
                           )}
                         </TableCell>
-                        <TableCell>
-                          {new Date(lesson.createdDate).toLocaleDateString('vi-VN')}
-                        </TableCell>
                         <TableCell className="text-right">
                           <div className="flex items-center justify-end gap-1">
                             <Button
@@ -325,19 +290,22 @@ export default function SectionLessonsPage() {
                                 <DropdownMenuLabel>Thao tác</DropdownMenuLabel>
                                 <DropdownMenuSeparator />
                                 <DropdownMenuItem asChild>
-                                  <Link href={`/staff/courses/${courseId}/sections/${sectionId}/lessons/${lesson.id}`}>
+                                  <Link href={`/staff/lessons/${lesson.slug}`}>
                                     <Eye className="mr-2 h-4 w-4" />
                                     Xem chi tiết
                                   </Link>
                                 </DropdownMenuItem>
                                 <DropdownMenuItem asChild>
-                                  <Link href={`/staff/courses/${courseId}/sections/${sectionId}/lessons/${lesson.id}/edit`}>
+                                  <Link href={`/staff/lessons/${lesson.slug}/edit`}>
                                     <Pencil className="mr-2 h-4 w-4" />
                                     Chỉnh sửa
                                   </Link>
                                 </DropdownMenuItem>
                                 <DropdownMenuSeparator />
-                                <DropdownMenuItem className="text-destructive">
+                                <DropdownMenuItem 
+                                  className="text-destructive"
+                                  onClick={() => handleDeleteLesson(lesson.id, lesson.title)}
+                                >
                                   <Trash2 className="mr-2 h-4 w-4" />
                                   Xóa
                                 </DropdownMenuItem>
@@ -354,6 +322,19 @@ export default function SectionLessonsPage() {
           </div>
         </CardContent>
       </Card>
+
+      <DeleteLessonDialog
+        open={!!deletingLessonId}
+        lessonTitle={deletingLessonName}
+        onOpenChange={(open) => {
+          if (!open) {
+            setDeletingLessonId(null)
+            setDeletingLessonName("")
+          }
+        }}
+        onConfirm={handleDeleteLessonConfirm}
+        isDeleting={deleteLessonMutation.isPending}
+      />
     </div>
   )
 }
