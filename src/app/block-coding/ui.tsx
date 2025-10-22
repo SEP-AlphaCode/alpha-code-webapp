@@ -1,99 +1,29 @@
 import * as Blockly from 'blockly'
 import { useEffect, useRef, useState } from 'react';
-import { addRobotActions, toolbox } from '../../components/blockly-logic/toolbox';
-import { blockControls } from '@/components/blockly-logic/control';
-import { JavascriptGenerator, javascriptGenerator } from 'blockly/javascript';
-import { buildCodeGeneratorForModelId } from '@/components/blockly-logic/js-generator';
+import { robotCategory, toolbox } from '../../components/blockly-logic/toolbox';
+import { blockControls, CATEGORY_NAME, Operations } from '@/components/blockly-logic/control';
 import { toast } from 'sonner';
-import { StaticCategoryInfo } from '@/types/blockly';
-type CodeActionKV = string[][]
+import { loadModelIdData } from '@/components/blockly-logic/custom-blocks';
+import { JavascriptGenerator } from 'blockly/javascript';
+import { buildCodeGeneratorForModelId } from '@/components/blockly-logic/js-generator';
 type BlocklyUIProps = {
     robotModelId: string,
-    serialId: string,
-    actions: CodeActionKV,
-    extendedActions: CodeActionKV,
-    skillHelpers: CodeActionKV,
-    expressions: CodeActionKV,
-    completedLoad: boolean
+    serial: string,
+    hasAllData: boolean,
+    data: {
+        actions: string[][],
+        extActions: string[][],
+        exps: string[][],
+        skills: string[][]
+    }
 }
 
-export default function BlocklyUI({robotModelId, serialId, extendedActions, skillHelpers, expressions, completedLoad, actions}: BlocklyUIProps) {
-    const blocklyRef = useRef<HTMLDivElement>(null);
-    const workspaceRef = useRef<any>(null);
-    const [saved, setSaved] = useState<undefined | { [key: string]: any }>()
-    const [code, setCode] = useState('')
-    const blocklyOperations = blockControls(workspaceRef.current)
-    const key = 'workspace-state'
-    const [gen, setGen] = useState<JavascriptGenerator | undefined>()
-    const [curTool, setCurTool] = useState(toolbox)
-
-    function inject(x: string) {
-        if (!blocklyRef.current || workspaceRef.current) { return; }
-        toast.success(x)
-        workspaceRef.current = Blockly.inject((blocklyRef.current), {
-            toolbox: curTool
-        });
-        workspaceRef.current.addChangeListener((event: Blockly.Events.Abstract) => {
-            if (event.type !== Blockly.Events.TOOLBOX_ITEM_SELECT) { return; }
-            // Cast to the correct subtype
-            const toolboxEvent = event as Blockly.Events.ToolboxItemSelect;
-
-            // Now TypeScript recognizes newItem
-            const newItem = toolboxEvent.newItem;
-
-            if (Object.hasOwn(toolboxEvent, 'newItem')) {
-                const flyouts = blocklyRef.current?.querySelectorAll<SVGElement>('.blocklyFlyoutScrollbar');
-                // Deselecting toolbox → hide rogue scrollbars
-                if (!newItem) {
-                    flyouts?.forEach((el) => {
-                        el.style.display = 'none';
-                    });
-
-                    Blockly.svgResize(workspaceRef.current);
-                } else {
-                    flyouts?.forEach((el) => {
-                        el.style.display = 'block';
-                    });
-                }
-            }
-        });
-    }
-
-    useEffect(() => {
-        async function fn() {
-            setTimeout(async () => {
-                const x = blocklyOperations.serialize()
-                // Blockly.common.defineBlocks(customBlocks)
-                if (!curTool.contents.find(x => (x as StaticCategoryInfo).name == 'Robot')) {
-                    var t = curTool
-                    t = addRobotActions(t)
-                }
-                const s = await buildCodeGeneratorForModelId('6e4e14b3-b073-4491-ab2a-2bf315b3259f', 'EAA007UBT10000341')
-                setGen(s);
-                if (workspaceRef.current) {
-                    workspaceRef.current.dispose();
-                    workspaceRef.current = null;
-                }
-                inject('Load');
-                (workspaceRef.current as Blockly.WorkspaceSvg).getToolbox();
-                blocklyOperations.loadFromJson(x ?? {})
-            }, 1000);
-            inject('Init')
-        }
-
-        fn()
-
-
-        return () => {
-            console.log('UseMe component unmounted');
-            // Clean up Blockly workspace
-            if (workspaceRef.current) {
-                workspaceRef.current.dispose();
-                workspaceRef.current = null;
-            }
-        };
-    }, []);
-
+export default function BlocklyUI({ robotModelId, serial, hasAllData, data }: BlocklyUIProps) {
+    const blocklyRef = useRef<HTMLDivElement>(null)
+    const workspaceRef = useRef<Blockly.WorkspaceSvg>(undefined)
+    const [wsHelper, setWsHelper] = useState<Operations>()
+    const [codeGenerator, setCodeGenerator] = useState<JavascriptGenerator>()
+    const [resultCode, setResultCode] = useState('')
     const executeCode = (code: string) => {
         try {
             const fn = new Function(code);
@@ -103,57 +33,65 @@ export default function BlocklyUI({robotModelId, serialId, extendedActions, skil
         } finally {
         }
     }
+
+    const actualInit = async () => {
+        if (!workspaceRef.current) return;
+        if (!blocklyRef.current) return;
+        if (!wsHelper) return;
+
+        const allBlocks = loadModelIdData(data.actions, data.extActions, data.exps, data.skills)
+        Blockly.common.defineBlocksWithJsonArray(allBlocks)
+        const gen = buildCodeGeneratorForModelId(robotModelId, serial)
+        setCodeGenerator(gen)
+
+        const curToolbox = toolbox;
+        toolbox.contents.push(robotCategory)
+        workspaceRef.current?.updateToolbox(curToolbox)
+    }
+
+    useEffect(() => {
+        if (!blocklyRef || !blocklyRef.current) return;
+        workspaceRef.current = Blockly.inject(blocklyRef.current, { toolbox })
+        if (!workspaceRef.current) { return; }
+        const tmp = blockControls(workspaceRef.current)
+        setWsHelper(tmp)
+        tmp.addStrayScrollbarDestructor?.(blocklyRef.current)
+        return () => {
+            if (!workspaceRef.current) { return; }
+            workspaceRef.current.dispose()
+            workspaceRef.current = undefined
+        }
+    }, [])
+
+    useEffect(() => {
+        if (!hasAllData) return;
+        actualInit()
+    }, [hasAllData])
+
     return (
         <div>
             <div className='*:border-2 space-x-5 mb-4'>
                 <button onClick={(e) => {
-                    const state = blocklyOperations.serialize()
-                    localStorage.setItem(key, JSON.stringify(state))
-                    setSaved(state)
                 }}>Save</button>
                 <button onClick={(e) => {
-                    const state = localStorage.getItem(key)
-                    if (!state) return;
-                    const json = JSON.parse(state)
-                    blocklyOperations.loadFromJson(json)
-                    setSaved(json)
                 }}>Load</button>
                 <button onClick={(e) => {
-                    if (!gen) return;
-                    const c = blocklyOperations.translate(gen)
-                    setCode(c)
+                    if(!codeGenerator || !wsHelper) return;
+                    const code = wsHelper.translate(codeGenerator)
+                    setResultCode(code)
                 }}>Translate to code</button>
                 <button onClick={(e) => {
-                    if (!gen) return;
-                    const state = blocklyOperations.serialize()
-                    localStorage.setItem(key, JSON.stringify(state))
-                    setSaved(state)
-                    const code = blocklyOperations.translate(gen)
-                    executeCode(code)
+                    executeCode(`console.log('Hello')`)
                 }}>Run code</button>
-                <div>
-                    {gen &&
-                        <p>
-                            Loaded!
-                        </p>
-                    }
-                </div>
-
             </div>
             <div className=''>
-                <div ref={blocklyRef} style={{ height: 600, width: 1000, flexBasis: '100%', overflow: 'auto' }} className='border-2 border-red-300'></div>
+                <div ref={blocklyRef} style={{ height: 750, width: 1000, flexBasis: '100%', overflow: 'auto' }} className='border-2 border-red-300'></div>
                 <div
                     className='border-2 p-2 bg-blue-50'
-                    dangerouslySetInnerHTML={{ __html: code.replaceAll('\n', '<br/>') }}
+                    dangerouslySetInnerHTML={{ __html: resultCode.replaceAll('\n', '<br/>')
+                        .replaceAll('\t', '&nbsp;&nbsp;')
+                     }}
                 />
-            </div>
-            <div >
-                <div>
-                    {
-                        JSON.stringify(saved, undefined, '')
-                    }
-                </div>
-
             </div>
         </div>
     );

@@ -1,5 +1,6 @@
 import * as Blockly from 'blockly';
-export const customBlockTemplate = [
+import { HUE } from './control';
+const customBlockTemplate = [
     {
         "type": "action",
         "tooltip": "",
@@ -12,6 +13,7 @@ export const customBlockTemplate = [
                 "options": [
                     // Put the actions here
                     // [name, code]
+                    ['a', 'b']
                 ]
             },
             {
@@ -27,7 +29,7 @@ export const customBlockTemplate = [
         ],
         "previousStatement": null,
         "nextStatement": null,
-        "colour": 225
+        "colour": HUE
     },
     {
         "type": "extended_action",
@@ -56,7 +58,7 @@ export const customBlockTemplate = [
         ],
         "previousStatement": null,
         "nextStatement": null,
-        "colour": 225
+        "colour": HUE
     },
     {
         "type": "expression",
@@ -85,7 +87,7 @@ export const customBlockTemplate = [
         ],
         "previousStatement": null,
         "nextStatement": null,
-        "colour": 225
+        "colour": HUE
     },
     {
         "type": "skill_helper",
@@ -114,7 +116,7 @@ export const customBlockTemplate = [
         ],
         "previousStatement": null,
         "nextStatement": null,
-        "colour": 225
+        "colour": HUE
     },
     {
         "type": "tts",
@@ -134,7 +136,7 @@ export const customBlockTemplate = [
         ],
         "previousStatement": null,
         "nextStatement": null,
-        "colour": 225
+        "colour": HUE
     },
     {
         "type": "tts_en",
@@ -154,6 +156,23 @@ export const customBlockTemplate = [
         ],
         "previousStatement": null,
         "nextStatement": null,
-        "colour": 225
+        "colour": HUE
     }
 ]
+
+const loadDropdownOptions = (customBlockTemplate: { args0: { options?: string[][], name: string }[], type: string }[], name: string, data: string[][]) => {
+    const actionBlocks = customBlockTemplate.find(x => x.type === name)
+    const arg0 = actionBlocks?.args0.find(x => x.name === 'ACTION_NAME')
+    if (arg0 && arg0.options) {
+        arg0.options = arg0.options.concat(data)
+    }
+}
+
+export const loadModelIdData = (actions: string[][], extActions: string[][], exps: string[][], skills: string[][]) => {
+    const tmpTemplate = [...customBlockTemplate]
+    loadDropdownOptions(tmpTemplate, 'action', actions)
+    loadDropdownOptions(tmpTemplate, 'expression', exps)
+    loadDropdownOptions(tmpTemplate, 'extended_action', extActions)
+    loadDropdownOptions(tmpTemplate, 'skill_helper', skills)
+    return tmpTemplate
+}

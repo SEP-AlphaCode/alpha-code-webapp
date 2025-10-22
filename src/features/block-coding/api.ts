@@ -98,19 +98,19 @@ export const useGetSelectOptions = (robotModelId: string) => {
     }
     const useGetExpressions = () => {
         return useQuery({
-            queryKey: ['actions', page, size, robotModelId],
+            queryKey: ['expressions', page, size, robotModelId],
             queryFn: () => getExpressions()
         });
     }
     const useGetExtendedActions = () => {
         return useQuery({
-            queryKey: ['actions', page, size, robotModelId],
+            queryKey: ['extended-actions', page, size, robotModelId],
             queryFn: () => getExtendedActions()
         });
     }
     const useGetSkills = () => {
         return useQuery({
-            queryKey: ['actions', page, size, robotModelId],
+            queryKey: ['skills', page, size, robotModelId],
             queryFn: () => getSkills()
         });
     }

@@ -7,18 +7,16 @@ const pythonPath = 'https://backend.alpha-code.site'
 //     body: JSON.stringify(123)
 // })
 
-export const buildCodeGeneratorForModelId = async (modelId: string, serial: string) => {
+export const buildCodeGeneratorForModelId = (modelId: string, serial: string) => {
     // TODO: Load allowed actions specific to a robot model
     const callUrl = pythonPath + "/websocket/command/" + serial
     const alphaCodeGenerator = javascriptGenerator
     function baseRequest(body: string) {
-        return `await fetch("${callUrl}",
-        {
-        headers: { 'Content-Type': 'application/json' },
-        method: 'POST', 
-        body:JSON.stringify(${body})
-        }
-        )`
+        return `await fetch("${callUrl}", {
+            \theaders: { 'Content-Type': 'application/json' },
+            \tmethod: 'POST', 
+            \tbody:JSON.stringify(${body})
+            })`
     }
     function generateActionBlocks(block: Blockly.Block) {
         const dropdown_action_name = block.getFieldValue('ACTION_NAME');
@@ -39,7 +37,8 @@ export const buildCodeGeneratorForModelId = async (modelId: string, serial: stri
         //NOTE: USE let TO MAKE THE LOOP USE THE i FROM WITHIN THE LOOP'S SCOPE. DECLARING i WITH var WILL BREAK THE EXECUTION
         const code = number_count !== 1 ?
             `for(let i = 0; i < ${number_count}; i++) {
-        ${inner}\n}` : inner;
+            \t${inner}
+            }` : inner;
         return comment + code + '\n';
     }
     alphaCodeGenerator.forBlock['action'] = generateActionBlocks

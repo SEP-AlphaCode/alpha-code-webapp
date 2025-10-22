@@ -1,5 +1,6 @@
 import { ToolboxItemInfo } from '@/types/blockly';
 import * as Blockly from 'blockly'
+import { CATEGORY_NAME, HUE } from './control';
 
 type L = {
     kind: string,
@@ -590,9 +591,6 @@ export const toolbox: L = {
             ],
         },
         {
-            kind: 'sep',
-        },
-        {
             kind: 'category',
             name: 'Variables',
             categorystyle: 'variable_category',
@@ -607,33 +605,30 @@ export const toolbox: L = {
     ],
 };
 
-export function addRobotActions(toobox: L) {
-    toolbox.contents.push({
-        kind: 'category',
-        name: 'Robot',
-        colour: '255',
-        contents: [
-            {
-                kind: 'block',
-                type: 'action'
-            },
-            {
-                kind: 'block',
-                type: 'extended_action'
-            },
-            {
-                kind: 'block',
-                type: 'skill_helper'
-            },
-            {
-                kind: 'block',
-                type: 'expression'
-            },
-            {
-                kind: 'block',
-                type: 'tts'
-            }
-        ]
-    })
-    return toobox
+export const robotCategory = {
+    kind: 'category',
+    name: CATEGORY_NAME,
+    colour: `${HUE}`,
+    contents: [
+        {
+            kind: 'block',
+            type: 'action'
+        },
+        {
+            kind: 'block',
+            type: 'extended_action'
+        },
+        {
+            kind: 'block',
+            type: 'skill_helper'
+        },
+        {
+            kind: 'block',
+            type: 'expression'
+        },
+        {
+            kind: 'block',
+            type: 'tts'
+        }
+    ]
 }

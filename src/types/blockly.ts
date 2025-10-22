@@ -36,12 +36,12 @@ export interface BlockInfo {
     collapsed?: boolean;
     inline?: boolean;
     data?: string;
-    extraState?: any;
+    extraState?: unknown;
     icons?: {
-        [key: string]: any;
+        [key: string]: unknown;
     };
     fields?: {
-        [key: string]: any;
+        [key: string]: unknown;
     };
     inputs?: {
         [key: string]: ConnectionState;
@@ -69,12 +69,12 @@ export interface State {
     disabledReasons?: string[];
     inline?: boolean;
     data?: string;
-    extraState?: any;
+    extraState?: unknown;
     icons?: {
-        [key: string]: any;
+        [key: string]: unknown;
     };
     fields?: {
-        [key: string]: any;
+        [key: string]: unknown;
     };
     inputs?: {
         [key: string]: ConnectionState;
