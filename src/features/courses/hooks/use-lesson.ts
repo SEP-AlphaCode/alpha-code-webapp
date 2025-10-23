@@ -87,15 +87,17 @@ export function useUpdateLesson(courseId: string, lessonId: string, sectionId?: 
 
   return useMutation({
     mutationFn: (data: {
+      id: string
       title: string
       content: string
-      videoUrl?: string
+      videoFile?: File
       duration: number
       requireRobot: boolean
       type: number
       orderNumber: number
       sectionId?: string
-      solution?: unknown
+      solution?: object | null | undefined
+      status: number
     }) => lessonApi.updateLesson(lessonId, data),
     onSuccess: async () => {
       // Invalidate queries - the target page will refetch them automatically

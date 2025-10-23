@@ -1,52 +1,54 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { useParams, useRouter } from "next/navigation"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { Separator } from "@/components/ui/separator"
-import { RichTextViewer } from "@/components/ui/rich-text-editor"
-import { 
-  ArrowLeft, 
-  Pencil, 
-  Trash2, 
+import Link from "next/link"
+import { toast } from "sonner"
+import {
+  ArrowLeft,
+  Pencil,
+  Trash2,
   Play,
   Code,
   CheckCircle2,
   Clock,
-  BookOpen,
   Layers,
   Video,
   FileJson,
-  LucideIcon,
-  Loader2
+  BookOpen,
+  Calendar,
+  RefreshCcw,
+  Loader2,
+  LucideIcon
 } from "lucide-react"
-import Link from "next/link"
+
+import { Button } from "@/components/ui/button"
+import { Badge } from "@/components/ui/badge"
+import { Separator } from "@/components/ui/separator"
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
+import { RichTextViewer } from "@/components/ui/rich-text-editor"
 import { useLessonBySlug, useDeleteLesson } from "@/features/courses/hooks/use-lesson"
-import { useStaffCourse } from "@/features/courses/hooks"
-import { toast } from "sonner"
 import { DeleteLessonDialog } from "@/components/course/delete-lesson-dialog"
 
-const lessonTypeMap: { [key: number]: { text: string; icon: LucideIcon; color: string; bgColor: string } } = {
-  1: { 
-    text: "Bài học", 
-    icon: Code, 
+const lessonTypeMap: Record<number, { text: string; icon: LucideIcon; color: string; bgColor: string }> = {
+  1: {
+    text: "Bài học",
+    icon: Code,
     color: "text-green-500",
-    bgColor: "bg-green-500/10"
+    bgColor: "bg-green-500/10",
   },
-  2: { 
-    text: "Video", 
-    icon: Play, 
+  2: {
+    text: "Video",
+    icon: Video,
     color: "text-blue-500",
-    bgColor: "bg-blue-500/10"
+    bgColor: "bg-blue-500/10",
   },
-  3: { 
-    text: "Bài kiểm tra", 
-    icon: CheckCircle2, 
+  3: {
+    text: "Bài kiểm tra",
+    icon: CheckCircle2,
     color: "text-purple-500",
-    bgColor: "bg-purple-500/10"
-  }
+    bgColor: "bg-purple-500/10",
+  },
 }
 
 export default function LessonDetailPage() {
@@ -54,10 +56,15 @@ export default function LessonDetailPage() {
   const router = useRouter()
   const lessonSlug = params.slug as string
   const [deletingLessonId, setDeletingLessonId] = useState<string | null>(null)
-  
-  const { data: lesson, isLoading } = useLessonBySlug(lessonSlug)
-  const deleteLessonMutation = useDeleteLesson('')
-  
+
+  const { data: lesson, isLoading, refetch } = useLessonBySlug(lessonSlug)
+  const deleteLessonMutation = useDeleteLesson("")
+
+  useEffect(() => {
+      refetch && refetch();
+    }, [lessonSlug]);
+
+
   const handleDelete = () => {
     if (!lesson) return
     setDeletingLessonId(lesson.id)
@@ -65,11 +72,10 @@ export default function LessonDetailPage() {
 
   const handleDeleteConfirm = async () => {
     if (!deletingLessonId) return
-
     try {
       await deleteLessonMutation.mutateAsync(deletingLessonId)
       setDeletingLessonId(null)
-      toast.success('Đã xóa bài học')
+      toast.success("Đã xóa bài học")
       router.back()
     } catch (error: unknown) {
       const errorMessage = error && typeof error === 'object' && 'response' in error
@@ -78,10 +84,9 @@ export default function LessonDetailPage() {
         ? (error as { message: string }).message
         : 'Lỗi khi xóa bài học'
       toast.error(errorMessage)
-      console.error('Error deleting lesson:', error)
     }
   }
-  
+
   if (isLoading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
@@ -98,7 +103,7 @@ export default function LessonDetailPage() {
     )
   }
 
-  const typeInfo = lessonTypeMap[lesson.type]
+  const typeInfo = lessonTypeMap[lesson.type] || lessonTypeMap[1]
   const TypeIcon = typeInfo.icon
 
   const formatDuration = (seconds: number) => {
@@ -108,28 +113,41 @@ export default function LessonDetailPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       {/* Header */}
-      <div className="flex items-center gap-4">
-        <Button 
-          variant="outline" 
-          size="icon"
-          onClick={() => router.back()}
-        >
-          <ArrowLeft className="h-4 w-4" />
-        </Button>
-        <div className="flex-1">
-          <h1 className="text-3xl font-bold tracking-tight">{lesson.title}</h1>
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div className="flex items-center gap-2">
+          <Button variant="outline" size="icon" onClick={() => router.back()}>
+            <ArrowLeft className="h-4 w-4" />
+          </Button>
+          <div>
+            <h1 className="text-3xl font-bold tracking-tight">{lesson.title}</h1>
+            <div className="flex items-center gap-3 mt-2">
+              <div className={`flex items-center gap-2 px-3 py-1 rounded-lg ${typeInfo.bgColor}`}>
+                <TypeIcon className={`h-4 w-4 ${typeInfo.color}`} />
+                <span className={`font-medium ${typeInfo.color}`}>{typeInfo.text}</span>
+              </div>
+              {lesson.requireRobot && <Badge variant="secondary">Yêu cầu Robot</Badge>}
+              <Badge variant="outline">Bài {lesson.orderNumber}</Badge>
+            </div>
+          </div>
         </div>
-        <div className="flex gap-2">
+
+        <div className="flex flex-wrap gap-2">
+          {lesson.type === 3 && (
+            <Button variant="default">
+              <Play className="mr-2 h-4 w-4" />
+              Thử kiểm tra
+            </Button>
+          )}
           <Link href={`/staff/lessons/${lessonSlug}/edit`}>
             <Button variant="outline">
               <Pencil className="mr-2 h-4 w-4" />
               Chỉnh sửa
             </Button>
           </Link>
-          <Button 
-            variant="destructive" 
+          <Button
+            variant="destructive"
             size="icon"
             onClick={handleDelete}
             disabled={deleteLessonMutation.isPending}
@@ -143,27 +161,12 @@ export default function LessonDetailPage() {
         </div>
       </div>
 
-      {/* Type and Status */}
-      <div className="flex items-center gap-4">
-        <div className={`flex items-center gap-2 px-4 py-2 rounded-lg ${typeInfo.bgColor}`}>
-          <TypeIcon className={`h-5 w-5 ${typeInfo.color}`} />
-          <span className={`font-medium ${typeInfo.color}`}>{typeInfo.text}</span>
-        </div>
-        {lesson.requireRobot && (
-          <Badge variant="secondary" className="px-3 py-1">
-            Yêu cầu Robot Alpha
-          </Badge>
-        )}
-        <Badge variant="outline" className="px-3 py-1">
-          Bài {lesson.orderNumber}
-        </Badge>
-      </div>
-
-      <div className="grid gap-6 md:grid-cols-3">
-        {/* Main Content */}
-        <div className="md:col-span-2 space-y-6">
-          {/* Video Section */}
-          {lesson.type === 1 && lesson.videoUrl && (
+      {/* Main grid */}
+      <div className="grid gap-8 md:grid-cols-3">
+        {/* Content */}
+        <div className="md:col-span-2 space-y-8">
+          {/* Video (for lesson.type = 2) */}
+          {lesson.type === 2 && lesson.videoUrl && (
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
@@ -172,18 +175,25 @@ export default function LessonDetailPage() {
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="aspect-video bg-muted rounded-lg flex items-center justify-center">
-                  <div className="text-center text-muted-foreground">
-                    <Play className="h-16 w-16 mx-auto mb-4 opacity-50" />
-                    <p className="font-medium">Video Player</p>
-                    <p className="text-sm">{lesson.videoUrl}</p>
-                  </div>
+                <div className="aspect-video rounded-lg overflow-hidden bg-black">
+                  {lesson.videoUrl ? (
+                    <video
+                      src={lesson.videoUrl}
+                      controls
+                      className="w-full h-full"
+                    />
+                  ) : (
+                    <div className="flex flex-col items-center justify-center h-full text-muted-foreground">
+                      <Play className="h-16 w-16 mb-4 opacity-50" />
+                      <p className="font-medium">Chưa có video</p>
+                    </div>
+                  )}
                 </div>
               </CardContent>
             </Card>
           )}
 
-          {/* Content */}
+          {/* Rich Text Content */}
           <Card>
             <CardHeader>
               <CardTitle>Nội dung bài học</CardTitle>
@@ -195,24 +205,25 @@ export default function LessonDetailPage() {
             </CardContent>
           </Card>
 
-          {/* Solution/Code */}
-          {(lesson.type === 2 || lesson.type === 3) && (
+          {/* Solution (3) */}
+          {(lesson.type === 3) && (
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <FileJson className="h-5 w-5" />
-                  {lesson.type === 2 ? 'Hướng dẫn & Lời giải' : 'Câu hỏi & Đáp án'}
+                  Câu hỏi & Đáp án
                 </CardTitle>
+                <CardDescription>Dữ liệu lưu dạng JSON (type, code)</CardDescription>
               </CardHeader>
               <CardContent>
                 {lesson.solution ? (
-                  <pre className="bg-muted p-4 rounded-lg overflow-x-auto">
+                  <pre className="bg-muted p-4 rounded-lg overflow-x-auto text-sm">
                     <code>{JSON.stringify(lesson.solution, null, 2)}</code>
                   </pre>
                 ) : (
                   <div className="text-center py-8 text-muted-foreground">
                     <FileJson className="h-12 w-12 mx-auto mb-2 opacity-50" />
-                    <p>Chưa có dữ liệu</p>
+                    <p>Chưa có dữ liệu lời giải</p>
                   </div>
                 )}
               </CardContent>
@@ -222,7 +233,6 @@ export default function LessonDetailPage() {
 
         {/* Sidebar Info */}
         <div className="space-y-6">
-          {/* Quick Info */}
           <Card>
             <CardHeader>
               <CardTitle>Thông tin</CardTitle>
@@ -245,59 +255,45 @@ export default function LessonDetailPage() {
                   <p className="font-medium">Bài {lesson.orderNumber}</p>
                 </div>
               </div>
-              
+
               <Separator />
 
               <div className="flex items-center gap-3">
-                <FileJson className="h-4 w-4 text-muted-foreground" />
+                <Calendar className="h-4 w-4 text-muted-foreground" />
                 <div className="flex-1">
-                  <p className="text-sm text-muted-foreground">Loại bài học</p>
-                  <Badge className={`${typeInfo.color}`}>
-                    {typeInfo.text}
-                  </Badge>
+                  <p className="text-sm text-muted-foreground">Ngày tạo</p>
+                  <p className="font-medium">
+                    {new Date(lesson.createdDate).toLocaleString("vi-VN")}
+                  </p>
                 </div>
               </div>
-              
+
+              <Separator />
+
+              <div className="flex items-center gap-3">
+                <RefreshCcw className="h-4 w-4 text-muted-foreground" />
+                <div className="flex-1">
+                  <p className="text-sm text-muted-foreground">Cập nhật lần cuối</p>
+                  <p className="font-medium">
+                    {lesson.lastUpdated
+                      ? new Date(lesson.lastUpdated).toLocaleString("vi-VN")
+                      : "—"}
+                  </p>
+                </div>
+              </div>
+
               {lesson.requireRobot && (
                 <>
                   <Separator />
                   <div className="flex items-center gap-3">
                     <BookOpen className="h-4 w-4 text-muted-foreground" />
                     <div className="flex-1">
-                      <p className="text-sm text-muted-foreground">Yêu cầu</p>
+                      <p className="text-sm text-muted-foreground">Yêu cầu đặc biệt</p>
                       <Badge variant="secondary">Robot Alpha</Badge>
                     </div>
                   </div>
                 </>
               )}
-            </CardContent>
-          </Card>
-
-          {/* Actions */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Thao tác</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-2">
-              <Link href={`/staff/lessons/${lessonSlug}/edit`} className="block">
-                <Button className="w-full justify-start" variant="outline">
-                  <Pencil className="mr-2 h-4 w-4" />
-                  Chỉnh sửa bài học
-                </Button>
-              </Link>
-              <Button 
-                className="w-full justify-start" 
-                variant="destructive"
-                onClick={handleDelete}
-                disabled={deleteLessonMutation.isPending}
-              >
-                {deleteLessonMutation.isPending ? (
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                ) : (
-                  <Trash2 className="mr-2 h-4 w-4" />
-                )}
-                Xóa bài học
-              </Button>
             </CardContent>
           </Card>
         </div>
@@ -306,11 +302,7 @@ export default function LessonDetailPage() {
       <DeleteLessonDialog
         open={!!deletingLessonId}
         lessonTitle={lesson?.title || ""}
-        onOpenChange={(open) => {
-          if (!open) {
-            setDeletingLessonId(null)
-          }
-        }}
+        onOpenChange={(open) => !open && setDeletingLessonId(null)}
         onConfirm={handleDeleteConfirm}
         isDeleting={deleteLessonMutation.isPending}
       />

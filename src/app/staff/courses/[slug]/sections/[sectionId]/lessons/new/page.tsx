@@ -15,13 +15,13 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import { Switch } from "@/components/ui/switch"
-import { ArrowLeft, Save, Upload, Loader2 } from "lucide-react"
+import { ArrowLeft, Save } from "lucide-react"
 import Link from "next/link"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { useStaffCourse } from "@/features/courses/hooks/use-course"
 import { useCreateLesson } from "@/features/courses/hooks/use-lesson"
 import { toast } from "sonner"
 import { RichTextEditor } from "@/components/ui/rich-text-editor"
+import { SolutionBuilder } from "@/components/course/solution-builder"
 
 export default function NewLessonPage() {
   const router = useRouter()
@@ -36,13 +36,21 @@ export default function NewLessonPage() {
   
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [videoFile, setVideoFile] = useState<File | null>(null)
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<{
+    title: string
+    content: string
+    duration: number
+    requireRobot: boolean
+    type: string
+    // solution can be either an array (coding solution) or a JSON string (quiz)
+    solution: unknown
+  }>({
     title: "",
     content: "",
     duration: 0,
     requireRobot: false,
     type: "1", // 1: Bài học, 2: Video, 3: Kiểm tra
-    solution: ""
+    solution: [] // default to array for coding lessons
   })
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -70,13 +78,22 @@ export default function NewLessonPage() {
     }
 
     try {
-      let solutionObject = undefined
-      if (formData.solution.trim()) {
-        try {
-          solutionObject = JSON.parse(formData.solution)
-        } catch (error) {
-          toast.error("Solution JSON không hợp lệ")
-          return
+      // Determine solution payload depending on lesson type
+      let solutionObject: unknown = undefined
+      if (formData.type === "3") {
+        // Quiz: solution is expected to be a JSON string -> parse it
+        if (typeof formData.solution === 'string' && formData.solution.trim()) {
+          try {
+            solutionObject = JSON.parse(formData.solution as string)
+          } catch (err) {
+            toast.error("Solution JSON không hợp lệ")
+            return
+          }
+        }
+      } else {
+        // Coding or other: solution is expected to be an array of actions
+        if (Array.isArray(formData.solution) && formData.solution.length > 0) {
+          solutionObject = formData.solution
         }
       }
 
@@ -87,7 +104,7 @@ export default function NewLessonPage() {
         duration: formData.duration,
         requireRobot: formData.requireRobot,
         type: parseInt(formData.type),
-        solution: solutionObject
+        solution: solutionObject as object | undefined
       })
       
       toast.success("Tạo bài học thành công!")
@@ -104,7 +121,8 @@ export default function NewLessonPage() {
     }
   }
 
-  const handleChange = (field: string, value: string | boolean | number) => {
+  
+  const handleChange = (field: string, value: string | number | boolean | unknown[]) => {
     setFormData(prev => ({
       ...prev,
       [field]: value
@@ -247,7 +265,7 @@ export default function NewLessonPage() {
             </Card>
           )}
 
-          {/* Coding Content
+          {/* Coding Content */}
           {formData.type === "1" && (
             <Card>
               <CardHeader>
@@ -257,40 +275,13 @@ export default function NewLessonPage() {
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
-                <Tabs defaultValue="instructions">
-                  <TabsList className="grid w-full grid-cols-2">
-                    <TabsTrigger value="instructions">Hướng dẫn</TabsTrigger>
-                    <TabsTrigger value="solution">Lời giải (JSON)</TabsTrigger>
-                  </TabsList>
-                  <TabsContent value="instructions" className="space-y-4">
-                    <div className="space-y-2">
-                      <Label>Hướng dẫn làm bài</Label>
-                      <Textarea
-                        placeholder="Hướng dẫn chi tiết cách làm bài tập..."
-                        rows={8}
-                      />
-                    </div>
-                  </TabsContent>
-                  <TabsContent value="solution" className="space-y-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="solution">Solution (JSON)</Label>
-                      <Textarea
-                        id="solution"
-                        placeholder='{"steps": [], "code": ""}'
-                        value={formData.solution}
-                        onChange={(e) => handleChange("solution", e.target.value)}
-                        rows={10}
-                        className="font-mono text-sm"
-                      />
-                      <p className="text-sm text-muted-foreground">
-                        Định dạng JSON cho lời giải bài tập
-                      </p>
-                    </div>
-                  </TabsContent>
-                </Tabs>
+                <SolutionBuilder
+                  value={Array.isArray(formData.solution) ? formData.solution : []}
+                  onChange={(value) => handleChange("solution", value)}
+                />
               </CardContent>
             </Card>
-          )} */}
+          )}
 
           {/* Quiz Content */}
           {formData.type === "3" && (
@@ -303,11 +294,11 @@ export default function NewLessonPage() {
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="solution">Câu hỏi và đáp án (JSON)</Label>
+                  <Label htmlFor="quizData">Câu hỏi và đáp án (JSON)</Label>
                   <Textarea
-                    id="solution"
+                    id="quizData"
                     placeholder='{"questions": [{"question": "...", "answers": [], "correct": 0}]}'
-                    value={formData.solution}
+                    value={typeof formData.solution === 'string' ? formData.solution : JSON.stringify(formData.solution, null, 2)}
                     onChange={(e) => handleChange("solution", e.target.value)}
                     rows={10}
                     className="font-mono text-sm"
