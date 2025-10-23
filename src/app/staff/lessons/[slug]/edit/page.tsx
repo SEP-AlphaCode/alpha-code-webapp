@@ -6,71 +6,156 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Textarea } from "@/components/ui/textarea"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { Switch } from "@/components/ui/switch"
 import { ArrowLeft, Save, Loader2 } from "lucide-react"
 import Link from "next/link"
 import { useLessonBySlug, useUpdateLesson } from "@/features/courses/hooks/use-lesson"
 import { toast } from "sonner"
+import { RichTextEditor } from "@/components/ui/rich-text-editor"
+import { SolutionBuilder, SolutionItem } from "@/components/course/solution-builder"
+
+interface LessonUpdatePayload {
+  id: string;
+  title: string;
+  content: string;
+  duration: number;
+  requireRobot: boolean;
+  orderNumber: number;
+  sectionId: string;
+  videoUrl?: string;
+  videoFile?: File;
+  type: number;
+  solution?: object | null;
+  status: number;
+}
 
 export default function EditLessonPage() {
   const params = useParams()
   const router = useRouter()
   const lessonSlug = params.slug as string
 
-  const { data: lesson, isLoading } = useLessonBySlug(lessonSlug)
-  
-  const [formData, setFormData] = useState({
+  const { data: lesson, isLoading, refetch } = useLessonBySlug(lessonSlug)
+
+  // Force refetch on mount and when lessonSlug changes
+  useEffect(() => {
+    refetch && refetch();
+  }, [lessonSlug]);
+
+
+  const [formData, setFormData] = useState<{
+    id: string;
+    sectionId: string;
+    title: string;
+    content: string;
+    videoUrl: string;
+    duration: string;
+    requireRobot: boolean;
+    type: number;
+    solution: unknown;
+    status: number;
+  }>({
+    id: "",
     sectionId: "",
     title: "",
     content: "",
     videoUrl: "",
     duration: "",
     requireRobot: false,
-    type: "1",
-    solution: ""
-  })
+    type: 1,
+    solution: [],
+    status: 1,
+  });
+
+  // New state for video file
+  const [videoFile, setVideoFile] = useState<File | null>(null);
 
   // Update form when lesson data is loaded
   useEffect(() => {
     if (lesson) {
+      // Only Quiz (type 3) has solution
+      // Keep solution as structured data (array/object) for SolutionBuilder
+      let solutionValue: unknown = []
+      if (lesson.type === 3 && lesson.solution) {
+        solutionValue = lesson.solution
+      }
+
       setFormData({
+        id: lesson.id,
         sectionId: lesson.sectionId,
         title: lesson.title,
         content: lesson.content,
         videoUrl: lesson.videoUrl || "",
         duration: lesson.duration.toString(),
         requireRobot: lesson.requireRobot,
-        type: lesson.type.toString(),
-        solution: lesson.solution ? JSON.stringify(lesson.solution, null, 2) : ""
-      })
+        type: lesson.type,
+        solution: solutionValue,
+        status: lesson.status,
+      });
+      setVideoFile(null); // Reset video file on lesson change
     }
   }, [lesson])
 
   const updateLessonMutation = useUpdateLesson(
-    lesson?.sectionId || '', 
-    lesson?.id || '', 
+    lesson?.sectionId || '',
+    lesson?.id || '',
     lesson?.sectionId
   )
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    
+
     if (!lesson) return
 
     try {
-      await updateLessonMutation.mutateAsync({
+      // Only Quiz (type 3) has solution
+      let solutionObject: object | null | undefined = undefined
+      if (formData.type === 3) {
+        // Quiz: solution may be structured (from SolutionBuilder) or a JSON string (fallback)
+        if (Array.isArray(formData.solution)) {
+          solutionObject = formData.solution as object
+        } else if (typeof formData.solution === 'string' && formData.solution.trim()) {
+          try {
+            solutionObject = JSON.parse(formData.solution as string)
+          } catch (err) {
+            toast.error("Solution JSON không hợp lệ")
+            return
+          }
+        } else {
+          // default to empty array
+          solutionObject = []
+        }
+      }
+
+      // Prepare payload for updateLesson
+      const payload: LessonUpdatePayload= {
+        id: formData.id,
         title: formData.title,
         content: formData.content,
-        videoUrl: formData.videoUrl || undefined,
         duration: parseInt(formData.duration),
         requireRobot: formData.requireRobot,
-        type: parseInt(formData.type),
+        type: formData.type,
         orderNumber: lesson.orderNumber,
-        solution: formData.solution ? JSON.parse(formData.solution) : undefined,
-      })
-      
+        sectionId: formData.sectionId,
+        solution: solutionObject as object | null,
+        status: formData.status
+      };
+      // For type 2 (video), handle video file upload
+      if (formData.type === 2) {
+        if (videoFile) {
+          payload.videoFile = videoFile;
+          // Remove videoUrl if uploading new file
+        } else {
+          payload.videoUrl = formData.videoUrl || undefined;
+        }
+      } else if (formData.type === 1) {
+        // Coding lesson: no video
+        payload.videoUrl = undefined;
+      }
+
+      console.log("Update Lesson Payload:", payload);
+      await updateLessonMutation.mutateAsync(payload);
+
       toast.success('Đã cập nhật bài học')
       router.push(`/staff/lessons/${lessonSlug}`)
     } catch (error: unknown) {
@@ -79,10 +164,31 @@ export default function EditLessonPage() {
       const errorMessage = error && typeof error === 'object' && 'response' in error
         ? (error as { response?: { data?: { message?: string } } }).response?.data?.message || 'Lỗi khi cập nhật bài học'
         : error && typeof error === 'object' && 'message' in error
-        ? (error as { message: string }).message
-        : 'Lỗi khi cập nhật bài học'
+          ? (error as { message: string }).message
+          : 'Lỗi khi cập nhật bài học'
       toast.error(errorMessage)
     }
+  }
+
+  const handleTypeChange = (newType: number) => {
+    // Reset type-specific fields when type changes
+    let newSolution: unknown = []
+    let newVideoUrl = formData.videoUrl
+
+    if (newType === 1) {
+      // Lesson (Coding): no solution, no video
+      newSolution = []
+      newVideoUrl = ""
+    } else if (newType === 2) {
+      // Video: no solution, keep videoUrl
+      newSolution = []
+    } else if (newType === 3) {
+      // Quiz: has solution (structured array/object)
+      newSolution = []
+      newVideoUrl = ""
+    }
+
+    setFormData({ ...formData, type: newType, solution: newSolution, videoUrl: newVideoUrl })
   }
 
   if (isLoading) {
@@ -158,71 +264,79 @@ export default function EditLessonPage() {
 
                 <div className="space-y-2">
                   <Label htmlFor="content">Nội dung *</Label>
-                  <Textarea
-                    id="content"
+                  <RichTextEditor
                     value={formData.content}
-                    onChange={(e) => setFormData({ ...formData, content: e.target.value })}
+                    onChange={(value) => setFormData({ ...formData, content: value })}
                     placeholder="Nhập nội dung bài học"
-                    rows={10}
-                    required
                   />
+                </div>
+                <div className="space-y-2">
+                  <Label>Trạng thái *</Label>
+                  <RadioGroup
+                    value={String(formData.status)}
+                    onValueChange={(value) => setFormData({ ...formData, status: Number(value) })}
+                    className="space-y-3"
+                  >
+                    <div className="flex items-start space-x-3 rounded-md border p-3 hover:bg-accent transition">
+                      <RadioGroupItem value="1" id="status-active" />
+                      <Label htmlFor="status-active" className="font-medium cursor-pointer">
+                        Hoạt động
+                        <p className="text-sm font-normal text-muted-foreground">
+                          Bài học hiển thị và khả dụng cho học sinh.
+                        </p>
+                      </Label>
+                    </div>
+
+                    <div className="flex items-start space-x-3 rounded-md border p-3 hover:bg-accent transition">
+                      <RadioGroupItem value="2" id="status-hidden" />
+                      <Label htmlFor="status-hidden" className="font-medium cursor-pointer">
+                        Ẩn
+                        <p className="text-sm font-normal text-muted-foreground">
+                          Bài học tạm thời bị ẩn khỏi danh sách học sinh.
+                        </p>
+                      </Label>
+                    </div>
+                  </RadioGroup>
                 </div>
               </CardContent>
             </Card>
 
-            {/* Type-specific Fields */}
-            {formData.type === "1" && (
+            {/* Type 2: Video URL Field */}
+            {formData.type === 2 && (
               <Card>
                 <CardHeader>
                   <CardTitle>Video</CardTitle>
                   <CardDescription>
-                    URL video cho bài học
+                    Tải lên video mới hoặc nhập URL video cho bài học
                   </CardDescription>
                 </CardHeader>
-                <CardContent className="space-y-4">
+                <CardContent>
                   <div className="space-y-2">
-                    <Label htmlFor="videoUrl">URL Video</Label>
+                    <Label htmlFor="videoFile">Tải lên video mới</Label>
                     <Input
-                      id="videoUrl"
-                      type="url"
-                      value={formData.videoUrl}
-                      onChange={(e) => setFormData({ ...formData, videoUrl: e.target.value })}
-                      placeholder="https://example.com/video.mp4"
+                      id="videoFile"
+                      type="file"
+                      accept="video/*"
+                      onChange={e => {
+                        const file = e.target.files?.[0] || null;
+                        setVideoFile(file);
+                        // If a file is selected, clear videoUrl
+                        if (file) setFormData({ ...formData, videoUrl: "" });
+                      }}
                     />
+                    {videoFile && (
+                      <div className="mt-2 text-sm text-muted-foreground">
+                        Đã chọn: {videoFile.name}
+                      </div>
+                    )}
                   </div>
                 </CardContent>
               </Card>
             )}
 
-            {(formData.type === "2" || formData.type === "3") && (
-              <Card>
-                <CardHeader>
-                  <CardTitle>
-                    {formData.type === "2" ? "Hướng dẫn & Lời giải" : "Câu hỏi & Đáp án"}
-                  </CardTitle>
-                  <CardDescription>
-                    Dữ liệu JSON cho {formData.type === "2" ? "bài tập lập trình" : "bài kiểm tra"}
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="solution">Solution (JSON)</Label>
-                    <Textarea
-                      id="solution"
-                      value={formData.solution}
-                      onChange={(e) => setFormData({ ...formData, solution: e.target.value })}
-                      placeholder={formData.type === "2" 
-                        ? '{\n  "hints": ["Gợi ý 1", "Gợi ý 2"],\n  "solution": "print(\\"Hello\\")",\n  "testCases": []\n}'
-                        : '{\n  "questions": [],\n  "answers": []\n}'
-                      }
-                      rows={10}
-                      className="font-mono text-sm"
-                    />
-                  </div>
-                </CardContent>
-              </Card>
-            )}
           </div>
+
+
 
           {/* Sidebar Settings */}
           <div className="space-y-6">
@@ -231,17 +345,17 @@ export default function EditLessonPage() {
                 <CardTitle>Loại bài học</CardTitle>
               </CardHeader>
               <CardContent>
-                <RadioGroup value={formData.type} onValueChange={(value: string) => setFormData({ ...formData, type: value })}>
+                <RadioGroup value={String(formData.type)} onValueChange={(value) => handleTypeChange(Number(value))}>
                   <div className="flex items-center space-x-2 mb-3">
-                    <RadioGroupItem value="1" id="type-video" />
-                    <Label htmlFor="type-video" className="font-normal cursor-pointer">
-                      Bài học Video
+                    <RadioGroupItem value="1" id="type-lesson" />
+                    <Label htmlFor="type-lesson" className="font-normal cursor-pointer">
+                      Bài học
                     </Label>
                   </div>
                   <div className="flex items-center space-x-2 mb-3">
-                    <RadioGroupItem value="2" id="type-code" />
-                    <Label htmlFor="type-code" className="font-normal cursor-pointer">
-                      Bài tập Lập trình
+                    <RadioGroupItem value="2" id="type-video" />
+                    <Label htmlFor="type-video" className="font-normal cursor-pointer">
+                      Bài học Video
                     </Label>
                   </div>
                   <div className="flex items-center space-x-2">
@@ -280,8 +394,8 @@ export default function EditLessonPage() {
                 <CardTitle>Thao tác</CardTitle>
               </CardHeader>
               <CardContent className="space-y-2">
-                <Button 
-                  type="submit" 
+                <Button
+                  type="submit"
                   className="w-full"
                   disabled={updateLessonMutation.isPending}
                 >
@@ -305,6 +419,13 @@ export default function EditLessonPage() {
               </CardContent>
             </Card>
           </div>
+        </div>
+
+        <div className="mt-5">
+          {/* Type 3: Quiz JSON */}
+          {formData.type === 3 && (
+            <SolutionBuilder value={formData.solution as SolutionItem[]} onChange={(value) => setFormData({ ...formData, solution: value })} />
+          )}
         </div>
       </form>
     </div>

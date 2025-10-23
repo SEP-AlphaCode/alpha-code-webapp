@@ -19,7 +19,7 @@ export type Robot = {
   robotModelName: string
   ctrl_version?: string
   firmware_version?: string
-  battery_level?: number | null
+  battery_level?: string | null
   accountId: string
   status: string
   statusText: string

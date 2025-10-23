@@ -89,13 +89,13 @@ export const createCategory = async (data: {
 };
 
 // Update category
-export const updateCategory = async (id: string, data: {
-    name: string;
-    description: string;
-    image?: string;
-}) => {
+export const updateCategory = async (id: string, data: FormData) => {
     try {
-        const response = await coursesHttp.put<Category>(`/categories/${id}`, data);
+        const response = await coursesHttp.put<Category>(`/categories/${id}`, data, {
+            headers: {
+                'Content-Type': 'multipart/form-data',
+            },
+        });
         return response.data;
     } catch (error) {
         console.error("API Error in updateCategory:", error);

@@ -39,7 +39,6 @@ interface RobotGridProps {
     online: string;
     offline: string;
     charging: string;
-    busy?: string;
   };
 }
 
@@ -50,11 +49,10 @@ export function RobotGrid({
   sectionTitle,
   statusTexts,
 }: RobotGridProps) {
-  // ✅ Lấy connectMode từ Redux
   const { connectMode } = useRobotStore();
   const isMultiMode = connectMode === "multi";
 
-  const getStatusIcon = (status: string) => {
+  const getStatusIcon = (status: Robot["status"]) => {
     switch (status) {
       case "online":
         return <CheckCircle className="h-4 w-4 text-green-500" />;
@@ -63,11 +61,11 @@ export function RobotGrid({
       case "charging":
         return <Zap className="h-4 w-4 text-yellow-500" />;
       default:
-        return <Activity className="h-4 w-4" />;
+        return <Activity className="h-4 w-4 text-gray-400" />;
     }
   };
 
-  const getStatusColor = (status: string) => {
+  const getStatusColor = (status: Robot["status"]) => {
     switch (status) {
       case "online":
         return "bg-green-100 text-green-800";
@@ -95,7 +93,7 @@ export function RobotGrid({
       case "charging":
         return statusTexts.charging;
       default:
-        return statusTexts.busy || status;
+        return status;
     }
   };
 
@@ -106,28 +104,32 @@ export function RobotGrid({
 
   return (
     <section>
-      {/* 🔵 Title */}
+      {/* 🔵 Section Title */}
       <div className="flex items-center justify-between mb-4">
         <h2 className="text-2xl font-semibold text-blue-800">{sectionTitle}</h2>
 
-        {/* ✅ Hiển thị chế độ connect hiện tại */}
+        {/* ✅ Hiển thị chế độ connect */}
         <span
           className={`text-sm px-3 py-1 rounded-full ${
-            isMultiMode ? "bg-purple-100 text-purple-700" : "bg-blue-100 text-blue-700"
+            isMultiMode
+              ? "bg-purple-100 text-purple-700"
+              : "bg-blue-100 text-blue-700"
           }`}
         >
           {isMultiMode ? "Multi Mode" : "Single Mode"}
         </span>
       </div>
 
-      {/* 🟦 Robot list */}
+      {/* 🟦 Robot Cards */}
       <div className="flex gap-6 overflow-x-auto p-5 hide-scrollbar">
         {robots.map((robot) => {
-          const displayStatus: Robot["status"] = (
-            (["error", "disconnected"].includes(robot.status as string)
-              ? "offline"
-              : robot.status) as Robot["status"]
-          );
+          // ✅ Chuẩn hóa status hiển thị
+          const displayStatus: Robot["status"] =
+            robot.status === "charging"
+              ? "charging"
+              : robot.status === "online"
+              ? "online"
+              : "offline";
 
           const selected = isRobotSelected(robot.serialNumber);
 
@@ -150,7 +152,7 @@ export function RobotGrid({
                 </div>
               )}
 
-              {/* 🖼️ Robot Avatar */}
+              {/* 🖼️ Avatar */}
               <Image
                 src={robot.image}
                 alt={robot.name}
@@ -159,7 +161,7 @@ export function RobotGrid({
                 className="rounded-full object-cover mb-2"
               />
 
-              {/* 📛 Info */}
+              {/* 📛 Name + Serial */}
               <span className="font-bold text-lg text-gray-900 mb-1">
                 {robot.name}
               </span>
@@ -179,7 +181,7 @@ export function RobotGrid({
                 </span>
               </div>
 
-              {/* 🔋 Battery */}
+              {/* 🔋 Battery (ẩn khi offline) */}
               {displayStatus !== "offline" && (
                 <div className="flex items-center gap-2 mb-2">
                   <Battery className="h-4 w-4" />

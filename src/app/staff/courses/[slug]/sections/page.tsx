@@ -40,12 +40,20 @@ import { useSections, useDeleteSection, useUpdateSectionOrder } from "@/features
 import { toast } from "sonner"
 import { Section } from "@/types/courses"
 import { DeleteSectionDialog } from "@/components/course/delete-section-dialog"
+import { CreateSectionModal } from "@/components/course/create-section-modal"
+import { EditSectionModal } from "@/components/course/edit-section-modal"
 
 export default function CourseSectionsPage() {
   const params = useParams()
   const courseSlug = params.slug as string
   const [deletingSectionId, setDeletingSectionId] = useState<string | null>(null)
   const [deletingSectionName, setDeletingSectionName] = useState("")
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false)
+  const [editingSectionId, setEditingSectionId] = useState<string | null>(null)
+  const [editingSectionTitle, setEditingSectionTitle] = useState("")
+  const [editingSectionOrderNumber, setEditingSectionOrderNumber] = useState(0)
+  const [draggedIndex, setDraggedIndex] = useState<number | null>(null)
+  const [dragOverIndex, setDragOverIndex] = useState<number | null>(null)
   
   const { data: course, isLoading: courseLoading } = useStaffCourse(courseSlug)
   const courseId = course?.id ?? ''
@@ -60,6 +68,73 @@ export default function CourseSectionsPage() {
     const hours = Math.floor(seconds / 3600)
     const minutes = Math.floor((seconds % 3600) / 60)
     return `${hours}h ${minutes}m`
+  }
+
+  const handleDragStart = (index: number) => {
+    setDraggedIndex(index)
+  }
+
+  const handleDragOver = (e: React.DragEvent, index: number) => {
+    e.preventDefault()
+    if (draggedIndex === null || draggedIndex === index) return
+    setDragOverIndex(index)
+  }
+
+  const handleDragLeave = () => {
+    setDragOverIndex(null)
+  }
+
+  const handleDrop = async (e: React.DragEvent, dropIndex: number) => {
+    e.preventDefault()
+    if (draggedIndex === null || draggedIndex === dropIndex) {
+      // Delay clearing state to let animation finish
+      setTimeout(() => {
+        setDraggedIndex(null)
+        setDragOverIndex(null)
+      }, 200)
+      return
+    }
+
+    // Clear drag over immediately for smooth transition
+    setDragOverIndex(null)
+
+    const newSections = [...sections]
+    const [draggedSection] = newSections.splice(draggedIndex, 1)
+    newSections.splice(dropIndex, 0, draggedSection)
+
+    // Update order numbers
+    const updatedSections = newSections.map((section, idx) => ({
+      ...section,
+      orderNumber: idx + 1
+    }))
+
+    try {
+      await updateSectionOrderMutation.mutateAsync(
+        updatedSections.map(s => ({
+          id: s.id,
+          orderNumber: s.orderNumber
+        }))
+      )
+      toast.success('Đã cập nhật thứ tự chương')
+      
+      // Delay clearing dragged state to let animation finish
+      setTimeout(() => {
+        setDraggedIndex(null)
+        refetchSections()
+      }, 200)
+    } catch (error) {
+      toast.error('Lỗi khi cập nhật thứ tự chương')
+      console.error('Error updating section order:', error)
+      setDraggedIndex(null)
+    }
+  }
+
+  const handleDragEnd = () => {
+    // Delay clearing state to let animation finish
+    setTimeout(() => {
+      setDraggedIndex(null)
+      setDragOverIndex(null)
+    }, 200)
   }
 
   const moveSection = async (index: number, direction: 'up' | 'down') => {
@@ -88,6 +163,12 @@ export default function CourseSectionsPage() {
       toast.error('Lỗi khi cập nhật thứ tự chương')
       console.error('Error updating section order:', error)
     }
+  }
+
+  const handleEditSection = (section: Section) => {
+    setEditingSectionId(section.id)
+    setEditingSectionTitle(section.title)
+    setEditingSectionOrderNumber(section.orderNumber)
   }
 
   const handleDeleteSection = (sectionId: string, sectionName: string) => {
@@ -137,12 +218,10 @@ export default function CourseSectionsPage() {
             Quản lý các chương học
           </p>
         </div>
-        <Link href={`/staff/courses/${courseSlug}/sections/new`}>
-          <Button>
-            <Plus className="mr-2 h-4 w-4" />
-            Thêm chương mới
-          </Button>
-        </Link>
+        <Button onClick={() => setIsCreateModalOpen(true)}>
+          <Plus className="mr-2 h-4 w-4" />
+          Thêm chương mới
+        </Button>
       </div>
 
       {/* Course Info Card */}
@@ -199,8 +278,32 @@ export default function CourseSectionsPage() {
                     </TableCell>
                   </TableRow>
                 ) : (
-                  sections.map((section, index) => (
-                    <TableRow key={section.id}>
+                  sections.map((section, index) => {
+                    const isDragging = draggedIndex === index
+                    const isDragOverBefore = dragOverIndex === index && draggedIndex !== null && draggedIndex > index
+                    const isDragOverAfter = dragOverIndex === index && draggedIndex !== null && draggedIndex < index
+                    
+                    return (
+                    <TableRow 
+                      key={section.id}
+                      draggable
+                      onDragStart={() => handleDragStart(index)}
+                      onDragOver={(e) => handleDragOver(e, index)}
+                      onDragLeave={handleDragLeave}
+                      onDrop={(e) => handleDrop(e, index)}
+                      onDragEnd={handleDragEnd}
+                      className={`
+                        transition-all duration-300 ease-out
+                        ${isDragging ? 'scale-95 shadow-lg bg-muted/50' : ''}
+                        ${isDragOverBefore ? 'translate-y-3' : ''}
+                        ${isDragOverAfter ? '-translate-y-3' : ''}
+                      `}
+                      style={{
+                        marginTop: isDragOverBefore ? '24px' : '4px',
+                        marginBottom: isDragOverAfter ? '24px' : '4px',
+                        willChange: draggedIndex !== null ? 'transform, margin' : 'auto',
+                      }}
+                    >
                       <TableCell>
                         <div className="flex items-center gap-2">
                           <GripVertical className="h-4 w-4 text-muted-foreground cursor-move" />
@@ -243,8 +346,12 @@ export default function CourseSectionsPage() {
                             <DropdownMenuContent align="end">
                               <DropdownMenuLabel>Thao tác</DropdownMenuLabel>
                               <DropdownMenuSeparator />
+                              <DropdownMenuItem onClick={() => handleEditSection(section)}>
+                                <Pencil className="mr-2 h-4 w-4" />
+                                Chỉnh sửa
+                              </DropdownMenuItem>
                               <DropdownMenuItem asChild>
-                                <Link href={`/staff/courses/${courseSlug}/sections/${section.id}/lessons`}>
+                                <Link href={`/staff/courses/${courseSlug}`}>
                                   <FileText className="mr-2 h-4 w-4" />
                                   Quản lý bài học
                                 </Link>
@@ -262,7 +369,8 @@ export default function CourseSectionsPage() {
                         </div>
                       </TableCell>
                     </TableRow>
-                  ))
+                    )
+                  })
                 )}
               </TableBody>
             </Table>
@@ -281,6 +389,34 @@ export default function CourseSectionsPage() {
         }}
         onConfirm={handleDeleteSectionConfirm}
         isDeleting={deleteSectionMutation.isPending}
+      />
+
+      <CreateSectionModal
+        courseId={courseId}
+        open={isCreateModalOpen}
+        onOpenChange={setIsCreateModalOpen}
+        onSuccess={() => {
+          refetchSections()
+          toast.success('Đã tạo chương mới thành công')
+        }}
+      />
+
+      <EditSectionModal
+        sectionId={editingSectionId || ''}
+        currentTitle={editingSectionTitle}
+        currentOrderNumber={editingSectionOrderNumber}
+        open={!!editingSectionId}
+        onOpenChange={(open) => {
+          if (!open) {
+            setEditingSectionId(null)
+            setEditingSectionTitle("")
+            setEditingSectionOrderNumber(0)
+          }
+        }}
+        onSuccess={() => {
+          refetchSections()
+          toast.success('Đã cập nhật chương thành công')
+        }}
       />
     </div>
   )

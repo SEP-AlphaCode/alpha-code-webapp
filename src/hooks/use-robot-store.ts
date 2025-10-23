@@ -73,7 +73,7 @@ export const useRobotStore = () => {
       [dispatch]
     ),
     updateRobotBattery: useCallback(
-      (serial: string, battery: number) =>
+      (serial: string, battery: string) =>
         dispatch(updateRobotBattery({ serial, battery })),
       [dispatch]
     ),

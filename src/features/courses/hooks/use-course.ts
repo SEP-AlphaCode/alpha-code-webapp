@@ -1,13 +1,12 @@
-import { AccountCourse, AccountLesson, Category, Course, Lesson } from "@/types/courses";
+import { AccountCourse, Category, Course, Lesson } from "@/types/courses";
 import { PagedResult } from "@/types/page-result";
-import { useInfiniteQuery, useQuery, UseQueryOptions, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useQuery, UseQueryOptions, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useRouter } from 'next/navigation';
 import { getCategories, getCategoryBySlug } from "../api/category-api";
 import { getCourseBySlug, getCourses } from "../api/course-api";
 import { getAccountCourses } from "../api/account-courses";
 import { getLessonsByCourseId } from "../api/lesson-api";
 import * as courseApi from '@/features/courses/api/course-api';
-import { UUID } from "crypto";
 
 const STALE_TIME = 24 * 3600 * 1000
 export const useCourse = () => {
@@ -31,6 +30,16 @@ export const useCourse = () => {
             staleTime: STALE_TIME,
             queryFn: () => getCourses(page, size, search, signal),
             refetchOnWindowFocus: false,
+        })
+    }
+
+    const useGetCoursesByCategory = (categoryId: string, page: number = 1, size: number = 10, signal?: AbortSignal) => {
+        return useQuery<PagedResult<Course> | null>({
+            queryKey: ['courses', 'by-category', categoryId, page, size],
+            staleTime: STALE_TIME,
+            queryFn: () => courseApi.getCoursesByCategory(categoryId, page, size, signal),
+            refetchOnWindowFocus: false,
+            enabled: !!categoryId
         })
     }
     const useGetCourseBySlug = (
@@ -91,6 +100,7 @@ export const useCourse = () => {
     return {
         useGetCategories,
         useGetCourses,
+        useGetCoursesByCategory,
         useGetCategoryBySlug,
         useGetCourseBySlug,
         useGetAccountCourses,
