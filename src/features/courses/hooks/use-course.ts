@@ -1,13 +1,12 @@
-import { AccountCourse, AccountLesson, Category, Course, Lesson } from "@/types/courses";
+import { AccountCourse, Category, Course, Lesson } from "@/types/courses";
 import { PagedResult } from "@/types/page-result";
-import { useInfiniteQuery, useQuery, UseQueryOptions, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useQuery, UseQueryOptions, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useRouter } from 'next/navigation';
 import { getCategories, getCategoryBySlug } from "../api/category-api";
 import { getCourseBySlug, getCourses } from "../api/course-api";
 import { getAccountCourses } from "../api/account-courses";
 import { getLessonsByCourseId } from "../api/lesson-api";
 import * as courseApi from '@/features/courses/api/course-api';
-import { UUID } from "crypto";
 
 const STALE_TIME = 24 * 3600 * 1000
 export const useCourse = () => {

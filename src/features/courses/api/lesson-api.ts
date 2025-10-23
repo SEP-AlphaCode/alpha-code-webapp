@@ -123,25 +123,69 @@ export const createLesson = async (sectionId: string, data: {
 };
 
 // Update lesson
-export const updateLesson = async (lessonId: string, data: {
+// Update lesson (multipart/form-data)
+export const updateLesson = async (
+  lessonId: string,
+  data: {
+    id: string;
     title: string;
     content: string;
-    videoUrl?: string;
+    videoFile?: File; // đổi từ videoUrl sang videoFile nếu upload lại
     duration: number;
     requireRobot: boolean;
     type: number;
     orderNumber: number;
     sectionId?: string;
-    solution?: unknown;
-}) => {
-    try {
-        const response = await coursesHttp.put<Lesson>(`/lessons/${lessonId}`, data);
-        return response.data;
-    } catch (error) {
-        console.error("API Error in updateLesson:", error);
-        throw error;
+    solution?: object | null;
+    status: number;
+  }
+) => {
+  try {
+    const formData = new FormData();
+
+    // Tạo DTO để gửi cùng file
+    const updateLessonDto = {
+        id: data.id,
+      title: data.title,
+      content: data.content,
+      duration: data.duration,
+      requireRobot: data.requireRobot,
+      type: data.type,
+      orderNumber: data.orderNumber,
+      sectionId: data.sectionId || null,
+      solution: data.solution || null,
+    status: data.status,
+    };
+
+    // Thêm DTO vào formData
+    formData.append(
+      "updateLesson",
+      new Blob([JSON.stringify(updateLessonDto)], { type: "application/json" })
+    );
+
+    // Nếu có videoFile mới, thêm vào
+    if (data.videoFile) {
+      formData.append("videoFile", data.videoFile);
     }
+
+    // Gửi request PUT với multipart/form-data
+    const response = await coursesHttp.put<Lesson>(
+      `/lessons/${lessonId}`,
+      formData,
+      {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      }
+    );
+
+    return response.data;
+  } catch (error) {
+    console.error("API Error in updateLesson:", error);
+    throw error;
+  }
 };
+
 
 // Delete lesson
 export const deleteLesson = async (lessonId: string) => {
