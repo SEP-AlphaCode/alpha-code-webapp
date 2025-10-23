@@ -4,13 +4,13 @@ import React, { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Power, StopCircleIcon } from "lucide-react";
 import { useRobotStatus } from "@/hooks/use-robot-status";
-import { useRobotStore } from "@/hooks/use-robot-store"; // 👈 thêm dòng này
+import { useRobotStore } from "@/hooks/use-robot-store";
 
 interface Robot {
   id: string;
   name: string;
   status: "online" | "offline" | "charging" | "busy";
-  battery: number | null;
+  battery?: string | null;
   lastSeen: string;
   version: string;
   ctrl_version: string;
@@ -55,22 +55,29 @@ interface RobotDetailsProps {
 }
 
 export function RobotDetails({ robot, translations }: RobotDetailsProps) {
-  const { connectMode } = useRobotStore(); // 👈 lấy từ store
-  const isMultiMode = connectMode === "multi"; // ✅ kiểm tra
+  const { connectMode } = useRobotStore();
+  const isMultiMode = connectMode === "multi";
 
   const { status: liveStatus, loading, error } = useRobotStatus(robot.serialNumber, 5000);
   const [displayRobot, setDisplayRobot] = useState(robot);
 
+  // 🔄 Reset displayRobot mỗi khi prop robot thay đổi
+  useEffect(() => {
+    setDisplayRobot(robot);
+  }, [robot]);
+
+  // 🔄 Cập nhật liveStatus
   useEffect(() => {
     if (liveStatus) {
       setDisplayRobot((prev) => ({
         ...prev,
         version: liveStatus.firmware_version || prev.version,
-        battery: liveStatus.battery_level ?? prev.battery,
+        battery: liveStatus.battery_level != null ? String(liveStatus.battery_level) : prev.battery,
         status: liveStatus.is_charging ? "charging" : prev.status,
       }));
     }
   }, [liveStatus]);
+  
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -85,9 +92,9 @@ export function RobotDetails({ robot, translations }: RobotDetailsProps) {
     }
   };
 
-  const getBatteryColor = (battery: number) => {
-    if (battery > 60) return "bg-green-500";
-    if (battery > 30) return "bg-yellow-500";
+  const getBatteryColor = (battery: string) => {
+    if (battery > "60") return "bg-green-500";
+    if (battery > "30") return "bg-yellow-500";
     return "bg-red-500";
   };
 
@@ -172,7 +179,7 @@ export function RobotDetails({ robot, translations }: RobotDetailsProps) {
                 <div className="w-full bg-gray-200 rounded-full h-2 my-2">
                   <div
                     className={`h-2 rounded-full ${getBatteryColor(
-                      displayRobot.battery ?? 0
+                      displayRobot.battery ?? "0"
                     )}`}
                     style={{ width: `${displayRobot.battery}%` }}
                   ></div>

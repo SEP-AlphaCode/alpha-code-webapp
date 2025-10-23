@@ -12,8 +12,6 @@ import { ProgrammingSection } from "@/components/parent/robot/programming-sectio
 import { EntertainmentSection } from "@/components/parent/robot/entertainment-section";
 import { ThingsToTrySection } from "@/components/parent/robot/things-to-try-section";
 
-// Import tĩnh cả hai file ngôn ngữ
-
 // Hardcoded Vietnamese prompts for "Things to Try"
 const thingsToTryPrompts = [
   "Hãy thử cho robot nhảy một điệu nhạc vui nhộn!",
@@ -30,7 +28,7 @@ interface ExtendedRobot {
   id: string;
   name: string;
   status: "online" | "offline" | "charging" | "busy";
-  battery: number | null;
+  battery?: string | null;
   lastSeen: string;
   version: string;
   ctrl_version: string;
@@ -56,7 +54,10 @@ function shuffleArray(array: string[]) {
 }
 
 // Function to extend Redux Robot with additional mock data
-function extendRobotWithMockData(robot: ReturnType<typeof useRobotStore>['robots'][0], index: number): ExtendedRobot {
+function extendRobotWithMockData(
+  robot: ReturnType<typeof useRobotStore>['robots'][0],
+  index: number
+): ExtendedRobot {
   const mockData = [
     {
       lastSeen: "2 minutes ago",
@@ -95,13 +96,11 @@ function extendRobotWithMockData(robot: ReturnType<typeof useRobotStore>['robots
   return {
     id: robot.id,
     name: robot.name,
-    // ✅ Giữ nguyên status thật, fallback “offline”
     status: robot.status || "offline",
-    // ✅ Nếu pin không có, để null để RobotGrid tự ẩn
-    battery: typeof robot.battery === "number" ? robot.battery : null,
+    battery: typeof robot.battery === "string" ? robot.battery : null,
     ctrl_version: robot.ctrl_version || "",
     firmware_version: robot.firmware_version || "",
-    serialNumber: robot.serial,
+    serialNumber: robot.serial, // ✅ fix đúng key
     robotmodel: robot.robotModelName ?? "",
     ...mockInfo,
   };
@@ -110,21 +109,23 @@ function extendRobotWithMockData(robot: ReturnType<typeof useRobotStore>['robots
 export default function UserDashboard() {
   const { robots, selectedRobotSerial, selectRobot, initializeMockData, connectMode } = useRobotStore();
   const [shuffledPrompts, setShuffledPrompts] = useState<string[]>([]);
-  const [selectedModelName, setSelectedModelName] = useState<string>(""); // ✅ thêm state model  
+  const [selectedModelName, setSelectedModelName] = useState<string>(""); 
 
-
+  // Khi đổi mode
   useEffect(() => {
-  if (connectMode === "single") {
-    setSelectedModelName(""); // 👈 hiển thị lại tất cả robot
-    selectRobot(""); // 👈 bỏ chọn robot cũ (nếu cần)
-    sessionStorage.removeItem("selectedRobotSerial");
-  }
-}, [connectMode]);
+    if (connectMode === "single") {
+      setSelectedModelName(""); 
+      selectRobot(""); 
+      sessionStorage.removeItem("selectedRobotSerial");
+    }
+  }, [connectMode]);
 
+  // Initialize robot data
   useEffect(() => {
     initializeMockData();
   }, []);
 
+  // Shuffle "Things to Try" prompts
   useEffect(() => {
     setShuffledPrompts(shuffleArray(thingsToTryPrompts));
   }, []);
@@ -137,10 +138,18 @@ export default function UserDashboard() {
     extendRobotWithMockData(robot, index)
   );
 
-  // ✅ Lọc robot theo model được chọn (nếu có)
+  // Lọc robot theo model
   const filteredRobots = selectedModelName
     ? extendedRobots.filter((r) => r.robotmodel === selectedModelName)
-    : extendedRobots
+    : extendedRobots;
+
+  // ⚡ Nếu chưa có robot được chọn, tự chọn robot đầu tiên
+  useEffect(() => {
+    if (!selectedRobotSerial && filteredRobots.length > 0) {
+      selectRobot(filteredRobots[0].serialNumber);
+      sessionStorage.setItem("selectedRobotSerial", filteredRobots[0].serialNumber);
+    }
+  }, [filteredRobots, selectedRobotSerial]);
 
   const selectedRobotDetails =
     filteredRobots.find((robot) => robot.serialNumber === selectedRobotSerial) || null;
@@ -151,14 +160,21 @@ export default function UserDashboard() {
         title="Quản lý robot"
         subtitle="Quản lý và tương tác với các robot AlphaMini của bạn"
         onModelSelect={(modelName) => {
-          setSelectedModelName(modelName)
-          selectRobot("") // 👈 reset robot đang chọn trong store
-          sessionStorage.removeItem("selectedRobotSerial") // 👈 xóa khỏi sessionStorage luôn
+          setSelectedModelName(modelName);
+
+          const filtered = extendedRobots.filter(r => r.robotmodel === modelName);
+          if (filtered.length > 0) {
+            selectRobot(filtered[0].serialNumber);
+            sessionStorage.setItem("selectedRobotSerial", filtered[0].serialNumber);
+          } else {
+            selectRobot("");
+            sessionStorage.removeItem("selectedRobotSerial");
+          }
         }}
       />
 
       <RobotGrid
-        robots={filteredRobots} // ✅ truyền danh sách đã lọc
+        robots={filteredRobots} 
         selectedRobot={selectedRobotSerial}
         onRobotSelect={(robotSerial) => {
           selectRobot(robotSerial);

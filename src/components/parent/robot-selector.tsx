@@ -44,7 +44,8 @@ export function RobotSelector({ className = "" }: RobotSelectorProps) {
 
   // Lấy accountId từ token
   useEffect(() => {
-    const token = sessionStorage.getItem("accessToken");
+    // Sửa lỗi tham chiếu window khi server-side rendering
+    const token = typeof window !== 'undefined' ? sessionStorage.getItem("accessToken") : null;
     if (token) {
       const userId = getUserIdFromToken(token);
       if (userId) setAccountId(userId);
@@ -59,12 +60,15 @@ export function RobotSelector({ className = "" }: RobotSelectorProps) {
   // Add robots vào Redux store
   useEffect(() => {
     robotsApi.forEach((r) => {
+      // Đảm bảo pin là string/null khi add vào store
+      const batteryLevel = r.battery;
+
       addRobot({
         id: r.id,
         serial: r.serialNumber,
         name: r.robotModelName || "Unknown Robot",
         status: r.status === "online" ? "online" : "offline",
-        battery: r.battery_level ?? null,
+        battery: batteryLevel,
         robotModelId: r.robotModelId,
         robotModelName: r.robotModelName,
         accountId: r.accountId,
@@ -83,37 +87,71 @@ export function RobotSelector({ className = "" }: RobotSelectorProps) {
   const { useGetMultipleRobotInfo } = useRobotInfo();
   const robotInfos = useGetMultipleRobotInfo(
     robots.map((r) => r.serial),
-    10,
+    3, // ✅ ĐIỀU CHỈNH: Giảm Polling Interval xuống 3 giây
     { enabled: robots.length > 0 }
   );
 
   // Cập nhật Redux store theo poll
   useEffect(() => {
-  robotInfos.forEach((info) => {
-    const existing = robots.find((r) => r.serial === info.serial);
-    if (!existing) return;
+    robotInfos.forEach((info) => {
+      const apiData = info.data?.data;
+      const apiStatus = info.data?.status;
+      const apiMessage = info.data?.message;
 
-    // Nếu robot offline hoặc error
-    if (!info.data?.data || info.data.status === "error") {
-      if (existing.status !== "offline") {
-        updateRobotStatus(info.serial, "offline");
+      const existing = robots.find((r) => r.serial === info.serial);
+      if (!existing) return;
+
+      let newStatus = existing.status;
+      let newBattery = existing.battery; // Redux store lưu string/null
+
+      // 1. Logic OFFLINE: Khi API báo lỗi nội bộ hoặc không có dữ liệu
+      if (!info.data || apiStatus === "error") {
+        let isOffline = false;
+
+        // Kiểm tra message chỉ ra lỗi kết nối
+        if (apiMessage && apiMessage.includes("not connected via WebSocket")) {
+          isOffline = true;
+        } else if (apiData && Object.keys(apiData).length === 0) {
+          isOffline = true;
+        }
+
+        if (isOffline) {
+          newStatus = "offline";
+        }
+      } else {
+        // 2. Logic ONLINE / CHARGING 
+        // const data = apiData; // 🛑 Lỗi có thể xảy ra ở đây nếu apiData chưa được chắc chắn tồn tại
+
+        const data = apiData;
+
+        // ✅ THÊM KIỂM TRA RÕ RÀNG
+        if (!data) {
+          // Nếu info.data tồn tại nhưng data bên trong lại là null/undefined (không mong muốn)
+          newStatus = "offline";
+        } else {
+          // ✅ Lúc này, TypeScript biết 'data' chắc chắn là RobotInfo
+          // Cập nhật trạng thái
+          newStatus = data.is_charging ? "charging" : "online";
+
+          // Cập nhật pin
+          if (data.battery_level != null) {
+            newBattery = String(data.battery_level);
+          }
+        }
       }
-      return;
-    }
 
-    // Robot online / charging
-    const data = info.data.data;
-    const newStatus = data.is_charging ? "charging" : "online";
-    if (existing.status !== newStatus) {
-      updateRobotStatus(info.serial, newStatus);
-    }
+      // Cập nhật trạng thái chỉ khi có thay đổi
+      if (existing.status !== newStatus) {
+        updateRobotStatus(info.serial, newStatus);
+      }
 
-    if (data.battery_level != null && existing.battery !== data.battery_level) {
-      updateRobotBattery(info.serial, data.battery_level);
-    }
-  });
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-}, [robotInfos]);
+      // Cập nhật pin chỉ khi có thay đổi (kích hoạt re-render)
+      if (existing.battery !== newBattery && newBattery != null) {
+        updateRobotBattery(info.serial, newBattery);
+      }
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [robotInfos]);
 
   const handleRobotSelect = (serial: string) => selectRobot(serial);
 
@@ -134,8 +172,8 @@ export function RobotSelector({ className = "" }: RobotSelectorProps) {
   const selectedSerials = Array.isArray(selectedRobotSerial)
     ? selectedRobotSerial
     : selectedRobotSerial
-    ? [selectedRobotSerial]
-    : [];
+      ? [selectedRobotSerial]
+      : [];
 
   const selectedRobots = displayRobots.filter((r) => selectedSerials.includes(r.serial));
 
@@ -143,8 +181,8 @@ export function RobotSelector({ className = "" }: RobotSelectorProps) {
     selectedRobots.length === 0
       ? "Chưa có robot nào"
       : isMultiMode
-      ? `${selectedRobots.length} robots được chọn`
-      : selectedRobots[0].name;
+        ? `${selectedRobots.length} robots được chọn`
+        : selectedRobots[0].name;
 
   const displayAvatar =
     isMultiMode && selectedRobots.length > 1
@@ -209,8 +247,8 @@ export function RobotSelector({ className = "" }: RobotSelectorProps) {
                     <div className="flex flex-row items-center gap-2">
                       <span className="font-medium text-gray-900 text-sm">{robot.name}</span>
                       {robot.status === "online" && <span className="text-xs px-2 py-0.5 rounded bg-green-100 text-green-600">Online</span>}
-                      {robot.status === "charging" && <span className="text-xs px-2 py-0.5 rounded bg-yellow-100 text-yellow-600 flex items-center gap-1"><Zap size={12}/>Charging</span>}
-                      {robot.status === "offline" && <span className="text-xs px-2 py-0.5 rounded bg-gray-200 text-gray-600 flex items-center gap-1"><WifiOff size={12}/>Offline</span>}
+                      {robot.status === "charging" && <span className="text-xs px-2 py-0.5 rounded bg-yellow-100 text-yellow-600 flex items-center gap-1"><Zap size={12} />Charging</span>}
+                      {robot.status === "offline" && <span className="text-xs px-2 py-0.5 rounded bg-gray-200 text-gray-600 flex items-center gap-1"><WifiOff size={12} />Offline</span>}
                     </div>
                     <span className="text-xs text-gray-400 mt-1">{robot.serial}</span>
                   </div>
