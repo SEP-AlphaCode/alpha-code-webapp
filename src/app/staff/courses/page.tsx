@@ -234,9 +234,10 @@ export default function CoursesPage() {
                       <TableCell className="font-medium max-w-xs">
                         <div>
                           <p className="font-medium">{course.name}</p>
-                          <p className="text-sm text-muted-foreground truncate">
-                            {course.description}
-                          </p>
+                          <div 
+                            className="text-sm text-muted-foreground truncate"
+                            dangerouslySetInnerHTML={{ __html: course.description }}
+                          />
                         </div>
                       </TableCell>
                       <TableCell>
@@ -292,13 +293,13 @@ export default function CoursesPage() {
                               </Link>
                             </DropdownMenuItem>
                             <DropdownMenuItem asChild>
-                              <Link href={`/staff/courses/${course.id}/edit`}>
+                              <Link href={`/staff/courses/${course.slug}/edit`}>
                                 <Pencil className="mr-2 h-4 w-4" />
                                 Chỉnh sửa
                               </Link>
                             </DropdownMenuItem>
                             <DropdownMenuItem asChild>
-                              <Link href={`/staff/courses/${course.id}/sections`}>
+                              <Link href={`/staff/courses/${course.slug}/sections`}>
                                 <Layers className="mr-2 h-4 w-4" />
                                 Quản lý chương
                               </Link>

@@ -44,15 +44,13 @@ export function useCreateCategory() {
 
 export function useUpdateCategory(id: string) {
   const queryClient = useQueryClient()
-  const router = useRouter()
 
   return useMutation({
-    mutationFn: (data: { name: string; description: string; image?: string }) =>
+    mutationFn: (data: FormData) =>
       categoryApi.updateCategory(id, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['categories'] })
       queryClient.invalidateQueries({ queryKey: ['category', id] })
-      router.push('/staff/categories')
     },
   })
 }

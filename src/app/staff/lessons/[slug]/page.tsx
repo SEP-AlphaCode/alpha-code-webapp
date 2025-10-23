@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/separator"
+import { RichTextViewer } from "@/components/ui/rich-text-editor"
 import { 
   ArrowLeft, 
   Pencil, 
@@ -189,13 +190,7 @@ export default function LessonDetailPage() {
             </CardHeader>
             <CardContent>
               <div className="prose prose-sm max-w-none">
-                {lesson.content.split('\n').map((paragraph: string, index: number) => (
-                  paragraph.trim() && (
-                    <p key={index} className="mb-4 text-foreground">
-                      {paragraph.trim()}
-                    </p>
-                  )
-                ))}
+                <RichTextViewer content={lesson.content} />
               </div>
             </CardContent>
           </Card>

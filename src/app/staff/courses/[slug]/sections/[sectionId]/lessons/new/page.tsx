@@ -21,6 +21,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { useStaffCourse } from "@/features/courses/hooks/use-course"
 import { useCreateLesson } from "@/features/courses/hooks/use-lesson"
 import { toast } from "sonner"
+import { RichTextEditor } from "@/components/ui/rich-text-editor"
 
 export default function NewLessonPage() {
   const router = useRouter()
@@ -167,13 +168,10 @@ export default function NewLessonPage() {
 
               <div className="space-y-2">
                 <Label htmlFor="content">Nội dung bài học *</Label>
-                <Textarea
-                  id="content"
-                  placeholder="Mô tả chi tiết nội dung bài học..."
+                <RichTextEditor
                   value={formData.content}
-                  onChange={(e) => handleChange("content", e.target.value)}
-                  rows={6}
-                  required
+                  onChange={(value) => handleChange("content", value)}
+                  placeholder="Mô tả chi tiết nội dung bài học..."
                 />
               </div>
 

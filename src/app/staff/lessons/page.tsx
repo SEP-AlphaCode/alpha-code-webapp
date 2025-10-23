@@ -60,7 +60,7 @@ export default function AllLessonsPage() {
   const router = useRouter()
   const [searchQuery, setSearchQuery] = useState("")
   const [selectedType, setSelectedType] = useState("all")
-  const [currentPage, setCurrentPage] = useState(0)
+  const [currentPage, setCurrentPage] = useState(1)
   const pageSize = 20
   const [deletingLessonId, setDeletingLessonId] = useState<string | null>(null)
   const [deletingLessonName, setDeletingLessonName] = useState("")
@@ -131,7 +131,9 @@ export default function AllLessonsPage() {
             <BookOpen className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{lessons.length}</div>
+            <div className="text-2xl font-bold">
+              {lessonsLoading ? <Loader2 className="h-6 w-6 animate-spin" /> : lessonsData?.total_count || 0}
+            </div>
             <p className="text-xs text-muted-foreground">
               Tất cả các bài học
             </p>
@@ -147,10 +149,10 @@ export default function AllLessonsPage() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              {lessons.filter(l => l.type === 1).length}
+              {lessonsLoading ? <Loader2 className="h-6 w-6 animate-spin" /> : lessons.filter(l => l.type === 1).length}
             </div>
             <p className="text-xs text-muted-foreground">
-              Bài học dạng video
+              Trên trang này
             </p>
           </CardContent>
         </Card>
@@ -164,10 +166,10 @@ export default function AllLessonsPage() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              {lessons.filter(l => l.type === 2).length}
+              {lessonsLoading ? <Loader2 className="h-6 w-6 animate-spin" /> : lessons.filter(l => l.type === 2).length}
             </div>
             <p className="text-xs text-muted-foreground">
-              Bài tập lập trình
+              Trên trang này
             </p>
           </CardContent>
         </Card>
@@ -181,10 +183,10 @@ export default function AllLessonsPage() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              {lessons.filter(l => l.requireRobot).length}
+              {lessonsLoading ? <Loader2 className="h-6 w-6 animate-spin" /> : lessons.filter(l => l.requireRobot).length}
             </div>
             <p className="text-xs text-muted-foreground">
-              Bài yêu cầu robot
+              Trên trang này
             </p>
           </CardContent>
         </Card>
@@ -233,7 +235,13 @@ export default function AllLessonsPage() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {filteredLessons.length === 0 ? (
+                {lessonsLoading ? (
+                  <TableRow>
+                    <TableCell colSpan={5} className="text-center py-8">
+                      <Loader2 className="h-6 w-6 animate-spin mx-auto text-muted-foreground" />
+                    </TableCell>
+                  </TableRow>
+                ) : filteredLessons.length === 0 ? (
                   <TableRow>
                     <TableCell colSpan={5} className="text-center py-8 text-muted-foreground">
                       Không tìm thấy bài học nào
@@ -251,9 +259,10 @@ export default function AllLessonsPage() {
                             <TypeIcon className="h-4 w-4 mt-1 text-muted-foreground flex-shrink-0" />
                             <div>
                               <p className="font-medium">{lesson.title}</p>
-                              <p className="text-sm text-muted-foreground line-clamp-1">
-                                {lesson.content}
-                              </p>
+                              <div 
+                                className="text-sm text-muted-foreground line-clamp-1"
+                                dangerouslySetInnerHTML={{ __html: lesson.content }}
+                              />
                             </div>
                           </div>
                         </TableCell>
@@ -312,6 +321,33 @@ export default function AllLessonsPage() {
               </TableBody>
             </Table>
           </div>
+
+          {/* Pagination */}
+          {lessonsData && lessonsData.total_pages > 1 && (
+            <div className="flex items-center justify-between mt-4">
+              <div className="text-sm text-muted-foreground">
+                Trang {currentPage} / {lessonsData.total_pages} - Tổng {lessonsData.total_count} bài học
+              </div>
+              <div className="flex items-center gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setCurrentPage(currentPage - 1)}
+                  disabled={!lessonsData.has_previous}
+                >
+                  Trước
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setCurrentPage(currentPage + 1)}
+                  disabled={!lessonsData.has_next}
+                >
+                  Sau
+                </Button>
+              </div>
+            </div>
+          )}
         </CardContent>
       </Card>
 

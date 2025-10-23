@@ -75,7 +75,7 @@ export default function CourseDetailPage() {
   }, [sections])
 
   const [sectionsData, setSectionsData] = useState<Section[]>([])
-  const [draggedLesson, setDraggedLesson] = useState<{ lesson: Lesson; sectionId: string } | null>(null)
+  const [draggedLessonIndex, setDraggedLessonIndex] = useState<{ sectionId: string; index: number } | null>(null)
   const [draggedSection, setDraggedSection] = useState<number | null>(null)
   const [isCreateSectionModalOpen, setIsCreateSectionModalOpen] = useState(false)
   const [editingSectionId, setEditingSectionId] = useState<string | null>(null)
@@ -102,24 +102,27 @@ export default function CourseDetailPage() {
     return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`
   }
 
-  const handleDragStart = (lesson: Lesson, sectionId: string) => {
-    setDraggedLesson({ lesson, sectionId })
+  const handleLessonDragStart = (sectionId: string, index: number) => {
+    setDraggedLessonIndex({ sectionId, index })
   }
 
-  const handleDragOver = (e: React.DragEvent) => {
+  const handleLessonDragOver = (e: React.DragEvent) => {
     e.preventDefault()
   }
 
-  const handleDrop = async (targetSectionId: string, targetIndex: number) => {
-    if (!draggedLesson || !Array.isArray(sectionsData)) return
+  const handleLessonDrop = async (targetSectionId: string, dropIndex: number) => {
+    if (!draggedLessonIndex || draggedLessonIndex.sectionId === targetSectionId && draggedLessonIndex.index === dropIndex || !Array.isArray(sectionsData)) {
+      setDraggedLessonIndex(null)
+      return
+    }
 
     // Clear dragged state immediately to remove blur effect
-    const draggedLessonData = draggedLesson
-    setDraggedLesson(null)
+    const sourceLessonData = { ...draggedLessonIndex }
+    setDraggedLessonIndex(null)
 
     const newSectionsData = [...sectionsData]
     const sourceSectionIndex = newSectionsData.findIndex(
-      s => s.id === draggedLessonData.sectionId
+      s => s.id === sourceLessonData.sectionId
     )
     const targetSectionIndex = newSectionsData.findIndex(
       s => s.id === targetSectionId
@@ -127,10 +130,9 @@ export default function CourseDetailPage() {
 
     if (sourceSectionIndex === -1 || targetSectionIndex === -1) return
 
-    // Remove lesson from source
+    // Get lessons from source section
     const sourceLessons = [...(newSectionsData[sourceSectionIndex].lessons || [])]
-    const lessonIndex = sourceLessons.findIndex(l => l.id === draggedLessonData.lesson.id)
-    const [movedLesson] = sourceLessons.splice(lessonIndex, 1)
+    const [movedLesson] = sourceLessons.splice(sourceLessonData.index, 1)
 
     // Update order numbers in source section
     sourceLessons.forEach((lesson, idx) => {
@@ -142,13 +144,13 @@ export default function CourseDetailPage() {
       lessons: sourceLessons
     }
 
-    // Add lesson to target
+    // Add lesson to target section
     const targetLessons = sourceSectionIndex === targetSectionIndex 
       ? sourceLessons 
       : [...(newSectionsData[targetSectionIndex].lessons || [])]
     
     movedLesson.sectionId = targetSectionId
-    targetLessons.splice(targetIndex, 0, movedLesson)
+    targetLessons.splice(dropIndex, 0, movedLesson)
 
     // Update order numbers in target section
     targetLessons.forEach((lesson, idx) => {
@@ -162,7 +164,7 @@ export default function CourseDetailPage() {
 
     setSectionsData(newSectionsData)
 
-    // Call API to update lesson order in background
+    // Call API to update lesson order
     try {
       await lessonApi.updateLessonOrder(
         targetSectionId,
@@ -176,26 +178,19 @@ export default function CourseDetailPage() {
       // If moving between sections, also update source section
       if (sourceSectionIndex !== targetSectionIndex) {
         await lessonApi.updateLessonOrder(
-          draggedLesson.sectionId,
+          sourceLessonData.sectionId,
           sourceLessons.map(l => ({
             id: l.id,
             orderNumber: l.orderNumber,
-            sectionId: draggedLesson.sectionId
+            sectionId: sourceLessonData.sectionId
           }))
         )
-      }
-      
-      // Silently update cache without triggering loading state
-      queryClient.setQueryData(['lessons', courseId, targetSectionId], targetLessons)
-      if (sourceSectionIndex !== targetSectionIndex) {
-        queryClient.setQueryData(['lessons', courseId, draggedLesson.sectionId], sourceLessons)
       }
       
       toast.success('Đã cập nhật thứ tự bài học')
     } catch (error) {
       toast.error('Lỗi khi cập nhật thứ tự bài học')
       console.error('Error updating lesson order:', error)
-      // Revert local state on error
       setSectionsData(sectionsWithLessons)
     }
   }
@@ -486,14 +481,17 @@ export default function CourseDetailPage() {
                     ? 'opacity-50 scale-95' 
                     : ''
                 }`}
-                draggable
-                onDragStart={() => handleSectionDragStart(sectionIndex)}
-                onDragEnd={() => setDraggedSection(null)}
                 onDragOver={handleSectionDragOver}
                 onDrop={() => handleSectionDrop(sectionIndex)}
               >
                 <div className="flex items-center gap-2">
                   <div 
+                    draggable
+                    onDragStart={(e) => {
+                      e.stopPropagation()
+                      handleSectionDragStart(sectionIndex)
+                    }}
+                    onDragEnd={() => setDraggedSection(null)}
                     className="flex flex-col gap-1 py-2 cursor-move"
                     title="Kéo để di chuyển chương"
                   >
@@ -568,14 +566,7 @@ export default function CourseDetailPage() {
                 </div>
 
                 <AccordionContent>
-                  <div 
-                    className="space-y-2 p-2"
-                    onDragOver={handleDragOver}
-                    onDrop={(e) => {
-                      e.preventDefault()
-                      handleDrop(sectionData.id, sectionData.lessons?.length || 0)
-                    }}
-                  >
+                  <div className="space-y-2 p-2">
                     {(!sectionData.lessons || !Array.isArray(sectionData.lessons) || sectionData.lessons.length === 0) ? (
                       <div className="text-center py-8 text-muted-foreground border-2 border-dashed rounded-lg">
                         <FileText className="h-8 w-8 mx-auto mb-2 opacity-50" />
@@ -592,21 +583,20 @@ export default function CourseDetailPage() {
                         const typeInfo = lessonTypeMap[lesson.type]
                         const TypeIcon = typeInfo.icon
                         
+                        const isDragging = draggedLessonIndex?.sectionId === sectionData.id && draggedLessonIndex?.index === lessonIndex
+                        
                         return (
                           <div
                             key={lesson.id}
                             draggable
-                            onDragStart={() => handleDragStart(lesson, sectionData.id)}
-                            onDragEnd={() => setDraggedLesson(null)}
-                            onDragOver={handleDragOver}
-                            onDrop={(e) => {
-                              e.stopPropagation()
-                              handleDrop(sectionData.id, lessonIndex)
-                            }}
+                            onDragStart={() => handleLessonDragStart(sectionData.id, lessonIndex)}
+                            onDragEnd={() => setDraggedLessonIndex(null)}
+                            onDragOver={handleLessonDragOver}
+                            onDrop={() => handleLessonDrop(sectionData.id, lessonIndex)}
                             className={`
                               flex flex-wrap items-center gap-2 p-3 rounded-lg border bg-card hover:bg-accent cursor-move
-                              transition-colors
-                              ${draggedLesson?.lesson.id === lesson.id ? 'opacity-50' : ''}
+                              transition-all
+                              ${isDragging ? 'opacity-50 scale-95' : ''}
                             `}
                           >
                             <GripVertical className="h-4 w-4 text-muted-foreground flex-shrink-0" />
@@ -616,9 +606,10 @@ export default function CourseDetailPage() {
                             <TypeIcon className="h-4 w-4 text-muted-foreground flex-shrink-0" />
                             <div className="flex-1 min-w-[200px]">
                               <p className="font-medium break-words">{lesson.title}</p>
-                              <p className="text-sm text-muted-foreground line-clamp-2">
-                                {lesson.content}
-                              </p>
+                              <div 
+                                className="text-sm text-muted-foreground line-clamp-2"
+                                dangerouslySetInnerHTML={{ __html: lesson.content }}
+                              />
                             </div>
                             <div className="flex flex-wrap items-center gap-2">
                               <Badge className={`${typeInfo.color} flex-shrink-0 whitespace-nowrap`}>

@@ -13,6 +13,7 @@ import { ArrowLeft, Save, Loader2 } from "lucide-react"
 import Link from "next/link"
 import { useLessonBySlug, useUpdateLesson } from "@/features/courses/hooks/use-lesson"
 import { toast } from "sonner"
+import { RichTextEditor } from "@/components/ui/rich-text-editor"
 
 export default function EditLessonPage() {
   const params = useParams()
@@ -158,13 +159,10 @@ export default function EditLessonPage() {
 
                 <div className="space-y-2">
                   <Label htmlFor="content">Nội dung *</Label>
-                  <Textarea
-                    id="content"
+                  <RichTextEditor
                     value={formData.content}
-                    onChange={(e) => setFormData({ ...formData, content: e.target.value })}
+                    onChange={(value) => setFormData({ ...formData, content: value })}
                     placeholder="Nhập nội dung bài học"
-                    rows={10}
-                    required
                   />
                 </div>
               </CardContent>
