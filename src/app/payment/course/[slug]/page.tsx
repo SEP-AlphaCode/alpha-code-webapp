@@ -1,183 +1,171 @@
-'use client'
+"use client"
 
-import { useCourse } from '@/features/courses/hooks/use-course';
-import { useParams } from 'next/navigation'
-import { usePayOS } from "@payos/payos-checkout"
+import React, { useMemo, useRef, useState } from 'react'
+import { useParams, useRouter } from 'next/navigation'
+import { useCourse } from '@/features/courses/hooks/use-course'
+import { Button } from '@/components/ui/button'
+import { Card } from '@/components/ui/card'
 
-import CoursePaymentUI from './ui';
-import { useEffect, useMemo, useRef, useState } from 'react';
+function formatCurrency(v: number) {
+  try {
+    return v.toLocaleString('vi-VN', { style: 'currency', currency: 'VND' })
+  } catch (e) {
+    return `${v} VND`
+  }
+}
 
-export default function CoursePaymentPage() {
-    const { slug } = useParams<{ slug: string }>();
-    console.log(slug);
+type PaymentType = 'course' | 'plan' | 'addon' | 'key' | 'bundle'
+type PaymentMethod = 'payos' | 'credit_card' | 'bank_transfer' | 'momo' | 'zalopay'
 
-    const { useGetCourseBySlug } = useCourse()
+export default function PaymentPageClient() {
+  const { slug } = useParams()
+  const router = useRouter()
+  const { useGetCourseBySlug } = useCourse()
+  const slugStr = Array.isArray(slug) ? slug[0] : slug || ''
+  const { data: course, isLoading } = useGetCourseBySlug(slugStr)
 
-    const { data: course, isLoading, error } = useGetCourseBySlug(slug)
+  const [paymentType, setPaymentType] = useState<PaymentType>('course')
+  const [method, setMethod] = useState<PaymentMethod | null>(null)
+  const [isProcessing, setIsProcessing] = useState(false)
+  const mounted = useRef(false)
 
-    const [checkoutUrl, setCheckoutUrl] = useState<string | undefined>()
-    const [isPaymentOpen, setIsPaymentOpen] = useState(false)
-    const [isCreatingLink, setIsCreatingLink] = useState(false)
-    const [isProcessing, setIsProcessing] = useState(false)
-    const [paymentError, setPaymentError] = useState<string | undefined>()
-
-    const paymentOpenedRef = useRef(false)
-
-    // PayOS config
-    const payOSConfig = useMemo(() => ({
-        RETURN_URL: `${process.env.NEXT_PUBLIC_WEB_URL}/payments/pay-result?success=true`,
-        ELEMENT_ID: "embedded-payment-container",
-        CHECKOUT_URL: checkoutUrl || "",
-        embedded: true,
-        onSuccess: async () => {
-            setIsProcessing(true)
-            console.log("Course payment successful, processing...")
-
-            try {
-                // Create payment record in database
-                // const payment = await addPayment({
-                //   customerId: 0, // You might want to get this from user context
-                //   courseId: course?.id || "",
-                //   price: course?.price || 0,
-                //   paymentMethod: "PayOS",
-                //   invoiceId: `course_${course?.id}_${Date.now()}`
-                // })
-
-                // if (payment) {
-                //   // Update payment status
-                //   await updatePaymentStatus(payment.invoiceId, "paid")
-
-                //   // Add delay to show processing state
-                //   setTimeout(() => {
-                //     setIsPaymentOpen(false)
-                //     setCheckoutUrl(null)
-                //     paymentOpenedRef.current = false
-                //     window.location.href = `/payment/pay-result?success=true&courseId=${course?.id}&paymentId=${payment.paymentId}`
-                //   }, 2000)
-                // }
-            } catch (error) {
-                console.error("Course payment error:", error)
-                setPaymentError("Có lỗi xảy ra khi xử lý thanh toán")
-            }
-        },
-        onCancel: () => {
-            window.location.href = `/payment/pay-result?success=false&courseId=${course?.id}`
-            handleClosePayment()
-        },
-        onExit: () => {
-            window.location.href = `/payment/pay-result?success=false&courseId=${course?.id}`
-            handleClosePayment()
-        }
-    }), [checkoutUrl, course?.id, course?.price])
-
-    const { open, exit } = usePayOS(payOSConfig)
-
-    // Handle payment link creation
-    const handleGetPaymentLink = async () => {
-        if (!course) return
-
-        setIsCreatingLink(true)
-        setPaymentError(undefined)
-
-        try {
-            // Exit any existing payment session
-            try {
-                exit()
-            } catch (e) {
-                console.log("Exit error (ignorable):", e)
-            }
-            paymentOpenedRef.current = false
-
-            // Create payment link with course details
-            //   const paymentLink = await createEmbeddedPaymentLink(
-            //     course.price,
-            //     `course_${course.id}`,
-            //     course.name
-            //   )
-
-            //   if (paymentLink) {
-            //     setCheckoutUrl(paymentLink)
-            //     setIsPaymentOpen(true)
-            //   } else {
-            //     throw new Error("Không nhận được link thanh toán")
-            //   }
-
-        } catch (error) {
-            console.error("Error creating payment link:", error)
-            setPaymentError("Lỗi kết nối thanh toán. Vui lòng thử lại.")
-        } finally {
-            setIsCreatingLink(false)
-        }
+  const price = useMemo(() => {
+    // For demo choose course.price or fallback
+    if (!course) return 0
+    switch (paymentType) {
+      case 'course':
+        return course.price || 0
+      case 'plan':
+        return course.price || 0
+      case 'addon':
+        return (course.price && Math.round(course.price * 0.25)) || 0
+      case 'key':
+        return 10000
+      case 'bundle':
+        return (course.price && Math.round(course.price * 1.8)) || 0
+      default:
+        return course.price || 0
     }
+  }, [course, paymentType])
 
-    const handleClosePayment = () => {
-        setIsPaymentOpen(false)
-        setCheckoutUrl(undefined)
-        paymentOpenedRef.current = false
-        exit()
+  const methods: { key: PaymentMethod; label: string }[] = [
+    { key: 'payos', label: 'PayOS (embedded)' },
+    { key: 'credit_card', label: 'Credit / Debit Card' },
+    { key: 'bank_transfer', label: 'Bank transfer' },
+    { key: 'momo', label: 'MoMo' },
+    { key: 'zalopay', label: 'ZaloPay' },
+  ]
+
+  const onConfirm = async () => {
+    if (!method) return alert('Vui lòng chọn phương thức thanh toán')
+    if (!course) return
+    setIsProcessing(true)
+    try {
+      // Prepare payload to be sent to API (not implemented). We'll simulate behavior.
+      const payload = {
+        paymentType,
+        paymentMethod: method,
+        amount: price,
+        courseId: course.id,
+        courseSlug: course.slug,
+      }
+
+      console.log('Prepared payment payload', payload)
+      // Demo: route to a result page or open external link depending on method
+      if (method === 'payos') {
+        // Simulate opening embedded checkout
+        router.push(`/payment/processing?type=${paymentType}&method=${method}&courseId=${course.id}`)
+      } else {
+        // For other methods navigate to a placeholder result
+        router.push(`/payment/pay-result?success=true&method=${method}&courseId=${course.id}`)
+      }
+    } catch (err) {
+      console.error(err)
+      alert('Lỗi khi tạo yêu cầu thanh toán. Vui lòng thử lại.')
+    } finally {
+      setIsProcessing(false)
     }
+  }
 
-    // Open payment when checkoutUrl is available
-    useEffect(() => {
-        if (checkoutUrl && !paymentOpenedRef.current && isPaymentOpen) {
-            const timer = setTimeout(() => {
-                const container = document.getElementById("embedded-payment-container")
-                if (container) {
-                    paymentOpenedRef.current = true
-                    try {
-                        open()
-                    } catch (error) {
-                        console.error("Error opening PayOS:", error)
-                        setPaymentError("Không thể mở giao diện thanh toán. Vui lòng thử lại.")
-                    }
-                }
-            }, 100)
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">Đang tải thông tin khóa học...</div>
+      </div>
+    )
+  }
 
-            return () => clearTimeout(timer)
-        }
-    }, [checkoutUrl, open, isPaymentOpen])
+  if (!course) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">Không tìm thấy khóa học</div>
+      </div>
+    )
+  }
 
-    if (isLoading) {
-        return (
-            <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 flex items-center justify-center">
-                <div className="text-center">
-                    <div className="w-16 h-16 border-4 border-blue-200 border-t-blue-600 rounded-full animate-spin mx-auto mb-4"></div>
-                    <p className="text-gray-600 text-lg">Đang tải thông tin khóa học...</p>
-                </div>
-            </div>
-        )
-    }
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 p-6">
+      <div className="max-w-4xl mx-auto grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="lg:col-span-2">
+          <Card className="p-6">
+            <h2 className="text-2xl font-bold mb-2">{course.name}</h2>
+            <p className="text-muted-foreground mb-4">{course.description}</p>
 
-    if (error || !course) {
-        return (
-            <div className="min-h-screen bg-gradient-to-br from-red-50 via-white to-pink-50 flex items-center justify-center">
-                <div className="max-w-md mx-auto p-8 text-center">
-                    <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                        <span className="text-red-600 text-2xl">⚠</span>
-                    </div>
-                    <h2 className="text-xl font-bold text-gray-900 mb-2">Không tìm thấy khóa học</h2>
-                    <p className="text-gray-600 mb-6">
-                        {error?.message || 'Khóa học không tồn tại hoặc đã bị xóa.'}
-                    </p>
+            <div className="space-y-4">
+              <div>
+                <h3 className="font-medium">Chọn loại thanh toán</h3>
+                <div className="flex gap-2 mt-2 flex-wrap">
+                  {(['course', 'plan', 'addon', 'key', 'bundle'] as PaymentType[]).map((t) => (
                     <button
-                        onClick={() => window.history.back()}
-                        className="inline-flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
-                    >
-                        ← Quay lại
+                      key={t}
+                      onClick={() => setPaymentType(t)}
+                      className={`px-3 py-1 rounded-md border ${paymentType === t ? 'bg-blue-600 text-white' : 'bg-white'}`}>
+                      {t === 'course' ? 'Khóa học' : t === 'plan' ? 'Gói' : t === 'addon' ? 'Addon' : t === 'key' ? 'Key' : 'Bundle'}
                     </button>
+                  ))}
                 </div>
-            </div>
-        )
-    }
+              </div>
 
-    return <CoursePaymentUI
-        course={course}
-        onGetPaymentLink={handleGetPaymentLink}
-        onClosePayment={handleClosePayment}
-        isCreatingLink={isCreatingLink}
-        isPaymentOpen={isPaymentOpen}
-        checkoutUrl={checkoutUrl}
-        isProcessing={isProcessing}
-        error={paymentError}
-    />
+              <div>
+                <h3 className="font-medium">Chọn phương thức thanh toán</h3>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mt-2">
+                  {methods.map((m) => (
+                    <label key={m.key} className={`flex items-center gap-3 p-3 rounded-lg border ${method === m.key ? 'border-blue-500 bg-blue-50' : 'bg-white'}`}>
+                      <input type="radio" name="method" value={m.key} checked={method === m.key} onChange={() => setMethod(m.key)} />
+                      <div className="flex-1">
+                        <div className="font-medium">{m.label}</div>
+                        <div className="text-sm text-muted-foreground">Phương thức {m.label}</div>
+                      </div>
+                      <div className="text-sm font-semibold">{formatCurrency(price)}</div>
+                    </label>
+                  ))}
+                </div>
+              </div>
+
+              <div className="flex items-center justify-between">
+                <div>
+                  <div className="text-sm text-muted-foreground">Tổng thanh toán</div>
+                  <div className="text-2xl font-bold">{formatCurrency(price)}</div>
+                </div>
+                <div>
+                  <Button disabled={isProcessing} onClick={onConfirm} className="px-6 py-3">
+                    {isProcessing ? 'Đang xử lý...' : 'Thanh toán ngay'}
+                  </Button>
+                </div>
+              </div>
+            </div>
+          </Card>
+        </div>
+
+        <aside>
+          <Card className="p-4">
+            <h4 className="font-medium mb-2">Chi tiết</h4>
+            <div className="text-sm text-muted-foreground">Giá gốc: {formatCurrency(course.price || 0)}</div>
+            <div className="text-sm text-muted-foreground">Loại: {paymentType}</div>
+            <div className="mt-4 text-xs text-muted-foreground">Lưu ý: giao diện demo chỉ mô phỏng luồng thanh toán. Việc tạo link / gọi API chưa được triển khai.</div>
+          </Card>
+        </aside>
+      </div>
+    </div>
+  )
 }
