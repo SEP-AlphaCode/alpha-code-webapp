@@ -11,6 +11,7 @@ import { ArrowLeft, Save, Upload, X } from "lucide-react"
 import Link from "next/link"
 import { useCreateCategory } from "@/features/courses/hooks"
 import { toast } from "sonner"
+import { RichTextEditor } from "@/components/ui/rich-text-editor"
 
 export default function NewCategoryPage() {
   const router = useRouter()
@@ -136,13 +137,10 @@ export default function NewCategoryPage() {
 
             <div className="space-y-2">
               <Label htmlFor="description">Mô tả *</Label>
-              <Textarea
-                id="description"
-                placeholder="Mô tả chi tiết về danh mục này..."
+              <RichTextEditor
                 value={formData.description}
-                onChange={(e) => handleChange("description", e.target.value)}
-                rows={4}
-                required
+                onChange={(value) => handleChange("description", value)}
+                placeholder="Mô tả chi tiết về danh mục này..."
               />
             </div>
 

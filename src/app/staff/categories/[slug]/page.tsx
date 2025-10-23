@@ -1,6 +1,5 @@
 "use client"
 
-import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
@@ -20,53 +19,46 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import { ArrowLeft, Plus, MoreHorizontal, Pencil, Trash2, Eye, Layers } from "lucide-react"
+import { ArrowLeft, Plus, MoreHorizontal, Pencil, Trash2, Eye, Layers, Loader2 } from "lucide-react"
 import Link from "next/link"
 import { useParams } from "next/navigation"
 import Image from "next/image"
-
-// Mock data
-const mockCategory = {
-  id: "1",
-  name: "Lập trình cơ bản",
-  description: "Các khóa học về lập trình cơ bản cho người mới bắt đầu. Học viên sẽ được trang bị kiến thức nền tảng về tư duy lập trình và các ngôn ngữ cơ bản.",
-  slug: "lap-trinh-co-ban",
-  imageUrl: "/placeholder-category.jpg",
-  status: 1,
-  createdDate: "2024-01-15",
-  lastUpdated: "2024-03-20"
-}
-
-const mockCourses = [
-  {
-    id: "c1",
-    name: "Python cho người mới bắt đầu",
-    description: "Khóa học Python từ cơ bản đến nâng cao",
-    level: 3,
-    totalLessons: 24,
-    totalDuration: 14400, // 4 hours
-    status: 1,
-    price: 299000,
-    sectionsCount: 4
-  },
-  {
-    id: "c2",
-    name: "JavaScript Fundamentals",
-    description: "Nền tảng JavaScript và lập trình web",
-    level: 3,
-    totalLessons: 32,
-    totalDuration: 18000, // 5 hours
-    status: 1,
-    price: 399000,
-    sectionsCount: 5
-  }
-]
+import { RichTextViewer } from "@/components/ui/rich-text-editor"
+import { useCategory } from "@/features/courses/hooks"
+import { useCourse } from "@/features/courses/hooks/use-course"
 
 export default function CategoryDetailPage() {
   const params = useParams()
-  const categoryId = params.id as string
-  const [category] = useState(mockCategory)
-  const [courses] = useState(mockCourses)
+  // Note: Despite folder name [slug], we're actually receiving category ID from the route
+  const categoryId = params.slug as string
+  
+  const { data: category, isLoading, error } = useCategory(categoryId)
+  const { useGetCoursesByCategory } = useCourse()
+  const { data: coursesData, isLoading: isLoadingCourses } = useGetCoursesByCategory(categoryId, 1, 10)
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+      </div>
+    )
+  }
+
+  if (error || !category) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-center">
+          <p className="text-muted-foreground mb-4">Không tìm thấy danh mục</p>
+          <Link href="/staff/categories">
+            <Button variant="outline">
+              <ArrowLeft className="mr-2 h-4 w-4" />
+              Quay lại danh sách
+            </Button>
+          </Link>
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div className="space-y-6">
@@ -116,8 +108,10 @@ export default function CategoryDetailPage() {
                 <p className="text-sm font-mono">{category.slug}</p>
               </div>
               <div>
-                <p className="text-sm font-medium text-muted-foreground">Mô tả</p>
-                <p className="text-base">{category.description}</p>
+                <p className="text-sm font-medium text-muted-foreground mb-2">Mô tả</p>
+                <div className="prose prose-sm max-w-none">
+                  <RichTextViewer content={category.description} />
+                </div>
               </div>
               <div>
                 <p className="text-sm font-medium text-muted-foreground">Trạng thái</p>
@@ -147,15 +141,22 @@ export default function CategoryDetailPage() {
               <div>
                 <CardTitle>Danh sách khóa học</CardTitle>
                 <CardDescription>
-                  {courses.length} khóa học trong danh mục này
+                  {isLoadingCourses ? (
+                    <span className="flex items-center gap-2">
+                      <Loader2 className="h-3 w-3 animate-spin" />
+                      Đang tải...
+                    </span>
+                  ) : (
+                    `${coursesData?.data?.length || 0} khóa học trong danh mục này`
+                  )}
                 </CardDescription>
               </div>
-              <Link href={`/staff/categories/${categoryId}/courses/new`}>
+              {/* <Link href={`/staff/courses/new?categoryId=${categoryId}`}>
                 <Button>
                   <Plus className="mr-2 h-4 w-4" />
                   Thêm khóa học
                 </Button>
-              </Link>
+              </Link> */}
             </div>
           </CardHeader>
           <CardContent>
@@ -172,14 +173,20 @@ export default function CategoryDetailPage() {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {courses.length === 0 ? (
+                  {isLoadingCourses ? (
+                    <TableRow>
+                      <TableCell colSpan={6} className="text-center py-8">
+                        <Loader2 className="h-6 w-6 animate-spin mx-auto text-muted-foreground" />
+                      </TableCell>
+                    </TableRow>
+                  ) : !coursesData?.data || coursesData.data.length === 0 ? (
                     <TableRow>
                       <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">
                         Chưa có khóa học nào
                       </TableCell>
                     </TableRow>
                   ) : (
-                    courses.map((course) => (
+                    coursesData.data.map((course) => (
                       <TableRow key={course.id}>
                         <TableCell className="font-medium">{course.name}</TableCell>
                         <TableCell>
@@ -190,7 +197,7 @@ export default function CategoryDetailPage() {
                         <TableCell>{course.totalLessons} bài</TableCell>
                         <TableCell>
                           <Badge variant="secondary">
-                            {course.sectionsCount} chương
+                            {course.sectionCount} chương
                           </Badge>
                         </TableCell>
                         <TableCell>

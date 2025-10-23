@@ -19,6 +19,7 @@ import Link from "next/link"
 import Image from "next/image"
 import { useCreateCourse, useCourse } from "@/features/courses/hooks"
 import { toast } from "sonner"
+import { RichTextEditor } from "@/components/ui/rich-text-editor"
 
 const levelOptions = [
   { value: "1", label: "Cơ bản" },
@@ -186,13 +187,10 @@ export default function NewCoursePage() {
               <Label htmlFor="description">
                 Mô tả <span className="text-destructive">*</span>
               </Label>
-              <Textarea
-                id="description"
-                placeholder="Nhập mô tả khóa học..."
+              <RichTextEditor
                 value={formData.description}
-                onChange={(e) => handleInputChange("description", e.target.value)}
-                rows={5}
-                required
+                onChange={(value) => handleInputChange("description", value)}
+                placeholder="Nhập mô tả khóa học..."
               />
             </div>
 

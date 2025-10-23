@@ -28,6 +28,8 @@ import { useNoneDeleteCategories, useDeleteCategory } from "@/features/courses/h
 import { toast } from "sonner"
 import { Pagination } from "@/components/ui/pagination"
 import { DeleteCategoryDialog } from "@/components/course/delete-category-dialog"
+import { EditCategoryModal } from "@/components/course/edit-category-modal"
+import { Category } from "@/types/courses"
 
 export default function CategoriesPage() {
   const [searchQuery, setSearchQuery] = useState("")
@@ -35,6 +37,7 @@ export default function CategoriesPage() {
   const pageSize = 20
   const [deletingCategoryId, setDeletingCategoryId] = useState<string | null>(null)
   const [deletingCategoryName, setDeletingCategoryName] = useState("")
+  const [editingCategory, setEditingCategory] = useState<Category | null>(null)
   
   const { data, isLoading, error } = useNoneDeleteCategories({
     page: page, // API uses 0-based pages
@@ -117,7 +120,6 @@ export default function CategoriesPage() {
                   <TableHead className="w-[100px]">Hình ảnh</TableHead>
                   <TableHead>Tên danh mục</TableHead>
                   <TableHead>Mô tả</TableHead>
-                  <TableHead>Số khóa học</TableHead>
                   <TableHead>Trạng thái</TableHead>
                   <TableHead>Ngày tạo</TableHead>
                   <TableHead className="text-right">Thao tác</TableHead>
@@ -162,13 +164,11 @@ export default function CategoriesPage() {
                         </div>
                       </TableCell>
                       <TableCell className="font-medium">{category.name}</TableCell>
-                      <TableCell className="max-w-md truncate">
-                        {category.description}
-                      </TableCell>
-                      <TableCell>
-                        <Badge variant="secondary">
-                          {category.countCourses || 0}
-                        </Badge>
+                      <TableCell className="max-w-md">
+                        <div 
+                          className="truncate"
+                          dangerouslySetInnerHTML={{ __html: category.description }}
+                        />
                       </TableCell>
                       <TableCell>
                         <Badge variant={category.status === 1 ? "default" : "secondary"}>
@@ -195,17 +195,9 @@ export default function CategoriesPage() {
                                 Xem chi tiết
                               </Link>
                             </DropdownMenuItem>
-                            <DropdownMenuItem asChild>
-                              <Link href={`/staff/categories/${category.id}/edit`}>
-                                <Pencil className="mr-2 h-4 w-4" />
-                                Chỉnh sửa
-                              </Link>
-                            </DropdownMenuItem>
-                            <DropdownMenuItem asChild>
-                              <Link href={`/staff/categories/${category.id}/courses`}>
-                                <FolderOpen className="mr-2 h-4 w-4" />
-                                Xem khóa học
-                              </Link>
+                            <DropdownMenuItem onClick={() => setEditingCategory(category)}>
+                              <Pencil className="mr-2 h-4 w-4" />
+                              Chỉnh sửa
                             </DropdownMenuItem>
                             <DropdownMenuSeparator />
                             <DropdownMenuItem 
@@ -253,6 +245,18 @@ export default function CategoriesPage() {
         onConfirm={handleDeleteConfirm}
         isDeleting={deleteCategory.isPending}
       />
+
+      {editingCategory && (
+        <EditCategoryModal
+          open={!!editingCategory}
+          onOpenChange={(open) => {
+            if (!open) {
+              setEditingCategory(null)
+            }
+          }}
+          category={editingCategory}
+        />
+      )}
     </div>
   )
 }

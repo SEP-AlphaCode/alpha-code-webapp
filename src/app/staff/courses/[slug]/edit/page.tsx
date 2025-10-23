@@ -20,6 +20,7 @@ import Link from "next/link"
 import { useStaffCourse, useUpdateCourse, useCourse } from "@/features/courses/hooks"
 import { toast } from "sonner"
 import { Course, Category } from "@/types/courses"
+import { RichTextEditor } from "@/components/ui/rich-text-editor"
 
 const levelOptions = [
   { value: "1", label: "Cơ bản" },
@@ -244,13 +245,10 @@ function EditCourseForm({
               <Label htmlFor="description">
                 Mô tả <span className="text-destructive">*</span>
               </Label>
-              <Textarea
-                id="description"
-                placeholder="Nhập mô tả khóa học..."
+              <RichTextEditor
                 value={formData.description}
-                onChange={(e) => handleInputChange("description", e.target.value)}
-                rows={5}
-                required
+                onChange={(value) => handleInputChange("description", value)}
+                placeholder="Nhập mô tả khóa học..."
               />
             </div>
 

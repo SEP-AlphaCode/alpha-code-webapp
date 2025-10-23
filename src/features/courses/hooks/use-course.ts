@@ -33,6 +33,16 @@ export const useCourse = () => {
             refetchOnWindowFocus: false,
         })
     }
+
+    const useGetCoursesByCategory = (categoryId: string, page: number = 1, size: number = 10, signal?: AbortSignal) => {
+        return useQuery<PagedResult<Course> | null>({
+            queryKey: ['courses', 'by-category', categoryId, page, size],
+            staleTime: STALE_TIME,
+            queryFn: () => courseApi.getCoursesByCategory(categoryId, page, size, signal),
+            refetchOnWindowFocus: false,
+            enabled: !!categoryId
+        })
+    }
     const useGetCourseBySlug = (
         slug: string,
         options?: Omit<UseQueryOptions<Course | undefined>, 'queryKey'>
@@ -91,6 +101,7 @@ export const useCourse = () => {
     return {
         useGetCategories,
         useGetCourses,
+        useGetCoursesByCategory,
         useGetCategoryBySlug,
         useGetCourseBySlug,
         useGetAccountCourses,

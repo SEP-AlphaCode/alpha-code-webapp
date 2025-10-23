@@ -3,6 +3,26 @@ import { PagedResult } from "@/types/page-result";
 import { coursesHttp } from "@/utils/http";
 import axios from "axios";
 
+// Get courses by category
+export const getCoursesByCategory = async (categoryId: string, page: number = 1, size: number = 10, signal?: AbortSignal) => {
+    try {
+        const response = await coursesHttp.get<PagedResult<Course>>(`/courses/none-delete/by-category/${categoryId}`, {
+            params: {
+                page,
+                size
+            },
+            signal
+        });
+        return response.data;
+    } catch (error) {
+        if (axios.isCancel(error)) {
+            console.log("Request canceled for getCoursesByCategory");
+            return null;
+        }
+        console.error("API Error in getCoursesByCategory:", error);
+        throw error;
+    }
+}
 
 // Get none delete courses with pagination
 export const getNoneDeleteCourses = async (page: number, size: number, search?: string, signal?: AbortSignal) => {
