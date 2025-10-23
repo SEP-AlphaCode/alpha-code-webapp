@@ -1,6 +1,8 @@
 import { pythonHttp } from '@/utils/http';
 import * as Blockly from 'blockly/core';
 import { JavascriptGenerator } from 'blockly/javascript';
+import { robotCategory, toolbox, ToolboxDef } from './toolbox';
+import { ToolboxItemInfo } from '@/types/blockly';
 
 export const HUE = 60
 export const CATEGORY_NAME = 'Robot'
@@ -10,10 +12,12 @@ export type Operations = {
     makeListCode: (gen: JavascriptGenerator) => string,
     addStrayScrollbarDestructor: (injectedDiv: HTMLDivElement) => void,
     sendCommandToBackend: (
-        actions: { type: string, code?: string, text?: string, lang?: string }[], 
-        robotSerial: string, 
+        actions: { type: string, code?: string, text?: string, lang?: string }[],
+        robotSerial: string,
         setNotify: (text: string, status: string) => void
-    ) => void
+    ) => void,
+    getToolboxForRobotModel: (robotModelId: string) => ToolboxDef,
+    getDefaultToolbox: () => ToolboxDef
 }
 export const blockControls = (ws: Blockly.WorkspaceSvg): Operations => {
     const serialize = () => Blockly.serialization.workspaces.save(ws)
@@ -101,11 +105,27 @@ export const blockControls = (ws: Blockly.WorkspaceSvg): Operations => {
         }
     };
 
+    const getDefaultToolbox = (): ToolboxDef => {
+        return JSON.parse(JSON.stringify(toolbox))
+    }
+
+    const getToolboxForRobotModel = (robotModelId: string) => {
+        const def = getDefaultToolbox()
+        const newRobotCategory = JSON.parse(JSON.stringify(robotCategory)) as {kind: string, name: string, color: string, contents: { type: string }[] }
+        newRobotCategory.contents.forEach(x => {
+            x.type = robotModelId + '.' + x.type
+        })
+        def.contents.push(newRobotCategory)
+        return def
+    }
+
     return {
         serialize,
         loadFromJson,
         makeListCode,
         addStrayScrollbarDestructor,
-        sendCommandToBackend
+        sendCommandToBackend,
+        getDefaultToolbox,
+        getToolboxForRobotModel
     }
 }

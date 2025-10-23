@@ -21,6 +21,17 @@ export default function UseMe() {
     const to2DArray = (p: { code: string, name: string }[]) => {
         return p.map(x => [x.name, x.code])
     }
+    const set = (s: string) => {
+        setCurModelId(s)
+        setModelId(s)
+    }
+    const m = ['6e4e14b3-b073-4491-ab2a-2bf315b3259f', '4787414a-e5f6-46de-83b9-5516d5445d0c']
+    const data = {
+        actions: to2DArray(actions),
+        exps: to2DArray(exps),
+        extActions: to2DArray(extActions),
+        skills: to2DArray(skills)
+    }
     return (
         <div>
             {
@@ -42,16 +53,19 @@ export default function UseMe() {
             />
             <br />
             <button className='border-black border-2 p-1' onClick={() => setModelId(curModelId)}>Load from model Id</button>
+            {m.map((x, i) =>
+                <button key={x} className='border-black border-2 p-1' onClick={() => {
+                    set(x)
+                }
+                }>
+                    {x}
+                </button>)
+            }
             <BlocklyUI
                 robotModelId={modelId}
                 serial={serial}
                 hasAllData={!isLoading}
-                data={{
-                    actions: to2DArray(actions),
-                    exps: to2DArray(exps),
-                    extActions: to2DArray(extActions),
-                    skills: to2DArray(skills)
-                }}
+                data={data}
             />
         </div>
     );

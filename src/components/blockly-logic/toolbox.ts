@@ -1,12 +1,12 @@
-import { ToolboxItemInfo } from '@/types/blockly';
+import { StaticCategoryInfo, ToolboxItemInfo } from '@/types/blockly';
 import * as Blockly from 'blockly'
 import { CATEGORY_NAME, HUE } from './control';
 
-type L = {
+export type ToolboxDef = {
     kind: string,
     contents: ToolboxItemInfo[]
 }
-export const toolbox: L = {
+export const toolbox: ToolboxDef = {
     kind: 'categoryToolbox',
     contents: [
         {

@@ -1,6 +1,12 @@
 import * as Blockly from 'blockly';
 import { HUE } from './control';
-const customBlockTemplate = [
+import { BaseBlockDef } from '@/types/blockly';
+
+/**
+ * This is the template for actions. DO NOT USE THIS DIRECTLY.
+ * To load actions for a robot model, use ```loadModelIdData```.
+ */
+const customBlockTemplate: BaseBlockDef[] = [
     {
         "type": "action",
         "tooltip": "",
@@ -186,7 +192,7 @@ const customBlockTemplate = [
 
 ]
 
-const loadDropdownOptions = (customBlockTemplate: { args0: { options?: string[][], name: string }[], type: string }[], name: string, data: string[][]) => {
+const loadDropdownOptions = (customBlockTemplate: BaseBlockDef[], name: string, data: string[][]) => {
     const actionBlocks = customBlockTemplate.find(x => x.type === name)
     const arg0 = actionBlocks?.args0.find(x => x.name === 'ACTION_NAME')
     if (arg0 && arg0.options) {
@@ -194,11 +200,40 @@ const loadDropdownOptions = (customBlockTemplate: { args0: { options?: string[][
     }
 }
 
-export const loadModelIdData = (actions: string[][], extActions: string[][], exps: string[][], skills: string[][]) => {
-    const tmpTemplate = [...customBlockTemplate]
-    loadDropdownOptions(tmpTemplate, 'action', actions)
-    loadDropdownOptions(tmpTemplate, 'expression', exps)
-    loadDropdownOptions(tmpTemplate, 'extended_action', extActions)
-    loadDropdownOptions(tmpTemplate, 'skill_helper', skills)
+const pushSthIfEmpty = (target: string[][]) => {
+    if (target.length === 0) target.push(['???', '???'])
+}
+
+/**
+ * 
+ * @param modelId 
+ * @param actions list of actions in a [string, string] format. 
+ * If empty, an element ['???', '???'] will be inserted to make sure the options array isn't empty (Blockly doesn't allow empty dropdown).
+ * @param extActions see above
+ * @param exps see above
+ * @param skills see above
+ * @returns The object representing the blocks that a robot model supports
+ * ### Note:
+ * 1. All types becomes ```<robot model id>.<base type>```. Example:
+ * ``` js
+ * [{
+ *       "type": "ABCXYZ.extended_action",
+ *      ...
+ * }]
+ * ```
+ */
+export const loadModelIdData = (modelId: string, actions: string[][], extActions: string[][], exps: string[][], skills: string[][]) => {
+    const tmpTemplate = JSON.parse(JSON.stringify(customBlockTemplate)) as BaseBlockDef[]
+    tmpTemplate.forEach(x => {
+        x.type = modelId + '.' + x.type
+    })
+    pushSthIfEmpty(actions)
+    pushSthIfEmpty(exps)
+    pushSthIfEmpty(extActions)
+    pushSthIfEmpty(skills)
+    loadDropdownOptions(tmpTemplate, modelId + '.action', actions)
+    loadDropdownOptions(tmpTemplate, modelId + '.expression', exps)
+    loadDropdownOptions(tmpTemplate, modelId + '.extended_action', extActions)
+    loadDropdownOptions(tmpTemplate, modelId + '.skill_helper', skills)
     return tmpTemplate
 }

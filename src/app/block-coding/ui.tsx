@@ -26,6 +26,7 @@ export default function BlocklyUI({ robotModelId, serial, hasAllData, data }: Bl
     const [codeGenerator, setCodeGenerator] = useState<JavascriptGenerator>()
     const [resultCode, setResultCode] = useState('')
     const [listResult, setListResult] = useState<{ code?: string, text?: string, lang?: string, type: string }[]>([])
+    const [definedModels, setDefinedModel] = useState(new Set<string>())
     const key = 'AlphaCode'
     const executeCode = async (code: string) => {
         try {
@@ -45,17 +46,19 @@ export default function BlocklyUI({ robotModelId, serial, hasAllData, data }: Bl
         if (!workspaceRef.current) return;
         if (!blocklyRef.current) return;
         if (!wsHelper) return;
-        
-        const allBlocks = loadModelIdData(data.actions, data.extActions, data.exps, data.skills)
-        Blockly.common.defineBlocksWithJsonArray(allBlocks)
-        const gen = buildCodeGeneratorForModelId()
+
+        if (!definedModels.has(robotModelId)) {
+            const allBlocks = loadModelIdData(robotModelId, data.actions, data.extActions, data.exps, data.skills)
+            Blockly.common.defineBlocksWithJsonArray(allBlocks)
+        }
+
+        const gen = buildCodeGeneratorForModelId(robotModelId)
         setCodeGenerator(gen)
 
-        const curToolbox = JSON.parse(JSON.stringify(toolbox));
-        
-        workspaceRef.current?.updateToolbox(toolbox)
-        curToolbox.contents.push(robotCategory)
-        workspaceRef.current?.updateToolbox(curToolbox)
+        workspaceRef.current?.updateToolbox(wsHelper.getDefaultToolbox())
+        const newToolbox = wsHelper.getToolboxForRobotModel(robotModelId)
+        // curToolbox.contents.push(robotCategory)
+        workspaceRef.current.updateToolbox(newToolbox)
     }
 
     useEffect(() => {
@@ -74,8 +77,13 @@ export default function BlocklyUI({ robotModelId, serial, hasAllData, data }: Bl
 
     useEffect(() => {
         if (!hasAllData) return;
+        // Wipe the workspace
+        localStorage.removeItem(key)
+        wsHelper?.loadFromJson({})
+        // Redo init
         actualInit()
-    }, [hasAllData])
+        definedModels.add(robotModelId)
+    }, [robotModelId, hasAllData])
 
     return (
         <div>

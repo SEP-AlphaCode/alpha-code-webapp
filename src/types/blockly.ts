@@ -1,3 +1,23 @@
+export type BaseBlockDef = {
+    args0: {
+        options?: string[][],
+        name: string,
+        type: string,
+        value?: number,
+        min?: number,
+        max?: number,
+        text?: string,
+        colour?: string
+    }[],
+    type: string,
+    tooltip: string,
+    helpUrl: string,
+    message0: string,
+    previousStatement?: null,
+    nextStatement?: null,
+    colour: number
+}
+
 //These are Blockly's types that aren't exposed
 export type FlyoutItemInfo = BlockInfo | SeparatorInfo | ButtonInfo | LabelInfo | DynamicCategoryInfo;
 export type ToolboxItemInfo = FlyoutItemInfo | StaticCategoryInfo;
