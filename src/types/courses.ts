@@ -32,6 +32,9 @@ export interface Lesson {
     solution?: unknown; // jsonb - nullable
     orderNumber: number; // int4
     type: number; // int4 - lesson type
+    status: number; // int4
+    createdDate: string; // timestamp
+    lastUpdated?: string; // timestamp
 }
 
 export interface Section{
