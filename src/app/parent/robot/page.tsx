@@ -110,9 +110,7 @@ function extendRobotWithMockData(robot: ReturnType<typeof useRobotStore>['robots
 export default function UserDashboard() {
   const { robots, selectedRobotSerial, selectRobot, initializeMockData, connectMode } = useRobotStore();
   const [shuffledPrompts, setShuffledPrompts] = useState<string[]>([]);
-  const [selectedModelName, setSelectedModelName] = useState<string>(""); // ✅ thêm state model
-  const [hasInitialized, setHasInitialized] = useState(false);
-  
+  const [selectedModelName, setSelectedModelName] = useState<string>(""); // ✅ thêm state model  
 
 
   useEffect(() => {

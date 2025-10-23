@@ -24,7 +24,7 @@ export function EntertainmentSection({ title, items }: EntertainmentSectionProps
       gradient: "from-rose-200 via-pink-200 to-purple-200",
       hoverGradient: "from-rose-300 via-pink-300 to-purple-300",
       shadowColor: "shadow-rose-100/40",
-      onClick: () => router.push("/user/robot/action"),
+      onClick: () => router.push("/parent/robot/action"),
       description: "Điều khiển và ra lệnh cho robot của bạn."
     },
     {
@@ -34,7 +34,7 @@ export function EntertainmentSection({ title, items }: EntertainmentSectionProps
       gradient: "from-orange-200 via-amber-200 to-yellow-200",
       hoverGradient: "from-orange-300 via-amber-300 to-yellow-300",
       shadowColor: "shadow-orange-100/40",
-      onClick: () => router.push("/user/robot/action"),
+      onClick: () => router.push("/parent/robot/action"),
       description: "Xem ảnh do robot chụp."
     },
     {
@@ -44,7 +44,7 @@ export function EntertainmentSection({ title, items }: EntertainmentSectionProps
       gradient: "from-emerald-200 via-green-200 to-teal-200",
       hoverGradient: "from-emerald-300 via-green-300 to-teal-300",
       shadowColor: "shadow-emerald-100/40",
-      onClick: () => router.push("/user/robot/action"),
+      onClick: () => router.push("/parent/robot/action"),
       description: "Quản lý cơ sở dữ liệu khuôn mặt đã nhận dạng."
     }
   ];
