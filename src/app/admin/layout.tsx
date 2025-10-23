@@ -27,12 +27,12 @@ function formatPathToDisplayName(path: string): string {
     .map(word => word.charAt(0).toUpperCase() + word.slice(1))
     .join(' ')
 }
+
 function AdminBreadcrumb() {
   const pathname = usePathname();
   const pathSegments = pathname.split('/').filter(Boolean);
   const breadcrumbItems = [];
 
-  // Nếu là trang chính admin, hiển thị Quản trị viên -> Bảng điều khiển
   if (pathname === '/admin') {
     breadcrumbItems.push({
       href: '/admin',
@@ -45,16 +45,15 @@ function AdminBreadcrumb() {
       isLast: true
     });
   } else {
-    // Nếu là trang con, hiển thị Quản trị viên -> Tên trang hiện tại
     breadcrumbItems.push({
       href: '/admin',
       label: 'Quản trị viên',
       isLast: false
     });
-    // Lấy tên trang từ segment cuối cùng
+
     const lastSegment = pathSegments[pathSegments.length - 1];
-    // Chuyển đổi segment thành tên hiển thị tiếng Việt
     let currentPageName = '';
+
     switch (lastSegment) {
       case 'dashboard':
         currentPageName = 'Bảng điều khiển'; break;
@@ -72,8 +71,6 @@ function AdminBreadcrumb() {
         currentPageName = 'Mã QR'; break;
       case 'osmo-cards':
         currentPageName = 'Thẻ Osmo'; break;
-      case 'settings':
-        currentPageName = 'Cài đặt'; break;
       case 'token-rule':
         currentPageName = 'Luật token'; break;
       case 'key-price':
@@ -88,10 +85,17 @@ function AdminBreadcrumb() {
         currentPageName = 'Hành động mở rộng'; break;
       case 'skills':
         currentPageName = 'Kỹ năng'; break;
-      // Thêm các trường hợp khác nếu cần
+
+      // ✅ Thêm mới
+      case 'subscriptions':
+        currentPageName = 'Gói đăng ký'; break;
+      case 'addons':
+        currentPageName = 'Tiện ích mở rộng'; break;
+
       default:
         currentPageName = formatPathToDisplayName(lastSegment);
     }
+
     breadcrumbItems.push({
       href: pathname,
       label: currentPageName,
@@ -121,32 +125,31 @@ function AdminBreadcrumb() {
   );
 }
 
-
 export default function AdminLayout({
   children,
 }: {
   children: React.ReactNode
 }) {
   return (
-      <AuthGuard allowedRoles={['admin']}>
-        <SidebarProvider>
-          <AppSidebar />
-          <SidebarInset>
-            <header className="flex h-16 shrink-0 items-center gap-2">
-              <div className="flex items-center gap-2 px-4">
-                <SidebarTrigger className="-ml-1" />
-                <Separator
-                  orientation="vertical"
-                  className="mr-2 data-[orientation=vertical]:h-4"
-                />
-                <AdminBreadcrumb />
-              </div>
-            </header>
-            <div className="flex flex-1 flex-col gap-4 p-4 pt-0">
-              {children}
+    <AuthGuard allowedRoles={['admin']}>
+      <SidebarProvider>
+        <AppSidebar />
+        <SidebarInset>
+          <header className="flex h-16 shrink-0 items-center gap-2">
+            <div className="flex items-center gap-2 px-4">
+              <SidebarTrigger className="-ml-1" />
+              <Separator
+                orientation="vertical"
+                className="mr-2 data-[orientation=vertical]:h-4"
+              />
+              <AdminBreadcrumb />
             </div>
-          </SidebarInset>
-        </SidebarProvider>
-      </AuthGuard>
+          </header>
+          <div className="flex flex-1 flex-col gap-4 p-4 pt-0">
+            {children}
+          </div>
+        </SidebarInset>
+      </SidebarProvider>
+    </AuthGuard>
   )
 }

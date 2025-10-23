@@ -1,10 +1,10 @@
-import { LoginRequest, TokenResponse } from '@/types/login';
+import { LoginRequest, TokenResponse, LoginWithProfileResponse, SwitchProfileResponse } from '@/types/login';
 import { usersHttp } from '@/utils/http';
 import axios from 'axios';
 
 // Note: avoid UI side-effects (toasts) inside API functions; handle UI in hooks/components
 
-export const login = async (data: LoginRequest): Promise<TokenResponse> => {
+export const login = async (data: LoginRequest): Promise<LoginWithProfileResponse> => {
   try {
     const response = await usersHttp.post('/auth/login', data);
     // Handle different response structures
@@ -135,5 +135,31 @@ export const resetPassword = async (resetToken: string, newPassword: string) => 
       }
     }
     throw new Error(message);
+  }
+};
+
+// Switch profile - Chuyển đổi profile và nhận token mới
+export const switchProfile = async (
+  profileId: string,
+  accountId: string,
+  passCode: number
+): Promise<SwitchProfileResponse> => {
+  try {
+    // Truyền đủ thông tin theo spec: accountId, passCode, profileId
+  const payload: Record<string, unknown> = { profileId };
+    if (accountId) payload.accountId = accountId;
+    if (passCode !== undefined) payload.passCode = passCode;
+    const response = await usersHttp.post('/auth/switch', payload);
+    let responseData = response.data;
+    // Unwrap response
+    if (responseData && responseData.data) {
+      responseData = responseData.data;
+    }
+    if (responseData && responseData.result) {
+      responseData = responseData.result;
+    }
+    return responseData;
+  } catch (error) {
+    throw error;
   }
 };

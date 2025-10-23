@@ -1,4 +1,3 @@
-import { Category } from "@/types/courses";
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 
 interface CourseState {

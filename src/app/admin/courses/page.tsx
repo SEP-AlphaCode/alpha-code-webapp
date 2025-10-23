@@ -95,7 +95,7 @@ interface Lesson {
   requireRobot: boolean
   type: number
   orderNumber: number
-  solution: any
+  solution: object
   createdDate: string
   lastUpdated: string
 }
@@ -133,7 +133,7 @@ interface CreateLesson {
   requireRobot: boolean
   type: number
   orderNumber: number
-  solution: any
+  solution: object
 }
 
 export default function CourseManagementPage() {

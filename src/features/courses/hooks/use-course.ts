@@ -1,31 +1,46 @@
-import { getAccountCourses, getAccountLessons, getCategories, getCategoryBySlug, getCourseBySlug, getCourses, getLessons, markLessonComplete } from "@/features/courses/api/course-api";
 import { AccountCourse, AccountLesson, Category, Course, Lesson } from "@/types/courses";
 import { PagedResult } from "@/types/page-result";
-import { useInfiniteQuery, useQuery, useQueryClient, UseQueryOptions } from "@tanstack/react-query";
-import { use } from "react";
+import { useInfiniteQuery, useQuery, UseQueryOptions, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useRouter } from 'next/navigation';
+import { getCategories, getCategoryBySlug } from "../api/category-api";
+import { getCourseBySlug, getCourses } from "../api/course-api";
+import { getAccountCourses } from "../api/account-courses";
+import { getLessonsByCourseId } from "../api/lesson-api";
+import * as courseApi from '@/features/courses/api/course-api';
+import { UUID } from "crypto";
 
 const STALE_TIME = 24 * 3600 * 1000
 export const useCourse = () => {
-    const useGetCategories = (size: number) => {
-        return useInfiniteQuery({
-            queryKey: ["categories", size],
-            queryFn: ({ pageParam = 1, signal }) =>
-                getCategories(pageParam, size, signal),
-            initialPageParam: 1,
-            getNextPageParam: (lastPage, allPages) => {
-                // assuming your API returns something like { has_next, page, total_pages }
-                return lastPage.has_next ? lastPage.page + 1 : undefined;
-            },
-            staleTime: STALE_TIME,
+    const useGetCategories = (
+        page: number,
+        size: number,
+        search?: string,
+        signal?: AbortSignal
+    ) => {
+        return useQuery<PagedResult<Category>>({
+            queryKey: ['categories', page, size, search],
+            staleTime: STALE_TIME, // optional: add if needed
+            queryFn: () => getCategories(page, size, search, signal),
             refetchOnWindowFocus: false,
         });
     };
+
     const useGetCourses = (page: number, size: number, search?: string, signal?: AbortSignal) => {
-        return useQuery<PagedResult<Course>>({
+        return useQuery<PagedResult<Course> | null>({
             queryKey: ['courses', page, size, search],
             staleTime: STALE_TIME,
             queryFn: () => getCourses(page, size, search, signal),
             refetchOnWindowFocus: false,
+        })
+    }
+
+    const useGetCoursesByCategory = (categoryId: string, page: number = 1, size: number = 10, signal?: AbortSignal) => {
+        return useQuery<PagedResult<Course> | null>({
+            queryKey: ['courses', 'by-category', categoryId, page, size],
+            staleTime: STALE_TIME,
+            queryFn: () => courseApi.getCoursesByCategory(categoryId, page, size, signal),
+            refetchOnWindowFocus: false,
+            enabled: !!categoryId
         })
     }
     const useGetCourseBySlug = (
@@ -55,7 +70,7 @@ export const useCourse = () => {
             refetchOnWindowFocus: false,
         })
     }
-    const useGetAccountLessons = (accountId: string, courseId: string, page: number, size: number) => {
+    /* const useGetAccountLessons = (accountId: string, courseId: string, page: number, size: number) => {
         return useQuery<PagedResult<AccountLesson>>({
             queryKey: ['account-lessons', accountId, courseId, page, size],
             staleTime: STALE_TIME,
@@ -69,28 +84,139 @@ export const useCourse = () => {
             queryFn: ({ signal }) => markLessonComplete(accountLessonId, signal),
             refetchOnWindowFocus: false,
         })
-    }
-    const useGetLessons = (
+    } */
+    const useGetLessonsByCourseId = (
         courseId: string,
         options?: Omit<UseQueryOptions<PagedResult<Lesson>>, 'queryKey'>
     ) => {
         return useQuery<PagedResult<Lesson>>({
             queryKey: ['lessons', courseId],
-            queryFn: () => getLessons(courseId),
+            queryFn: () => getLessonsByCourseId(courseId),
             staleTime: STALE_TIME,
             refetchOnWindowFocus: false,
-            enabled: !!courseId,            
+            enabled: !!courseId,
             ...options,
         });
     };
     return {
         useGetCategories,
         useGetCourses,
+        useGetCoursesByCategory,
         useGetCategoryBySlug,
         useGetCourseBySlug,
         useGetAccountCourses,
-        useGetAccountLessons,
-        useMarkLessonComplete,
-        useGetLessons
+        /*  useGetAccountLessons,
+         useMarkLessonComplete, */
+        useGetLessonsByCourseId
     }
+}
+
+// ==================== STAFF COURSE MANAGEMENT HOOKS ====================
+
+export function useStaffCourses(params?: {
+  page?: number
+  size?: number
+  search?: string
+}) {
+  return useQuery({
+    queryKey: ['staff', 'courses', params],
+    queryFn: ({ signal }) => courseApi.getNoneDeleteCourses(
+      params?.page || 0,
+      params?.size || 20,
+      params?.search,
+      signal
+    ),
+  })
+}
+
+export function useStaffCourse(slug: string) {
+  return useQuery({
+    queryKey: ['staff', 'course', slug],
+    queryFn: ({ signal }) => courseApi.getCourseBySlug(slug, signal),
+    enabled: !!slug,
+    staleTime: 0, // Always refetch on mount to get fresh data
+    retry: (failureCount, error) => {
+      // Don't retry if request was canceled
+      if (error && 'code' in error && error.code === 'ERR_CANCELED') {
+        return false
+      }
+      // Only retry once for other errors
+      return failureCount < 1
+    },
+    retryDelay: 500, // Wait 500ms before retry
+  })
+}
+
+export function useCreateCourse() {
+  const queryClient = useQueryClient()
+  const router = useRouter()
+
+  return useMutation({
+    mutationFn: (data: FormData) => courseApi.createCourse(data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['staff', 'courses'] })
+      queryClient.invalidateQueries({ queryKey: ['courses'] })
+      router.push('/staff/courses')
+    },
+  })
+}
+
+export function useUpdateCourse(id: string, courseSlug?: string) {
+  const queryClient = useQueryClient()
+  const router = useRouter()
+
+  return useMutation({
+    mutationFn: (data: {
+      name: string
+      description: string
+      categoryId: string
+      level: number
+      price: number
+      image?: string | File
+      status?: number
+      requireLicense: boolean
+    }) => courseApi.updateCourse(id, data),
+    onSuccess: () => {
+      // Invalidate all course-related queries
+      queryClient.invalidateQueries({ queryKey: ['staff', 'courses'] })
+      queryClient.invalidateQueries({ queryKey: ['staff', 'course'] }) // This will match both ID and slug
+      queryClient.invalidateQueries({ queryKey: ['courses'] })
+      queryClient.invalidateQueries({ queryKey: ['course'] })
+      queryClient.invalidateQueries({ queryKey: ['sections'] })
+      // Redirect to detail page if slug provided, otherwise to list
+      if (courseSlug) {
+        router.push(`/staff/courses/${courseSlug}`)
+      } else {
+        router.push('/staff/courses')
+      }
+    },
+  })
+}
+
+export function useDeleteCourse() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: (id: string) => courseApi.deleteCourse(id),
+    onSuccess: () => {
+      // Invalidate all queries that start with ['staff', 'courses']
+      queryClient.invalidateQueries({ 
+        queryKey: ['staff', 'courses'],
+        refetchType: 'active' // Refetch all active queries immediately
+      })
+      queryClient.invalidateQueries({ 
+        queryKey: ['courses'],
+        refetchType: 'active'
+      })
+    },
+  })
+}
+
+// ==================== DASHBOARD STATS ====================
+
+export function useStaffDashboardStats() {
+  return useQuery({
+    queryKey: ['staff', 'dashboard', 'stats'],
+    queryFn: ({ signal }) => courseApi.getStaffDashboardStats(signal),
+  })
 }

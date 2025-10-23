@@ -1,14 +1,14 @@
 import { useMutation } from '@tanstack/react-query';
 import { login, googleLogin } from '@/features/auth/api/auth-api';
 import { useRouter } from 'next/navigation';
-import { LoginRequest, TokenResponse } from '@/types/login';
+import { LoginRequest, TokenResponse, LoginWithProfileResponse } from '@/types/login';
 import { getTokenPayload } from '@/utils/tokenUtils';
 import { toast } from 'sonner';
 
 export const useLogin = () => {
   const router = useRouter();
 
-  return useMutation<TokenResponse, Error, LoginRequest>({
+  return useMutation<LoginWithProfileResponse, Error, LoginRequest>({
     mutationFn: login,
     onSuccess: async (data) => {
       // Check for empty response
@@ -17,40 +17,74 @@ export const useLogin = () => {
         return;
       }
       
-      // Check if accessToken exists in the response
-      const accessToken = data.accessToken;
-      if (!accessToken) {
-        toast.error('Lỗi: Không nhận được access token từ máy chủ.');
+      // TH1: Admin/Staff - có token ngay (không cần profile)
+      if (data.accessToken && data.refreshToken && !data.requiresProfile) {
+        sessionStorage.setItem('accessToken', data.accessToken);
+        sessionStorage.setItem('refreshToken', data.refreshToken);
+        
+        const accountData = getTokenPayload(data.accessToken);
+        if (!accountData) {
+          toast.error('Lỗi: Không thể lấy thông tin tài khoản từ token');
+          return;
+        }
+        
+        toast.success(`Chào mừng ${accountData.fullName}!`);
+        
+        const roleNameLower = accountData.roleName.toLowerCase();
+        if (roleNameLower === 'admin') {
+          router.push('/admin');
+        } else if (roleNameLower === 'staff') {
+          router.push('/staff');
+        } else if (roleNameLower === 'parent') {
+          router.push('/parent');
+        } else if (roleNameLower === 'children') {
+          router.push('/children');
+        } else {
+          // fallback for other roles
+          router.push('/');
+        }
         return;
       }
-
-      // Check if refreshToken exists in the response
-      const refreshToken = data.refreshToken;
-      if (!refreshToken) {
-        toast.error('Lỗi: Không nhận được refresh token từ máy chủ.');
-        return;
-      }
-      // Save tokens to sessionStorage
-      sessionStorage.setItem('accessToken', accessToken);
-      sessionStorage.setItem('refreshToken', refreshToken);
-
-      const accountData = getTokenPayload(accessToken);
       
-      if (!accountData) {
-        toast.error('Lỗi: Không thể lấy thông tin tài khoản từ token');
+      // TH2: User - cần xử lý profile
+      if (data.requiresProfile) {
+        console.log('🔍 Debug - Login response with requiresProfile:', data);
+        
+        // Lưu accountId để dùng khi tạo profile
+        // Backend có thể trả về accountId (camelCase) hoặc accountid (lowercase)
+        let accountIdToSave = data.accountId || data.accountid;
+        
+        if (!accountIdToSave && data.accessToken) {
+          const accountData = getTokenPayload(data.accessToken);
+          if (accountData?.id) {
+            accountIdToSave = accountData.id;
+            console.log('🔍 Got accountId from token payload:', accountIdToSave);
+          }
+        }
+        
+        if (accountIdToSave) {
+          sessionStorage.setItem('pendingAccountId', accountIdToSave);
+          console.log('💾 Saved pendingAccountId to sessionStorage:', accountIdToSave);
+        } else {
+          console.warn('⚠️ No accountId available from backend or token');
+        }
+        
+        // TH2.1: Chưa có profile → Tạo profile Parent
+        if (!data.profiles || data.profiles.length === 0) {
+          toast.info('Vui lòng tạo profile để tiếp tục');
+          router.push('/create-parent-profile');
+          return;
+        }
+        
+        // TH2.2: Đã có profile → Chọn profile
+        // Lưu tạm danh sách profiles vào sessionStorage
+        sessionStorage.setItem('availableProfiles', JSON.stringify(data.profiles));
+        router.push('/select-profile');
         return;
       }
-      toast.success(`Chào mừng ${accountData.fullName}!`);
       
-      // Redirect based on role from account data
-      const roleNameLower = accountData.roleName.toLowerCase();
-      if (roleNameLower === 'admin') {
-        router.push('/admin');
-      } else if (roleNameLower === 'teacher') {
-        router.push('/teacher');
-      } else {
-        router.push('/courses');
-      }
+      // Trường hợp không rõ ràng
+      toast.error('Phản hồi từ server không hợp lệ');
     },
     onError: (error) => {
       console.error('Login error:', error);
@@ -117,8 +151,10 @@ export const useGoogleLogin = () => {
       const roleNameLower = accountData.roleName.toLowerCase();
       if (roleNameLower === 'admin') {
         router.push('/admin');
-      } else if (roleNameLower === 'teacher') {
-        router.push('/teacher');
+      } else if (roleNameLower === 'user') {
+        router.push('/user');
+      } else if (roleNameLower === 'staff') {
+        router.push('/staff');
       } else {
         router.push('/student');
       }

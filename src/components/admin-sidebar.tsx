@@ -107,50 +107,38 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const data = {
     user: userData,
     navMain: [
-      {
-  title: "Hoạt động",
-  url: "/admin",
-  icon: SquareTerminal,
-        isActive: true,
-        items: [
-          {
-            title: "Hành động",
-            url: "/admin/activities/actions",
-          },
-          {
-            title: "Điệu nhảy",
-            url: "/admin/activities/dances",
-          },
-          {
-            title: "Biểu cảm",
-            url: "/admin/activities/expressions",
-          },
-          {
-            title: "Kĩ năng",
-            url: "/admin/activities/skills",
-          },
-          {
-            title: "Hành động mở rộng",
-            url: "/admin/activities/extended-actions",
-          },
-        ],
-      },
-      {
-        title: "Cài đặt",
-        url: "#",
-        icon: Settings2,
-        items: [
-          {
-            title: "Giá Key",
-            url: "/admin/settings/key-price",
-          },
-          {
-            title: "Giá Token",
-            url: "/admin/settings/token-rule",
-          },
-        ],
-      },
+  {
+    title: "Hoạt động",
+    url: "/admin",
+    icon: SquareTerminal,
+    isActive: true,
+    items: [
+      { title: "Hành động", url: "/admin/activities/actions" },
+      { title: "Điệu nhảy", url: "/admin/activities/dances" },
+      { title: "Biểu cảm", url: "/admin/activities/expressions" },
+      { title: "Kĩ năng", url: "/admin/activities/skills" },
+      { title: "Hành động mở rộng", url: "/admin/activities/extended-actions" },
     ],
+  },
+  {
+    title: "Plan",
+    url: "#",
+    icon: CreditCard,
+    items: [
+      { title: "Gói đăng ký", url: "/admin/plan/subscription" },
+      { title: "Tiện ích mở rộng", url: "/admin/plan/addons" },
+    ],
+  },
+  {
+    title: "Cài đặt",
+    url: "#",
+    icon: Settings2,
+    items: [
+      { title: "Giá Key", url: "/admin/settings/key-price" },
+      { title: "Giá Token", url: "/admin/settings/token-rule" },
+    ],
+  },
+],
     navSecondary: [
       {
         title: "Hỗ trợ",

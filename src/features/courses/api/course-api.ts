@@ -1,15 +1,37 @@
-import { AccountCourse, AccountLesson, Category, Course, Lesson } from "@/types/courses";
+import { Course } from "@/types/courses";
 import { PagedResult } from "@/types/page-result";
 import { coursesHttp } from "@/utils/http";
-import { getMockAccountCourses } from "./account-courses";
-import { getMockAccountLessons, markMockLessonComplete } from "./account-lessons";
+import axios from "axios";
 
-export const getCategories = async (page: number, size: number, signal?: AbortSignal) => {
+// Get courses by category
+export const getCoursesByCategory = async (categoryId: string, page: number = 1, size: number = 10, signal?: AbortSignal) => {
     try {
-        const response = await coursesHttp.get<PagedResult<Category>>('/categories', {
+        const response = await coursesHttp.get<PagedResult<Course>>(`/courses/none-delete/by-category/${categoryId}`, {
+            params: {
+                page,
+                size
+            },
+            signal
+        });
+        return response.data;
+    } catch (error) {
+        if (axios.isCancel(error)) {
+            console.log("Request canceled for getCoursesByCategory");
+            return null;
+        }
+        console.error("API Error in getCoursesByCategory:", error);
+        throw error;
+    }
+}
+
+// Get none delete courses with pagination
+export const getNoneDeleteCourses = async (page: number, size: number, search?: string, signal?: AbortSignal) => {
+    try {
+        const response = await coursesHttp.get<PagedResult<Course>>('/courses/none-delete', {
             params: {
                 page,
                 size,
+                search
             },
             signal // Add AbortSignal support
         });
@@ -17,10 +39,15 @@ export const getCategories = async (page: number, size: number, signal?: AbortSi
         return response.data;
 
     } catch (error) {
-        console.error("API Error in getAllCategories:", error);
+        // Ignore canceled errors - this is expected when component unmounts or navigation occurs
+        if (axios.isCancel(error)) {
+            console.log("Request canceled for getNoneDeleteCourses");
+            return null;
+        }
+        console.error("API Error in getNoneDeleteCourses:", error);
         throw error;
     }
-};
+}
 
 export const getCourses = async (page: number, size: number, search?: string, signal?: AbortSignal) => {
     try {
@@ -36,6 +63,11 @@ export const getCourses = async (page: number, size: number, search?: string, si
         return response.data;
 
     } catch (error) {
+        // Ignore canceled errors - this is expected when component unmounts or navigation occurs
+        if (axios.isCancel(error)) {
+            console.log("Request canceled for getCourses");
+            return null;
+        }
         console.error("API Error in getAllActiveCourses:", error);
         throw error;
     }
@@ -50,64 +82,114 @@ export const getCourseBySlug = async (slug: string, signal?: AbortSignal) => {
         return response.data;
 
     } catch (error) {
+        // Ignore canceled errors - this is expected when component unmounts or navigation occurs
+        if (axios.isCancel(error)) {
+            console.log("Request canceled for slug:", slug);
+            throw error; // Throw to let React Query handle retry
+        }
         console.error("API Error in getActiveCourseBySlug:", error);
         throw error;
     }
 }
 
-export const getCategoryBySlug = async (slug: string, signal?: AbortSignal) => {
+
+// Create new course
+export const createCourse = async (data: FormData) => {
     try {
-        const response = await coursesHttp.get<Category>('/categories/get-by-slug/' + slug, {
-            signal // Add AbortSignal support
+        const response = await coursesHttp.post<Course>('/courses', data, {
+            headers: {
+                'Content-Type': 'multipart/form-data',
+            },
         });
-        // Handle different response structures
         return response.data;
-
     } catch (error) {
-        console.error("API Error in getCategoryBySlug:", error);
+        console.error("API Error in createCourse:", error);
         throw error;
     }
-}
+};
 
-export const getAccountCourses = async (accountId: string, page: number, size: number, signal?: AbortSignal): Promise<PagedResult<AccountCourse>> => {
+// Update course
+export const updateCourse = async (id: string, data: {
+    name: string;
+    description: string;
+    categoryId: string;
+    level: number;
+    price: number;
+    image?: string | File;
+    status?: number;
+    requireLicense: boolean;
+}) => {
     try {
-        const response = await coursesHttp.get<PagedResult<AccountCourse>>('/account-courses/by-account/' + accountId)
-        return response.data
-    }
-    catch (error) {
-        console.error("API Error in getAccountCourses:", error);
-        throw error;
-    }
-}
-
-export const getAccountLessons = async (accountId: string, courseId: string, page: number, size: number, signal?: AbortSignal): Promise<PagedResult<AccountLesson>> => {
-    try {
-        return getMockAccountLessons(accountId, courseId, page, size, signal);
-    }
-    catch (error) {
-        console.error("API Error in getAccountLessons:", error);
-        throw error;
-    }
-}
-
-export const markLessonComplete = async (accountLessonId: string, signal?: AbortSignal): Promise<void> => {
-    try {
-        return markMockLessonComplete(accountLessonId, signal);
-    }
-    catch (error) {
-        console.error("API Error in markLessonComplete:", error);
-        throw error;
-    }
-}
-
-export const getLessons = async (courseId: string) => {
-    try {
-        const response = await coursesHttp.get<PagedResult<Lesson>>('lessons/get-by-course/' + courseId);
-        // Handle different response structures
+        // Always use FormData for update
+        const formData = new FormData();
+        formData.append('name', data.name);
+        formData.append('description', data.description);
+        formData.append('categoryId', data.categoryId);
+        formData.append('level', data.level.toString());
+        formData.append('price', data.price.toString());
+        formData.append('requireLicense', data.requireLicense.toString());
+        
+        // Handle image - either File or URL string
+        if (data.image instanceof File) {
+            formData.append('image', data.image);
+        } else if (data.image && typeof data.image === 'string') {
+            formData.append('imageUrl', data.image);
+        }
+        
+        if (data.status !== undefined) {
+            formData.append('status', data.status.toString());
+        }
+        
+        const response = await coursesHttp.put<Course>(`/courses/${id}`, formData, {
+            headers: {
+                'Content-Type': 'multipart/form-data',
+            },
+        });
         return response.data;
-
     } catch (error) {
-        console.error("API Error in getLessons :", error);
+        console.error("API Error in updateCourse:", error);
         throw error;
     }
-}
+};
+
+// Delete course
+export const deleteCourse = async (id: string) => {
+    try {
+        const response = await coursesHttp.delete(`/courses/${id}`);
+        return response.data;
+    } catch (error) {
+        console.error("API Error in deleteCourse:", error);
+        throw error;
+    }
+};
+
+// Get course by ID (for editing)
+export const getCourseById = async (id: string, signal?: AbortSignal) => {
+    try {
+        const response = await coursesHttp.get<Course>(`/courses/${id}`, {
+            signal
+        });
+        return response.data;
+    } catch (error) {
+        console.error("API Error in getCourseById:", error);
+        throw error;
+    }
+};
+
+// Get dashboard statistics for staff
+export const getStaffDashboardStats = async (signal?: AbortSignal) => {
+    try {
+        const response = await coursesHttp.get<{
+            totalCategories: number;
+            totalCourses: number;
+            totalSections: number;
+            totalLessons: number;
+        }>('courses/dashboard/stats', {
+            signal
+        });
+        return response.data;
+    } catch (error) {
+        console.error("API Error in getStaffDashboardStats:", error);
+        throw error;
+    }
+};
