@@ -629,6 +629,10 @@ export const robotCategory = {
         {
             kind: 'block',
             type: 'tts'
+        },
+        {
+            kind: 'block',
+            type: 'tts_en'
         }
     ]
 }

@@ -13,7 +13,6 @@ const customBlockTemplate = [
                 "options": [
                     // Put the actions here
                     // [name, code]
-                    ['a', 'b']
                 ]
             },
             {
@@ -157,7 +156,34 @@ const customBlockTemplate = [
         "previousStatement": null,
         "nextStatement": null,
         "colour": HUE
+    },
+    {
+        "type": "set_mouth_led",
+        "tooltip": "",
+        "helpUrl": "",
+        "message0": "đặt LED miệng thành màu %1 trong %2 giây %3",
+        "args0": [
+            {
+                "type": "field_colour",
+                "name": "COLOR",
+                "colour": "#ff0000"
+            },
+            {
+                "type": "field_number",
+                "name": "DURATION",
+                "value": 1,
+                "min": 0
+            },
+            {
+                "type": "input_dummy",
+                "name": "NAME"
+            }
+        ],
+        "previousStatement": null,
+        "nextStatement": null,
+        "colour": HUE
     }
+
 ]
 
 const loadDropdownOptions = (customBlockTemplate: { args0: { options?: string[][], name: string }[], type: string }[], name: string, data: string[][]) => {

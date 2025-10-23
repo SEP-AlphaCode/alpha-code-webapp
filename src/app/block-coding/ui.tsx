@@ -6,6 +6,7 @@ import { toast } from 'sonner';
 import { loadModelIdData } from '@/components/blockly-logic/custom-blocks';
 import { JavascriptGenerator } from 'blockly/javascript';
 import { buildCodeGeneratorForModelId } from '@/components/blockly-logic/js-generator';
+import { randomUUID } from 'crypto';
 type BlocklyUIProps = {
     robotModelId: string,
     serial: string,
@@ -24,10 +25,16 @@ export default function BlocklyUI({ robotModelId, serial, hasAllData, data }: Bl
     const [wsHelper, setWsHelper] = useState<Operations>()
     const [codeGenerator, setCodeGenerator] = useState<JavascriptGenerator>()
     const [resultCode, setResultCode] = useState('')
-    const executeCode = (code: string) => {
+    const [listResult, setListResult] = useState<{ code?: string, text?: string, lang?: string, type: string }[]>([])
+    const key = 'AlphaCode'
+    const executeCode = async (code: string) => {
         try {
             const fn = new Function(code);
-            fn();
+            const result = fn();
+            setListResult(result)
+            wsHelper?.sendCommandToBackend(result, serial, (text: string, status: string) => {
+                toast(text)
+            })
         } catch (err) {
             console.log(err);
         } finally {
@@ -38,14 +45,16 @@ export default function BlocklyUI({ robotModelId, serial, hasAllData, data }: Bl
         if (!workspaceRef.current) return;
         if (!blocklyRef.current) return;
         if (!wsHelper) return;
-
+        
         const allBlocks = loadModelIdData(data.actions, data.extActions, data.exps, data.skills)
         Blockly.common.defineBlocksWithJsonArray(allBlocks)
-        const gen = buildCodeGeneratorForModelId(robotModelId, serial)
+        const gen = buildCodeGeneratorForModelId()
         setCodeGenerator(gen)
 
-        const curToolbox = toolbox;
-        toolbox.contents.push(robotCategory)
+        const curToolbox = JSON.parse(JSON.stringify(toolbox));
+        
+        workspaceRef.current?.updateToolbox(toolbox)
+        curToolbox.contents.push(robotCategory)
         workspaceRef.current?.updateToolbox(curToolbox)
     }
 
@@ -72,27 +81,59 @@ export default function BlocklyUI({ robotModelId, serial, hasAllData, data }: Bl
         <div>
             <div className='*:border-2 space-x-5 mb-4'>
                 <button onClick={(e) => {
+                    if (!wsHelper) return;
+                    const blockData = wsHelper.serialize()
+                    localStorage.setItem(key, JSON.stringify(blockData))
+                    toast.success('Saved')
                 }}>Save</button>
                 <button onClick={(e) => {
+                    if (!wsHelper) return;
+                    const data = JSON.parse(localStorage.getItem(key) ?? '{}')
+                    if (data) {
+                        wsHelper.loadFromJson(data)
+                        toast.success('Loaded')
+                    }
                 }}>Load</button>
                 <button onClick={(e) => {
-                    if(!codeGenerator || !wsHelper) return;
-                    const code = wsHelper.translate(codeGenerator)
-                    setResultCode(code)
+                    if (!codeGenerator || !wsHelper) return;
+                    try {
+                        const code = wsHelper.makeListCode(codeGenerator)
+                        setResultCode(code)
+                    }
+                    catch {
+
+                    }
                 }}>Translate to code</button>
                 <button onClick={(e) => {
-                    executeCode(`console.log('Hello')`)
+                    if (!codeGenerator || !wsHelper) return;
+                    try {
+                        const code = wsHelper.makeListCode(codeGenerator)
+                        console.log(code);
+
+                        executeCode(code)
+                    }
+                    catch {
+
+                    }
                 }}>Run code</button>
             </div>
-            <div className=''>
-                <div ref={blocklyRef} style={{ height: 750, width: 1000, flexBasis: '100%', overflow: 'auto' }} className='border-2 border-red-300'></div>
-                <div
-                    className='border-2 p-2 bg-blue-50'
-                    dangerouslySetInnerHTML={{ __html: resultCode.replaceAll('\n', '<br/>')
-                        .replaceAll('\t', '&nbsp;&nbsp;')
-                     }}
+            <div className='flex'>
+                <div ref={blocklyRef} style={{ height: 500, width: 1000, overflow: 'auto' }} className=''></div>
+                <code
+                    className='p-2 bg-blue-800 text-white'
+                    dangerouslySetInnerHTML={{
+                        __html: resultCode.replaceAll('\n', '<br/>')
+                            .replaceAll('\t', '&nbsp;&nbsp;')
+                    }}
                 />
             </div>
+            <p>Kết quả:</p>
+            <div
+                className='p-2 border-2'
+                dangerouslySetInnerHTML={{
+                    __html: JSON.stringify(listResult)?.replaceAll('\n', '<br/>').replaceAll('\t', '&nbsp;&nbsp;')
+                }}
+            />
         </div>
     );
 }

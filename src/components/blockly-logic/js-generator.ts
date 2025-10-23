@@ -7,16 +7,16 @@ const pythonPath = 'https://backend.alpha-code.site'
 //     body: JSON.stringify(123)
 // })
 
-export const buildCodeGeneratorForModelId = (modelId: string, serial: string) => {
+export const buildCodeGeneratorForModelId = () => {
     // TODO: Load allowed actions specific to a robot model
-    const callUrl = pythonPath + "/websocket/command/" + serial
     const alphaCodeGenerator = javascriptGenerator
-    function baseRequest(body: string) {
-        return `await fetch("${callUrl}", {
-            \theaders: { 'Content-Type': 'application/json' },
-            \tmethod: 'POST', 
-            \tbody:JSON.stringify(${body})
-            })`
+    function baseRequest(body: string, n: unknown) {
+        if (n === 1) {
+            return `\tlist.push(${body})`
+        }
+        return `\t for(let i = 0; i < ${n}; i++){
+        \t\tlist.push(${body})
+        \t}`
     }
     function generateActionBlocks(block: Blockly.Block) {
         const dropdown_action_name = block.getFieldValue('ACTION_NAME');
@@ -25,55 +25,51 @@ export const buildCodeGeneratorForModelId = (modelId: string, serial: string) =>
         //Inner function, fetch the ws call
         const body = JSON.stringify({
             type: block.type,
-            lang: 'vi',
+            code: dropdown_action_name
+        })
+        const comment = `// calling function ${block.type} ${number_count} time(s)\n`
+        const inner = baseRequest(body, number_count)
+        return `${comment} ${inner} \n`
+    }
+    alphaCodeGenerator.forBlock['action'] = generateActionBlocks
+    alphaCodeGenerator.forBlock['extended_action'] = (block: Blockly.Block) => {
+        const dropdown_action_name = block.getFieldValue('ACTION_NAME');
+        const number_count = block.getFieldValue('COUNT');
+        // TODO: Assemble javascript into the code variable.
+        //Inner function, fetch the ws call
+        const body = JSON.stringify({
+            type: block.type,
             data: {
                 code: dropdown_action_name
             }
         })
-        const comment = `// calling function ${block.type}\n`
-        const inner = baseRequest(body)
-
-        //Then wrap the code inside a for loop
-        //NOTE: USE let TO MAKE THE LOOP USE THE i FROM WITHIN THE LOOP'S SCOPE. DECLARING i WITH var WILL BREAK THE EXECUTION
-        const code = number_count !== 1 ?
-            `for(let i = 0; i < ${number_count}; i++) {
-            \t${inner}
-            }` : inner;
-        return comment + code + '\n';
+        const comment = `// calling function ${block.type} ${number_count} time(s)\n`
+        const inner = baseRequest(body, number_count)
+        return `${comment} ${inner} \n`
     }
-    alphaCodeGenerator.forBlock['action'] = generateActionBlocks
-    alphaCodeGenerator.forBlock['extended_action'] = generateActionBlocks
     alphaCodeGenerator.forBlock['expression'] = generateActionBlocks
     alphaCodeGenerator.forBlock['skill_helper'] = generateActionBlocks
     alphaCodeGenerator.forBlock['tts'] = (block) => {
         const text_text_input = block.getFieldValue('TEXT_INPUT');
         const body = JSON.stringify({
-            type: 'talk',
+            type: 'tts',
             lang: 'vi',
-            data: {
-                text: text_text_input
-            }
+            text: text_text_input
         })
         const comment = `// calling function ${block.type}\n`
-        const inner = baseRequest(body)
-        // TODO: Assemble javascript into the code variable.
-        const code = comment + inner + '\n';
-        return code;
+        const inner = baseRequest(body, 1)
+        return `${comment} ${inner}\n`
     }
     alphaCodeGenerator.forBlock['tts_en'] = (block) => {
         const text_text_input = block.getFieldValue('TEXT_INPUT');
         const body = JSON.stringify({
-            type: 'talk',
+            type: 'tts',
             lang: 'en',
-            data: {
-                text: text_text_input
-            }
+            text: text_text_input
         })
         const comment = `// calling function ${block.type}\n`
-        const inner = baseRequest(body)
-        // TODO: Assemble javascript into the code variable.
-        const code = comment + inner + '\n';
-        return code;
+        const inner = baseRequest(body, 1)
+        return `${comment} ${inner}\n`
     }
     return alphaCodeGenerator
 }

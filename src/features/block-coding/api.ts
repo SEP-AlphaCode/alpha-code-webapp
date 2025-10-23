@@ -5,9 +5,8 @@ import { ExtendedActionResponse } from "@/types/extended-action";
 import { PagedResult } from "@/types/page-result";
 import { SkillResponse } from "@/types/skill";
 import { activitiesHttp } from "@/utils/http";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
 
-const getSelectOptions = (robotModelId: string) => {
+export const getSelectOptions = (robotModelId: string) => {
     const params = {
         page: 1,
         size: 1000,
@@ -86,38 +85,3 @@ const getSelectOptions = (robotModelId: string) => {
     }
 }
 
-export const useGetSelectOptions = (robotModelId: string) => {
-    const queryClient = useQueryClient();
-    const { getActions, getExpressions, getExtendedActions, getSkills, params } = getSelectOptions(robotModelId)
-    const { page, size } = params
-    const useGetActions = () => {
-        return useQuery({
-            queryKey: ['actions', page, size, robotModelId],
-            queryFn: () => getActions()
-        });
-    }
-    const useGetExpressions = () => {
-        return useQuery({
-            queryKey: ['expressions', page, size, robotModelId],
-            queryFn: () => getExpressions()
-        });
-    }
-    const useGetExtendedActions = () => {
-        return useQuery({
-            queryKey: ['extended-actions', page, size, robotModelId],
-            queryFn: () => getExtendedActions()
-        });
-    }
-    const useGetSkills = () => {
-        return useQuery({
-            queryKey: ['skills', page, size, robotModelId],
-            queryFn: () => getSkills()
-        });
-    }
-    return {
-        useGetActions,
-        useGetExpressions,
-        useGetExtendedActions,
-        useGetSkills
-    }
-}
