@@ -39,3 +39,8 @@ export const deleteSubscription = async (id: string) => {
   const response = await paymentsHttp.delete(`/subscription-plans/${id}`);
   return response.data;
 };
+
+export const getSubscriptionById = async (id: string) => {
+  const response = await paymentsHttp.get(`/subscription-plans/${id}`)
+  return response.data
+}

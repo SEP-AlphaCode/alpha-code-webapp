@@ -55,6 +55,16 @@ export const useCourse = () => {
             ...options, // allow override
         });
     };
+  // ✅ Lấy 1 course theo id (dùng cho trang thanh toán theo id)
+  const useGetCourseById = (id: string) => {
+    return useQuery({
+      queryKey: ['course', id],
+      queryFn: () => courseApi.getCourseById(id),
+      enabled: !!id,
+      staleTime: STALE_TIME,
+      refetchOnWindowFocus: false,
+    })
+  }
     const useGetCategoryBySlug = (slug: string) => useQuery<Category | undefined>({
         queryKey: ['category', slug],
         staleTime: STALE_TIME,
@@ -103,6 +113,7 @@ export const useCourse = () => {
         useGetCoursesByCategory,
         useGetCategoryBySlug,
         useGetCourseBySlug,
+    useGetCourseById,
         useGetAccountCourses,
         /*  useGetAccountLessons,
          useMarkLessonComplete, */
