@@ -18,7 +18,8 @@ import {
   BookOpen,
   Calendar,
   RefreshCcw,
-  Loader2
+  Loader2,
+  LucideIcon
 } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
@@ -29,7 +30,7 @@ import { RichTextViewer } from "@/components/ui/rich-text-editor"
 import { useLessonBySlug, useDeleteLesson } from "@/features/courses/hooks/use-lesson"
 import { DeleteLessonDialog } from "@/components/course/delete-lesson-dialog"
 
-const lessonTypeMap: Record<number, { text: string; icon: any; color: string; bgColor: string }> = {
+const lessonTypeMap: Record<number, { text: string; icon: LucideIcon; color: string; bgColor: string }> = {
   1: {
     text: "Bài học",
     icon: Code,
@@ -59,7 +60,7 @@ export default function LessonDetailPage() {
   const { data: lesson, isLoading, refetch } = useLessonBySlug(lessonSlug)
   const deleteLessonMutation = useDeleteLesson("")
 
-   useEffect(() => {
+  useEffect(() => {
       refetch && refetch();
     }, [lessonSlug]);
 
@@ -76,10 +77,13 @@ export default function LessonDetailPage() {
       setDeletingLessonId(null)
       toast.success("Đã xóa bài học")
       router.back()
-    } catch (error: any) {
-      const message =
-        error?.response?.data?.message || error?.message || "Lỗi khi xóa bài học"
-      toast.error(message)
+    } catch (error: unknown) {
+      const errorMessage = error && typeof error === 'object' && 'response' in error
+        ? (error as { response?: { data?: { message?: string } } }).response?.data?.message || 'Lỗi khi xóa bài học'
+        : error && typeof error === 'object' && 'message' in error
+        ? (error as { message: string }).message
+        : 'Lỗi khi xóa bài học'
+      toast.error(errorMessage)
     }
   }
 

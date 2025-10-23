@@ -15,6 +15,21 @@ import { toast } from "sonner"
 import { RichTextEditor } from "@/components/ui/rich-text-editor"
 import { SolutionBuilder, SolutionItem } from "@/components/course/solution-builder"
 
+interface LessonUpdatePayload {
+  id: string;
+  title: string;
+  content: string;
+  duration: number;
+  requireRobot: boolean;
+  orderNumber: number;
+  sectionId: string;
+  videoUrl?: string;
+  videoFile?: File;
+  type: number;
+  solution?: object | null;
+  status: number;
+}
+
 export default function EditLessonPage() {
   const params = useParams()
   const router = useRouter()
@@ -94,11 +109,11 @@ export default function EditLessonPage() {
 
     try {
       // Only Quiz (type 3) has solution
-      let solutionObject: unknown = undefined
+      let solutionObject: object | null | undefined = undefined
       if (formData.type === 3) {
         // Quiz: solution may be structured (from SolutionBuilder) or a JSON string (fallback)
         if (Array.isArray(formData.solution)) {
-          solutionObject = formData.solution
+          solutionObject = formData.solution as object
         } else if (typeof formData.solution === 'string' && formData.solution.trim()) {
           try {
             solutionObject = JSON.parse(formData.solution as string)
@@ -113,7 +128,7 @@ export default function EditLessonPage() {
       }
 
       // Prepare payload for updateLesson
-      const payload: any = {
+      const payload: LessonUpdatePayload= {
         id: formData.id,
         title: formData.title,
         content: formData.content,
@@ -122,7 +137,7 @@ export default function EditLessonPage() {
         type: formData.type,
         orderNumber: lesson.orderNumber,
         sectionId: formData.sectionId,
-        solution: solutionObject as unknown,
+        solution: solutionObject as object | null,
         status: formData.status
       };
       // For type 2 (video), handle video file upload
