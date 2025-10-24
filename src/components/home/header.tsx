@@ -61,13 +61,13 @@ export function Header({ currentSection, onNavigate }: HeaderProps) {
 
   // Sử dụng các icon từ lucide-react thay vì emoji
   const navigationItems = [
-    { name: "Dashboard", href: "/teacher", icon: LayoutDashboard },
-    { name: "Robots", href: "/teacher/robot", icon: ToyBrick },
-    { name: "Students", href: "/teacher/student", icon: Users },
-    { name: "Programming", href: "/teacher/programming", icon: Code },
-    { name: "Classroom", href: "/teacher/classroom", icon: School },
-    { name: "Activities", href: "/teacher/activities", icon: Target },
-    { name: "Music", href: "/teacher/music", icon: Music },
+    { name: "Dashboard", href: "/parent", icon: LayoutDashboard },
+    { name: "Robots", href: "/parent/robot", icon: ToyBrick },
+    { name: "Students", href: "/parent/student", icon: Users },
+    { name: "Programming", href: "/parent/programming", icon: Code },
+    { name: "Classroom", href: "/parent/classroom", icon: School },
+    { name: "Activities", href: "/parent/activities", icon: Target },
+    { name: "Music", href: "/parent/music", icon: Music },
   ];
 
   // Close dropdown khi click ngoài
@@ -120,8 +120,8 @@ export function Header({ currentSection, onNavigate }: HeaderProps) {
                   {userInfo?.fullName || userInfo?.username || "User"}
                 </span>
               </Button>
-
-              {isDropdownOpen && getUserRole() === "teacher" && (
+              
+              {isDropdownOpen && getUserRole() === "Parent" && (
                 // Tinh chỉnh thiết kế dropdown
                 <div className="absolute right-0 top-full mt-2 w-64 bg-white border border-gray-100 rounded-xl shadow-xl overflow-hidden animate-fade-in z-50">
                   
