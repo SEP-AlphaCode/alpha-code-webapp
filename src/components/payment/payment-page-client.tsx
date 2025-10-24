@@ -15,6 +15,7 @@ import visa from '../../../public/visa.jpg'
 import payos from '../../../public/payos.jpg'
 import vnpay from '../../../public/vnpay.jpg'
 import momo from '../../../public/momo.png'
+import miniGif from '../../../public/pulling_down_1.gif'
 import LoadingState from "../loading-state"
 import ErrorState from "../error-state"
 import { getUserIdFromToken } from '@/utils/tokenUtils'
@@ -207,8 +208,8 @@ export default function PaymentPageClient(props: PaymentPageClientProps = {}) {
         }
       }
     } catch (error: unknown) {
-      const errorMessage = error && typeof error === 'object' && 'response' in error 
-        ? (error as { response?: { data?: { message?: string } } }).response?.data?.message 
+      const errorMessage = error && typeof error === 'object' && 'response' in error
+        ? (error as { response?: { data?: { message?: string } } }).response?.data?.message
         : undefined;
       toast.error(errorMessage || "Lỗi khi tạo thanh toán")
       setError(errorMessage || "Lỗi khi tạo thanh toán")
@@ -423,7 +424,7 @@ export default function PaymentPageClient(props: PaymentPageClientProps = {}) {
   // Respect parent-provided states first
   if (propLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-background">
+      <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: '#F4F4F4' }}>
         <LoadingState message="Đang tải thông tin thanh toán..." />
       </div>
     )
@@ -431,7 +432,7 @@ export default function PaymentPageClient(props: PaymentPageClientProps = {}) {
 
   if (propError) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-background">
+      <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: '#F4F4F4' }}>
         <ErrorState error={propError} onRetry={() => window.location.reload()} />
       </div>
     )
@@ -440,7 +441,7 @@ export default function PaymentPageClient(props: PaymentPageClientProps = {}) {
   // If we are actively fetching resource, show loading
   if (isFetchingResource) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-background">
+      <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: '#F4F4F4' }}>
         <LoadingState message="Đang tải thông tin thanh toán..." />
       </div>
     )
@@ -449,7 +450,7 @@ export default function PaymentPageClient(props: PaymentPageClientProps = {}) {
   // If there's an id param and we don't yet have the title, show loading (fetch will start in effect)
   if (idFromParams && !fetchedTitle) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-background">
+      <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: '#F4F4F4' }}>
         <LoadingState message="Đang tải thông tin thanh toán..." />
       </div>
     )
@@ -458,7 +459,7 @@ export default function PaymentPageClient(props: PaymentPageClientProps = {}) {
   // No id and no resource -> show not found error
   if (!idFromParams && !fetchedTitle) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-background">
+      <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: '#F4F4F4' }}>
         <ErrorState error={`Không tìm thấy tài nguyên để thanh toán. Vui lòng kiểm tra lại liên kết hoặc quay lại trang trước đó.`} />
       </div>
     )
@@ -468,28 +469,35 @@ export default function PaymentPageClient(props: PaymentPageClientProps = {}) {
   const IconComponent = config.icon
 
   return (
-    <div className="min-h-screen bg-background p-4 md:p-8 pb-28 lg:pb-8">
+    <div className="min-h-screen flex items-start lg:items-center justify-center" style={{ backgroundColor: '#F4F4F4' }}>
       <div className="max-w-6xl mx-auto">
         {/* Header */}
-        <div className="mb-6 flex items-center gap-4">
+  <div className="mb-6 flex items-center gap-4 relative">
           <button
             onClick={() => router.back()}
             aria-label="Quay lại"
-            className="p-2 hover:bg-muted rounded-lg transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+            className="p-2 rounded-lg transition transform hover:scale-105 hover:shadow-md hover:bg-white/80 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary group"
           >
-            <ArrowLeft className="w-5 h-5 text-foreground" />
+            <ArrowLeft className="w-5 h-5 text-foreground transition-colors" />
           </button>
           <div>
             <h1 className="text-2xl md:text-3xl font-extrabold text-foreground">Thanh toán</h1>
             <p className="text-sm text-muted-foreground">Hoàn tất thanh toán một cách an toàn và nhanh chóng</p>
           </div>
+            {/* Decorative mini GIF: centered inside the header row (absolute center of this row) */}
+            <div className="pointer-events-none hidden md:flex absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-10">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src={miniGif.src} alt="" aria-hidden="true" className="w-16 h-16 md:w-30 md:h-30 object-contain" />
+            </div>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Main Payment Form */}
           <div className="lg:col-span-2 space-y-6">
             {/* Product Info Card */}
-            <Card className="p-6 border border-border bg-card shadow-sm rounded-lg overflow-hidden">
+            <Card className="relative p-6 border border-border bg-white shadow-lg hover:shadow-xl transition-shadow rounded-lg overflow-hidden">
+
+
               <div className="flex flex-col sm:flex-row gap-4 items-center mb-3">
                 <div className="flex-shrink-0">
                   <div className={`w-24 h-24 rounded-lg overflow-hidden flex items-center justify-center ${config.color} shadow-inner`}>
@@ -509,6 +517,7 @@ export default function PaymentPageClient(props: PaymentPageClientProps = {}) {
                     // sanitize before inserting HTML to reduce XSS risk
                     dangerouslySetInnerHTML={{ __html: sanitizeHtml(fetchedDescription ?? '') }}
                   />
+
 
                   <div className="mt-3 flex items-center justify-between md:justify-start gap-4">
                     <div>
@@ -536,7 +545,7 @@ export default function PaymentPageClient(props: PaymentPageClientProps = {}) {
             </Card>
 
             {/* Payment Methods */}
-            <Card className="p-6 border border-border bg-card shadow-sm rounded-lg">
+            <Card className="p-6 border border-border bg-white shadow-lg hover:shadow-xl transition-shadow rounded-lg">
               <div className="flex items-center justify-between mb-4">
                 <h3 className="text-lg font-semibold text-foreground">Phương thức thanh toán</h3>
                 <p className="text-sm text-muted-foreground">Chọn phương thức bạn muốn sử dụng</p>
@@ -608,7 +617,7 @@ export default function PaymentPageClient(props: PaymentPageClientProps = {}) {
 
           {/* Order Summary Sidebar */}
           <div className="lg:col-span-1 hidden lg:block">
-            <Card className="p-6 border border-border bg-card sticky top-8">
+            <Card className="p-6 border border-border bg-white shadow-lg hover:shadow-xl transition-shadow rounded-lg sticky top-8">
               <h4 className="text-lg font-semibold text-foreground mb-4">Tóm tắt đơn hàng</h4>
 
               <div className="space-y-3 mb-4">
@@ -654,7 +663,7 @@ export default function PaymentPageClient(props: PaymentPageClientProps = {}) {
         </div>
 
         {/* Mobile sticky checkout bar */}
-        <div className="fixed inset-x-0 bottom-0 bg-card border-t border-border p-3 lg:hidden">
+  <div className="fixed inset-x-0 bottom-0 bg-white border-t border-border p-3 lg:hidden shadow-lg">
           <div className="max-w-6xl mx-auto flex items-center justify-between gap-4">
             <div>
               <div className="text-sm text-muted-foreground">Tổng</div>
@@ -695,7 +704,7 @@ export default function PaymentPageClient(props: PaymentPageClientProps = {}) {
                 aria-modal="true"
                 className="overflow-hidden rounded-lg shadow-lg bg-transparent"
               >
-                <div className="bg-card border border-border rounded-lg overflow-hidden">
+                <div className="bg-white border border-border rounded-lg overflow-hidden shadow-lg">
                   <div className="flex items-center justify-between px-4 py-3 border-b border-border">
                     <h3 className="text-lg font-semibold text-foreground">Thanh toán</h3>
                     <button
