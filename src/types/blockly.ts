@@ -7,7 +7,8 @@ export type BaseBlockDef = {
         min?: number,
         max?: number,
         text?: string,
-        colour?: string
+        colour?: string,
+        check?: string
     }[],
     type: string,
     tooltip: string,
@@ -15,7 +16,8 @@ export type BaseBlockDef = {
     message0: string,
     previousStatement?: null,
     nextStatement?: null,
-    colour: number
+    colour: number,
+    output?: string
 }
 
 //These are Blockly's types that aren't exposed

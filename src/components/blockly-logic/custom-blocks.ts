@@ -22,10 +22,9 @@ const customBlockTemplate: BaseBlockDef[] = [
                 ]
             },
             {
-                "type": "field_number",
+                "type": "input_value",
                 "name": "COUNT",
-                "value": 1,
-                "min": 1
+                "check": "Number"
             },
             {
                 "type": "input_dummy",
@@ -51,10 +50,9 @@ const customBlockTemplate: BaseBlockDef[] = [
                 ]
             },
             {
-                "type": "field_number",
+                "type": "input_value",
                 "name": "COUNT",
-                "value": 1,
-                "min": 1
+                "check": "Number"
             },
             {
                 "type": "input_dummy",
@@ -80,10 +78,9 @@ const customBlockTemplate: BaseBlockDef[] = [
                 ]
             },
             {
-                "type": "field_number",
+                "type": "input_value",
                 "name": "COUNT",
-                "value": 1,
-                "min": 1
+                "check": "Number"
             },
             {
                 "type": "input_dummy",
@@ -109,14 +106,13 @@ const customBlockTemplate: BaseBlockDef[] = [
                 ]
             },
             {
-                "type": "field_number",
+                "type": "input_value",
                 "name": "COUNT",
-                "value": 1,
-                "min": 1
+                "check": "Number"
             },
             {
                 "type": "input_dummy",
-                "name": "NAME"
+                "name": "DUMMY"
             }
         ],
         "previousStatement": null,
@@ -127,16 +123,12 @@ const customBlockTemplate: BaseBlockDef[] = [
         "type": "tts",
         "tooltip": "Nói bằng TIẾNG VIỆT",
         "helpUrl": "",
-        "message0": "nói %1 %2",
+        "message0": "nói %1",
         "args0": [
             {
-                "type": "field_input",
-                "name": "TEXT_INPUT",
-                "text": "Tôi là Alpha Mini"
-            },
-            {
-                "type": "input_dummy",
-                "name": "NAME"
+                "type": "input_value",
+                "name": "TEXT",
+                "check": "String"
             }
         ],
         "previousStatement": null,
@@ -147,12 +139,37 @@ const customBlockTemplate: BaseBlockDef[] = [
         "type": "tts_en",
         "tooltip": "Nói bằng TIẾNG ANH (spoken in ENGLISH)",
         "helpUrl": "",
-        "message0": "say %1 %2",
+        "message0": "say %1",
         "args0": [
             {
-                "type": "field_input",
-                "name": "TEXT_INPUT",
-                "text": "I am Alpha Mini"
+                "type": "input_value",
+                "name": "TEXT",
+                "check": "String"
+            }
+        ],
+        "previousStatement": null,
+        "nextStatement": null,
+        "colour": HUE
+    },
+    {
+        "type": "set_mouth_led",
+        "tooltip": "",
+        "helpUrl": "",
+        "message0": "đặt LED miệng thành màu %1 trong %2 %3 giây %4",
+        "args0": [
+            {
+                "type": "input_value",
+                "name": "COLOR",
+                "check": "Color"
+            },
+            {
+                "type": "input_dummy",
+                "name": "LABEL"
+            },
+            {
+                "type": "input_value",
+                "name": "DURATION",
+                "check": "Number"
             },
             {
                 "type": "input_dummy",
@@ -164,10 +181,10 @@ const customBlockTemplate: BaseBlockDef[] = [
         "colour": HUE
     },
     {
-        "type": "set_mouth_led",
-        "tooltip": "",
+        "type": "inp_color",
+        "tooltip": "Trả về 1 màu",
         "helpUrl": "",
-        "message0": "đặt LED miệng thành màu %1 trong %2 giây %3",
+        "message0": "Màu %1 %2",
         "args0": [
             {
                 "type": "field_colour",
@@ -175,10 +192,32 @@ const customBlockTemplate: BaseBlockDef[] = [
                 "colour": "#ff0000"
             },
             {
-                "type": "field_number",
+                "type": "input_dummy",
+                "name": "NONE"
+            }
+        ],
+        "output": "Color",
+        "colour": 180
+    },
+    {
+        "type": "set_mouth_led_2",
+        "tooltip": "",
+        "helpUrl": "",
+        "message0": "đặt LED miệng thành màu %1 trong %2 %3 giây %4",
+        "args0": [
+            {
+                "type": "field_colour",
+                "name": "NAME",
+                "colour": "#ff0000"
+            },
+            {
+                "type": "input_dummy",
+                "name": "LABEL"
+            },
+            {
+                "type": "input_value",
                 "name": "DURATION",
-                "value": 1,
-                "min": 0
+                "check": "Number"
             },
             {
                 "type": "input_dummy",
@@ -187,7 +226,7 @@ const customBlockTemplate: BaseBlockDef[] = [
         ],
         "previousStatement": null,
         "nextStatement": null,
-        "colour": HUE
+        "colour": 60
     }
 
 ]

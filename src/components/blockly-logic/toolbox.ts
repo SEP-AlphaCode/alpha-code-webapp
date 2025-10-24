@@ -46,7 +46,7 @@ export const toolbox: ToolboxDef = {
         },
         {
             kind: 'category',
-            name: 'Loops',
+            name: 'Vòng lặp',
             categorystyle: 'loop_category',
             contents: [
                 {
@@ -109,7 +109,7 @@ export const toolbox: ToolboxDef = {
         },
         {
             kind: 'category',
-            name: 'Math',
+            name: 'Toán học',
             categorystyle: 'math_category',
             contents: [
                 {
@@ -315,7 +315,7 @@ export const toolbox: ToolboxDef = {
         },
         {
             kind: 'category',
-            name: 'Text',
+            name: 'Văn bản',
             categorystyle: 'text_category',
             contents: [
                 {
@@ -489,7 +489,7 @@ export const toolbox: ToolboxDef = {
         },
         {
             kind: 'category',
-            name: 'Lists',
+            name: 'Danh sách',
             categorystyle: 'list_category',
             contents: [
                 {
@@ -592,13 +592,13 @@ export const toolbox: ToolboxDef = {
         },
         {
             kind: 'category',
-            name: 'Variables',
+            name: 'Biến',
             categorystyle: 'variable_category',
             custom: 'VARIABLE',
         },
         {
             kind: 'category',
-            name: 'Functions',
+            name: 'Hàm',
             categorystyle: 'procedure_category',
             custom: 'PROCEDURE',
         },
@@ -628,11 +628,19 @@ export const robotCategory = {
         },
         {
             kind: 'block',
-            type: 'tts'
+            type: 'tts',
         },
         {
             kind: 'block',
-            type: 'tts_en'
+            type: 'tts_en',
+        },
+        {
+            kind: 'block',
+            type: 'set_mouth_led',
+        },
+        {
+            kind: 'block',
+            type: 'inp_color'
         }
     ]
 }

@@ -21,11 +21,11 @@ export const buildCodeGeneratorForModelId = (modelId: string) => {
      */
     function baseRequest(body: string, n: unknown) {
         if (n === 1) {
-            return `\tlist.push(${body})`
+            return `list.push(${body})`
         }
-        return `\t for(let i = 0; i < ${n}; i++){
-        \t\tlist.push(${body})
-        \t}`
+        return `for(let i = 0; i < ${n}; i++){
+        list.push(${body})
+        }`
     }
     /**
      * @param block Blocky.Block type where it MUST have these fields:
@@ -36,21 +36,25 @@ export const buildCodeGeneratorForModelId = (modelId: string) => {
      */
     function generateActionBlocks(block: Blockly.Block) {
         const dropdown_action_name = block.getFieldValue('ACTION_NAME');
-        const number_count = block.getFieldValue('COUNT');
+        const value_count = alphaCodeGenerator.valueToCode(block, 'COUNT', Order.ATOMIC);
+        
+        var count = value_count.length === 0 ? '0' : value_count
         // TODO: Assemble javascript into the code variable.
         //Inner function, fetch the ws call
         const body = JSON.stringify({
             type: block.type.split('.')[1],
             code: dropdown_action_name
         })
-        const comment = `// calling function ${block.type} ${number_count} time(s)\n`
-        const inner = baseRequest(body, number_count)
+        const comment = `// calling function ${block.type} ${count} time(s)\n`
+        const inner = baseRequest(body, count)
         return `${comment} ${inner} \n`
     }
     alphaCodeGenerator.forBlock[modelId + '.action'] = generateActionBlocks
     alphaCodeGenerator.forBlock[modelId + '.extended_action'] = (block: Blockly.Block) => {
         const dropdown_action_name = block.getFieldValue('ACTION_NAME');
-        const number_count = block.getFieldValue('COUNT');
+        const value_count = alphaCodeGenerator.valueToCode(block, 'COUNT', Order.ATOMIC);
+
+        var count = value_count.length === 0 ? '0' : value_count
         // TODO: Assemble javascript into the code variable.
         //Inner function, fetch the ws call
         const body = JSON.stringify({
@@ -59,29 +63,29 @@ export const buildCodeGeneratorForModelId = (modelId: string) => {
                 code: dropdown_action_name
             }
         })
-        const comment = `// calling function ${block.type} ${number_count} time(s)\n`
-        const inner = baseRequest(body, number_count)
+        const comment = `// calling function ${block.type} ${count} time(s)\n`
+        const inner = baseRequest(body, count)
         return `${comment} ${inner} \n`
     }
     alphaCodeGenerator.forBlock[modelId + '.expression'] = generateActionBlocks
     alphaCodeGenerator.forBlock[modelId + '.skill_helper'] = generateActionBlocks
-    alphaCodeGenerator.forBlock[modelId + '.tts'] = (block) => {
-        const text_text_input = block.getFieldValue('TEXT_INPUT');
+    alphaCodeGenerator.forBlock['tts'] = (block) => {
+        const value_text = alphaCodeGenerator.valueToCode(block, 'TEXT', Order.ATOMIC);
         const body = JSON.stringify({
             type: 'tts',
             lang: 'vi',
-            text: text_text_input
+            text: value_text
         })
         const comment = `// calling function ${block.type}\n`
         const inner = baseRequest(body, 1)
         return `${comment} ${inner}\n`
     }
-    alphaCodeGenerator.forBlock[modelId + '.tts_en'] = (block) => {
-        const text_text_input = block.getFieldValue('TEXT_INPUT');
+    alphaCodeGenerator.forBlock['tts_en'] = (block) => {
+        const value_text = alphaCodeGenerator.valueToCode(block, 'TEXT', Order.ATOMIC);
         const body = JSON.stringify({
             type: 'tts',
             lang: 'en',
-            text: text_text_input
+            text: value_text
         })
         const comment = `// calling function ${block.type}\n`
         const inner = baseRequest(body, 1)

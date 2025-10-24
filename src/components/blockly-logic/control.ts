@@ -4,7 +4,7 @@ import { JavascriptGenerator } from 'blockly/javascript';
 import { robotCategory, toolbox, ToolboxDef } from './toolbox';
 import { ToolboxItemInfo } from '@/types/blockly';
 
-export const HUE = 60
+export const HUE = 175
 export const CATEGORY_NAME = 'Robot'
 export type Operations = {
     serialize: () => { [key: string]: unknown },
@@ -26,16 +26,25 @@ export const blockControls = (ws: Blockly.WorkspaceSvg): Operations => {
         .serialization.workspaces.load(json, ws)
 
     const makeListCode = (gen: JavascriptGenerator) => {
-        const main = gen.workspaceToCode(ws)
-        return `
-        function makeList(){
-        const list = []
-        ${main}
-        return list
-        }
+        try {
+            const main = gen.workspaceToCode(ws)
+            return `function makeList(){
+try{
+const list = []
+${main}
+return {list: list, success: true}
+}
+catch(e){
+return {list: [], success: false}
+}
+}
 
-        return makeList()
-        `
+return makeList()`
+        }
+        catch (e) {
+            console.log(e);
+        }
+        return ""
     }
 
     const addStrayScrollbarDestructor = (injectedDiv: HTMLDivElement) => {
@@ -111,7 +120,7 @@ export const blockControls = (ws: Blockly.WorkspaceSvg): Operations => {
 
     const getToolboxForRobotModel = (robotModelId: string) => {
         const def = getDefaultToolbox()
-        const newRobotCategory = JSON.parse(JSON.stringify(robotCategory)) as {kind: string, name: string, color: string, contents: { type: string }[] }
+        const newRobotCategory = JSON.parse(JSON.stringify(robotCategory)) as { kind: string, name: string, color: string, contents: { type: string, invariant?: boolean }[] }
         newRobotCategory.contents.forEach(x => {
             x.type = robotModelId + '.' + x.type
         })
