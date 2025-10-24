@@ -26,6 +26,18 @@
     "@csstools/css-tokenizer" "^3.0.3"
     lru-cache "^10.4.3"
 
+"@blockly/field-colour@^6.0.5":
+  version "6.0.5"
+  resolved "https://registry.yarnpkg.com/@blockly/field-colour/-/field-colour-6.0.5.tgz#7a22f9c84b7f91433264f7c8e7937873ea43cfd8"
+  integrity sha512-IhDDWV4X5zkeomQSWzPD09RDK9cD8sg8y96dV1ZifOpgPFffhtUtVtfEnNFYpOQhwi1LH2f5JTHMJkSw1x+dwg==
+  dependencies:
+    "@blockly/field-grid-dropdown" "^6.0.4"
+
+"@blockly/field-grid-dropdown@^6.0.4":
+  version "6.0.4"
+  resolved "https://registry.yarnpkg.com/@blockly/field-grid-dropdown/-/field-grid-dropdown-6.0.4.tgz#f5c461f1ca75fac9150e426dcc286d67a2ab4da8"
+  integrity sha512-eY51r4j0R7bNotqgRxoviJbkfHxwxYwOtsu8PUih7Hi25eEhtNiFteFAQE8Yob8pFj9Bovq3Z96U4ysoOiz86A==
+
 "@csstools/color-helpers@^5.1.0":
   version "5.1.0"
   resolved "https://registry.yarnpkg.com/@csstools/color-helpers/-/color-helpers-5.1.0.tgz#106c54c808cabfd1ab4c602d8505ee584c2996ef"

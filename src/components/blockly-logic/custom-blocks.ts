@@ -4,11 +4,14 @@ import { BaseBlockDef } from '@/types/blockly';
 
 /**
  * This is the template for actions. DO NOT USE THIS DIRECTLY.
+ * 
  * To load actions for a robot model, use ```loadModelIdData```.
+ * 
+ * If the values in the block depends on robot model, add a  '.' before the type
  */
 const customBlockTemplate: BaseBlockDef[] = [
     {
-        "type": "action",
+        "type": ".action",
         "tooltip": "",
         "helpUrl": "",
         "message0": "thực hiện hành động %1 %2 lần %3",
@@ -36,7 +39,7 @@ const customBlockTemplate: BaseBlockDef[] = [
         "colour": HUE
     },
     {
-        "type": "extended_action",
+        "type": ".extended_action",
         "tooltip": "",
         "helpUrl": "",
         "message0": "thực hiện hành động mở rộng %1 %2 lần %3",
@@ -64,7 +67,7 @@ const customBlockTemplate: BaseBlockDef[] = [
         "colour": HUE
     },
     {
-        "type": "expression",
+        "type": ".expression",
         "tooltip": "",
         "helpUrl": "",
         "message0": "thực hiện biểu cảm %1 %2 lần %3",
@@ -92,7 +95,7 @@ const customBlockTemplate: BaseBlockDef[] = [
         "colour": HUE
     },
     {
-        "type": "skill_helper",
+        "type": ".skill_helper",
         "tooltip": "",
         "helpUrl": "",
         "message0": "thực hiện kỹ năng %1 %2 lần %3",
@@ -184,7 +187,7 @@ const customBlockTemplate: BaseBlockDef[] = [
         "type": "inp_color",
         "tooltip": "Trả về 1 màu",
         "helpUrl": "",
-        "message0": "Màu %1 %2",
+        "message0": "%1 %2",
         "args0": [
             {
                 "type": "field_colour",
@@ -198,40 +201,15 @@ const customBlockTemplate: BaseBlockDef[] = [
         ],
         "output": "Color",
         "colour": 180
-    },
-    {
-        "type": "set_mouth_led_2",
-        "tooltip": "",
-        "helpUrl": "",
-        "message0": "đặt LED miệng thành màu %1 trong %2 %3 giây %4",
-        "args0": [
-            {
-                "type": "field_colour",
-                "name": "NAME",
-                "colour": "#ff0000"
-            },
-            {
-                "type": "input_dummy",
-                "name": "LABEL"
-            },
-            {
-                "type": "input_value",
-                "name": "DURATION",
-                "check": "Number"
-            },
-            {
-                "type": "input_dummy",
-                "name": "NAME"
-            }
-        ],
-        "previousStatement": null,
-        "nextStatement": null,
-        "colour": 60
     }
-
 ]
 
+const pushSthIfEmpty = (target: string[][]) => {
+    if (target.length === 0) target.push(['???', '???'])
+}
+
 const loadDropdownOptions = (customBlockTemplate: BaseBlockDef[], name: string, data: string[][]) => {
+    pushSthIfEmpty(data)
     const actionBlocks = customBlockTemplate.find(x => x.type === name)
     const arg0 = actionBlocks?.args0.find(x => x.name === 'ACTION_NAME')
     if (arg0 && arg0.options) {
@@ -239,9 +217,6 @@ const loadDropdownOptions = (customBlockTemplate: BaseBlockDef[], name: string, 
     }
 }
 
-const pushSthIfEmpty = (target: string[][]) => {
-    if (target.length === 0) target.push(['???', '???'])
-}
 
 /**
  * 
@@ -264,12 +239,11 @@ const pushSthIfEmpty = (target: string[][]) => {
 export const loadModelIdData = (modelId: string, actions: string[][], extActions: string[][], exps: string[][], skills: string[][]) => {
     const tmpTemplate = JSON.parse(JSON.stringify(customBlockTemplate)) as BaseBlockDef[]
     tmpTemplate.forEach(x => {
-        x.type = modelId + '.' + x.type
+        if (x.type.startsWith('.')) {
+            x.type = modelId + x.type
+        }
     })
-    pushSthIfEmpty(actions)
-    pushSthIfEmpty(exps)
-    pushSthIfEmpty(extActions)
-    pushSthIfEmpty(skills)
+    //Load your data from robot model here
     loadDropdownOptions(tmpTemplate, modelId + '.action', actions)
     loadDropdownOptions(tmpTemplate, modelId + '.expression', exps)
     loadDropdownOptions(tmpTemplate, modelId + '.extended_action', extActions)

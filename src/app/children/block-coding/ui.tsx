@@ -9,6 +9,7 @@ import { buildCodeGeneratorForModelId } from '@/components/blockly-logic/js-gene
 import 'blockly/blocks';
 import 'blockly/javascript'; // Or the generator of your choice
 import * as Vi from 'blockly/msg/vi';
+import { registerFieldColour } from '@blockly/field-colour';
 
 type BlocklyUIProps = {
     robotModelId: string,
@@ -67,10 +68,11 @@ export default function BlocklyUI({ robotModelId, serial, hasAllData, data }: Bl
     }
 
     useEffect(() => {
+        registerFieldColour()
         Blockly.setLocale(Vi as unknown as {[key: string]: string})
         Blockly.utils.colour.setHsvSaturation(0.7) // 0 (inclusive) to 1 (exclusive), defaulting to 0.45
         Blockly.utils.colour.setHsvValue(0.9) // 0 (inclusive) to 1 (exclusive), defaulting to 0.65
-        
+
         if (!blocklyRef || !blocklyRef.current) return;
         workspaceRef.current = Blockly.inject(blocklyRef.current, { toolbox })
         if (!workspaceRef.current) { return; }

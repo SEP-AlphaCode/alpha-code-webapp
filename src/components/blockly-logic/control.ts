@@ -122,8 +122,11 @@ return makeList()`
         const def = getDefaultToolbox()
         const newRobotCategory = JSON.parse(JSON.stringify(robotCategory)) as { kind: string, name: string, color: string, contents: { type: string, invariant?: boolean }[] }
         newRobotCategory.contents.forEach(x => {
-            x.type = robotModelId + '.' + x.type
+            if (x.type.startsWith('.')) {
+                x.type = robotModelId + x.type
+            }
         })
+        
         def.contents.push(newRobotCategory)
         return def
     }

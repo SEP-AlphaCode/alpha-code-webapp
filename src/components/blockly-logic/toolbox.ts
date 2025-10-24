@@ -604,7 +604,9 @@ export const toolbox: ToolboxDef = {
         },
     ],
 };
-
+/**
+ * Add new blocks from ```custom-block``` into this category. If blocks in this category have values depending on the robot model, add '.' before the name.
+ */
 export const robotCategory = {
     kind: 'category',
     name: CATEGORY_NAME,
@@ -612,19 +614,19 @@ export const robotCategory = {
     contents: [
         {
             kind: 'block',
-            type: 'action'
+            type: '.action'
         },
         {
             kind: 'block',
-            type: 'extended_action'
+            type: '.extended_action'
         },
         {
             kind: 'block',
-            type: 'skill_helper'
+            type: '.skill_helper'
         },
         {
             kind: 'block',
-            type: 'expression'
+            type: '.expression'
         },
         {
             kind: 'block',
