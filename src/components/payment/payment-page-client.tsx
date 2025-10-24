@@ -21,6 +21,7 @@ import { getUserIdFromToken } from '@/utils/tokenUtils'
 import { useCreatePayOSEmbedded } from '@/features/payment/hooks/use-payments'
 import type { CreatePayment } from '@/types/payment'
 import { webURL } from "@/app/constants/constants"
+import { toast } from "sonner"
 
 function formatCurrency(v: number) {
   try {
@@ -164,9 +165,13 @@ export default function PaymentPageClient(props: PaymentPageClientProps = {}) {
           router.push(`/payment/success?method=${method}&id=${resourceIdForUrl}`)
         }
       }
-    } catch (err) {
-      console.error(err)
-      alert("Lỗi khi tạo yêu cầu thanh toán. Vui lòng thử lại.")
+    } catch (error: unknown) {
+      const errorMessage = error && typeof error === 'object' && 'response' in error 
+        ? (error as { response?: { data?: { message?: string } } }).response?.data?.message 
+        : undefined;
+      toast.error(errorMessage || "Lỗi khi tạo thanh toán")
+      setError(errorMessage || "Lỗi khi tạo thanh toán")
+      console.error("Error creating payment:", error)
     } finally {
       setIsProcessing(false)
     }
@@ -179,6 +184,7 @@ export default function PaymentPageClient(props: PaymentPageClientProps = {}) {
   const paymentOpenedRef = useRef(false)
   const payosOriginRef = useRef<string | null>(null)
   const [isEmbeddedProcessing, setIsEmbeddedProcessing] = useState(false)
+  const [error, setError] = useState<string | null>(null)
 
   function closePayOS() {
     try {
@@ -222,6 +228,7 @@ export default function PaymentPageClient(props: PaymentPageClientProps = {}) {
         setPayosOpen(true)
       } catch (e) {
         console.error('Failed to open PayOS embedded', e)
+        setError('Không thể mở giao diện thanh toán PayOS. Vui lòng thử lại sau.')
       }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -618,7 +625,7 @@ export default function PaymentPageClient(props: PaymentPageClientProps = {}) {
 
           {createPayOS.error && (
             <div className="p-4">
-              <ErrorState error={createPayOS.error?.message || String(createPayOS.error)} />
+              <ErrorState error={error || String(createPayOS.error)} />
             </div>
           )}
 
