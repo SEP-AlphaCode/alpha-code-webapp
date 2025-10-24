@@ -205,12 +205,12 @@ export default function PaymentPageClient(props: PaymentPageClientProps = {}) {
       setIsEmbeddedProcessing(true)
       setTimeout(() => {
         closePayOS()
-        router.push(`/payment/success?method=payos&id=${encodeURIComponent(idFromParams)}`)
+        router.push(`/payment/result?success=true&method=payos&id=${encodeURIComponent(idFromParams)}`)
       }, 1500)
     },
     onCancel: () => {
       closePayOS()
-      router.push(`/payment/cancel?id=${encodeURIComponent(idFromParams)}`)
+      router.push(`/payment/result?success=false&id=${encodeURIComponent(idFromParams)}`)
     },
   })
 
@@ -239,7 +239,7 @@ export default function PaymentPageClient(props: PaymentPageClientProps = {}) {
           setIsEmbeddedProcessing(true)
           setTimeout(() => {
             closePayOS()
-            router.push(`/payment/success?method=payos&id=${encodeURIComponent(idFromParams)}`)
+            router.push(`/payment/result?success=true&method=payos&id=${encodeURIComponent(idFromParams)}`)
           }, 1500)
         } else if (data?.status === 'cancel') {
           closePayOS()
