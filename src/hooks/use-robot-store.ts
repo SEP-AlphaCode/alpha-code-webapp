@@ -12,7 +12,7 @@ import {
   resetError,
   fetchRobotsByAccount,
   fetchRobotsFromToken,
-  setConnectMode, // ✅ import thêm
+  setConnectMode,
   Robot,
   ConnectMode
 } from '@/store/robot-slice'
@@ -26,7 +26,7 @@ export const useRobotStore = () => {
     isLoading,
     error,
     accountId,
-    connectMode, // ✅ lấy thêm connectMode từ store
+    connectMode,
   } = useAppSelector((state) => state.robot)
 
   const selectedRobot = Array.isArray(selectedRobotSerial)
@@ -73,7 +73,8 @@ export const useRobotStore = () => {
       [dispatch]
     ),
     updateRobotBattery: useCallback(
-      (serial: string, battery: string) =>
+      // ✅ ĐIỀU CHỈNH: Sửa type battery thành string | number
+      (serial: string, battery: string | null) =>
         dispatch(updateRobotBattery({ serial, battery })),
       [dispatch]
     ),

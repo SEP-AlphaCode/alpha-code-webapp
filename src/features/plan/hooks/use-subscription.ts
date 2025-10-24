@@ -1,4 +1,4 @@
-import { createSubscription, getPagedSubscriptions, deleteSubscription, updateSubscription } from "../api/subscription-api";
+import { createSubscription, getPagedSubscriptions, deleteSubscription, updateSubscription, getSubscriptionById } from "../api/subscription-api";
 import { SubscriptionPlanModal } from "@/types/subscription";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
@@ -41,10 +41,19 @@ export const useSubscription = () => {
         });
     };
 
+    const useGetSubscriptionById = (id: string) => {
+        return useQuery({
+            queryKey: ['subscription-plan', id],
+            queryFn: () => getSubscriptionById(id),
+            enabled: !!id,
+        })
+    }
+
     return {
         useGetPagedSubscriptions,
         useCreateSubscription,
         useUpdateSubscription,
-        useDeleteSubscription
+        useDeleteSubscription,
+        useGetSubscriptionById
     }
 };

@@ -3,14 +3,23 @@ import Image from 'next/image'
 
 
 interface ErrorStateProps {
-  error: Error | unknown
+  error?: Error | string | unknown
   onRetry?: () => void
   className?: string
 }
 
 
 export default function ErrorState({ error, onRetry, className = '' }: ErrorStateProps) {
-  const rawMessage = error instanceof Error ? error.message : 'Lỗi không xác định'
+  let rawMessage = 'Lỗi không xác định'
+
+  if (typeof error === 'string') {
+    rawMessage = error
+  } else if (error instanceof Error) {
+    rawMessage = error.message
+  } else if (error && typeof error === 'object') {
+    const maybeMessage = (error as { message?: unknown }).message
+    if (typeof maybeMessage === 'string' && maybeMessage.trim().length > 0) rawMessage = maybeMessage
+  }
 
   // Basic mapping for known backend validation keys (could extend later)
   const normalized = rawMessage
