@@ -53,6 +53,47 @@ function formatCurrencyParts(v: number) {
   }
 }
 
+/**
+ * Lightweight client-side sanitizer to remove script/style/iframe elements and
+ * strip event handler attributes and dangerous protocols from href/src.
+ * This is intentionally simple; for stronger guarantees use a vetted library
+ * like DOMPurify (recommended).
+ */
+function sanitizeHtml(input: string) {
+  if (!input) return ''
+  try {
+    const parser = new DOMParser()
+    const doc = parser.parseFromString(input, 'text/html')
+
+    // remove potentially dangerous elements
+    doc.querySelectorAll('script, style, iframe, object, embed').forEach((n) => n.remove())
+
+    // remove event handler attributes and javascript/data: URIs
+    const walker = doc.createTreeWalker(doc.body, NodeFilter.SHOW_ELEMENT, null)
+    let node = walker.nextNode()
+    while (node) {
+      const el = node as Element
+      // copy attributes to avoid modifying while iterating
+      const attrs = Array.from(el.attributes)
+      attrs.forEach((a) => {
+        const name = a.name.toLowerCase()
+        const val = a.value || ''
+        if (name.startsWith('on')) {
+          el.removeAttribute(a.name)
+        }
+        if ((name === 'href' || name === 'src') && /^(javascript|data):/i.test(val.trim())) {
+          el.removeAttribute(a.name)
+        }
+      })
+      node = walker.nextNode()
+    }
+
+    return doc.body.innerHTML || ''
+  } catch (e) {
+    return ''
+  }
+}
+
 type PaymentCategory = "course" | "plan" | "addon" | "key" | "bundle"
 type PaymentMethod = "payos" | "credit_card" | "bank_transfer" | "momo" | "vnpay"
 
@@ -221,18 +262,20 @@ export default function PaymentPageClient(props: PaymentPageClientProps = {}) {
   })
 
   useEffect(() => {
-    if (payosUrl && !paymentOpenedRef.current) {
+    // Only try to open the PayOS SDK when we both have a checkout URL and
+    // the modal/container is actually shown in the DOM (payosOpen). This
+    // avoids the SDK attempting to render into a missing element.
+    if (payosUrl && payosOpen && !paymentOpenedRef.current) {
       try {
         open()
         paymentOpenedRef.current = true
-        setPayosOpen(true)
       } catch (e) {
         console.error('Failed to open PayOS embedded', e)
         setError('Không thể mở giao diện thanh toán PayOS. Vui lòng thử lại sau.')
       }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [payosUrl, open])
+  }, [payosUrl, open, payosOpen])
 
   // postMessage fallback: listen for PayOS messages if they post back
   useEffect(() => {
@@ -257,6 +300,28 @@ export default function PaymentPageClient(props: PaymentPageClientProps = {}) {
     return () => window.removeEventListener('message', handler)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [idFromParams])
+
+  // Close modal on Escape for convenience
+  useEffect(() => {
+    if (!payosOpen) return
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') closePayOS()
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [payosOpen])
+
+  // Prevent page scrolling while modal is open to avoid background shift
+  useEffect(() => {
+    const prev = typeof document !== 'undefined' ? document.body.style.overflow : ''
+    if (payosOpen) {
+      document.body.style.overflow = 'hidden'
+    }
+    return () => {
+      if (typeof document !== 'undefined') document.body.style.overflow = prev || ''
+    }
+  }, [payosOpen])
 
   // Use hooks where available
   const { useGetCourseById } = useCourse()
@@ -439,7 +504,11 @@ export default function PaymentPageClient(props: PaymentPageClientProps = {}) {
 
                 <div className="flex-1 min-w-0">
                   <h2 className="text-xl md:text-2xl font-semibold text-foreground truncate">{fetchedTitle}</h2>
-                  <p className="text-sm text-muted-foreground mt-1 line-clamp-3">{fetchedDescription}</p>
+                  <div
+                    className="text-sm text-muted-foreground mt-1 line-clamp-3"
+                    // sanitize before inserting HTML to reduce XSS risk
+                    dangerouslySetInnerHTML={{ __html: sanitizeHtml(fetchedDescription ?? '') }}
+                  />
 
                   <div className="mt-3 flex items-center justify-between md:justify-start gap-4">
                     <div>
@@ -521,7 +590,7 @@ export default function PaymentPageClient(props: PaymentPageClientProps = {}) {
                         </div>
 
                         <div className="flex items-center">
-                          {!m.disabled && selected && <Check className="w-5 h-5 text-primary" />}
+                          {!m.disabled && selected && <Check className="w-5 h-5" />}
                           {m.disabled && <div className="text-xs text-muted-foreground">Tạm dừng</div>}
                         </div>
                       </button>
@@ -614,41 +683,74 @@ export default function PaymentPageClient(props: PaymentPageClientProps = {}) {
           </div>
         </div>
 
-        {/* PayOS embedded container (in-page, not modal) */}
-        <div className="mt-6">
-          {/* show loading state while the createPayOS mutation is pending */}
-          {createPayOS.isPending && payosUrl && (
-            <div className="w-full flex items-center justify-center py-6">
-              <LoadingState message="Khởi tạo PayOS..." />
-            </div>
-          )}
+        {/* PayOS embedded modal: show centered modal when payosOpen is true */}
+        {payosOpen && (
+          <div className="fixed inset-0 z-50 flex items-start justify-center pt-12 md:pt-20">
+            {/* backdrop */}
+            <div className="fixed inset-0 bg-black/50" onClick={() => closePayOS()} aria-hidden="true" />
 
-          {createPayOS.error && (
-            <div className="p-4">
-              <ErrorState error={error || String(createPayOS.error)} />
-            </div>
-          )}
+            <div className="relative w-full max-w-4xl mx-4">
+              <div
+                role="dialog"
+                aria-modal="true"
+                className="overflow-hidden rounded-lg shadow-lg bg-transparent"
+              >
+                <div className="bg-card border border-border rounded-lg overflow-hidden">
+                  <div className="flex items-center justify-between px-4 py-3 border-b border-border">
+                    <h3 className="text-lg font-semibold text-foreground">Thanh toán</h3>
+                    <button
+                      onClick={() => closePayOS()}
+                      aria-label="Đóng"
+                      className="p-2 rounded-md hover:bg-muted/10 focus:outline-none"
+                    >
+                      ✕
+                    </button>
+                  </div>
 
-          {/* embedded element used by PayOS to render the checkout UI. We also
-              render an iframe directly as a fallback to ensure in-page embedding
-              even if the SDK would otherwise open a modal. */}
-          <div
-            id="embedded-payment-container"
-            style={{
-              height: "330px",
-              position: "relative"
-            }}
-          >
+                  {/* content: remove outer padding so iframe can use full width */}
+                  <div className="w-full bg-white">
+                    {/* show loading state while the createPayOS mutation is pending */}
+                    {createPayOS.isPending && payosUrl && (
+                      <div className="w-full flex items-center justify-center py-6">
+                        <LoadingState message="Khởi tạo PayOS..." />
+                      </div>
+                    )}
 
-            {isEmbeddedProcessing && (
-              <div className="absolute inset-0 bg-white/90 flex flex-col items-center justify-center z-50">
-                <Loader2 className="w-12 h-12 animate-spin text-blue-600" />
-                <p className="mt-4 text-lg font-semibold text-gray-900">Đang xử lý thanh toán...</p>
-                <p className="text-sm text-muted-foreground">Vui lòng chờ trong giây lát.</p>
+                    {createPayOS.error && (
+                      <div className="p-4">
+                        <ErrorState error={error || String(createPayOS.error)} />
+                      </div>
+                    )}
+
+                    <div id="embedded-payment-container" className="w-full h-[min(80vh,720px)] relative overflow-hidden bg-white">
+                      {/* embedded SDK renders into this element when open() is called */}
+
+                      {isEmbeddedProcessing && (
+                        <div className="absolute inset-0 bg-white/90 flex flex-col items-center justify-center z-50">
+                          <Loader2 className="w-12 h-12 animate-spin text-blue-600" />
+                          <p className="mt-4 text-lg font-semibold text-gray-900">Đang xử lý thanh toán...</p>
+                          <p className="text-sm text-muted-foreground">Vui lòng chờ trong giây lát.</p>
+                        </div>
+                      )}
+
+                      {/* iframe fallback to ensure checkout is accessible even if SDK
+                          cannot render into the container. */}
+                      {payosUrl && (
+                        // eslint-disable-next-line @next/next/no-html-link-for-pages
+                        <iframe
+                          src={payosUrl}
+                          title="PayOS Checkout"
+                          className="w-full h-full border-0 block"
+                          style={{ display: 'block' }}
+                        />
+                      )}
+                    </div>
+                  </div>
+                </div>
               </div>
-            )}
+            </div>
           </div>
-        </div>
+        )}
       </div>
     </div>
   )
