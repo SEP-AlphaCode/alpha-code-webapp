@@ -75,12 +75,19 @@ export const logout = async (): Promise<void> => {
   }
 };
 
-export const googleLogin = async (idToken: string): Promise<TokenResponse> => {
+export const googleLogin = async (idToken: string): Promise<LoginWithProfileResponse> => {
   try {
     const response = await usersHttp.post('/auth/google-login', idToken, {
       headers: { "Content-Type": "text/plain" }
     });
-    return response.data;
+
+    const responseData = response.data;
+
+    // Ensure the response includes the `requiresProfile` property
+    return {
+      ...responseData,
+      requiresProfile: responseData.requiresProfile || false, // Default to false if not provided
+    };
   } catch (error) {
     throw error;
   }
