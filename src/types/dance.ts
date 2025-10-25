@@ -9,6 +9,7 @@ export type Dance = {
     lastUpdate: string
     duration: number
     robotModelId: string
+    robotModelName: string
     statusText: string
 }
 

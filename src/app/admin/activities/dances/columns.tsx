@@ -73,6 +73,13 @@ const IconHeaderCell = () => (
     </span>
 )
 
+  const HeaderCell = ({ text }: { text: string }) => (
+    <span className="flex items-center gap-1 text-gray-700 font-semibold">
+      {text}
+    </span>
+  )
+
+
 const DurationHeaderCell = () => (
     <span className="flex items-center gap-1 text-blue-600 font-semibold">
         Thời lượng
@@ -258,6 +265,15 @@ export const createColumns = (
         accessorKey: "status",
         header: () => <StatusHeaderCell />,
         cell: ({ row }) => <StatusCell status={row.original.status} />,
+    },
+     {
+      accessorKey: "robotModelName",
+      header: () => <HeaderCell text="Robot Model" />,
+      cell: ({ row }) => (
+        <span className="text-gray-700 font-medium">
+          {row.original.robotModelName || "Không có"}
+        </span>
+      ),
     },
     {
         id: "actions",

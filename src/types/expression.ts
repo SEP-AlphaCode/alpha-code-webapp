@@ -7,6 +7,7 @@ export type Expression = {
     createdDate: string
     lastUpdate: string
     robotModelId: string
+    robotModelName: string
     statusText: string
 }
 

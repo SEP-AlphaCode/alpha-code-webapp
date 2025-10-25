@@ -81,9 +81,9 @@ export function RobotGrid({
     }
   };
 
-  const getBatteryColor = (battery: number) => {
-    if (battery > 60) return "bg-green-500";
-    if (battery > 30) return "bg-yellow-500";
+  const getBatteryColor = (battery: string) => {
+    if (battery > "60") return "bg-green-500";
+    if (battery > "30") return "bg-yellow-500";
     return "bg-red-500";
   };
 
@@ -182,7 +182,6 @@ export function RobotGrid({
 
               {/* 🔋 Battery */}
               {displayStatus !== "offline" && (
-                console.log("Robot battery:", robot.battery),
                 <div className="flex items-center gap-2 mb-2">
                   <Battery className="h-4 w-4" />
                   <span className="font-semibold text-sm">
@@ -191,7 +190,7 @@ export function RobotGrid({
                   <div className="w-20 h-2 bg-gray-200 rounded-full overflow-hidden">
                     <div
                       className={`h-2 rounded-full ${getBatteryColor(
-                        robot.battery_level ?? 0
+                        robot.battery ?? "0"
                       )}`}
                       style={{ width: `${robot.battery ?? 0}%` }}
                     ></div>

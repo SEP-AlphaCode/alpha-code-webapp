@@ -1,10 +1,11 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Power, StopCircleIcon } from "lucide-react";
 import { useRobotStatus } from "@/hooks/use-robot-status";
 import { useRobotStore } from "@/hooks/use-robot-store";
+import { useRobotControls } from "@/features/users/hooks/use-websocket"
 
 interface Robot {
   id: string;
@@ -61,6 +62,8 @@ export function RobotDetails({ robot, translations }: RobotDetailsProps) {
   const { status: liveStatus, loading, error } = useRobotStatus(robot.serialNumber, 5000);
   const [displayRobot, setDisplayRobot] = useState(robot);
 
+  const { startActivity, isLoading: isRobotLoading } = useRobotControls()
+
   // 🔄 Reset displayRobot mỗi khi prop robot thay đổi
   useEffect(() => {
     setDisplayRobot(robot);
@@ -111,6 +114,25 @@ export function RobotDetails({ robot, translations }: RobotDetailsProps) {
     }
   };
 
+
+  const handleStopAllActions = useCallback(() => {
+      const robotSerial = robot.serialNumber;
+      
+      if (!robotSerial) {
+        console.error('No robot selected for stopping actions');
+        return;
+      }
+  
+      console.log('Stopping all actions for robot:', robotSerial);
+      
+      // Send stop_all_actions command via socket
+      const serial = Array.isArray(robotSerial) ? robotSerial[0] : robotSerial;
+  
+      if (!serial) return; // phòng trường hợp undefined
+  
+      startActivity(serial, 'stop_all_actions', {});
+    }, [robot.serialNumber, startActivity])
+
   // ⚡ Nếu đang ở multi-mode → không hiển thị chi tiết
   if (isMultiMode) {
     return null;
@@ -126,19 +148,19 @@ export function RobotDetails({ robot, translations }: RobotDetailsProps) {
           </h4>
           <div className="space-y-2 text-sm">
             <div className="flex justify-between">
-              <span className="text-gray-400">ID:</span>
-              <span className="text-gray-900 font-medium">{displayRobot.id}</span>
+              <span className="text-gray-400">Serial ID:</span>
+              <span className="text-gray-900 font-medium">{displayRobot.serialNumber}</span>
             </div>
             <div className="flex justify-between">
               <span className="text-gray-400">{translations.systemInfo.firmware}:</span>
               <span className="text-gray-900 font-medium">
-                {displayRobot.firmware_version}
+                {robot.firmware_version}
               </span>
             </div>
             <div className="flex justify-between">
               <span className="text-gray-400">{translations.systemInfo.ctrl}:</span>
               <span className="text-gray-900 font-medium">
-                {displayRobot.ctrl_version}
+                {robot.ctrl_version}
               </span>
             </div>
           </div>
@@ -200,7 +222,7 @@ export function RobotDetails({ robot, translations }: RobotDetailsProps) {
               <Power className="h-5 w-5 mr-2" />
               {translations.quickActions.restart}
             </Button>
-            <Button className="w-full text-base py-3" variant="outline">
+            <Button className="w-full text-base py-3" variant="outline" onClick={handleStopAllActions}>
               <StopCircleIcon className="h-5 w-5 mr-2" />
               {translations.quickActions.forceStop}
             </Button>

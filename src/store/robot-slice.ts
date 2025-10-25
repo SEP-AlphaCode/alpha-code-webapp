@@ -19,8 +19,8 @@ export interface Robot {
   robotModelId?: string
   robotModelName?: string
   accountId?: string
-  ctrl_version?: string | null
-  firmware_version?: string | null
+  ctrlVersion?: string | null
+  firmwareVersion?: string | null
 }
 
 interface RobotState {
@@ -85,22 +85,27 @@ const initialState: RobotState = {
 // 🔄 Helper converter
 // --------------------
 const convertApiRobotToReduxRobot = (apiRobot: ApiRobot): Robot => ({
-  id: apiRobot.id,
-  serial: apiRobot.serialNumber,
-  name: apiRobot.robotModelName || 'Unknown Robot',
-  status:
-    apiRobot.status === 'online' || apiRobot.status === 'success'
-      ? 'online'
-      : apiRobot.status === 'busy'
-      ? 'busy'
-      : 'offline',
-  lastConnected: apiRobot.lastUpdate || new Date().toISOString(),
-  isSelected: false,
-  battery: apiRobot.battery ?? null,
-  robotModelId: apiRobot.robotModelId,
-  robotModelName: apiRobot.robotModelName,
-  accountId: apiRobot.accountId,
+  id: apiRobot.id,
+  serial: apiRobot.serialNumber, // 👈 fix
+  name: apiRobot.robotModelName || 'Unknown Robot',
+  status:
+    apiRobot.status === 'online' || apiRobot.status === 'success'
+      ? 'online'
+      : apiRobot.status === 'busy'
+      ? 'busy'
+      : 'offline',
+  lastConnected: apiRobot.lastUpdate || new Date().toISOString(),
+  isSelected: false,
+  battery:
+    apiRobot.battery?.toString() ??
+    null, // 👈 handle number or string
+  robotModelId: apiRobot.robotModelId,
+  robotModelName: apiRobot.robotModelName,
+  accountId: apiRobot.accountId,
+  ctrlVersion: apiRobot.ctrlVersion || null, // 👈 fix
+  firmwareVersion: apiRobot.firmwareVersion || null, // 👈 fix
 })
+
 
 // --------------------
 // 🧠 Slice

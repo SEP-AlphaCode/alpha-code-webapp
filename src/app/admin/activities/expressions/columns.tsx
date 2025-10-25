@@ -209,6 +209,15 @@ export const createColumns = (
         header: StatusHeaderCell,
         cell: StatusCell,
     },
+     {
+      accessorKey: "robotModelName",
+      header: () => <HeaderCell text="Robot Model" />,
+      cell: ({ row }) => (
+        <span className="text-gray-700 font-medium">
+          {row.original.robotModelName || "Không có"}
+        </span>
+      ),
+    },
     {
         id: "actions",
         cell: ActionCell,
