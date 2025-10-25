@@ -149,7 +149,7 @@ export const resetPassword = async (resetToken: string, newPassword: string) => 
 export const switchProfile = async (
   profileId: string,
   accountId: string,
-  passCode: number
+  passCode: string
 ): Promise<SwitchProfileResponse> => {
   try {
     // Truyền đủ thông tin theo spec: accountId, passCode, profileId

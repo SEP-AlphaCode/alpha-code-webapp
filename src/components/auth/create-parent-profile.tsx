@@ -66,7 +66,7 @@ export function CreateParentProfile() {
         const profileDataSwagger = {
           accountId: accountId,  // camelCase
           name: name.trim(),
-          passCode: parseInt(passcode || '0000', 10),  // integer
+          passCode: passcode || '0000',
           isKid: isKid,  // từ state
           status: 1,
         };
@@ -83,7 +83,7 @@ export function CreateParentProfile() {
           switchProfileMutation.mutate({
             profileId: profile.id,
             accountId: accountId,
-            passCode: parseInt(passcode || '0000', 10)
+            passCode: passcode || '0000'
           });
         }
         
@@ -117,7 +117,7 @@ export function CreateParentProfile() {
         switchProfileMutation.mutate({
           profileId: profile.id,
           accountId: accountId,
-          passCode: parseInt(passcode || '0000', 10)
+          passCode: passcode || '0000'
         });
       } else {
         console.error('❌ Profile created but no ID returned');

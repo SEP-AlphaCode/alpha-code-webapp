@@ -6,7 +6,7 @@ export interface CreateProfileRequest {
   avatarFile?: File;        // Binary file (optional)
   isKid: boolean;           // true = Children, false = Parent
   name: string;             // Profile name
-  passCode: number;         // PIN code (integer)
+  passCode: string;         // PIN code (integer)
   status: number;           // Status (integer)
 }
 

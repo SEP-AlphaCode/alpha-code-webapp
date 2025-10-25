@@ -9,7 +9,7 @@ import { getTokenPayload } from '@/utils/tokenUtils';
 export const useSwitchProfile = () => {
   const router = useRouter();
   
-  return useMutation<SwitchProfileResponse, Error, { profileId: string; accountId: string; passCode: number }>({
+  return useMutation<SwitchProfileResponse, Error, { profileId: string; accountId: string; passCode: string }>({
     mutationFn: ({ profileId, accountId, passCode }) => switchProfile(profileId, accountId, passCode),
     onSuccess: (data) => {
       console.log('SwitchProfileResponse:', data);
