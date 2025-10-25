@@ -31,16 +31,21 @@ export function UserSidebar({
   isActiveRoute,
   accountData,
   onLogout,
-  isLogoutPending = false
+  isLogoutPending = false,
 }: UserSidebarProps) {
   return (
     <aside
       className={`fixed top-16 left-0 h-[calc(100vh-4rem)] bg-white border-r border-gray-200 transition-all duration-300 ease-in-out z-30 flex flex-col ${isSidebarOpen ? "w-64" : "w-24"
         }`}
     >
-      {/* Scrollable navigation area */}
-      <nav className="flex-1 overflow-y-auto px-4 mt-10 pb-20 scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100 hover:scrollbar-thumb-gray-400 p-10">
-        <div className="space-y-1">
+      {/* Scrollable navigation */}
+      <nav
+        className={`flex-1 overflow-y-auto overflow-x-hidden
+        px-3 mt-10 pb-20
+        scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100 hover:scrollbar-thumb-gray-400
+      `}
+      >
+        <div className="space-y-1 w-full">
           {navigationItems.map((item) => {
             const isActive = isActiveRoute(item.href);
             return (
@@ -58,7 +63,13 @@ export function UserSidebar({
                 >
                   {item.icon}
                 </div>
-                {isSidebarOpen && <span className="truncate">{item.name}</span>}
+
+                {/* Text hiển thị khi mở rộng */}
+                {isSidebarOpen && (
+                  <span className="truncate">{item.name}</span>
+                )}
+
+                {/* Tooltip khi thu nhỏ */}
                 {!isSidebarOpen && (
                   <div className="absolute left-full ml-2 px-2 py-1 bg-gray-900 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap">
                     {item.name}
@@ -127,20 +138,29 @@ export function UserSidebar({
         ) : (
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <button className="focus:outline-none">
-                <Avatar className="h-10 w-10 border border-gray-200 mx-auto">
-                  <AvatarImage src="/your-profile-image.jpg" alt="Profile" />
-                  <AvatarFallback className="bg-blue-600 text-white font-medium">
-                    {accountData?.fullName ? accountData.fullName.charAt(0).toUpperCase() : "T"}
-                  </AvatarFallback>
-                </Avatar>
+              <button className="w-full flex justify-center items-center py-3 focus:outline-none">
+                <div className="flex items-center justify-center">
+                  <Avatar className="h-11 w-11 border border-gray-300 shadow-sm">
+                    <AvatarImage src="/your-profile-image.jpg" alt="Profile" />
+                    <AvatarFallback className="bg-blue-600 text-white font-medium text-lg flex items-center justify-center">
+                      {accountData?.fullName
+                        ? accountData.fullName.charAt(0).toUpperCase()
+                        : "T"}
+                    </AvatarFallback>
+                  </Avatar>
+                </div>
               </button>
             </DropdownMenuTrigger>
+
             <DropdownMenuContent className="w-56" align="end" forceMount>
               <DropdownMenuLabel className="font-normal">
                 <div className="flex flex-col space-y-1">
-                  <p className="text-sm font-medium leading-none">{accountData?.fullName || "User"}</p>
-                  <p className="text-xs leading-none text-muted-foreground">{accountData?.email || "N/A"}</p>
+                  <p className="text-sm font-medium leading-none">
+                    {accountData?.fullName || "User"}
+                  </p>
+                  <p className="text-xs leading-none text-muted-foreground">
+                    {accountData?.email || "N/A"}
+                  </p>
                 </div>
               </DropdownMenuLabel>
               <DropdownMenuSeparator />

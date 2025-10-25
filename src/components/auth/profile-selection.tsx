@@ -76,10 +76,10 @@ export function ProfileSelection() {
           <div className="flex justify-center mb-6">
             <div className="w-25 h-25 rounded-2xl flex items-center justify-center overflow-hidden">
               <Image
-                src={logo2}
+                src="/pulling_down_2.gif" // Updated to use pulling_down_2.gif
                 alt="Alpha Logo"
-                width={64}
-                height={64}
+                width={128}
+                height={128}
                 className="object-contain"
               />
             </div>
