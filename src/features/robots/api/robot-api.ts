@@ -27,7 +27,9 @@ export const getRobotsByAccountId = async (accountId: string) => {
   }
 };
 
-export const createRobot = async (robotData: Omit<Robot, 'id' | 'createdDate' | 'lastUpdate' | 'status' | 'statusText'>) => {
+export const createRobot = async (
+  robotData: Omit<Robot, 'id' | 'createdDate' | 'lastUpdate'>
+) => {
   try {
     const response = await robotsHttp.post('/robots', robotData);
     return response.data;
