@@ -1,10 +1,11 @@
 "use client"
 
-import { useMemo, useState, useEffect, type ComponentType, type SVGProps } from "react"
+import { useMemo, useState, useEffect, useRef, type ComponentType, type SVGProps } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { useGetKeyPrice } from '@/features/config/hooks/use-key-price'
+import { usePayOS } from '@payos/payos-checkout'
 import { useCourse } from '@/features/courses/hooks/use-course'
 import { useAddon } from '@/features/plan/hooks/use-addon'
 import { useSubscription } from '@/features/plan/hooks/use-subscription'
@@ -14,11 +15,14 @@ import visa from '../../../public/visa.jpg'
 import payos from '../../../public/payos.jpg'
 import vnpay from '../../../public/vnpay.jpg'
 import momo from '../../../public/momo.png'
+import miniGif from '../../../public/pulling_down_1.gif'
 import LoadingState from "../loading-state"
 import ErrorState from "../error-state"
 import { getUserIdFromToken } from '@/utils/tokenUtils'
 import { useCreatePayOSEmbedded } from '@/features/payment/hooks/use-payments'
 import type { CreatePayment } from '@/types/payment'
+import { webURL } from "@/app/constants/constants"
+import { toast } from "sonner"
 
 function formatCurrency(v: number) {
   try {
@@ -47,6 +51,47 @@ function formatCurrencyParts(v: number) {
     return { amount: full, currency: '' }
   } catch (e) {
     return { amount: String(v), currency: 'đ' }
+  }
+}
+
+/**
+ * Lightweight client-side sanitizer to remove script/style/iframe elements and
+ * strip event handler attributes and dangerous protocols from href/src.
+ * This is intentionally simple; for stronger guarantees use a vetted library
+ * like DOMPurify (recommended).
+ */
+function sanitizeHtml(input: string) {
+  if (!input) return ''
+  try {
+    const parser = new DOMParser()
+    const doc = parser.parseFromString(input, 'text/html')
+
+    // remove potentially dangerous elements
+    doc.querySelectorAll('script, style, iframe, object, embed').forEach((n) => n.remove())
+
+    // remove event handler attributes and javascript/data: URIs
+    const walker = doc.createTreeWalker(doc.body, NodeFilter.SHOW_ELEMENT, null)
+    let node = walker.nextNode()
+    while (node) {
+      const el = node as Element
+      // copy attributes to avoid modifying while iterating
+      const attrs = Array.from(el.attributes)
+      attrs.forEach((a) => {
+        const name = a.name.toLowerCase()
+        const val = a.value || ''
+        if (name.startsWith('on')) {
+          el.removeAttribute(a.name)
+        }
+        if ((name === 'href' || name === 'src') && /^(javascript|data):/i.test(val.trim())) {
+          el.removeAttribute(a.name)
+        }
+      })
+      node = walker.nextNode()
+    }
+
+    return doc.body.innerHTML || ''
+  } catch (e) {
+    return ''
   }
 }
 
@@ -120,46 +165,55 @@ export default function PaymentPageClient(props: PaymentPageClientProps = {}) {
         await propOnConfirm({ method, id: idFromParams || undefined, category: paymentCategory, title: fetchedTitle, price: fetchedPrice })
       } else {
         const resourceIdForUrl = encodeURIComponent(idFromParams || "")
-          if (method === "payos") {
-            // Build CreatePayment payload required by backend (accountId required)
-            const token = sessionStorage.getItem('accessToken') || ''
-            const accountId = getUserIdFromToken(token)
-            if (!accountId) throw new Error('Không tìm thấy thông tin tài khoản. Vui lòng đăng nhập lại.')
+        if (method === "payos") {
+          // Build CreatePayment payload required by backend (accountId required)
+          const token = sessionStorage.getItem('accessToken') || ''
+          const accountId = getUserIdFromToken(token)
+          if (!accountId) throw new Error('Không tìm thấy thông tin tài khoản. Vui lòng đăng nhập lại.')
 
-        // Map category -> appropriate id field expected by server
-        const basePayload: CreatePayment = { accountId }
-              switch (paymentCategory) {
-                case 'course':
-                  basePayload.courseId = idFromParams || undefined
-                  break
-                case 'addon':
-                  basePayload.addonId = idFromParams || undefined
-                  break
-                case 'plan':
-                  basePayload.planId = idFromParams || undefined
-                  break
-                case 'key':
-                  basePayload.keyId = idFromParams || undefined
-                  break
-                case 'bundle':
-                  basePayload.bundleId = idFromParams || undefined
-                  break
-              }
+          // Map category -> appropriate id field expected by server
+          const basePayload: CreatePayment = { accountId }
+          switch (paymentCategory) {
+            case 'course':
+              basePayload.courseId = idFromParams || undefined
+              break
+            case 'addon':
+              basePayload.addonId = idFromParams || undefined
+              break
+            case 'plan':
+              basePayload.planId = idFromParams || undefined
+              break
+            case 'key':
+              basePayload.keyId = idFromParams || undefined
+              break
+            case 'bundle':
+              basePayload.bundleId = idFromParams || undefined
+              break
+          }
 
-              const resp = await createPayOS.mutateAsync(basePayload)
-            if (resp && resp.checkoutUrl) {
-              setPayosUrl(resp.checkoutUrl)
-              setPayosOpen(true)
-            } else {
-              throw new Error('Invalid PayOS response')
+          const resp = await createPayOS.mutateAsync(basePayload)
+          if (resp && resp.checkoutUrl) {
+            setPayosUrl(resp.checkoutUrl)
+            try {
+              payosOriginRef.current = new URL(resp.checkoutUrl).origin
+            } catch (e) {
+              payosOriginRef.current = null
             }
+            setPayosOpen(true)
+          } else {
+            throw new Error('Invalid PayOS response')
+          }
         } else {
           router.push(`/payment/success?method=${method}&id=${resourceIdForUrl}`)
         }
       }
-    } catch (err) {
-      console.error(err)
-      alert("Lỗi khi tạo yêu cầu thanh toán. Vui lòng thử lại.")
+    } catch (error: unknown) {
+      const errorMessage = error && typeof error === 'object' && 'response' in error
+        ? (error as { response?: { data?: { message?: string } } }).response?.data?.message
+        : undefined;
+      toast.error(errorMessage || "Lỗi khi tạo thanh toán")
+      setError(errorMessage || "Lỗi khi tạo thanh toán")
+      console.error("Error creating payment:", error)
     } finally {
       setIsProcessing(false)
     }
@@ -169,11 +223,106 @@ export default function PaymentPageClient(props: PaymentPageClientProps = {}) {
   const createPayOS = useCreatePayOSEmbedded()
   const [payosUrl, setPayosUrl] = useState<string | null>(null)
   const [payosOpen, setPayosOpen] = useState(false)
+  const paymentOpenedRef = useRef(false)
+  const payosOriginRef = useRef<string | null>(null)
+  const [isEmbeddedProcessing, setIsEmbeddedProcessing] = useState(false)
+  const [error, setError] = useState<string | null>(null)
 
   function closePayOS() {
+    try {
+      exit?.()
+    } catch (e) {
+      // ignore
+    }
+    // reset guards and states
+    paymentOpenedRef.current = false
+    payosOriginRef.current = null
     setPayosOpen(false)
     setPayosUrl(null)
+    setIsEmbeddedProcessing(false)
   }
+
+  // PayOS embedded integration: call usePayOS with a config object and open when URL is set
+  const { open, exit } = usePayOS({
+    RETURN_URL: `${webURL}/payment/result?success=true`,
+    ELEMENT_ID: 'embedded-payment-container',
+    CHECKOUT_URL: payosUrl ?? '',
+    embedded: true,
+    onSuccess: () => {
+      // Show a brief processing state so server-side postback can complete
+      setIsEmbeddedProcessing(true)
+      setTimeout(() => {
+        closePayOS()
+        router.push(`/payment/result?success=true&method=payos&id=${encodeURIComponent(idFromParams)}`)
+      }, 1500)
+    },
+    onCancel: () => {
+      closePayOS()
+      router.push(`/payment/result?success=false&id=${encodeURIComponent(idFromParams)}`)
+    },
+  })
+
+  useEffect(() => {
+    // Only try to open the PayOS SDK when we both have a checkout URL and
+    // the modal/container is actually shown in the DOM (payosOpen). This
+    // avoids the SDK attempting to render into a missing element.
+    if (payosUrl && payosOpen && !paymentOpenedRef.current) {
+      try {
+        open()
+        paymentOpenedRef.current = true
+      } catch (e) {
+        console.error('Failed to open PayOS embedded', e)
+        setError('Không thể mở giao diện thanh toán PayOS. Vui lòng thử lại sau.')
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [payosUrl, open, payosOpen])
+
+  // postMessage fallback: listen for PayOS messages if they post back
+  useEffect(() => {
+    const handler = (ev: MessageEvent) => {
+      // If we know the PayOS origin, only accept messages from it
+      if (payosOriginRef.current && ev.origin !== payosOriginRef.current) return
+      const data = ev.data ?? {}
+      if (data?.type === 'payos.checkout') {
+        if (data?.status === 'success') {
+          // show processing state briefly to ensure server-side postback completes
+          setIsEmbeddedProcessing(true)
+          setTimeout(() => {
+            closePayOS()
+            router.push(`/payment/result?success=true&method=payos&id=${encodeURIComponent(idFromParams)}`)
+          }, 1500)
+        } else if (data?.status === 'cancel') {
+          closePayOS()
+        }
+      }
+    }
+    window.addEventListener('message', handler)
+    return () => window.removeEventListener('message', handler)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [idFromParams])
+
+  // Close modal on Escape for convenience
+  useEffect(() => {
+    if (!payosOpen) return
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') closePayOS()
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [payosOpen])
+
+  // Prevent page scrolling while modal is open to avoid background shift
+  useEffect(() => {
+    const prev = typeof document !== 'undefined' ? document.body.style.overflow : ''
+    if (payosOpen) {
+      document.body.style.overflow = 'hidden'
+    }
+    return () => {
+      if (typeof document !== 'undefined') document.body.style.overflow = prev || ''
+    }
+  }, [payosOpen])
 
   // Use hooks where available
   const { useGetCourseById } = useCourse()
@@ -275,7 +424,7 @@ export default function PaymentPageClient(props: PaymentPageClientProps = {}) {
   // Respect parent-provided states first
   if (propLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-background">
+      <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: '#F4F4F4' }}>
         <LoadingState message="Đang tải thông tin thanh toán..." />
       </div>
     )
@@ -283,7 +432,7 @@ export default function PaymentPageClient(props: PaymentPageClientProps = {}) {
 
   if (propError) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-background">
+      <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: '#F4F4F4' }}>
         <ErrorState error={propError} onRetry={() => window.location.reload()} />
       </div>
     )
@@ -292,7 +441,7 @@ export default function PaymentPageClient(props: PaymentPageClientProps = {}) {
   // If we are actively fetching resource, show loading
   if (isFetchingResource) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-background">
+      <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: '#F4F4F4' }}>
         <LoadingState message="Đang tải thông tin thanh toán..." />
       </div>
     )
@@ -301,7 +450,7 @@ export default function PaymentPageClient(props: PaymentPageClientProps = {}) {
   // If there's an id param and we don't yet have the title, show loading (fetch will start in effect)
   if (idFromParams && !fetchedTitle) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-background">
+      <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: '#F4F4F4' }}>
         <LoadingState message="Đang tải thông tin thanh toán..." />
       </div>
     )
@@ -310,7 +459,7 @@ export default function PaymentPageClient(props: PaymentPageClientProps = {}) {
   // No id and no resource -> show not found error
   if (!idFromParams && !fetchedTitle) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-background">
+      <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: '#F4F4F4' }}>
         <ErrorState error={`Không tìm thấy tài nguyên để thanh toán. Vui lòng kiểm tra lại liên kết hoặc quay lại trang trước đó.`} />
       </div>
     )
@@ -320,77 +469,89 @@ export default function PaymentPageClient(props: PaymentPageClientProps = {}) {
   const IconComponent = config.icon
 
   return (
-    <div className="min-h-screen bg-background p-4 md:p-8 pb-28 lg:pb-8">
+    <div className="min-h-screen flex items-start lg:items-center justify-center" style={{ backgroundColor: '#F4F4F4' }}>
       <div className="max-w-6xl mx-auto">
         {/* Header */}
-        <div className="mb-8 flex items-center gap-4">
-          <button onClick={() => router.back()} className="p-2 hover:bg-muted rounded-lg transition-colors">
-            <ArrowLeft className="w-5 h-5 text-foreground" />
+  <div className="mb-6 flex items-center gap-4 relative">
+          <button
+            onClick={() => router.back()}
+            aria-label="Quay lại"
+            className="p-2 rounded-lg transition transform hover:scale-105 hover:shadow-md hover:bg-white/80 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary group"
+          >
+            <ArrowLeft className="w-5 h-5 text-foreground transition-colors" />
           </button>
           <div>
-            <h1 className="text-3xl md:text-4xl font-extrabold text-foreground">Thanh toán</h1>
-            <p className="text-muted-foreground">Hoàn tất thanh toán của bạn một cách an toàn và nhanh chóng</p>
+            <h1 className="text-2xl md:text-3xl font-extrabold text-foreground">Thanh toán</h1>
+            <p className="text-sm text-muted-foreground">Hoàn tất thanh toán một cách an toàn và nhanh chóng</p>
           </div>
+            {/* Decorative mini GIF: centered inside the header row (absolute center of this row) */}
+            <div className="pointer-events-none hidden md:flex absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-10">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src={miniGif.src} alt="" aria-hidden="true" className="w-16 h-16 md:w-30 md:h-30 object-contain" />
+            </div>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Main Payment Form */}
           <div className="lg:col-span-2 space-y-6">
             {/* Product Info Card */}
-            <Card className="p-6 border border-border bg-card shadow-sm rounded-lg overflow-hidden">
-              <div className="grid grid-cols-1 sm:grid-cols-4 gap-4 items-center mb-4">
-                <div className="sm:col-span-1 flex items-center justify-center">
-                  <div className={`w-28 h-28 rounded-lg overflow-hidden flex items-center justify-center ${config.color} shadow-inner`}> 
+            <Card className="relative p-6 border border-border bg-white shadow-lg hover:shadow-xl transition-shadow rounded-lg overflow-hidden">
+
+
+              <div className="flex flex-col sm:flex-row gap-4 items-center mb-3">
+                <div className="flex-shrink-0">
+                  <div className={`w-24 h-24 rounded-lg overflow-hidden flex items-center justify-center ${config.color} shadow-inner`}>
                     {fetchedImage ? (
                       // eslint-disable-next-line @next/next/no-img-element
                       <img src={fetchedImage ?? undefined} alt={fetchedTitle || 'product'} className="object-cover w-full h-full" loading="lazy" />
                     ) : (
-                      <IconComponent className="w-10 h-10 text-white" />
+                      <IconComponent className="w-8 h-8 text-white" />
                     )}
                   </div>
                 </div>
 
-                <div className="sm:col-span-3">
-                  <div className="flex items-start justify-between">
-                    <div className="flex-1">
-                      <h2 className="text-2xl font-semibold text-foreground mb-1">{fetchedTitle}</h2>
-                      <p className="text-muted-foreground text-sm line-clamp-3">{fetchedDescription}</p>
+                <div className="flex-1 min-w-0">
+                  <h2 className="text-xl md:text-2xl font-semibold text-foreground truncate">{fetchedTitle}</h2>
+                  <div
+                    className="text-sm text-muted-foreground mt-1 line-clamp-3"
+                    // sanitize before inserting HTML to reduce XSS risk
+                    dangerouslySetInnerHTML={{ __html: sanitizeHtml(fetchedDescription ?? '') }}
+                  />
+
+
+                  <div className="mt-3 flex items-center justify-between md:justify-start gap-4">
+                    <div>
+                      <div className="text-sm text-muted-foreground">Giá</div>
+                      {(() => {
+                        const parts = formatCurrencyParts(price)
+                        return (
+                          <div className="text-2xl md:text-3xl font-extrabold flex items-baseline gap-2 whitespace-nowrap">
+                            <span className="leading-none">{parts.amount}</span>
+                            <span className="text-sm text-muted-foreground">{parts.currency}</span>
+                          </div>
+                        )
+                      })()}
                     </div>
 
+                    <div className="ml-2">
+                      <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-muted/10 border border-border text-sm text-foreground">
+                        <IconComponent className="w-4 h-4" />
+                        {config.label}
+                      </span>
+                    </div>
                   </div>
-                </div>
-              </div>
-
-              <div className="mt-3 flex items-baseline justify-between">
-                <div className="flex items-baseline gap-4">
-                  <div className="text-muted-foreground text-sm">Giá</div>
-                  {
-                    (() => {
-                      const parts = formatCurrencyParts(price)
-                      return (
-                        <div className="text-3xl font-extrabold flex items-baseline gap-2 whitespace-nowrap">
-                          <span className="text-3xl font-extrabold leading-none">{parts.amount}</span>
-                          <span className="text-sm text-muted-foreground">{parts.currency}</span>
-                        </div>
-                      )
-                    })()
-                  }
-                </div>
-
-                <div className="ml-4 flex-shrink-0">
-                  <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-muted/10 border border-border text-sm text-foreground">
-                    <IconComponent className="w-4 h-4" />
-                    {config.label}
-                  </span>
                 </div>
               </div>
             </Card>
 
             {/* Payment Methods */}
-            <Card className="p-6 border border-border bg-card shadow-sm rounded-lg">
-              <h3 className="text-lg font-semibold text-foreground mb-4">Phương thức thanh toán</h3>
+            <Card className="p-6 border border-border bg-white shadow-lg hover:shadow-xl transition-shadow rounded-lg">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-lg font-semibold text-foreground">Phương thức thanh toán</h3>
+                <p className="text-sm text-muted-foreground">Chọn phương thức bạn muốn sử dụng</p>
+              </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div role="radiogroup" aria-label="Phương thức thanh toán" className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 {paymentMethods.map((m) => {
                   const Icon = m.icon
                   const paramKey = `img_${m.key}`
@@ -399,46 +560,55 @@ export default function PaymentPageClient(props: PaymentPageClientProps = {}) {
                   const selected = method === m.key
 
                   return (
-                    <button
-                      key={m.key}
-                      onClick={() => !m.disabled && setMethod(m.key)}
-                      disabled={m.disabled}
-                      className={`w-full flex items-center gap-3 p-3 rounded-lg border transition-transform duration-150 ease-in-out text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-primary ${m.disabled
-                          ? 'opacity-60 cursor-not-allowed border-border bg-muted/10 grayscale'
+                    <div key={m.key} className="relative">
+                      <button
+                        role="radio"
+                        aria-checked={selected}
+                        aria-disabled={m.disabled}
+                        onClick={() => !m.disabled && setMethod(m.key)}
+                        disabled={m.disabled}
+                        className={`w-full flex items-center gap-3 p-3 rounded-lg border transition-shadow duration-150 ease-in-out text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-primary ${m.disabled
+                          ? 'opacity-60 cursor-not-allowed border-border bg-muted/10'
                           : selected
                             ? 'border-primary bg-primary/5 shadow'
-                            : 'border-border bg-muted/30 hover:shadow-lg hover:scale-[1.02]'
-                        }`}
-                    >
-                      <div className="w-12 h-10 flex items-center justify-center rounded-md bg-white/80 flex-shrink-0 shadow-inner">
-                        {/* eslint-disable-next-line @next/next/no-img-element */}
-                        <img
-                          src={imgSvg}
-                          alt={m.label}
-                          className="max-h-7 object-contain"
-                          loading="lazy"
-                          onError={(e) => {
-                            const img = e.currentTarget as HTMLImageElement
-                            if (img.dataset['tried'] !== 'true') {
-                              img.dataset['tried'] = 'true'
-                              img.src = img.src.replace('.svg', '.png')
-                            } else {
-                              img.style.display = 'none'
-                            }
-                          }}
-                        />
-                      </div>
+                            : 'border-border bg-muted/30 hover:shadow-md'
+                          }`}
+                      >
+                        <div className="w-12 h-10 flex items-center justify-center rounded-md bg-white/90 flex-shrink-0 shadow-inner">
+                          {/* eslint-disable-next-line @next/next/no-img-element */}
+                          <img
+                            src={imgSvg}
+                            alt={m.label}
+                            className="max-h-7 object-contain"
+                            loading="lazy"
+                            onError={(e) => {
+                              const img = e.currentTarget as HTMLImageElement
+                              if (img.dataset['tried'] !== 'true') {
+                                img.dataset['tried'] = 'true'
+                                img.src = img.src.replace('.svg', '.png')
+                              } else {
+                                img.style.display = 'none'
+                              }
+                            }}
+                          />
+                        </div>
 
-                      <div className="flex-1">
-                        <div className="font-medium text-foreground">{m.label}</div>
-                        {m.description ? <div className="text-sm text-muted-foreground">{m.description}</div> : <div className="text-sm text-muted-foreground">&nbsp;</div>}
-                      </div>
+                        <div className="flex-1 min-w-0">
+                          <div className="font-medium text-foreground truncate">{m.label}</div>
+                          {m.description ? <div className="text-sm text-muted-foreground truncate">{m.description}</div> : <div className="text-sm text-muted-foreground">&nbsp;</div>}
+                        </div>
 
-                      <div className="flex items-center">
-                        {!m.disabled && selected && <Check className="w-5 h-5" />}
-                        {m.disabled && <div className="text-xs text-muted-foreground">Tạm dừng</div>}
-                      </div>
-                    </button>
+                        <div className="flex items-center">
+                          {!m.disabled && selected && <Check className="w-5 h-5" />}
+                          {m.disabled && <div className="text-xs text-muted-foreground">Tạm dừng</div>}
+                        </div>
+                      </button>
+
+                      {/* small hint for disabled methods */}
+                      {m.disabled && (
+                        <div className="mt-1 text-xs text-muted-foreground">Phương thức này tạm thời không khả dụng.</div>
+                      )}
+                    </div>
                   )
                 })}
               </div>
@@ -447,30 +617,26 @@ export default function PaymentPageClient(props: PaymentPageClientProps = {}) {
 
           {/* Order Summary Sidebar */}
           <div className="lg:col-span-1 hidden lg:block">
-            <Card className="p-6 border border-border bg-card sticky top-8">
-              <h4 className="text-lg font-semibold text-foreground mb-6">Tóm tắt đơn hàng</h4>
+            <Card className="p-6 border border-border bg-white shadow-lg hover:shadow-xl transition-shadow rounded-lg sticky top-8">
+              <h4 className="text-lg font-semibold text-foreground mb-4">Tóm tắt đơn hàng</h4>
 
-              <div className="space-y-4 mb-6 pb-6 border-b border-border">
+              <div className="space-y-3 mb-4">
                 <div className="flex justify-between text-sm">
-                  <span className="text-muted-foreground">Sản phẩm:</span>
-                  <span className="text-foreground font-medium text-right">{fetchedTitle}</span>
+                  <span className="text-muted-foreground">Sản phẩm</span>
+                  <span className="text-foreground font-medium text-right truncate max-w-[160px]">{fetchedTitle}</span>
                 </div>
                 <div className="flex justify-between text-sm">
-                  <span className="text-muted-foreground">Loại:</span>
+                  <span className="text-muted-foreground">Loại</span>
                   <span className="text-foreground font-medium">{config.label}</span>
-                </div>
-                <div className="flex justify-between text-sm">
-                  <span className="text-muted-foreground">Giá :</span>
-                  <span className="text-foreground font-medium">{formatCurrency(price)}</span>
                 </div>
               </div>
 
-              <div className="mb-6">
+              <div className="mb-6 border-t border-border pt-4">
                 <div className="flex justify-between items-center mb-2">
-                  <span className="text-muted-foreground text-sm">Tổng cộng:</span>
-                  <span className="text-3xl font-bold">{formatCurrency(price)}</span>
+                  <span className="text-muted-foreground text-sm">Tổng cộng</span>
+                  <span className="text-2xl font-bold">{formatCurrency(price)}</span>
                 </div>
-                <p className="text-xs text-muted-foreground">Đã bao gồm VAT</p>
+                <p className="text-xs text-muted-foreground">Đã bao gồm VAT khi áp dụng</p>
               </div>
 
               <Button
@@ -491,14 +657,13 @@ export default function PaymentPageClient(props: PaymentPageClientProps = {}) {
                 )}
               </Button>
 
-              <p className="text-xs text-muted-foreground text-center mt-4">
-                Thanh toán được bảo vệ bởi SSL encryption
-              </p>
+              <p className="text-xs text-muted-foreground text-center mt-4">Thanh toán được bảo vệ bằng SSL</p>
             </Card>
           </div>
         </div>
+
         {/* Mobile sticky checkout bar */}
-        <div className="fixed inset-x-0 bottom-0 bg-card border-t border-border p-3 lg:hidden">
+  <div className="fixed inset-x-0 bottom-0 bg-white border-t border-border p-3 lg:hidden shadow-lg">
           <div className="max-w-6xl mx-auto flex items-center justify-between gap-4">
             <div>
               <div className="text-sm text-muted-foreground">Tổng</div>
@@ -526,31 +691,71 @@ export default function PaymentPageClient(props: PaymentPageClientProps = {}) {
             </div>
           </div>
         </div>
-        {/* PayOS embedded modal */}
+
+        {/* PayOS embedded modal: show centered modal when payosOpen is true */}
         {payosOpen && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-            <div className="bg-card w-[90%] max-w-4xl h-[80%] rounded-lg shadow-lg overflow-hidden">
-              <div className="flex items-center justify-between p-3 border-b border-border">
-                <div className="text-lg font-semibold">Thanh toán PayOS</div>
-                <div className="flex items-center gap-2">
-                  {createPayOS.isPending && <Loader2 className="w-5 h-5 animate-spin" />}
-                  <button onClick={closePayOS} className="px-3 py-1 rounded-md bg-muted/30 hover:bg-muted text-sm">Đóng</button>
+          <div className="fixed inset-0 z-50 flex items-start justify-center pt-12 md:pt-20">
+            {/* backdrop */}
+            <div className="fixed inset-0 bg-black/50" onClick={() => closePayOS()} aria-hidden="true" />
+
+            <div className="relative w-full max-w-4xl mx-4">
+              <div
+                role="dialog"
+                aria-modal="true"
+                className="overflow-hidden rounded-lg shadow-lg bg-transparent"
+              >
+                <div className="bg-white border border-border rounded-lg overflow-hidden shadow-lg">
+                  <div className="flex items-center justify-between px-4 py-3 border-b border-border">
+                    <h3 className="text-lg font-semibold text-foreground">Thanh toán</h3>
+                    <button
+                      onClick={() => closePayOS()}
+                      aria-label="Đóng"
+                      className="p-2 rounded-md hover:bg-muted/10 focus:outline-none"
+                    >
+                      ✕
+                    </button>
+                  </div>
+
+                  {/* content: remove outer padding so iframe can use full width */}
+                  <div className="w-full bg-white">
+                    {/* show loading state while the createPayOS mutation is pending */}
+                    {createPayOS.isPending && payosUrl && (
+                      <div className="w-full flex items-center justify-center py-6">
+                        <LoadingState message="Khởi tạo PayOS..." />
+                      </div>
+                    )}
+
+                    {createPayOS.error && (
+                      <div className="p-4">
+                        <ErrorState error={error || String(createPayOS.error)} />
+                      </div>
+                    )}
+
+                    <div id="embedded-payment-container" className="w-full h-[min(80vh,720px)] relative overflow-hidden bg-white">
+                      {/* embedded SDK renders into this element when open() is called */}
+
+                      {isEmbeddedProcessing && (
+                        <div className="absolute inset-0 bg-white/90 flex flex-col items-center justify-center z-50">
+                          <Loader2 className="w-12 h-12 animate-spin text-blue-600" />
+                          <p className="mt-4 text-lg font-semibold text-gray-900">Đang xử lý thanh toán...</p>
+                          <p className="text-sm text-muted-foreground">Vui lòng chờ trong giây lát.</p>
+                        </div>
+                      )}
+
+                      {/* iframe fallback to ensure checkout is accessible even if SDK
+                          cannot render into the container. */}
+                      {payosUrl && (
+                        // eslint-disable-next-line @next/next/no-html-link-for-pages
+                        <iframe
+                          src={payosUrl}
+                          title="PayOS Checkout"
+                          className="w-full h-full border-0 block"
+                          style={{ display: 'block' }}
+                        />
+                      )}
+                    </div>
+                  </div>
                 </div>
-              </div>
-              <div className="w-full h-full bg-white">
-                {createPayOS.isPending && (
-                  <div className="w-full h-full flex items-center justify-center">
-                    <LoadingState message="Khởi tạo PayOS..." />
-                  </div>
-                )}
-                {!createPayOS.isPending && payosUrl && (
-                  <iframe src={payosUrl} title="PayOS Checkout" className="w-full h-full border-0" />
-                )}
-                {!createPayOS.isPending && createPayOS.error && (
-                  <div className="p-4">
-                    <ErrorState error={createPayOS.error?.message || String(createPayOS.error)} />
-                  </div>
-                )}
               </div>
             </div>
           </div>

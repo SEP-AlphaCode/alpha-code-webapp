@@ -48,9 +48,9 @@ export function CourseGrid({ courses }: CourseGridProps) {
                             <h3 className="text-base md:text-lg font-bold text-slate-900 mb-2 line-clamp-2 group-hover:text-blue-600 transition-colors">
                                 {course.name}
                             </h3>
-                            <p className="text-xs md:text-sm text-slate-600 line-clamp-3 mb-3 md:mb-4">
+                            {/* <p className="text-xs md:text-sm text-slate-600 line-clamp-3 mb-3 md:mb-4">
                                 {course.description}
-                            </p>
+                            </p> */}
                             <div className="flex items-center justify-between text-xs md:text-sm text-slate-600 bg-slate-50 rounded-lg p-2">
                                 <span className="flex items-center gap-1 font-medium">📚 {course.totalLessons} bài</span>
                                 <span className="flex items-center gap-1 font-medium">⏱️ {formatTimespan(course.totalDuration)}</span>

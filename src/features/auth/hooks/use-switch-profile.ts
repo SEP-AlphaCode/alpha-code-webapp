@@ -9,7 +9,7 @@ import { getTokenPayload } from '@/utils/tokenUtils';
 export const useSwitchProfile = () => {
   const router = useRouter();
   
-  return useMutation<SwitchProfileResponse, Error, { profileId: string; accountId: string; passCode: number }>({
+  return useMutation<SwitchProfileResponse, Error, { profileId: string; accountId: string; passCode: string }>({
     mutationFn: ({ profileId, accountId, passCode }) => switchProfile(profileId, accountId, passCode),
     onSuccess: (data) => {
       console.log('SwitchProfileResponse:', data);
@@ -17,13 +17,12 @@ export const useSwitchProfile = () => {
       sessionStorage.setItem('accessToken', data.accessToken);
       sessionStorage.setItem('refreshToken', data.refreshToken);
 
-      // Lưu thông tin profile hiện tại nếu có
-      if (data.profile) {
-        sessionStorage.setItem('currentProfile', JSON.stringify(data.profile));
-        toast.success(`Chào ${data.profile.name}!`);
-      } else {
-        toast.success('Chuyển profile thành công!');
-      }
+      // Giải mã accessToken để lấy fullName
+      const accountData = getTokenPayload(data.accessToken);
+      const fullName = accountData?.fullName || 'Người dùng';
+
+      // Hiển thị toast với tên đầy đủ của người dùng
+      toast.success(`Xin Chào ${fullName}!`);
 
       // Xóa dữ liệu tạm thời
       sessionStorage.removeItem('availableProfiles');
@@ -31,7 +30,6 @@ export const useSwitchProfile = () => {
 
       // Determine redirect based on roleName inside the returned access token
       try {
-        const accountData = getTokenPayload(data.accessToken);
         const roleNameLower = accountData?.roleName?.toLowerCase();
         if (roleNameLower === 'admin') {
           router.push('/admin');

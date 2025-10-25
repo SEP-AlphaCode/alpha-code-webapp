@@ -49,7 +49,7 @@ export function ProfileSelection() {
     switchProfileMutation.mutate({
       profileId: selectedProfile.id,
       accountId,
-      passCode: parseInt(passCodeInput || '0000', 10)
+      passCode: passCodeInput || '0000'
     });
   };
 
