@@ -1,7 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { 
   getAllActivities, 
-  getPagedActivities, 
+  getPagedActivitiesByAccount, 
   getActivityById, 
   createActivity, 
   updateActivity, 
@@ -13,12 +13,13 @@ import { toast } from 'sonner';
 export const useActivities = (
   page: number = 1,
   size: number = 10,
+  accountId: string,
   search?: string,
   robotModelId?: string // 👈 thêm tham số
 ) => {
   return useQuery({
-    queryKey: ['activities', page, size, search || '', robotModelId], // 👈 thêm vào queryKey để cache theo model
-    queryFn: ({ signal }) => getPagedActivities(page, size, search, signal, robotModelId), // 👈 truyền vào đây
+    queryKey: ['activities', page, size, search || '', robotModelId, accountId], // 👈 thêm vào queryKey để cache theo model
+    queryFn: ({ signal }) => getPagedActivitiesByAccount(page, size, accountId, search, signal, robotModelId), // 👈 truyền vào đây
     staleTime: 1000 * 60 * 2,
     refetchOnWindowFocus: false,
     refetchOnMount: true,

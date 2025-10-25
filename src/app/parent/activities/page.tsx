@@ -8,13 +8,13 @@ import { Badge } from "@/components/ui/badge"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
 import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { 
-  Plus, 
-  Search, 
-  Filter, 
-  Clock, 
-  Users, 
-  Play, 
+import {
+  Plus,
+  Search,
+  Filter,
+  Clock,
+  Users,
+  Play,
   MoreVertical,
   Edit,
   Eye,
@@ -34,11 +34,14 @@ import { useRobotControls } from "@/features/users/hooks/use-websocket"
 import { useRobotStore } from "@/hooks/use-robot-store"
 import { Activity as ActivityType, ActivityData } from "@/types/activities"
 import { ActionActivites } from "@/types/action"
+import { getUserInfoFromToken } from "@/utils/tokenUtils"
+import LoadingState from "@/components/loading-state"
+import ErrorState from "@/components/error-state"
 
 export default function ActivitiesPage() {
   const renderCount = useRef(0);
   renderCount.current += 1;
-  
+
   const [searchTerm, setSearchTerm] = useState("")
   const [debouncedSearchTerm, setDebouncedSearchTerm] = useState("")
   const [filterType, setFilterType] = useState<string>("all")
@@ -46,7 +49,29 @@ export default function ActivitiesPage() {
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false)
   const [currentPage, setCurrentPage] = useState(1)
   const [perPage, setPerPage] = useState(12)
-  
+  const [accountId, setAccountId] = useState<string>('');
+  const [isClient, setIsClient] = useState(false);
+  const [hasError, setHasError] = useState(false);
+
+
+
+  useEffect(() => {
+    try {
+      setIsClient(true);
+      if (typeof window !== 'undefined') {
+        const accessToken = sessionStorage.getItem('accessToken');
+        if (accessToken) {
+          const userInfo = getUserInfoFromToken(accessToken);
+          const id = userInfo?.id || '';
+          setAccountId(id);
+        }
+      }
+    } catch (error) {
+      console.error('Error getting account ID:', error);
+      setHasError(true);
+    }
+  }, []);
+
 
   // Debounce search term
   useEffect(() => {
@@ -67,19 +92,19 @@ export default function ActivitiesPage() {
 
   // Robot Controls Hook
   const { startActivity, isLoading: isRobotLoading } = useRobotControls()
-  
+
   // Robot Store Hook
-  const { 
-    selectedRobotSerial, 
-    selectedRobot, 
-    updateRobotStatus, 
+  const {
+    selectedRobotSerial,
+    selectedRobot,
+    updateRobotStatus,
     initializeMockData,
     robots
   } = useRobotStore()
 
 
   // API Hooks - use debounced search term
-  const { data: activitiesData, isLoading, error } = useActivities(currentPage, perPage, debouncedSearchTerm, selectedRobot?.robotModelId)
+  const { data: activitiesData, isLoading, error, refetch } = useActivities(currentPage, perPage, accountId, debouncedSearchTerm, selectedRobot?.robotModelId)
   const createActivityMutation = useCreateActivity()
 
   // Initialize mock robot data - only once and only if no robots exist
@@ -90,7 +115,7 @@ export default function ActivitiesPage() {
   }, [])
 
   const activities = useMemo(() => activitiesData?.data || [], [activitiesData?.data])
-  const pagination = useMemo(() => 
+  const pagination = useMemo(() =>
     activitiesData ? {
       total_count: activitiesData.total_count,
       page: activitiesData.page,
@@ -102,11 +127,11 @@ export default function ActivitiesPage() {
   )
 
   // Filter activities on frontend (since backend doesn't support type/status filters yet)
-  const filteredActivities = useMemo(() => 
+  const filteredActivities = useMemo(() =>
     activities.filter(activity => {
       const matchesType = filterType === "all" || activity.type === filterType
       const matchesStatus = filterStatus === "all" || activity.status.toString() === filterStatus
-      
+
       return matchesType && matchesStatus
     }), [activities, filterType, filterStatus]
   )
@@ -114,18 +139,18 @@ export default function ActivitiesPage() {
   const handleStartActivity = useCallback((activity: ActivityType) => {
     // Sử dụng selected robot serial từ Redux
     const robotSerial = Array.isArray(selectedRobotSerial)
-    ? selectedRobotSerial[0]
-    : selectedRobotSerial || "EAA007UBT10000341";
-    
+      ? selectedRobotSerial[0]
+      : selectedRobotSerial || "EAA007UBT10000341";
+
     console.log('Selected Robot:', selectedRobot);
     console.log('Using Robot Serial:', robotSerial);
     console.log('Activity data before processing:', activity);
-    
+
     // Update robot status to busy when starting activity
     if (robotSerial && selectedRobot) {
       updateRobotStatus(robotSerial, 'busy');
     }
-    
+
     // Parse data từ activity (nếu là JSON string)
     let activityData;
     try {
@@ -134,13 +159,13 @@ export default function ActivitiesPage() {
       console.error('Error parsing activity data:', error);
       activityData = activity.data;
     }
-    
+
     console.log('Processed activity data:', activityData);
     console.log('Activity type:', activity.type);
-    
+
     // Gửi command với selected robot
     startActivity(robotSerial, activity.type, activityData);
-    
+
     // Set robot back to online after a delay (mock behavior)
     setTimeout(() => {
       if (robotSerial) {
@@ -152,14 +177,14 @@ export default function ActivitiesPage() {
   // Handle stop all actions
   const handleStopAllActions = useCallback(() => {
     const robotSerial = selectedRobotSerial;
-    
+
     if (!robotSerial) {
       console.error('No robot selected for stopping actions');
       return;
     }
 
     console.log('Stopping all actions for robot:', robotSerial);
-    
+
     // Send stop_all_actions command via socket
     const serial = Array.isArray(robotSerial) ? robotSerial[0] : robotSerial;
 
@@ -268,7 +293,7 @@ export default function ActivitiesPage() {
 
     const handleSubmit = (e: React.FormEvent) => {
       e.preventDefault()
-      
+
       // Convert string data to ActivityData object
       let activityData: ActivityData;
       try {
@@ -278,12 +303,12 @@ export default function ActivitiesPage() {
         // If not valid JSON, create a simple object
         activityData = { content: formData.data };
       }
-      
+
       const submitData = {
         ...formData,
         data: activityData
       };
-      
+
       createActivityMutation.mutate(submitData, {
         onSuccess: () => {
           setIsCreateModalOpen(false)
@@ -300,22 +325,38 @@ export default function ActivitiesPage() {
       })
     }
 
+    if (!isClient) {
+      return (
+        <div className="min-h-screen bg-gradient-to-br from-slate-50 via-gray-100 to-slate-200 p-6 flex items-center justify-center">
+          <LoadingState />
+        </div>
+      );
+    }
+
+    if (hasError) {
+      return (
+        <div className="min-h-screen bg-gradient-to-br from-slate-50 via-gray-100 to-slate-200 p-6 flex items-center justify-center">
+          <ErrorState error={error} onRetry={refetch}/>
+        </div>
+      );
+    }
+
     return (
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>
           <label className="text-sm font-medium text-gray-700 block mb-2">Tên hoạt động</label>
-          <Input 
-            placeholder="Nhập tên hoạt động..." 
+          <Input
+            placeholder="Nhập tên hoạt động..."
             value={formData.name}
-            onChange={(e) => setFormData({...formData, name: e.target.value})}
+            onChange={(e) => setFormData({ ...formData, name: e.target.value })}
             required
           />
         </div>
-        
+
         <div className="grid grid-cols-2 gap-4">
           <div>
             <label className="text-sm font-medium text-gray-700 block mb-2">Loại hoạt động</label>
-            <Select value={formData.type} onValueChange={(value) => setFormData({...formData, type: value})}>
+            <Select value={formData.type} onValueChange={(value) => setFormData({ ...formData, type: value })}>
               <SelectTrigger>
                 <SelectValue placeholder="Chọn loại" />
               </SelectTrigger>
@@ -329,21 +370,21 @@ export default function ActivitiesPage() {
             </Select>
           </div>
         </div>
-        
+
         <div>
           <label className="text-sm font-medium text-gray-700 block mb-2">Dữ liệu hoạt động</label>
-          <Textarea 
-            placeholder="Nhập dữ liệu JSON hoặc text cho hoạt động..." 
+          <Textarea
+            placeholder="Nhập dữ liệu JSON hoặc text cho hoạt động..."
             rows={3}
             value={formData.data}
-            onChange={(e) => setFormData({...formData, data: e.target.value})}
+            onChange={(e) => setFormData({ ...formData, data: e.target.value })}
             required
           />
         </div>
-        
+
         <div className="flex gap-2 pt-4">
-          <Button 
-            type="submit" 
+          <Button
+            type="submit"
             className="flex-1"
             disabled={createActivityMutation.isPending}
           >
@@ -370,7 +411,7 @@ export default function ActivitiesPage() {
   return (
     <div className="min-h-screen bg-white relative overflow-hidden p-5">
       {/* Background Grid Pattern */}
-      <div 
+      <div
         className="absolute inset-0 opacity-[0.06] pointer-events-none"
         style={{
           backgroundImage: `
@@ -380,35 +421,35 @@ export default function ActivitiesPage() {
           backgroundSize: '40px 40px'
         }}
       ></div>
-      
+
       {/* Decorative Grid Squares */}
       <div className="absolute inset-0 pointer-events-none overflow-hidden">
         {/* Top Left Squares */}
         <div className="absolute top-20 left-20 w-16 h-16 border-2 border-blue-200 rounded-lg rotate-12 opacity-50 animate-pulse"></div>
         <div className="absolute top-40 left-40 w-12 h-12 border-2 border-purple-200 rounded-md rotate-45 opacity-45 animate-bounce"></div>
-        <div className="absolute top-60 left-10 w-8 h-8 border-2 border-green-200 rounded-sm -rotate-12 opacity-55 animate-spin" style={{animationDuration: '8s'}}></div>
-        
+        <div className="absolute top-60 left-10 w-8 h-8 border-2 border-green-200 rounded-sm -rotate-12 opacity-55 animate-spin" style={{ animationDuration: '8s' }}></div>
+
         {/* Top Right Squares */}
-        <div className="absolute top-32 right-24 w-20 h-20 border-2 border-orange-200 rounded-xl -rotate-6 opacity-40 animate-pulse" style={{animationDelay: '1s'}}></div>
-        <div className="absolute top-16 right-48 w-14 h-14 border-2 border-pink-200 rounded-lg rotate-30 opacity-50 animate-bounce" style={{animationDelay: '0.5s'}}></div>
-        <div className="absolute top-72 right-16 w-10 h-10 border-2 border-indigo-200 rounded-md -rotate-45 opacity-45 animate-spin" style={{animationDuration: '6s', animationDirection: 'reverse'}}></div>
-        
+        <div className="absolute top-32 right-24 w-20 h-20 border-2 border-orange-200 rounded-xl -rotate-6 opacity-40 animate-pulse" style={{ animationDelay: '1s' }}></div>
+        <div className="absolute top-16 right-48 w-14 h-14 border-2 border-pink-200 rounded-lg rotate-30 opacity-50 animate-bounce" style={{ animationDelay: '0.5s' }}></div>
+        <div className="absolute top-72 right-16 w-10 h-10 border-2 border-indigo-200 rounded-md -rotate-45 opacity-45 animate-spin" style={{ animationDuration: '6s', animationDirection: 'reverse' }}></div>
+
         {/* Bottom Left Squares */}
-        <div className="absolute bottom-40 left-32 w-18 h-18 border-2 border-cyan-200 rounded-lg rotate-15 opacity-50 animate-pulse" style={{animationDelay: '2s'}}></div>
-        <div className="absolute bottom-20 left-16 w-12 h-12 border-2 border-yellow-200 rounded-md -rotate-30 opacity-55 animate-bounce" style={{animationDelay: '1.5s'}}></div>
-        <div className="absolute bottom-60 left-60 w-8 h-8 border-2 border-red-200 rounded-sm rotate-60 opacity-45 animate-spin" style={{animationDuration: '10s'}}></div>
-        
+        <div className="absolute bottom-40 left-32 w-18 h-18 border-2 border-cyan-200 rounded-lg rotate-15 opacity-50 animate-pulse" style={{ animationDelay: '2s' }}></div>
+        <div className="absolute bottom-20 left-16 w-12 h-12 border-2 border-yellow-200 rounded-md -rotate-30 opacity-55 animate-bounce" style={{ animationDelay: '1.5s' }}></div>
+        <div className="absolute bottom-60 left-60 w-8 h-8 border-2 border-red-200 rounded-sm rotate-60 opacity-45 animate-spin" style={{ animationDuration: '10s' }}></div>
+
         {/* Bottom Right Squares */}
-        <div className="absolute bottom-32 right-40 w-16 h-16 border-2 border-teal-200 rounded-lg -rotate-20 opacity-50 animate-pulse" style={{animationDelay: '0.8s'}}></div>
-        <div className="absolute bottom-16 right-20 w-14 h-14 border-2 border-violet-200 rounded-md rotate-45 opacity-45 animate-bounce" style={{animationDelay: '2.5s'}}></div>
-        <div className="absolute bottom-48 right-64 w-10 h-10 border-2 border-emerald-200 rounded-sm -rotate-15 opacity-55 animate-spin" style={{animationDuration: '7s', animationDirection: 'reverse'}}></div>
-        
+        <div className="absolute bottom-32 right-40 w-16 h-16 border-2 border-teal-200 rounded-lg -rotate-20 opacity-50 animate-pulse" style={{ animationDelay: '0.8s' }}></div>
+        <div className="absolute bottom-16 right-20 w-14 h-14 border-2 border-violet-200 rounded-md rotate-45 opacity-45 animate-bounce" style={{ animationDelay: '2.5s' }}></div>
+        <div className="absolute bottom-48 right-64 w-10 h-10 border-2 border-emerald-200 rounded-sm -rotate-15 opacity-55 animate-spin" style={{ animationDuration: '7s', animationDirection: 'reverse' }}></div>
+
         {/* Center Area Squares - Subtle with gentle animations */}
-        <div className="absolute top-1/2 left-1/4 w-6 h-6 border border-gray-200 rounded-sm rotate-45 opacity-35 animate-pulse" style={{animationDelay: '3s'}}></div>
-        <div className="absolute top-1/3 right-1/3 w-8 h-8 border border-gray-200 rounded-md -rotate-30 opacity-35 animate-pulse" style={{animationDelay: '4s'}}></div>
-        <div className="absolute bottom-1/3 left-1/2 w-4 h-4 border border-gray-200 rounded-sm rotate-12 opacity-40 animate-pulse" style={{animationDelay: '1.2s'}}></div>
+        <div className="absolute top-1/2 left-1/4 w-6 h-6 border border-gray-200 rounded-sm rotate-45 opacity-35 animate-pulse" style={{ animationDelay: '3s' }}></div>
+        <div className="absolute top-1/3 right-1/3 w-8 h-8 border border-gray-200 rounded-md -rotate-30 opacity-35 animate-pulse" style={{ animationDelay: '4s' }}></div>
+        <div className="absolute bottom-1/3 left-1/2 w-4 h-4 border border-gray-200 rounded-sm rotate-12 opacity-40 animate-pulse" style={{ animationDelay: '1.2s' }}></div>
       </div>
-      
+
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 relative z-10">
         {/* Header Section */}
         <div className="text-center mb-16">
@@ -420,20 +461,20 @@ export default function ActivitiesPage() {
             Alpha Mini Activities
             <Star className="w-5 h-5 text-gray-600" />
           </div>
-          
+
           {/* Main Title */}
           <div className="space-y-6">
             <h1 className="text-6xl md:text-7xl font-bold text-gray-900 mb-6 tracking-tight">
-              Learning 
+              Learning
               <span className="block text-gray-700 py-2">
                 Activities Hub
               </span>
             </h1>
-            
+
             <p className="text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed">
               Tạo và quản lý các hoạt động học tập tương tác với robot Alpha Mini
             </p>
-            
+
             {/* Features */}
             <div className="flex flex-wrap justify-center gap-6 mt-8">
               <div className="flex items-center gap-2 text-gray-600">
@@ -466,14 +507,14 @@ export default function ActivitiesPage() {
               <Loader2 className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4 animate-spin" />
             )}
           </div>
-          
+
           <div className="flex gap-2">
             <PerPageSelector
               perPage={perPage}
               onPerPageChange={setPerPage}
               options={[6, 12, 24, 48]}
             />
-            
+
             <Select value={filterType} onValueChange={setFilterType}>
               <SelectTrigger className="w-40">
                 <Filter className="w-4 h-4 mr-2" />
@@ -488,7 +529,7 @@ export default function ActivitiesPage() {
                 <SelectItem value="project">Dự án</SelectItem>
               </SelectContent>
             </Select>
-            
+
             <Select value={filterStatus} onValueChange={setFilterStatus}>
               <SelectTrigger className="w-40">
                 <SelectValue />
@@ -501,7 +542,7 @@ export default function ActivitiesPage() {
                 <SelectItem value="dance_with_music">Nhảy với nhạc</SelectItem>
               </SelectContent>
             </Select>
-            
+
             <Dialog open={isCreateModalOpen} onOpenChange={setIsCreateModalOpen}>
               <DialogTrigger asChild>
                 <Button>
@@ -516,9 +557,9 @@ export default function ActivitiesPage() {
                 <CreateActivityForm />
               </DialogContent>
             </Dialog>
-            
-            <Button 
-              variant="destructive" 
+
+            <Button
+              variant="destructive"
               onClick={handleStopAllActions}
               disabled={!selectedRobotSerial || isRobotLoading}
             >
@@ -550,22 +591,22 @@ export default function ActivitiesPage() {
               </Card>
             ))}
           </div>
-        ) : error && 
-             !(error && typeof error === 'object' && 
-               (('name' in error && error.name === 'CanceledError') || 
-                ('code' in error && error.code === 'ERR_CANCELED'))) ? (
+        ) : error &&
+          !(error && typeof error === 'object' &&
+            (('name' in error && error.name === 'CanceledError') ||
+              ('code' in error && error.code === 'ERR_CANCELED'))) ? (
           <div className="text-center py-16">
             <div className="text-red-500 mb-4">
               <Activity className="w-16 h-16 mx-auto mb-4" />
               <h3 className="text-lg font-semibold mb-2">Lỗi khi tải dữ liệu</h3>
               <p className="text-gray-600">
-                {error && typeof error === 'object' && 'message' in error 
-                  ? (error as { message: string }).message 
+                {error && typeof error === 'object' && 'message' in error
+                  ? (error as { message: string }).message
                   : 'Đã xảy ra lỗi khi tải dữ liệu'}
               </p>
-              <Button 
-                onClick={() => window.location.reload()} 
-                variant="outline" 
+              <Button
+                onClick={() => window.location.reload()}
+                variant="outline"
                 className="mt-4"
               >
                 Thử lại
@@ -592,8 +633,8 @@ export default function ActivitiesPage() {
                       {getTypeIcon(activity.type)}
                       <Badge variant="secondary" className={getTypeColor(activity.type)}>
                         {activity.type === "lesson" ? "Bài học" :
-                         activity.type === "game" ? "Trò chơi" :
-                         activity.type === "exercise" ? "Bài tập" : "Dự án"}
+                          activity.type === "game" ? "Trò chơi" :
+                            activity.type === "exercise" ? "Bài tập" : "Dự án"}
                       </Badge>
                     </div>
                     <Button variant="ghost" size="sm" className="opacity-0 group-hover:opacity-100 transition-opacity">
@@ -602,7 +643,7 @@ export default function ActivitiesPage() {
                   </div>
                   <CardTitle className="text-xl line-clamp-2">{activity.name}</CardTitle>
                 </CardHeader>
-                
+
                 <CardContent className="space-y-4">
                   {/* Hiển thị thông tin cho dance_with_music */}
                   {activity.type === "dance_with_music" && activity.data && activity.data.activity ? (
@@ -621,8 +662,8 @@ export default function ActivitiesPage() {
                             <div>
                               <span className="text-xs text-gray-500">Thời lượng:</span>
                               <p className="font-semibold text-lg text-green-600">
-                                {activity.data.music_info?.duration || 
-                                 Math.max(...activity.data.activity.actions.map((a: ActionActivites) => a.start_time + a.duration)).toFixed(1)}s
+                                {activity.data.music_info?.duration ||
+                                  Math.max(...activity.data.activity.actions.map((a: ActionActivites) => a.start_time + a.duration)).toFixed(1)}s
                               </p>
                             </div>
                           </div>
@@ -638,7 +679,7 @@ export default function ActivitiesPage() {
                   ) : (
                     <p className="text-gray-600 text-sm line-clamp-3">Hoạt động Alpha Mini - {activity.type}</p>
                   )}
-                  
+
                   <div className="flex flex-wrap gap-2">
                     <Badge variant="outline" className="bg-blue-100 text-blue-800">
                       {activity.type === "dance_with_music" ? "Nhảy với nhạc" : activity.type}
@@ -647,19 +688,19 @@ export default function ActivitiesPage() {
                       {getStatusText(activity.status)}
                     </Badge>
                   </div>
-                  
+
                   <div className="flex items-center justify-between text-sm text-gray-500">
                     <div className="flex items-center gap-4">
                       <div className="flex items-center gap-1">
                         <Clock className="w-4 h-4" />
-                        {activity.type === "dance_with_music" && activity.data?.music_info?.duration 
+                        {activity.type === "dance_with_music" && activity.data?.music_info?.duration
                           ? `${activity.data.music_info.duration}s`
                           : "30 phút"
                         }
                       </div>
                       <div className="flex items-center gap-1">
                         <Activity className="w-4 h-4" />
-                        {activity.type === "dance_with_music" && activity.data?.activity?.actions?.length 
+                        {activity.type === "dance_with_music" && activity.data?.activity?.actions?.length
                           ? `${activity.data.activity.actions.length} hành động`
                           : "Hoạt động"
                         }
@@ -669,10 +710,10 @@ export default function ActivitiesPage() {
                       {formatDate(activity.createdDate)}
                     </div>
                   </div>
-                  
+
                   <div className="flex gap-2 pt-4">
-                    <Button 
-                      size="sm" 
+                    <Button
+                      size="sm"
                       className="flex-1"
                       onClick={() => handleStartActivity(activity)}
                       disabled={isRobotLoading}
@@ -691,7 +732,7 @@ export default function ActivitiesPage() {
                       <Edit className="w-4 h-4" />
                     </Button>
                   </div>
-                  
+
                   <div className="text-xs text-gray-400 border-t pt-3">
                     Cập nhật: {formatDate(activity.lastUpdate)}
                   </div>
@@ -736,7 +777,7 @@ export default function ActivitiesPage() {
               <p className="text-gray-600">Bài học</p>
             </CardContent>
           </Card>
-          
+
           <Card className="text-center border-0 shadow-md">
             <CardContent className="p-6">
               <div className="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-4">
@@ -748,7 +789,7 @@ export default function ActivitiesPage() {
               <p className="text-gray-600">Trò chơi</p>
             </CardContent>
           </Card>
-          
+
           <Card className="text-center border-0 shadow-md">
             <CardContent className="p-6">
               <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
@@ -760,7 +801,7 @@ export default function ActivitiesPage() {
               <p className="text-gray-600">Hoạt động</p>
             </CardContent>
           </Card>
-          
+
           <Card className="text-center border-0 shadow-md">
             <CardContent className="p-6">
               <div className="w-12 h-12 bg-orange-100 rounded-full flex items-center justify-center mx-auto mb-4">
