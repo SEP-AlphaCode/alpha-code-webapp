@@ -84,27 +84,26 @@ const initialState: RobotState = {
 // --------------------
 // 🔄 Helper converter
 // --------------------
-const convertApiRobotToReduxRobot = (apiRobot: any): Robot => ({
+const convertApiRobotToReduxRobot = (apiRobot: ApiRobot): Robot => ({
   id: apiRobot.id,
-  serial: apiRobot.serialNumber || apiRobot.serial_number, // 👈 fix
-  name: apiRobot.robotModelName || apiRobot.robot_model_name || 'Unknown Robot',
+  serial: apiRobot.serialNumber, // 👈 fix
+  name: apiRobot.robotModelName || 'Unknown Robot',
   status:
     apiRobot.status === 'online' || apiRobot.status === 'success'
       ? 'online'
       : apiRobot.status === 'busy'
       ? 'busy'
       : 'offline',
-  lastConnected: apiRobot.lastUpdate || apiRobot.last_update || new Date().toISOString(),
+  lastConnected: apiRobot.lastUpdate || new Date().toISOString(),
   isSelected: false,
   battery:
     apiRobot.battery?.toString() ??
-    apiRobot.battery_level?.toString() ??
     null, // 👈 handle number or string
-  robotModelId: apiRobot.robotModelId || apiRobot.robot_model_id,
-  robotModelName: apiRobot.robotModelName || apiRobot.robot_model_name,
+  robotModelId: apiRobot.robotModelId,
+  robotModelName: apiRobot.robotModelName,
   accountId: apiRobot.accountId,
-  ctrlVersion: apiRobot.ctrlVersion || apiRobot.ctrl_version || null, // 👈 fix
-  firmwareVersion: apiRobot.firmwareVersion || apiRobot.firmware_version || null, // 👈 fix
+  ctrlVersion: apiRobot.ctrlVersion || null, // 👈 fix
+  firmwareVersion: apiRobot.firmwareVersion || null, // 👈 fix
 })
 
 

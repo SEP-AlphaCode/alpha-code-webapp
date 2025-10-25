@@ -4,7 +4,7 @@ export type ExtendedAction = {
     icon: string
     name: string
     robotModelId: string
-    robotModelName: string
+    robotModelName?: string
     status: number
     statusText: string
     createdDate: string
