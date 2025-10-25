@@ -694,7 +694,7 @@ export default function PaymentPageClient(props: PaymentPageClientProps = {}) {
 
         {payosOpen && (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-            <div className="relative max-w-3xl rounded-xl shadow-2xl bg-white flex flex-col overflow-hidden border border-gray-200">
+            <div className="relative max-w-lg w-full rounded-xl shadow-2xl bg-white flex flex-col overflow-hidden border border-gray-200">
 
               {/* Header */}
               <div className="flex items-center justify-between px-5 py-3 border-b border-gray-200 bg-gray-50">
@@ -727,7 +727,7 @@ export default function PaymentPageClient(props: PaymentPageClientProps = {}) {
                 {/* Embedded SDK area (căn giữa) */}
                 <div
                   id="embedded-payment-container"
-                  className="w-full max-w-full h-[400px] flex items-center justify-center overflow-auto"
+                  className="w-full max-w-full h-[350px] flex items-center justify-center overflow-auto"
                 />
 
                 {/* Overlay khi đang xử lý */}
