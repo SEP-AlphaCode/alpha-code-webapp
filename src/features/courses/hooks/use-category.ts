@@ -1,18 +1,36 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useRouter } from 'next/navigation'
 import * as categoryApi from '@/features/courses/api/category-api'
+import type { PagedResult } from '@/types/page-result'
+import type { Category } from '@/types/courses'
 
+
+export function useGetAllCategories(params?: {
+  page?: number
+  size?: number
+  search?: string
+}): ReturnType<typeof useQuery<PagedResult<Category>>> {
+  return useQuery({
+    queryKey: ['categories', params],
+    queryFn: ({ signal }) => categoryApi.getCategories(
+      params?.page || 1,
+      params?.size || 20,
+      params?.search,
+      signal
+    ),
+  })
+}
 // ==================== CATEGORY HOOKS ====================
 
 export function useNoneDeleteCategories(params?: {
   page?: number
   size?: number
   search?: string
-}) {
+}): ReturnType<typeof useQuery<PagedResult<Category>>> {
   return useQuery({
     queryKey: ['categories', params],
     queryFn: ({ signal }) => categoryApi.getNoneDeleteCategories(
-      params?.page || 0,
+      params?.page || 1,
       params?.size || 20,
       params?.search,
       signal
