@@ -6,6 +6,7 @@ import { getCategories, getCategoryBySlug } from "../api/category-api";
 import { getCourseBySlug, getCourses } from "../api/course-api";
 import { getLessonsSolutionByCourseId } from "../api/lesson-api";
 import * as courseApi from '@/features/courses/api/course-api';
+import { use } from "react";
 
 const STALE_TIME = 24 * 3600 * 1000
 export const useCourse = () => {
@@ -89,7 +90,8 @@ export const useCourse = () => {
         useGetCoursesByCategory,
         useGetCategoryBySlug,
         useGetCourseBySlug,
-        useGetLessonsSolutionByCourseId
+        useGetLessonsSolutionByCourseId,
+        useGetCourseById
     }
 }
 
