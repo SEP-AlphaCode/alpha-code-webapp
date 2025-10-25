@@ -3,6 +3,7 @@ import * as Blockly from 'blockly/core';
 import { JavascriptGenerator } from 'blockly/javascript';
 import { robotCategory, toolbox, ToolboxDef } from './toolbox';
 import { ToolboxItemInfo } from '@/types/blockly';
+import * as uuid from 'uuid'
 
 export const HUE = 175
 export const CATEGORY_NAME = 'Robot'
@@ -27,19 +28,30 @@ export const blockControls = (ws: Blockly.WorkspaceSvg): Operations => {
 
     const makeListCode = (gen: JavascriptGenerator) => {
         try {
+            // main code
             const main = gen.workspaceToCode(ws)
-            return `function makeList(){
+            //yield checks
+            const startTimeVarName = '_' + (uuid.v4() + '_' + uuid.v4() + '_' + uuid.v4()).replaceAll('-', '_')
+            const nowVarName = '_' + (uuid.v4() + '_' + uuid.v4() + '_' + uuid.v4()).replaceAll('-', '_')
+            return `
+let ${startTimeVarName} = Date.now(), ${nowVarName} = ${startTimeVarName}
+function increaseLoop() {
+${nowVarName} = Date.now()
+if(${nowVarName} - ${startTimeVarName} >= 5 * 1000) throw Exception("Time exceeded")
+}
+
+function main() {
 try{
 const list = []
 ${main}
 return {list: list, success: true}
 }
-catch(e){
+catch(e) {
 return {list: [], success: false}
 }
 }
 
-return makeList()`
+return main()`
         }
         catch (e) {
             console.log(e);

@@ -31,24 +31,49 @@ export default function BlocklyUI({ robotModelId, serial, hasAllData, data }: Bl
     const [resultCode, setResultCode] = useState('')
     const [listResult, setListResult] = useState<{ code?: string, text?: string, lang?: string, type: string }[]>([])
     const [definedModels, setDefinedModel] = useState(new Set<string>())
+    const [isRunning, setIsRunning] = useState(false)
     const key = 'AlphaCode'
-    const executeCode = async (code: string) => {
+
+    const executeCode = (code: string) => {
+        setIsRunning(true)
+        toast.success('Đang chạy')
         try {
-            const fn = new Function(code);
-            const result = fn();
-            if(!result.success) return;
-            toast.success('Dịch mã thành công')
-            setListResult(result.list)
-            wsHelper?.sendCommandToBackend(result.list, serial, (text: string, status: string) => {
-                toast(text)
-            })
+            const worker = new Worker(
+                URL.createObjectURL(
+                    new Blob([`
+          self.onmessage = e => {
+            try {
+              const fn = new Function(e.data.code);
+              const res = fn();
+              self.postMessage({ result: res });
+            } catch (err) {
+              self.postMessage({ error: err.message });
+            }
+          };
+        `], { type: "application/javascript" })
+                )
+            )
+            worker.onmessage = e => {
+                const rs = e.data.result as { success: boolean, list: { code?: string, text?: string, lang?: string, type: string }[] };
+                console.log(rs);
+                if(rs.success){
+                    toast.success('Đã chạy xong')
+                } else {
+                    toast.error('Thất bại')
+                }        
+                worker.terminate();
+                setIsRunning(false)
+            };
+
+            worker.postMessage({ code });
+
         } catch (err) {
             console.log(err);
         } finally {
         }
     }
 
-    const actualInit = async () => {
+    const actualInit = () => {
         if (!workspaceRef.current) return;
         if (!blocklyRef.current) return;
         if (!wsHelper) return;
@@ -69,7 +94,7 @@ export default function BlocklyUI({ robotModelId, serial, hasAllData, data }: Bl
 
     useEffect(() => {
         registerFieldColour()
-        Blockly.setLocale(Vi as unknown as {[key: string]: string})
+        Blockly.setLocale(Vi as unknown as { [key: string]: string })
         Blockly.utils.colour.setHsvSaturation(0.7) // 0 (inclusive) to 1 (exclusive), defaulting to 0.45
         Blockly.utils.colour.setHsvValue(0.9) // 0 (inclusive) to 1 (exclusive), defaulting to 0.65
 
@@ -120,7 +145,8 @@ export default function BlocklyUI({ robotModelId, serial, hasAllData, data }: Bl
                             toast.error('Không thể tải không gian làm việc')
                         }
                     }}
-                    className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition"
+                    disabled={isRunning}
+                    className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition disabled:bg-gray-500"
                 >
                     📂 Tải không gian làm việc
                 </button>
@@ -132,7 +158,8 @@ export default function BlocklyUI({ robotModelId, serial, hasAllData, data }: Bl
                             setResultCode(code);
                         } catch { }
                     }}
-                    className="px-4 py-2 bg-yellow-500 text-white rounded-lg hover:bg-yellow-600 transition"
+                    disabled={isRunning}
+                    className="px-4 py-2 bg-yellow-500 text-white rounded-lg hover:bg-yellow-600 transition disabled:bg-gray-500"
                 >
                     🔤 Xem mã
                 </button>
@@ -141,11 +168,11 @@ export default function BlocklyUI({ robotModelId, serial, hasAllData, data }: Bl
                         if (!codeGenerator || !wsHelper) return;
                         try {
                             const code = wsHelper.makeListCode(codeGenerator);
-                            console.log(code);
                             executeCode(code);
                         } catch { }
                     }}
-                    className="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition"
+                    disabled={isRunning}
+                    className="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition disabled:bg-gray-500"
                 >
                     ▶ Chạy
                 </button>

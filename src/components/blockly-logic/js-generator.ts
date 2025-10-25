@@ -26,7 +26,7 @@ export const buildCodeGeneratorForModelId = (modelId: string) => {
     // TODO: Load allowed actions specific to a robot model
     const alphaCodeGenerator = javascriptGenerator
     /**
-     * 
+     * ## Note: If any blocks that accept supports iteration, use this
      * @param body A block call 
      * ```code 
      * {type: ???, code: ???, ...}
@@ -35,11 +35,9 @@ export const buildCodeGeneratorForModelId = (modelId: string) => {
      * @returns A string code that push the number of call into variable 'list'
      */
     function baseRequest(body: string, n: unknown) {
-        if (n === 1) {
-            return `list.push(${body})`
-        }
         return `for(let i = 0; i < ${n}; i++){
 list.push(${body})
+increaseLoop()
 }`
     }
     /**
