@@ -87,7 +87,7 @@ export default function ActivitiesPage() {
     if (robots.length === 0) {
       initializeMockData()
     }
-  }, [robots.length, initializeMockData])
+  }, [])
 
   const activities = useMemo(() => activitiesData?.data || [], [activitiesData?.data])
   const pagination = useMemo(() => 

@@ -32,7 +32,9 @@ export interface Lesson {
     solution?: unknown; // jsonb - nullable
     orderNumber: number; // int4
     type: number; // int4 - lesson type
+    typeText?: string;
     status: number; // int4
+    statusText?: string;
     createdDate: string; // timestamp
     lastUpdated?: string; // timestamp
 }
@@ -66,6 +68,7 @@ export interface Course {
     categoryName?: string;
     sectionCount?: number;
     statusText?: string;
+    levelText?: string; // Added field for level text
 }
 
 export interface AccountCourse {

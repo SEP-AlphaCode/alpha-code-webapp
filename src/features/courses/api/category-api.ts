@@ -7,7 +7,7 @@ export const getCategories = async (page: number, size: number, search?: string,
     try {
         const response = await coursesHttp.get<PagedResult<Category>>('/categories', {
             params: {
-                page,
+                page: page || 1,
                 size,
                 search
             },
