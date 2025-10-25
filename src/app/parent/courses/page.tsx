@@ -1,24 +1,24 @@
 "use client"
 import { useCourse } from '@/features/courses/hooks/use-course';
-import React, { useState } from 'react'
+import { useGetAllCategories } from '@/features/courses/hooks/use-category';
+import { Search } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import { useDispatch, useSelector } from 'react-redux';
 import { AppDispatch, RootState } from '@/store/store';
-import { CourseFilter } from '@/components/parent/course/category-list';
-import { Button } from '@/components/ui/button';
-import { Dialog, DialogContent } from '@radix-ui/react-dialog';
-import { ChevronDown } from 'lucide-react';
-import { CourseGrid } from '@/components/parent/course/course-grid';
+import { setPage, setSearch, setCategoryFilter } from '@/store/user-course-slice';
 import { Pagination } from '@/components/parent/course/pagination';
-import { setCategoryFilter, setPage, setSearch } from '@/store/user-course-slice';
+import { CourseGrid } from '@/components/parent/course/course-grid';
+import React, { useState, useMemo } from 'react'
 
 export default function CoursePage() {
-  const [isCategoriesModalOpen, setIsCategoriesModalOpen] = useState(false);
-  const categoriesPerPage = 5;
+  const [searchInput, setSearchInput] = useState('');
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const dispatch = useDispatch<AppDispatch>();
-  const { pagination, filters } = useSelector((s: RootState) => s.userCourse);
+  const { pagination, filters } = useSelector((state: RootState) => state.userCourse);
   const { useGetCourses } = useCourse();
 
-  // courses
+  // Fetch courses
   const { data: coursesData, isLoading: loadingCourses } = useGetCourses(
     pagination.page,
     pagination.size,
@@ -28,49 +28,85 @@ export default function CoursePage() {
   const total = coursesData?.total_count ?? 0;
   const totalPages = Math.ceil(total / pagination.size);
 
-  const filter = (<CourseFilter
-    selected={filters.categoryIds}
-    onChange={(ids) => dispatch(setCategoryFilter(ids))}
-    size={categoriesPerPage}
-    currentSearchTerm={filters.search}
-    onSearchEnter={(term) => dispatch(setSearch(term))}
-    onSearchEmpty={() => dispatch(setSearch(''))}
-  />)
+  // Fetch categories
+  const { data: categoriesData, isLoading: loadingCategories } = useGetAllCategories({ page: 0, size: 20 });
+  const categories = categoriesData?.data ?? [];
+
+  // Filter courses by selected category
+  const filteredCourses = useMemo(() => {
+    if (!selectedCategory) {
+      return courses;
+    }
+    return courses.filter((course) => course.categoryId === selectedCategory);
+  }, [courses, selectedCategory]);
+
+  const handleSearchSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    dispatch(setSearch(searchInput));
+  };
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 p-4 md:p-6 lg:p-10">
-      {/* Categories */}
-      <div className="lg:col-span-1">
-        <div className="lg:hidden mb-4">
-          <Button variant="outline" className="w-full flex justify-between"
-            onClick={() => setIsCategoriesModalOpen(true)}>
-            <span>Danh mục khóa học</span>
-            <ChevronDown className="h-4 w-4" />
-          </Button>
-        </div>
-        <div className="hidden lg:block">
-          <h2 className="text-xl font-bold text-slate-800 mb-3">Danh mục khóa học</h2>
-          {filter}
-        </div>
+    <div className="min-h-screen bg-gray-50">
+      {/* Hero Section */}
+      <div className="bg-white border-b border-gray-200">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          <div className="text-center mb-8">
+            <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
+              Khóa học <span className="text-orange-500">Alpha Code</span>
+            </h1>
+            <p className="text-lg text-gray-600 max-w-2xl mx-auto">
+              Học lập trình robot từ cơ bản đến nâng cao với những khóa học chất lượng
+            </p>
+          </div>
 
-        <Dialog open={isCategoriesModalOpen} onOpenChange={setIsCategoriesModalOpen}>
-          <DialogContent className="sm:max-w-md max-h-[80vh] flex flex-col">
-            <h2 className="text-xl font-bold text-slate-800">Danh mục khóa học</h2>
-            {filter}
-            <div className="pt-4 border-t">
-              <Button className="w-full" onClick={() => setIsCategoriesModalOpen(false)}>Đóng</Button>
-            </div>
-          </DialogContent>
-        </Dialog>
+          <div className="max-w-2xl mx-auto mb-8">
+            <form onSubmit={handleSearchSubmit} className="relative">
+              <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+              <Input
+                placeholder="Tìm kiếm khóa học, bài viết, video, ..."
+                value={searchInput}
+                onChange={(e) => setSearchInput(e.target.value)}
+                className="pl-12 pr-4 py-3 w-full border-gray-300 rounded-full focus:ring-2 focus:ring-orange-500 focus:border-orange-500 bg-gray-50"
+              />
+            </form>
+          </div>
+        </div>
       </div>
 
-      {/* Courses */}
-      <div className="lg:col-span-3">
+      {/* Categories Section */}
+      <div className="bg-white border-b border-gray-200">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+          {loadingCategories ? (
+            <div className="text-center py-4">
+              <span className="text-gray-500">Đang tải danh mục...</span>
+            </div>
+          ) : (
+            <div className="flex items-center gap-4 overflow-x-auto scrollbar-hide pb-2">
+              {categories.map((category) => (
+                <button
+                  key={category.id}
+                  onClick={() => setSelectedCategory(category.id)}
+                  className={`px-6 py-3 rounded-lg font-medium transition-all duration-300 transform hover:scale-105 whitespace-nowrap ${
+                    selectedCategory === category.id
+                      ? 'bg-orange-500 text-white shadow-lg scale-105'
+                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200 hover:shadow-md'
+                  }`}
+                >
+                  {category.name}
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Courses Section */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {loadingCourses ? (
           <div className="py-12 text-center text-slate-600">Đang tải các khóa học...</div>
         ) : (
           <>
-            <CourseGrid courses={courses} />
+            <CourseGrid courses={filteredCourses} />
             {totalPages > 1 && (
               <Pagination page={pagination.page} totalPages={totalPages} onPageChange={(p) => dispatch(setPage(p))} />
             )}

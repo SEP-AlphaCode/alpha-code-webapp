@@ -3,31 +3,50 @@ import { PagedResult } from "@/types/page-result";
 import { coursesHttp } from "@/utils/http";
 
 // Get lessons with solution by course ID
-export const getLessonsByCourseId = async (courseId: string, signal?: AbortSignal) => {
+export const getLessonsSolutionByCourseId = async (courseId: string, signal?: AbortSignal) => {
     try {
         const response = await coursesHttp.get<PagedResult<Lesson>>(`/lessons/all-with-solution-by-course/${courseId}`, {
             signal
         });
         return response.data;
     } catch (error) {
-        console.error("API Error in getLessonsByCourseId:", error);
+        console.error("API Error in getLessonsSolutionByCourseId:", error);
         throw error;
     }
 };
 
 // Get lessons with solution by section ID
-export const getLessonsBySectionId = async (courseId: string, sectionId: string, signal?: AbortSignal) => {
+export const getLessonsSolutionBySectionId = async (courseId: string, sectionId: string, signal?: AbortSignal) => {
     try {
         const response = await coursesHttp.get<Lesson[]>(`/lessons/all-with-solution-by-section/${sectionId}`, {
             signal
         });
         return response.data;
     } catch (error) {
-        console.error("API Error in getLessonsBySectionId:", error);
+        console.error("API Error in getLessonsSolutionBySectionId:", error);
         throw error;
     }
 };
-
+//GET LESSONS BY SECTION ID
+export const getLessonsBySectionId = async (
+  sectionId: string,
+  params?: { page?: number; size?: number },
+  signal?: AbortSignal
+) => {
+  try {
+    const response = await coursesHttp.get<PagedResult<Lesson>>(
+      `/lessons/get-by-section/${sectionId}`,
+      {
+        params,
+        signal,
+      }
+    );
+    return response.data;
+  } catch (error) {
+    console.error("API Error in getLessonsBySectionId:", error);
+    throw error;
+  }
+};
 // Get all lessons with filters
 export const getAllLessons = async (params?: {
     page?: number;
