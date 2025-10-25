@@ -36,7 +36,7 @@ export const useRobot = () => {
     };
 
     const useCreateRobot = () => {
-        return useMutation<Robot, Error, Omit<Robot, 'id' | 'createdDate' | 'lastUpdate' | 'status' | 'statusText'>>({
+        return useMutation<Robot, Error, Omit<Robot, 'id' | 'createdDate' | 'lastUpdate'>>({
             mutationFn: createRobot,
             onSuccess: () => {
                 queryClient.invalidateQueries({ queryKey: ["robots"] });
