@@ -441,7 +441,7 @@ export default function PaymentPageClient(props: PaymentPageClientProps = {}) {
   // If we are actively fetching resource, show loading
   if (isFetchingResource) {
     return (
-      <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: '#F4F4F4' }}>
+      <div className="min-h-screen flex items-center justify-center">
         <LoadingState message="Đang tải thông tin thanh toán..." />
       </div>
     )
@@ -450,7 +450,7 @@ export default function PaymentPageClient(props: PaymentPageClientProps = {}) {
   // If there's an id param and we don't yet have the title, show loading (fetch will start in effect)
   if (idFromParams && !fetchedTitle) {
     return (
-      <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: '#F4F4F4' }}>
+      <div className="min-h-screen flex items-center justify-center">
         <LoadingState message="Đang tải thông tin thanh toán..." />
       </div>
     )
@@ -459,7 +459,7 @@ export default function PaymentPageClient(props: PaymentPageClientProps = {}) {
   // No id and no resource -> show not found error
   if (!idFromParams && !fetchedTitle) {
     return (
-      <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: '#F4F4F4' }}>
+      <div className="min-h-screen flex items-center justify-center">
         <ErrorState error={`Không tìm thấy tài nguyên để thanh toán. Vui lòng kiểm tra lại liên kết hoặc quay lại trang trước đó.`} />
       </div>
     )
@@ -694,7 +694,7 @@ export default function PaymentPageClient(props: PaymentPageClientProps = {}) {
 
         {payosOpen && (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-            <div className="relative max-w-3xl rounded-xl shadow-2xl bg-white flex flex-col overflow-hidden border border-gray-200">
+            <div className="relative max-w-lg w-full rounded-xl shadow-2xl bg-white flex flex-col overflow-hidden border border-gray-200">
 
               {/* Header */}
               <div className="flex items-center justify-between px-5 py-3 border-b border-gray-200 bg-gray-50">

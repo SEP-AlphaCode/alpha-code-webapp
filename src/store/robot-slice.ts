@@ -89,9 +89,9 @@ const convertApiRobotToReduxRobot = (apiRobot: ApiRobot): Robot => ({
   serial: apiRobot.serialNumber, // 👈 fix
   name: apiRobot.robotModelName || 'Unknown Robot',
   status:
-    apiRobot.status === 'online' || apiRobot.status === 'success'
+    apiRobot.status === 1 || apiRobot.status === 1
       ? 'online'
-      : apiRobot.status === 'busy'
+      : apiRobot.status === 2
       ? 'busy'
       : 'offline',
   lastConnected: apiRobot.lastUpdate || new Date().toISOString(),

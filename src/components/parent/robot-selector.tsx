@@ -67,7 +67,7 @@ export function RobotSelector({ className = "" }: RobotSelectorProps) {
         id: r.id,
         serial: r.serialNumber,
         name: r.robotModelName || "Unknown Robot",
-        status: r.status === "online" ? "online" : "offline",
+        status: r.status === 1 ? "online" : "offline",
         battery: batteryLevel,
         robotModelId: r.robotModelId,
         robotModelName: r.robotModelName,
@@ -198,12 +198,25 @@ export function RobotSelector({ className = "" }: RobotSelectorProps) {
   }
 
   if (error || displayRobots.length === 0) {
-    return (
-      <div className={`flex items-center px-2 py-1 rounded-xl shadow border border-gray-100 bg-gray-50 min-w-[260px] ${className}`}>
-        <div className="text-gray-500 text-sm">Chưa có robot nào</div>
+  return (
+    <div
+      className={`flex items-center justify-between px-3 py-2 rounded-xl shadow border border-gray-100 bg-blue-50 hover:bg-blue-100 transition-colors min-w-[260px] ${className}`}
+    >
+      <div className="flex flex-col justify-center">
+        <span className="font-semibold text-gray-900 text-sm">Chưa có robot nào</span>
+        <span className="text-xs text-gray-500 mt-0.5">Hãy thêm robot để bắt đầu</span>
       </div>
-    );
-  }
+      <button
+        onClick={() => setIsModalOpen(true)}
+        className="ml-3 px-3 py-1.5 text-sm font-medium rounded-md bg-blue-600 text-white hover:bg-blue-700 transition"
+      >
+        Thêm mới
+      </button>
+
+      <RobotModal open={isModalOpen} onClose={() => setIsModalOpen(false)} />
+    </div>
+  )
+}
 
   return (
     <>

@@ -70,7 +70,7 @@ export function ProfileSelection() {
 
   return (
   <div className="min-h-screen flex items-center justify-center bg-gray-50 p-4">
-      <Card className="w-full max-w-3xl shadow-2xl">
+      <Card className="w-full max-w-3xl shadow-2xl" style={{ backgroundColor: '#F4F4F4' }}>
         <CardContent className="p-8">
           {/* Logo */}
           <div className="flex justify-center mb-6">
