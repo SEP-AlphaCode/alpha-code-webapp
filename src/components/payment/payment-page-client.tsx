@@ -441,7 +441,7 @@ export default function PaymentPageClient(props: PaymentPageClientProps = {}) {
   // If we are actively fetching resource, show loading
   if (isFetchingResource) {
     return (
-      <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: '#F4F4F4' }}>
+      <div className="min-h-screen flex items-center justify-center">
         <LoadingState message="Đang tải thông tin thanh toán..." />
       </div>
     )
@@ -450,7 +450,7 @@ export default function PaymentPageClient(props: PaymentPageClientProps = {}) {
   // If there's an id param and we don't yet have the title, show loading (fetch will start in effect)
   if (idFromParams && !fetchedTitle) {
     return (
-      <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: '#F4F4F4' }}>
+      <div className="min-h-screen flex items-center justify-center">
         <LoadingState message="Đang tải thông tin thanh toán..." />
       </div>
     )
@@ -459,7 +459,7 @@ export default function PaymentPageClient(props: PaymentPageClientProps = {}) {
   // No id and no resource -> show not found error
   if (!idFromParams && !fetchedTitle) {
     return (
-      <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: '#F4F4F4' }}>
+      <div className="min-h-screen flex items-center justify-center">
         <ErrorState error={`Không tìm thấy tài nguyên để thanh toán. Vui lòng kiểm tra lại liên kết hoặc quay lại trang trước đó.`} />
       </div>
     )
@@ -727,7 +727,7 @@ export default function PaymentPageClient(props: PaymentPageClientProps = {}) {
                 {/* Embedded SDK area (căn giữa) */}
                 <div
                   id="embedded-payment-container"
-                  className="w-full max-w-full h-[350px] flex items-center justify-center overflow-auto"
+                  className="w-full max-w-full h-[400px] flex items-center justify-center overflow-auto"
                 />
 
                 {/* Overlay khi đang xử lý */}
