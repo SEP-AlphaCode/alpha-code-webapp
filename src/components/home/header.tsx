@@ -4,7 +4,7 @@ import { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import Image from "next/image";
 import Link from "next/link";
-// Cập nhật import icon cho các mục navigation
+// Cập nhật import icon cho tất cả các mục navigation
 import {
   ArrowRight,
   LogOut,
@@ -16,6 +16,10 @@ import {
   School,
   Target,
   Music,
+  BarChart2, // Phân tích hệ thống
+  QrCode,     // Mã QR
+  CreditCard, // Thẻ Osmo (dùng icon thẻ tín dụng)
+  Bookmark,   // Dấu đánh dấu
 } from "lucide-react";
 
 import { useAuth } from "@/features/auth/hooks/use-auth";
@@ -26,6 +30,41 @@ interface HeaderProps {
   currentSection: number;
   onNavigate: (sectionIndex: number) => void;
 }
+
+// ---------------------------------------------------
+// ĐỊNH NGHĨA CÁC MỤC ĐIỀU HƯỚNG THEO VAI TRÒ (ROLE-BASED NAVIGATION)
+// ---------------------------------------------------
+
+// Dựa trên ảnh: Bảng điều khiển, Người dùng, Phân tích hệ thống, Robot, Lớp học, Mã QR, Thẻ Osmo, Dấu đánh dấu
+const adminNavigationItems = [
+  { name: "Bảng điều khiển", href: "/admin", icon: LayoutDashboard },
+  { name: "Người dùng", href: "/admin/users", icon: Users },
+  { name: "Phân tích hệ thống", href: "/admin/analysis", icon: BarChart2 },
+  { name: "Robot", href: "/admin/robot", icon: ToyBrick },
+  { name: "Lớp học", href: "/admin/classroom", icon: School },
+  { name: "Mã QR", href: "/admin/qrcode", icon: QrCode },
+  { name: "Thẻ Osmo", href: "/admin/osmocard", icon: CreditCard },
+  { name: "Dấu đánh dấu", href: "/admin/bookmark", icon: Bookmark },
+];
+
+// Navigation items hiện tại của Parent (Giữ nguyên hoặc tùy chỉnh)
+const parentNavigationItems = [
+  { name: "Bảng điều khiển", href: "/parent", icon: LayoutDashboard },
+  { name: "Robot", href: "/parent/robot", icon: ToyBrick },
+  { name: "Học sinh", href: "/parent/student", icon: Users },
+  { name: "Lập trình", href: "/parent/programming", icon: Code },
+  { name: "Lớp học", href: "/parent/classroom", icon: School },
+  { name: "Hoạt động", href: "/parent/activities", icon: Target },
+  { name: "Âm nhạc", href: "/parent/music", icon: Music },
+];
+
+// Navigation items cho Child (Ví dụ)
+const childNavigationItems = [
+  { name: "Bảng điều khiển của tôi", href: "/child", icon: LayoutDashboard },
+  { name: "Lớp học của tôi", href: "/child/classroom", icon: School },
+  { name: "Lập trình của tôi", href: "/child/programming", icon: Code },
+];
+
 
 export function Header({ currentSection, onNavigate }: HeaderProps) {
   const { isAuthenticated, isLoading: authLoading } = useAuth();
@@ -58,17 +97,25 @@ export function Header({ currentSection, onNavigate }: HeaderProps) {
     }
     return null;
   };
+  
+  const userRole = getUserRole();
 
-  // Sử dụng các icon từ lucide-react thay vì emoji
-  const navigationItems = [
-    { name: "Dashboard", href: "/teacher", icon: LayoutDashboard },
-    { name: "Robots", href: "/teacher/robot", icon: ToyBrick },
-    { name: "Students", href: "/teacher/student", icon: Users },
-    { name: "Programming", href: "/teacher/programming", icon: Code },
-    { name: "Classroom", href: "/teacher/classroom", icon: School },
-    { name: "Activities", href: "/teacher/activities", icon: Target },
-    { name: "Music", href: "/teacher/music", icon: Music },
-  ];
+  // Hàm chọn mảng điều hướng dựa trên Role
+  const getNavigationItems = (role: string | null) => {
+    switch (role) {
+      case "Admin":
+        return adminNavigationItems;
+      case "Child":
+        return childNavigationItems;
+      case "Parent":
+        return parentNavigationItems;
+      default:
+        return parentNavigationItems; // Mặc định nếu role không xác định
+    }
+  };
+
+  const currentNavigationItems = getNavigationItems(userRole);
+
 
   // Close dropdown khi click ngoài
   useEffect(() => {
@@ -120,20 +167,26 @@ export function Header({ currentSection, onNavigate }: HeaderProps) {
                   {userInfo?.fullName || userInfo?.username || "User"}
                 </span>
               </Button>
-
-              {isDropdownOpen && getUserRole() === "teacher" && (
+              
+              {/* CẬP NHẬT LOGIC: Hiển thị nếu đã đăng nhập và có Role */}
+              {isDropdownOpen && userRole && ( 
                 // Tinh chỉnh thiết kế dropdown
                 <div className="absolute right-0 top-full mt-2 w-64 bg-white border border-gray-100 rounded-xl shadow-xl overflow-hidden animate-fade-in z-50">
                   
                   {/* Phần thông tin người dùng */}
                   <div className="p-4 border-b border-gray-100">
-                    <p className="font-bold text-gray-800 truncate">{userInfo?.fullName || userInfo?.username || "Giáo viên"}</p>
-                    <p className="text-sm text-blue-600">{userInfo?.email || "Teacher"}</p>
+                    <p className="font-bold text-gray-800 truncate">
+                        {userInfo?.fullName || userInfo?.username || "Người dùng"}
+                    </p>
+                    <p className="text-sm text-blue-600">
+                        {userRole}
+                        {userInfo?.email ? ` | ${userInfo.email}` : ""}
+                    </p>
                   </div>
                   
                   {/* Các mục navigation */}
                   <div className="p-1">
-                    {navigationItems.map(item => {
+                    {currentNavigationItems.map(item => { // DÙNG MẢNG ĐÃ ĐƯỢC CHỌN TỪ ROLE
                         const Icon = item.icon;
                         return (
                         <Link
