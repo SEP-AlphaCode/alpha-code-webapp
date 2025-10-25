@@ -195,11 +195,11 @@ export const createColumns = (
 
     // ✅ Robot Model ID (dùng trực tiếp từ Skill)
     {
-      accessorKey: "robotModelId",
+      accessorKey: "robotModelName",
       header: () => <HeaderCell text="Robot Model" />,
       cell: ({ row }) => (
         <span className="text-gray-700 font-medium">
-          {row.original.robotModelId || "Không có"}
+          {row.original.robotModelName || "Không có"}
         </span>
       ),
     },

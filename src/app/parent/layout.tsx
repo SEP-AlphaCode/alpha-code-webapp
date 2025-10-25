@@ -102,7 +102,7 @@ export default function UserLayout({ children }: UserLayoutProps) {
             isSidebarOpen ? "ml-64" : "ml-16"
           }`}
         >
-          <div className="mt-10 bg-white min-h-screen pt-10">
+          <div className="mt-10 bg-white min-h-screen">
             {children}
           </div>
         </main>

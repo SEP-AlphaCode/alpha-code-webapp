@@ -93,18 +93,22 @@ function extendRobotWithMockData(
 
   const mockInfo = mockData[index] || mockData[0];
 
+  console.log("data", robot);
+
+
   return {
     id: robot.id,
     name: robot.name,
     status: robot.status || "offline",
-    battery: typeof robot.battery === "string" ? robot.battery : null,
-    ctrl_version: robot.ctrl_version || "",
-    firmware_version: robot.firmware_version || "",
-    serialNumber: robot.serial, // ✅ fix đúng key
+    battery: robot.battery || "",
+    ctrl_version: robot.ctrlVersion ?? "", 
+    firmware_version: robot.firmwareVersion ?? "",
+    serialNumber: robot.serial,
     robotmodel: robot.robotModelName ?? "",
     ...mockInfo,
   };
 }
+
 
 export default function UserDashboard() {
   const { robots, selectedRobotSerial, selectRobot, initializeMockData, connectMode } = useRobotStore();
@@ -190,7 +194,7 @@ export default function UserDashboard() {
           charging: "Đang sạc",
         }}
       />
-
+      
       {selectedRobotDetails && (
         <RobotDetails
           robot={selectedRobotDetails}

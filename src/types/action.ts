@@ -12,6 +12,7 @@ export type Action = {
     lastUpdate: string
     canInterrupt: boolean
     robotModelId: string
+    robotModelName: string
     statusText?: string
 }
 

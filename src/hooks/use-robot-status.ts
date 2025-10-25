@@ -7,7 +7,7 @@ export interface RobotStatus {
   serial_number: string;
   firmware_version: string;
   ctrl_version: string;
-  battery_level: number;
+  battery_level: string;
   is_charging: boolean;
 }
 
