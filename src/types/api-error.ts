@@ -2,7 +2,7 @@
 export interface ApiResponse {
   success: boolean;
   error: string | null;
-  message: JSON | null;
+  message: string | null;
   timestamp: string;
   status: number;
 }

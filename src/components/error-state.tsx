@@ -1,34 +1,41 @@
 import React from 'react'
 import Image from 'next/image'
-
+import axios, { AxiosError } from 'axios'
+import { ApiResponse } from '@/types/api-error'
 
 interface ErrorStateProps {
-  error?: Error | string | unknown
+  error?: unknown
   onRetry?: () => void
   className?: string
 }
 
-
 export default function ErrorState({ error, onRetry, className = '' }: ErrorStateProps) {
   let rawMessage = 'Lỗi không xác định'
 
-  if (typeof error === 'string') {
+  // ✅ Kiểm tra lỗi từ Axios
+  if (axios.isAxiosError(error)) {
+    const axiosError = error as AxiosError<ApiResponse>
+    const message = axiosError.response?.data?.message ?? ''
+    if (typeof message === 'string' && message.trim()) {
+      rawMessage = message
+    }
+  } else if (typeof error === 'string') {
     rawMessage = error
   } else if (error instanceof Error) {
     rawMessage = error.message
-  } else if (error && typeof error === 'object') {
+  } else if (typeof error === 'object' && error !== null) {
     const maybeMessage = (error as { message?: unknown }).message
-    if (typeof maybeMessage === 'string' && maybeMessage.trim().length > 0) rawMessage = maybeMessage
+    if (typeof maybeMessage === 'string' && maybeMessage.trim()) {
+      rawMessage = maybeMessage
+    }
   }
 
-  // Basic mapping for known backend validation keys (could extend later)
   const normalized = rawMessage
     .replace(/^Validation Error:\s*/i, '')
     .replace(/^Error \d+:\s*/i, '')
 
-  // Vietnamese only
   const title = 'Đã xảy ra lỗi'
-  const suggestion = 'Vui lòng thử lại hoặc kiểm tra kết nối mạng của bạn.'
+  const suggestion = 'Vui lòng thử lại.'
   const retryLabel = 'Thử lại'
 
   return (
