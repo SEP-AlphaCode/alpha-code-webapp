@@ -328,7 +328,7 @@ export default function PaymentPageClient(props: PaymentPageClientProps = {}) {
   const { useGetCourseById } = useCourse()
   const { useGetActiveAddonById } = useAddon()
   const { useGetSubscriptionById } = useSubscription()
-  const { useGetBundleById } = useBundle()
+  const { useGetActiveBundleById } = useBundle()
   const { data: keyPriceData } = useGetKeyPrice()
 
   // Only pass id to the hook that matches the current payment category.
@@ -341,7 +341,7 @@ export default function PaymentPageClient(props: PaymentPageClientProps = {}) {
   const courseQuery = useGetCourseById(courseId)
   const addonQuery = useGetActiveAddonById(addonId)
   const planQuery = useGetSubscriptionById(planId)
-  const bundleQuery = useGetBundleById(bundleId)
+  const bundleQuery = useGetActiveBundleById(bundleId)
 
   // Combine query states
   useEffect(() => {
