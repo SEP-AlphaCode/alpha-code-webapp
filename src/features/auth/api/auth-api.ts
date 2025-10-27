@@ -31,7 +31,7 @@ export const login = async (data: LoginRequest): Promise<LoginWithProfileRespons
   }
 };
 
-export const refreshToken = async (): Promise<{ accessToken: string; refreshToken: string }> => {
+export const refreshToken = async (): Promise<{ accessToken: string; refreshToken: string, key: string }> => {
   try {
     const refreshTokenValue = sessionStorage.getItem('refreshToken');
     if (!refreshTokenValue) {
@@ -56,7 +56,8 @@ export const refreshToken = async (): Promise<{ accessToken: string; refreshToke
 
     return {
       accessToken: responseData.accessToken || responseData.token,
-      refreshToken: responseData.refreshToken
+      refreshToken: responseData.refreshToken,
+      key: responseData.key
     };
   } catch (error) {
     throw error;
