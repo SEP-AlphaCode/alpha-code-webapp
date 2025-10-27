@@ -139,7 +139,7 @@ export default function AddonsStore() {
             
             {/* Nếu cần thiết, giữ lại phân trang */}
             <div className="flex items-center justify-center text-sm text-muted-foreground pt-4">
-                <p>Tổng cộng {mockAddonsData.total_count} Addon</p>
+                <p>Tổng cộng Addon</p>
             </div>
         </div>
     );
