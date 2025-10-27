@@ -98,21 +98,13 @@ export default function ActivitiesPage() {
     selectedRobotSerial,
     selectedRobot,
     updateRobotStatus,
-    initializeMockData,
     robots
   } = useRobotStore()
 
 
   // API Hooks - use debounced search term
-  const { data: activitiesData, isLoading, error, refetch } = useActivities(currentPage, perPage, accountId, debouncedSearchTerm, selectedRobot?.robotModelId)
+  const { data: activitiesData, isLoading, error, refetch } = useActivities(currentPage, perPage, accountId, debouncedSearchTerm, selectedRobot?.robotModelId ?? '');
   const createActivityMutation = useCreateActivity()
-
-  // Initialize mock robot data - only once and only if no robots exist
-  useEffect(() => {
-    if (robots.length === 0) {
-      initializeMockData()
-    }
-  }, [])
 
   const activities = useMemo(() => activitiesData?.data || [], [activitiesData?.data])
   const pagination = useMemo(() =>
@@ -140,7 +132,12 @@ export default function ActivitiesPage() {
     // Sử dụng selected robot serial từ Redux
     const robotSerial = Array.isArray(selectedRobotSerial)
       ? selectedRobotSerial[0]
-      : selectedRobotSerial || "EAA007UBT10000341";
+      : selectedRobotSerial;
+
+    if (!robotSerial) {
+      console.error('No robot selected to start activity');
+      return;
+    }
 
     console.log('Selected Robot:', selectedRobot);
     console.log('Using Robot Serial:', robotSerial);
@@ -287,9 +284,18 @@ export default function ActivitiesPage() {
       data: "", // JSON string hoặc object
       status: 1, // Published status
       statusText: "ACTIVE",
-      accountId: "default-account-id", // Tạm thời dùng default
-      robotModelId: "6e4e14b3-b073-4491-ab2a-2bf315b3259f" // Default robot model
+      accountId: accountId || "",
+      robotModelId: selectedRobot?.robotModelId ?? "" // Default to empty string when no robot
     })
+
+    // Keep accountId and robotModelId in the form synced when outer state changes
+    useEffect(() => {
+      setFormData(prev => ({
+        ...prev,
+        accountId: accountId || "",
+        robotModelId: selectedRobot?.robotModelId ?? ""
+      }))
+    }, [accountId, selectedRobot?.robotModelId])
 
     const handleSubmit = (e: React.FormEvent) => {
       e.preventDefault()
@@ -318,8 +324,8 @@ export default function ActivitiesPage() {
             data: "",
             status: 1,
             statusText: "ACTIVE",
-            accountId: "default-account-id",
-            robotModelId: "6e4e14b3-b073-4491-ab2a-2bf315b3259f"
+            accountId: accountId || "",
+            robotModelId: selectedRobot?.robotModelId ?? ""
           })
         }
       })
@@ -716,7 +722,7 @@ export default function ActivitiesPage() {
                       size="sm"
                       className="flex-1"
                       onClick={() => handleStartActivity(activity)}
-                      disabled={isRobotLoading}
+                      disabled={isRobotLoading || !selectedRobotSerial}
                     >
                       {isRobotLoading ? (
                         <Loader2 className="w-4 h-4 mr-1 animate-spin" />
