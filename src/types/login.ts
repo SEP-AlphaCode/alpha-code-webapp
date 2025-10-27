@@ -14,8 +14,8 @@ export interface LoginWithProfileResponse {
   profiles?: Profile[]; // Danh sách profiles (nếu có)
   accessToken?: string; // Chỉ có nếu là Admin/Staff
   refreshToken?: string; // Chỉ có nếu là Admin/Staff
-  accountid?: string; // lowercase version
   accountId?: string; // camelCase version (backend mới)
+  key?: string; // camelCase version (backend mới)
 }
 
 // Profile data từ backend

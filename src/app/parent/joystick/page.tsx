@@ -12,6 +12,7 @@ import { useJoystick } from '@/features/activities/hooks/use-joystick';
 import { Joystick } from '@/types/joystick';
 import { getUserInfoFromToken } from '@/utils/tokenUtils';
 import RobotVideoStream from '@/components/parent/robot/robot-video-stream';
+import ProtectAddon from '@/components/protect-addon';
 // import RobotVideoStream from '@/components/user/robot/robot-video-stream';
 
 interface JoystickPosition {
@@ -45,7 +46,7 @@ export default function JoystickPage() {
   const [joystickCommandTimeout, setJoystickCommandTimeout] = useState<NodeJS.Timeout | null>(null);
   const [lastCommandTime, setLastCommandTime] = useState<number>(0);
   const [isCommandPending, setIsCommandPending] = useState<boolean>(false);
-  
+
   const setNotify = (msg: string, type: 'success' | 'error') => {
     setNotifyState({ msg, type });
     setTimeout(() => setNotifyState(null), 3000);
@@ -62,8 +63,8 @@ export default function JoystickPage() {
   const [hasError, setHasError] = useState(false);
 
   const robotSerial = Array.isArray(selectedRobotSerial)
-  ? selectedRobotSerial[0]
-  : selectedRobotSerial;
+    ? selectedRobotSerial[0]
+    : selectedRobotSerial;
 
   useEffect(() => {
     try {
@@ -234,7 +235,7 @@ export default function JoystickPage() {
   const getJoystickDirection = useCallback((x: number, y: number): string | null => {
     const threshold = 0.3;
     const distance = Math.sqrt(x * x + y * y);
-    
+
     if (distance < threshold) {
       return null;
     }
@@ -259,16 +260,16 @@ export default function JoystickPage() {
     const direction = getJoystickDirection(x, y);
     const currentTime = Date.now();
     const COMMAND_THROTTLE_MS = 300;
-    
-    if (direction === lastJoystickCommand && 
-        currentTime - lastCommandTime < COMMAND_THROTTLE_MS) {
+
+    if (direction === lastJoystickCommand &&
+      currentTime - lastCommandTime < COMMAND_THROTTLE_MS) {
       return;
     }
 
     if (isCommandPending) {
       return;
     }
-    
+
     if (direction !== lastJoystickCommand) {
       if (joystickCommandTimeout) {
         clearTimeout(joystickCommandTimeout);
@@ -283,14 +284,14 @@ export default function JoystickPage() {
           setNotify(`Robot ${selectedRobot.name} đang offline!`, 'error');
           return;
         }
-        
+
         setIsCommandPending(true);
-        
+
         try {
           await sendCommandToBackend(direction, robotSerial as string, 'skill_helper');
           setLastJoystickCommand(direction);
           setLastCommandTime(currentTime);
-          
+
           const timeout = setTimeout(() => {
             setLastJoystickCommand(null);
           }, 500);
@@ -314,7 +315,7 @@ export default function JoystickPage() {
       if (!draggingRef.current || !leftJoystickRef.current) return;
       const pos = computePositionFromPointer(e.clientX, e.clientY, leftJoystickRef.current);
       setLeftJoystick(pos);
-      
+
       if (!isCommandPending) {
         handleJoystickMovement(pos.x, pos.y);
       }
@@ -325,13 +326,13 @@ export default function JoystickPage() {
   const onPointerUp = useCallback(() => {
     draggingRef.current = false;
     setLeftJoystick({ x: 0, y: 0 });
-    
+
     if (joystickCommandTimeout) {
       clearTimeout(joystickCommandTimeout);
     }
     setLastJoystickCommand(null);
     setIsCommandPending(false);
-    
+
     window.removeEventListener('pointermove', onPointerMove);
     window.removeEventListener('pointerup', onPointerUp);
   }, [onPointerMove, joystickCommandTimeout]);
@@ -356,7 +357,7 @@ export default function JoystickPage() {
       if (!t) return;
       const pos = computePositionFromPointer(t.clientX, t.clientY, leftJoystickRef.current);
       setLeftJoystick(pos);
-      
+
       if (!isCommandPending) {
         handleJoystickMovement(pos.x, pos.y);
       }
@@ -364,7 +365,7 @@ export default function JoystickPage() {
     const handleTouchEnd = () => {
       draggingRef.current = false;
       setLeftJoystick({ x: 0, y: 0 });
-      
+
       if (joystickCommandTimeout) {
         clearTimeout(joystickCommandTimeout);
       }
@@ -404,7 +405,7 @@ export default function JoystickPage() {
 
     const actionCategory = actionDescriptions[buttonName]?.category || 'action';
     let actionType: 'action' | 'expression' | 'skill_helper' | 'extended_action';
-    
+
     switch (actionCategory) {
       case 'expression':
         actionType = 'expression';
@@ -480,11 +481,11 @@ export default function JoystickPage() {
           </div>
           <h2 className="text-xl font-semibold text-gray-700">Lỗi khởi tạo</h2>
           <p className="text-sm text-gray-500 mt-2">Không thể tải trang joystick</p>
-          <button 
+          <button
             onClick={() => {
               setHasError(false);
               window.location.reload();
-            }} 
+            }}
             className="mt-4 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600"
           >
             Thử lại
@@ -495,299 +496,300 @@ export default function JoystickPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-gray-100 to-slate-200 p-6">
-      <div className="max-w-5xl mx-auto">
-        <header className="flex items-center justify-between mb-6">
-          <div>
-            <h1 className="text-3xl md:text-4xl font-extrabold text-gray-900">🎮 Controller Studio</h1>
-            <p className="text-sm text-gray-600">Simulator • Interactive preview • Map buttons to robot actions</p>
-          </div>
+    <ProtectAddon category={5}>
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-gray-100 to-slate-200 p-6">
+        <div className="max-w-5xl mx-auto">
+          <header className="flex items-center justify-between mb-6">
+            <div>
+              <h1 className="text-3xl md:text-4xl font-extrabold text-gray-900">🎮 Controller Studio</h1>
+              <p className="text-sm text-gray-600">Simulator • Interactive preview • Map buttons to robot actions</p>
+            </div>
 
-          <div className="flex items-center gap-4">
-            <Button
-              onClick={() => setIsConfigModalOpen(true)}
-              variant="ghost"
-              className="bg-gradient-to-r from-blue-600 to-blue-700 text-white hover:from-blue-700 hover:to-blue-800 shadow-lg"
-            >
-              ⚙️ Cấu hình Joystick
-            </Button>
-          </div>
-        </header>
+            <div className="flex items-center gap-4">
+              <Button
+                onClick={() => setIsConfigModalOpen(true)}
+                variant="ghost"
+                className="bg-gradient-to-r from-blue-600 to-blue-700 text-white hover:from-blue-700 hover:to-blue-800 shadow-lg"
+              >
+                ⚙️ Cấu hình Joystick
+              </Button>
+            </div>
+          </header>
 
-        {/* Main Content */}
-        <div className="relative rounded-[3rem] overflow-visible mb-6">
-          <div className="absolute inset-x-6 -bottom-8 h-24 blur-3xl opacity-20 rounded-3xl bg-gray-500/60" />
+          {/* Main Content */}
+          <div className="relative rounded-[3rem] overflow-visible mb-6">
+            <div className="absolute inset-x-6 -bottom-8 h-24 blur-3xl opacity-20 rounded-3xl bg-gray-500/60" />
 
-          <div className="relative z-10 mx-auto bg-gradient-to-br from-gray-100 via-gray-50 to-white rounded-[2.5rem] border border-gray-300 shadow-2xl p-8">
-            {/* Three-column layout */}
-            <div className="flex flex-col lg:flex-row items-center gap-8 lg:gap-12">
-              
-              {/* Left Column - Joystick */}
-              <div className="flex flex-col items-center gap-6 w-full lg:w-1/3">
-                <Badge variant="secondary" className="mb-2 bg-gray-200 text-gray-700">Left Stick</Badge>
+            <div className="relative z-10 mx-auto bg-gradient-to-br from-gray-100 via-gray-50 to-white rounded-[2.5rem] border border-gray-300 shadow-2xl p-8">
+              {/* Three-column layout */}
+              <div className="flex flex-col lg:flex-row items-center gap-8 lg:gap-12">
 
-                <div
-                  ref={leftJoystickRef as React.RefObject<HTMLDivElement>}
-                  onPointerDown={handlePointerDown}
-                  className="relative w-28 h-28 rounded-full bg-gradient-to-br from-gray-200 to-gray-300 border-4 border-gray-400 flex items-center justify-center shadow-inner cursor-grab active:cursor-grabbing"
-                  style={{ touchAction: 'none' }}
-                >
-                  <motion.div
-                    className="absolute w-6 h-6 bg-gradient-to-br from-blue-500 to-blue-600 rounded-full shadow-lg border-2 border-white"
-                    animate={{
-                      x: leftJoystick.x * 32,
-                      y: leftJoystick.y * 32,
-                    }}
-                    transition={{
-                      type: 'spring',
-                      stiffness: 300,
-                      damping: 30,
-                    }}
-                  />
-                  <div className="absolute inset-2 rounded-full border border-gray-300 opacity-50" />
+                {/* Left Column - Joystick */}
+                <div className="flex flex-col items-center gap-6 w-full lg:w-1/3">
+                  <Badge variant="secondary" className="mb-2 bg-gray-200 text-gray-700">Left Stick</Badge>
+
+                  <div
+                    ref={leftJoystickRef as React.RefObject<HTMLDivElement>}
+                    onPointerDown={handlePointerDown}
+                    className="relative w-28 h-28 rounded-full bg-gradient-to-br from-gray-200 to-gray-300 border-4 border-gray-400 flex items-center justify-center shadow-inner cursor-grab active:cursor-grabbing"
+                    style={{ touchAction: 'none' }}
+                  >
+                    <motion.div
+                      className="absolute w-6 h-6 bg-gradient-to-br from-blue-500 to-blue-600 rounded-full shadow-lg border-2 border-white"
+                      animate={{
+                        x: leftJoystick.x * 32,
+                        y: leftJoystick.y * 32,
+                      }}
+                      transition={{
+                        type: 'spring',
+                        stiffness: 300,
+                        damping: 30,
+                      }}
+                    />
+                    <div className="absolute inset-2 rounded-full border border-gray-300 opacity-50" />
+                  </div>
+
+                  <div className="text-xs text-gray-500 text-center">
+                    ({(leftJoystick.x * 100).toFixed(1)}, {(leftJoystick.y * 100).toFixed(1)})
+                  </div>
+
+                  {/* D-Pad */}
+                  <div className="mt-4">
+                    <Badge variant="secondary" className="bg-gray-200 text-gray-700">D-Pad</Badge>
+                    <div className="mt-3 grid grid-cols-3 gap-1 w-24 h-24">
+                      <div />
+                      <Button
+                        variant={buttons.up ? 'default' : 'outline'}
+                        size="sm"
+                        className="h-8 w-8 p-0 rounded-sm text-sm font-bold"
+                        onClick={() => handleDPadButtonPress('up')}
+                      >
+                        ↑
+                      </Button>
+                      <div />
+                      <Button
+                        variant={buttons.left ? 'default' : 'outline'}
+                        size="sm"
+                        className="h-8 w-8 p-0 rounded-sm text-sm font-bold"
+                        onClick={() => handleDPadButtonPress('left')}
+                      >
+                        ←
+                      </Button>
+                      <div className="w-8 h-8 bg-gray-300 rounded-sm" />
+                      <Button
+                        variant={buttons.right ? 'default' : 'outline'}
+                        size="sm"
+                        className="h-8 w-8 p-0 rounded-sm text-sm font-bold"
+                        onClick={() => handleDPadButtonPress('right')}
+                      >
+                        →
+                      </Button>
+                      <div />
+                      <Button
+                        variant={buttons.down ? 'default' : 'outline'}
+                        size="sm"
+                        className="h-8 w-8 p-0 rounded-sm text-sm font-bold"
+                        onClick={() => handleDPadButtonPress('down')}
+                      >
+                        ↓
+                      </Button>
+                      <div />
+                    </div>
+                  </div>
                 </div>
-                
-                <div className="text-xs text-gray-500 text-center">
-                  ({(leftJoystick.x * 100).toFixed(1)}, {(leftJoystick.y * 100).toFixed(1)})
+
+                {/* Center Column - Video & Logo */}
+                <div className="flex flex-col items-center gap-6 w-full lg:w-1/3">
+                  {/* Robot Video Stream */}
+                  <div className="w-full max-w-xs">
+                    <div className="text-center mb-2">
+                      <Badge variant="outline" className="text-xs">
+                        🎥 Robot Camera
+                        {selectedRobot && (
+                          <span className="ml-1">• {selectedRobot.name}</span>
+                        )}
+                      </Badge>
+                    </div>
+                    <RobotVideoStream
+                      robotSerial={robotSerial}
+                      className="w-full h-48 rounded-xl border-2 border-gray-300 shadow-lg"
+                    />
+                  </div>
+
+                  {/* Logo/Brand area */}
+                  <div className="flex flex-col items-center gap-2">
+                    <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-purple-600 rounded-2xl flex items-center justify-center shadow-lg">
+                      <span className="text-2xl text-white font-bold">🤖</span>
+                    </div>
+                    <div className="text-sm font-semibold text-gray-700">Alpha Mini</div>
+                    <div className="text-xs text-gray-500">Controller Interface</div>
+                  </div>
+
+                  {/* Control Buttons */}
+                  <div className="flex gap-3">
+                    <Button
+                      variant={buttons.SELECT ? 'default' : 'outline'}
+                      size="sm"
+                      onClick={() => handleButtonPress('SELECT')}
+                      className="px-3 py-1 text-xs font-semibold"
+                    >
+                      SELECT
+                    </Button>
+                    <Button
+                      variant={buttons.START ? 'default' : 'outline'}
+                      size="sm"
+                      onClick={() => handleButtonPress('START')}
+                      className="px-3 py-1 text-xs font-semibold"
+                    >
+                      START
+                    </Button>
+                  </div>
                 </div>
 
-                {/* D-Pad */}
-                <div className="mt-4">
-                  <Badge variant="secondary" className="bg-gray-200 text-gray-700">D-Pad</Badge>
-                  <div className="mt-3 grid grid-cols-3 gap-1 w-24 h-24">
-                    <div />
-                    <Button
-                      variant={buttons.up ? 'default' : 'outline'}
-                      size="sm"
-                      className="h-8 w-8 p-0 rounded-sm text-sm font-bold"
-                      onClick={() => handleDPadButtonPress('up')}
+                {/* Right Column - ABXY Buttons */}
+                <div className="flex flex-col items-center gap-6 w-full lg:w-1/3">
+                  <Badge variant="secondary" className="mb-2 bg-gray-200 text-gray-700">Action Buttons</Badge>
+
+                  {/* ABXY Button Layout */}
+                  <div className="relative w-32 h-32">
+                    {/* Y Button (Top) */}
+                    <motion.button
+                      className="absolute top-0 left-1/2 -translate-x-1/2 w-12 h-12 rounded-full bg-gradient-to-br from-green-400 to-green-500 text-white font-bold text-lg shadow-lg border-2 border-white flex items-center justify-center"
+                      whileHover={{ scale: 1.1 }}
+                      whileTap={{ scale: 0.95 }}
+                      animate={{ scale: buttons.Y ? 0.95 : 1 }}
+                      onClick={() => handleActionButtonPress('Y')}
                     >
-                      ↑
-                    </Button>
-                    <div />
-                    <Button
-                      variant={buttons.left ? 'default' : 'outline'}
-                      size="sm"
-                      className="h-8 w-8 p-0 rounded-sm text-sm font-bold"
-                      onClick={() => handleDPadButtonPress('left')}
+                      Y
+                    </motion.button>
+
+                    {/* X Button (Left) */}
+                    <motion.button
+                      className="absolute top-1/2 left-0 -translate-y-1/2 w-12 h-12 rounded-full bg-gradient-to-br from-blue-400 to-blue-500 text-white font-bold text-lg shadow-lg border-2 border-white flex items-center justify-center"
+                      whileHover={{ scale: 1.1 }}
+                      whileTap={{ scale: 0.95 }}
+                      animate={{ scale: buttons.X ? 0.95 : 1 }}
+                      onClick={() => handleActionButtonPress('X')}
                     >
-                      ←
-                    </Button>
-                    <div className="w-8 h-8 bg-gray-300 rounded-sm" />
-                    <Button
-                      variant={buttons.right ? 'default' : 'outline'}
-                      size="sm"
-                      className="h-8 w-8 p-0 rounded-sm text-sm font-bold"
-                      onClick={() => handleDPadButtonPress('right')}
+                      X
+                    </motion.button>
+
+                    {/* B Button (Right) */}
+                    <motion.button
+                      className="absolute top-1/2 right-0 -translate-y-1/2 w-12 h-12 rounded-full bg-gradient-to-br from-red-400 to-red-500 text-white font-bold text-lg shadow-lg border-2 border-white flex items-center justify-center"
+                      whileHover={{ scale: 1.1 }}
+                      whileTap={{ scale: 0.95 }}
+                      animate={{ scale: buttons.B ? 0.95 : 1 }}
+                      onClick={() => handleActionButtonPress('B')}
                     >
-                      →
-                    </Button>
-                    <div />
-                    <Button
-                      variant={buttons.down ? 'default' : 'outline'}
-                      size="sm"
-                      className="h-8 w-8 p-0 rounded-sm text-sm font-bold"
-                      onClick={() => handleDPadButtonPress('down')}
+                      B
+                    </motion.button>
+
+                    {/* A Button (Bottom) */}
+                    <motion.button
+                      className="absolute bottom-0 left-1/2 -translate-x-1/2 w-12 h-12 rounded-full bg-gradient-to-br from-yellow-400 to-yellow-500 text-white font-bold text-lg shadow-lg border-2 border-white flex items-center justify-center"
+                      whileHover={{ scale: 1.1 }}
+                      whileTap={{ scale: 0.95 }}
+                      animate={{ scale: buttons.A ? 0.95 : 1 }}
+                      onClick={() => handleActionButtonPress('A')}
                     >
-                      ↓
-                    </Button>
-                    <div />
+                      A
+                    </motion.button>
+                  </div>
+
+                  {/* Action Labels */}
+                  <div className="text-sm text-gray-700 text-center space-y-1 mt-2">
+                    <div className="flex items-center gap-2">
+                      <span>🟡 A:</span>
+                      <span className="font-medium">{actionDescriptions.A?.name || 'Chưa cấu hình'}</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span>🔴 B:</span>
+                      <span className="font-medium">{actionDescriptions.B?.name || 'Chưa cấu hình'}</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span>🔵 X:</span>
+                      <span className="font-medium">{actionDescriptions.X?.name || 'Chưa cấu hình'}</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span>🟢 Y:</span>
+                      <span className="font-medium">{actionDescriptions.Y?.name || 'Chưa cấu hình'}</span>
+                    </div>
                   </div>
                 </div>
               </div>
+            </div>
+          </div>
 
-              {/* Center Column - Video & Logo */}
-              <div className="flex flex-col items-center gap-6 w-full lg:w-1/3">
-                {/* Robot Video Stream */}
-                <div className="w-full max-w-xs">
-                  <div className="text-center mb-2">
-                    <Badge variant="outline" className="text-xs">
-                      🎥 Robot Camera
-                      {selectedRobot && (
-                        <span className="ml-1">• {selectedRobot.name}</span>
-                      )}
+          {/* Bottom Status Panel */}
+          <Card className="bg-white/70 backdrop-blur-sm border border-gray-200 shadow-lg p-6">
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+              {/* Joystick status */}
+              <div>
+                <h4 className="text-sm font-semibold text-gray-800 mb-2">🕹️ Joystick</h4>
+                <div className="text-xs text-gray-600">Left: ({(leftJoystick.x * 100).toFixed(1)}, {(leftJoystick.y * 100).toFixed(1)})</div>
+              </div>
+
+              {/* Buttons */}
+              <div>
+                <h4 className="text-sm font-semibold text-gray-800 mb-2">🎛️ Buttons</h4>
+                <div className="flex flex-wrap gap-2">
+                  {Object.entries(buttons).map(([btn, pressed]) => (
+                    <Badge key={btn} variant={pressed ? 'default' : 'outline'} className={`px-3 py-1 ${pressed ? 'bg-blue-500 text-white' : 'bg-gray-100 text-gray-700'}`}>
+                      {btn}
                     </Badge>
-                  </div>
-                   <RobotVideoStream 
-                    robotSerial={robotSerial}
-                    className="w-full h-48 rounded-xl border-2 border-gray-300 shadow-lg"
-                  />
-                </div>
-                
-                {/* Logo/Brand area */}
-                <div className="flex flex-col items-center gap-2">
-                  <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-purple-600 rounded-2xl flex items-center justify-center shadow-lg">
-                    <span className="text-2xl text-white font-bold">🤖</span>
-                  </div>
-                  <div className="text-sm font-semibold text-gray-700">Alpha Mini</div>
-                  <div className="text-xs text-gray-500">Controller Interface</div>
-                </div>
-
-                {/* Control Buttons */}
-                <div className="flex gap-3">
-                  <Button
-                    variant={buttons.SELECT ? 'default' : 'outline'}
-                    size="sm"
-                    onClick={() => handleButtonPress('SELECT')}
-                    className="px-3 py-1 text-xs font-semibold"
-                  >
-                    SELECT
-                  </Button>
-                  <Button
-                    variant={buttons.START ? 'default' : 'outline'}
-                    size="sm"
-                    onClick={() => handleButtonPress('START')}
-                    className="px-3 py-1 text-xs font-semibold"
-                  >
-                    START
-                  </Button>
+                  ))}
                 </div>
               </div>
 
-              {/* Right Column - ABXY Buttons */}
-              <div className="flex flex-col items-center gap-6 w-full lg:w-1/3">
-                <Badge variant="secondary" className="mb-2 bg-gray-200 text-gray-700">Action Buttons</Badge>
-                
-                {/* ABXY Button Layout */}
-                <div className="relative w-32 h-32">
-                  {/* Y Button (Top) */}
-                  <motion.button
-                    className="absolute top-0 left-1/2 -translate-x-1/2 w-12 h-12 rounded-full bg-gradient-to-br from-green-400 to-green-500 text-white font-bold text-lg shadow-lg border-2 border-white flex items-center justify-center"
-                    whileHover={{ scale: 1.1 }}
-                    whileTap={{ scale: 0.95 }}
-                    animate={{ scale: buttons.Y ? 0.95 : 1 }}
-                    onClick={() => handleActionButtonPress('Y')}
-                  >
-                    Y
-                  </motion.button>
-
-                  {/* X Button (Left) */}
-                  <motion.button
-                    className="absolute top-1/2 left-0 -translate-y-1/2 w-12 h-12 rounded-full bg-gradient-to-br from-blue-400 to-blue-500 text-white font-bold text-lg shadow-lg border-2 border-white flex items-center justify-center"
-                    whileHover={{ scale: 1.1 }}
-                    whileTap={{ scale: 0.95 }}
-                    animate={{ scale: buttons.X ? 0.95 : 1 }}
-                    onClick={() => handleActionButtonPress('X')}
-                  >
-                    X
-                  </motion.button>
-
-                  {/* B Button (Right) */}
-                  <motion.button
-                    className="absolute top-1/2 right-0 -translate-y-1/2 w-12 h-12 rounded-full bg-gradient-to-br from-red-400 to-red-500 text-white font-bold text-lg shadow-lg border-2 border-white flex items-center justify-center"
-                    whileHover={{ scale: 1.1 }}
-                    whileTap={{ scale: 0.95 }}
-                    animate={{ scale: buttons.B ? 0.95 : 1 }}
-                    onClick={() => handleActionButtonPress('B')}
-                  >
-                    B
-                  </motion.button>
-
-                  {/* A Button (Bottom) */}
-                  <motion.button
-                    className="absolute bottom-0 left-1/2 -translate-x-1/2 w-12 h-12 rounded-full bg-gradient-to-br from-yellow-400 to-yellow-500 text-white font-bold text-lg shadow-lg border-2 border-white flex items-center justify-center"
-                    whileHover={{ scale: 1.1 }}
-                    whileTap={{ scale: 0.95 }}
-                    animate={{ scale: buttons.A ? 0.95 : 1 }}
-                    onClick={() => handleActionButtonPress('A')}
-                  >
-                    A
-                  </motion.button>
+              {/* Robot actions */}
+              <div>
+                <h4 className="text-sm font-semibold text-gray-800 mb-2">🎯 Mapped Actions</h4>
+                <div className="text-xs text-gray-600 space-y-1">
+                  <div>🟡 A: {actionDescriptions.A?.name || 'Chưa cấu hình'}</div>
+                  <div>🔴 B: {actionDescriptions.B?.name || 'Chưa cấu hình'}</div>
+                  <div>🔵 X: {actionDescriptions.X?.name || 'Chưa cấu hình'}</div>
+                  <div>🟢 Y: {actionDescriptions.Y?.name || 'Chưa cấu hình'}</div>
                 </div>
+              </div>
 
-                {/* Action Labels */}
-                <div className="text-sm text-gray-700 text-center space-y-1 mt-2">
-                  <div className="flex items-center gap-2">
-                    <span>🟡 A:</span>
-                    <span className="font-medium">{actionDescriptions.A?.name || 'Chưa cấu hình'}</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <span>🔴 B:</span>
-                    <span className="font-medium">{actionDescriptions.B?.name || 'Chưa cấu hình'}</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <span>🔵 X:</span>
-                    <span className="font-medium">{actionDescriptions.X?.name || 'Chưa cấu hình'}</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <span>🟢 Y:</span>
-                    <span className="font-medium">{actionDescriptions.Y?.name || 'Chưa cấu hình'}</span>
-                  </div>
+              {/* Instructions */}
+              <div>
+                <h4 className="text-sm font-semibold text-gray-800 mb-2">📋 Instructions</h4>
+                <div className="text-xs text-gray-600 space-y-1">
+                  <div>• Kéo/nhấn joystick để di chuyển</div>
+                  <div>• Nhấn ABXY để gửi lệnh đến robot</div>
+                  <div>• Chọn robot trước khi điều khiển</div>
+                  <div>• Mở cấu hình để map nút</div>
                 </div>
               </div>
             </div>
-          </div>
+          </Card>
         </div>
 
-        {/* Bottom Status Panel */}
-        <Card className="bg-white/70 backdrop-blur-sm border border-gray-200 shadow-lg p-6">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-            {/* Joystick status */}
-            <div>
-              <h4 className="text-sm font-semibold text-gray-800 mb-2">🕹️ Joystick</h4>
-              <div className="text-xs text-gray-600">Left: ({(leftJoystick.x * 100).toFixed(1)}, {(leftJoystick.y * 100).toFixed(1)})</div>
-            </div>
-
-            {/* Buttons */}
-            <div>
-              <h4 className="text-sm font-semibold text-gray-800 mb-2">🎛️ Buttons</h4>
-              <div className="flex flex-wrap gap-2">
-                {Object.entries(buttons).map(([btn, pressed]) => (
-                  <Badge key={btn} variant={pressed ? 'default' : 'outline'} className={`px-3 py-1 ${pressed ? 'bg-blue-500 text-white' : 'bg-gray-100 text-gray-700'}`}>
-                    {btn}
-                  </Badge>
-                ))}
-              </div>
-            </div>
-
-            {/* Robot actions */}
-            <div>
-              <h4 className="text-sm font-semibold text-gray-800 mb-2">🎯 Mapped Actions</h4>
-              <div className="text-xs text-gray-600 space-y-1">
-                <div>🟡 A: {actionDescriptions.A?.name || 'Chưa cấu hình'}</div>
-                <div>🔴 B: {actionDescriptions.B?.name || 'Chưa cấu hình'}</div>
-                <div>🔵 X: {actionDescriptions.X?.name || 'Chưa cấu hình'}</div>
-                <div>🟢 Y: {actionDescriptions.Y?.name || 'Chưa cấu hình'}</div>
-              </div>
-            </div>
-
-            {/* Instructions */}
-            <div>
-              <h4 className="text-sm font-semibold text-gray-800 mb-2">📋 Instructions</h4>
-              <div className="text-xs text-gray-600 space-y-1">
-                <div>• Kéo/nhấn joystick để di chuyển</div>
-                <div>• Nhấn ABXY để gửi lệnh đến robot</div>
-                <div>• Chọn robot trước khi điều khiển</div>
-                <div>• Mở cấu hình để map nút</div>
-              </div>
-            </div>
+        {/* Notification */}
+        {notify && (
+          <div
+            className={`fixed top-6 left-1/2 -translate-x-1/2 z-50 px-6 py-3 rounded-xl shadow-lg text-white font-semibold ${notify.type === 'success' ? 'bg-green-500' : 'bg-red-500'
+              }`}
+          >
+            {notify.msg}
           </div>
-        </Card>
+        )}
+
+        {/* Config modal */}
+        <JoystickConfigurationModal
+          isOpen={isConfigModalOpen}
+          onClose={() => {
+            setIsConfigModalOpen(false);
+            // react-query will handle refetch if needed
+          }}
+          existingJoysticks={effectiveJoystickData?.joysticks || []}
+          onSuccess={() => {
+            // Modal already shows toast notification, no need for duplicate
+          }}
+        />
       </div>
-
-      {/* Notification */}
-      {notify && (
-        <div
-          className={`fixed top-6 left-1/2 -translate-x-1/2 z-50 px-6 py-3 rounded-xl shadow-lg text-white font-semibold ${
-            notify.type === 'success' ? 'bg-green-500' : 'bg-red-500'
-          }`}
-        >
-          {notify.msg}
-        </div>
-      )}
-
-      {/* Config modal */}
-      <JoystickConfigurationModal
-        isOpen={isConfigModalOpen}
-        onClose={() => {
-          setIsConfigModalOpen(false);
-          // react-query will handle refetch if needed
-        }}
-        existingJoysticks={effectiveJoystickData?.joysticks || []}
-        onSuccess={() => {
-          // Modal already shows toast notification, no need for duplicate
-        }}
-      />
-    </div>
+    </ProtectAddon>
   );
 }

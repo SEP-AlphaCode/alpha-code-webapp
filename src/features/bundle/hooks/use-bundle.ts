@@ -1,14 +1,11 @@
 import { useQuery } from '@tanstack/react-query'
-import { coursesHttp } from '@/utils/http'
+import { getActiveBundleById } from '../api/bundle-api'
 
 export const useBundle = () => {
   const useGetActiveBundleById = (id: string) =>
     useQuery({
       queryKey: ['bundle', id],
-      queryFn: async () => {
-        const resp = await coursesHttp.get(`/bundles/active/${id}`)
-        return resp.data
-      },
+      queryFn: () => getActiveBundleById(id),
       enabled: !!id,
     })
 

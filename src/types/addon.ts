@@ -56,3 +56,9 @@ export type AddonPaginationResponse = {
   total_pages: number
   total_count: number
 }
+
+export interface ValidateAddon {
+  sessionKey?: string;
+  accountId?: string;
+  category?: number;
+}
