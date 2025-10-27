@@ -4,6 +4,7 @@ import { JavascriptGenerator } from 'blockly/javascript';
 import { robotCategory, toolbox, ToolboxDef } from './toolbox';
 import { ToolboxItemInfo } from '@/types/blockly';
 import * as uuid from 'uuid'
+import { injectLoopCheck } from './format-code';
 
 export const HUE = 175
 export const CATEGORY_NAME = 'Robot'
@@ -33,25 +34,29 @@ export const blockControls = (ws: Blockly.WorkspaceSvg): Operations => {
             //yield checks
             const startTimeVarName = '_' + (uuid.v4() + '_' + uuid.v4() + '_' + uuid.v4()).replaceAll('-', '_')
             const nowVarName = '_' + (uuid.v4() + '_' + uuid.v4() + '_' + uuid.v4()).replaceAll('-', '_')
-            return `
-let ${startTimeVarName} = Date.now(), ${nowVarName} = ${startTimeVarName}
-function increaseLoop() {
-${nowVarName} = Date.now()
-if(${nowVarName} - ${startTimeVarName} >= 5 * 1000) throw Exception("Time exceeded")
-}
-
+            let mainFn = `
 function main() {
 try{
-const list = []
 ${main}
-return {list: list, success: true}
 }
 catch(e) {
-return {list: [], success: false}
+console.log('Error in main function', e);
+return {
+error: e.message
 }
-}
+}}
 
 return main()`
+            const injected = injectLoopCheck(mainFn)
+            mainFn = injected.result
+            const checkFnName = injected.checkFnName
+            const loopCheck = `let ${startTimeVarName} = Date.now(), ${nowVarName} = ${startTimeVarName}
+function ${checkFnName}() {
+${nowVarName} = Date.now()
+//console.log('Checking loop time', ${nowVarName} - ${startTimeVarName})
+if(${nowVarName} - ${startTimeVarName} >= 0.25 * 1000) throw Error("Time exceeded")
+}`
+            return loopCheck + '\n' + mainFn
         }
         catch (e) {
             console.log(e);
@@ -138,7 +143,7 @@ return main()`
                 x.type = robotModelId + x.type
             }
         })
-        
+
         def.contents.push(newRobotCategory)
         return def
     }

@@ -10,6 +10,8 @@ import 'blockly/blocks';
 import 'blockly/javascript'; // Or the generator of your choice
 import * as Vi from 'blockly/msg/vi';
 import { registerFieldColour } from '@blockly/field-colour';
+import ESLint from 'eslint';
+import { formatCode } from '@/components/blockly-logic/format-code';
 
 type BlocklyUIProps = {
     robotModelId: string,
@@ -33,43 +35,23 @@ export default function BlocklyUI({ robotModelId, serial, hasAllData, data }: Bl
     const [definedModels, setDefinedModel] = useState(new Set<string>())
     const [isRunning, setIsRunning] = useState(false)
     const key = 'AlphaCode'
-
     const executeCode = (code: string) => {
         setIsRunning(true)
         toast.success('Đang chạy')
         try {
-            const worker = new Worker(
-                URL.createObjectURL(
-                    new Blob([`
-          self.onmessage = e => {
-            try {
-              const fn = new Function(e.data.code);
-              const res = fn();
-              self.postMessage({ result: res });
-            } catch (err) {
-              self.postMessage({ error: err.message });
+            // Use Function constructor to create an async function
+            const fn = new Function(code)
+            const x = fn()
+            if(x.error){
+                toast.error(x.error)
             }
-          };
-        `], { type: "application/javascript" })
-                )
-            )
-            worker.onmessage = e => {
-                const rs = e.data.result as { success: boolean, list: { code?: string, text?: string, lang?: string, type: string }[] };
-                console.log(rs);
-                if(rs.success){
-                    toast.success('Đã chạy xong')
-                } else {
-                    toast.error('Thất bại')
-                }        
-                worker.terminate();
-                setIsRunning(false)
-            };
-
-            worker.postMessage({ code });
-
-        } catch (err) {
-            console.log(err);
-        } finally {
+        }
+        catch (e) {
+            toast.error('Lỗi biên dịch khi chạy mã')
+            console.log(e);
+        }
+        finally {
+            setIsRunning(false)
         }
     }
 
@@ -83,7 +65,7 @@ export default function BlocklyUI({ robotModelId, serial, hasAllData, data }: Bl
             Blockly.common.defineBlocksWithJsonArray(allBlocks)
         }
 
-        const gen = buildCodeGeneratorForModelId(robotModelId)
+        const gen = buildCodeGeneratorForModelId(robotModelId, serial)
         setCodeGenerator(gen)
 
         workspaceRef.current?.updateToolbox(wsHelper.getDefaultToolbox())
@@ -155,7 +137,11 @@ export default function BlocklyUI({ robotModelId, serial, hasAllData, data }: Bl
                         if (!codeGenerator || !wsHelper) return;
                         try {
                             const code = wsHelper.makeListCode(codeGenerator);
-                            setResultCode(code);
+                            formatCode(code).then(formatted => {
+                                setResultCode(formatted)
+                            }).catch(() => {
+                                setResultCode(code)
+                            })
                         } catch { }
                     }}
                     disabled={isRunning}
