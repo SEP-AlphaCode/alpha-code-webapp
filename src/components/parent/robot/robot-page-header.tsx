@@ -8,6 +8,7 @@ import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@
 import { Trash2, PlusCircle } from "lucide-react"
 import { useRobotStore } from "@/hooks/use-robot-store"
 import { deleteRobot } from "@/features/robots/api/robot-api"
+// license key is read from sessionStorage (key)
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog"
 import { useQueryClient } from "@tanstack/react-query"
 import { toast } from "sonner"
@@ -23,12 +24,40 @@ export function RobotPageHeader({ title, subtitle, onModelSelect, onAddRobot }: 
   const { connectMode, setConnectMode, robots, selectedRobot, removeRobot } = useRobotStore()
   const [selectedModel, setSelectedModel] = useState<string>("")
   const [isDeleting, setIsDeleting] = useState(false)
+  const [checkingLicense, setCheckingLicense] = useState(false)
   const [confirmOpen, setConfirmOpen] = useState(false)
   const queryClient = useQueryClient()
 
-  const handleToggle = (checked: boolean) => {
-    setConnectMode(checked ? "multi" : "single")
+  const handleToggle = async (checked: boolean) => {
+    // Turning ON multi-mode -> only check for a stored license key in sessionStorage
+    if (checked) {
+      try {
+        setCheckingLicense(true)
+
+        const sessionKey =
+          typeof window !== "undefined"
+            ? sessionStorage.getItem("key") || null
+            : null
+
+        if (sessionKey) {
+          setConnectMode("multi")
+        } else {
+          toast.error("Vui lòng mua license key để bật Multi Mode.")
+          setConnectMode("single")
+        }
+      } catch (err) {
+        console.error("License key check failed", err)
+        toast.error("Không thể kiểm tra license. Vui lòng thử lại sau.")
+        setConnectMode("single")
+      } finally {
+        setCheckingLicense(false)
+      }
+    } else {
+      // Turning OFF -> always allow
+      setConnectMode("single")
+    }
   }
+
 
   const modelOptions = useMemo(() => {
     const models = robots.map((r) => ({ id: r.robotModelId, name: r.robotModelName }))
@@ -119,7 +148,13 @@ export function RobotPageHeader({ title, subtitle, onModelSelect, onAddRobot }: 
             <Label htmlFor="connect-mode" className="text-sm font-medium text-gray-700 select-none">
               {connectMode === "single" ? "Single Mode" : "Multi Mode"}
             </Label>
-            <Switch id="connect-mode" checked={connectMode === "multi"} onCheckedChange={handleToggle} />
+            <Switch
+              id="connect-mode"
+              checked={connectMode === "multi"}
+              onCheckedChange={handleToggle}
+              disabled={checkingLicense}
+              aria-busy={checkingLicense}
+            />
           </div>
         </div>
       </header>

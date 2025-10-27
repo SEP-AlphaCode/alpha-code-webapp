@@ -37,6 +37,7 @@ import { ActionActivites } from "@/types/action"
 import { getUserInfoFromToken } from "@/utils/tokenUtils"
 import LoadingState from "@/components/loading-state"
 import ErrorState from "@/components/error-state"
+import ProtectAddon from "@/components/protect-addon"
 
 export default function ActivitiesPage() {
   const renderCount = useRef(0);
@@ -342,7 +343,7 @@ export default function ActivitiesPage() {
     if (hasError) {
       return (
         <div className="min-h-screen bg-gradient-to-br from-slate-50 via-gray-100 to-slate-200 p-6 flex items-center justify-center">
-          <ErrorState error={error} onRetry={refetch}/>
+          <ErrorState error={error} onRetry={refetch} />
         </div>
       );
     }
@@ -415,412 +416,414 @@ export default function ActivitiesPage() {
   }
 
   return (
-    <div className="min-h-screen bg-white relative overflow-hidden p-5">
-      {/* Background Grid Pattern */}
-      <div
-        className="absolute inset-0 opacity-[0.06] pointer-events-none"
-        style={{
-          backgroundImage: `
+    <ProtectAddon category={3}>
+      <div className="min-h-screen bg-white relative overflow-hidden p-5">
+        {/* Background Grid Pattern */}
+        <div
+          className="absolute inset-0 opacity-[0.06] pointer-events-none"
+          style={{
+            backgroundImage: `
             linear-gradient(to right, #000 1px, transparent 1px),
             linear-gradient(to bottom, #000 1px, transparent 1px)
           `,
-          backgroundSize: '40px 40px'
-        }}
-      ></div>
+            backgroundSize: '40px 40px'
+          }}
+        ></div>
 
-      {/* Decorative Grid Squares */}
-      <div className="absolute inset-0 pointer-events-none overflow-hidden">
-        {/* Top Left Squares */}
-        <div className="absolute top-20 left-20 w-16 h-16 border-2 border-blue-200 rounded-lg rotate-12 opacity-50 animate-pulse"></div>
-        <div className="absolute top-40 left-40 w-12 h-12 border-2 border-purple-200 rounded-md rotate-45 opacity-45 animate-bounce"></div>
-        <div className="absolute top-60 left-10 w-8 h-8 border-2 border-green-200 rounded-sm -rotate-12 opacity-55 animate-spin" style={{ animationDuration: '8s' }}></div>
+        {/* Decorative Grid Squares */}
+        <div className="absolute inset-0 pointer-events-none overflow-hidden">
+          {/* Top Left Squares */}
+          <div className="absolute top-20 left-20 w-16 h-16 border-2 border-blue-200 rounded-lg rotate-12 opacity-50 animate-pulse"></div>
+          <div className="absolute top-40 left-40 w-12 h-12 border-2 border-purple-200 rounded-md rotate-45 opacity-45 animate-bounce"></div>
+          <div className="absolute top-60 left-10 w-8 h-8 border-2 border-green-200 rounded-sm -rotate-12 opacity-55 animate-spin" style={{ animationDuration: '8s' }}></div>
 
-        {/* Top Right Squares */}
-        <div className="absolute top-32 right-24 w-20 h-20 border-2 border-orange-200 rounded-xl -rotate-6 opacity-40 animate-pulse" style={{ animationDelay: '1s' }}></div>
-        <div className="absolute top-16 right-48 w-14 h-14 border-2 border-pink-200 rounded-lg rotate-30 opacity-50 animate-bounce" style={{ animationDelay: '0.5s' }}></div>
-        <div className="absolute top-72 right-16 w-10 h-10 border-2 border-indigo-200 rounded-md -rotate-45 opacity-45 animate-spin" style={{ animationDuration: '6s', animationDirection: 'reverse' }}></div>
+          {/* Top Right Squares */}
+          <div className="absolute top-32 right-24 w-20 h-20 border-2 border-orange-200 rounded-xl -rotate-6 opacity-40 animate-pulse" style={{ animationDelay: '1s' }}></div>
+          <div className="absolute top-16 right-48 w-14 h-14 border-2 border-pink-200 rounded-lg rotate-30 opacity-50 animate-bounce" style={{ animationDelay: '0.5s' }}></div>
+          <div className="absolute top-72 right-16 w-10 h-10 border-2 border-indigo-200 rounded-md -rotate-45 opacity-45 animate-spin" style={{ animationDuration: '6s', animationDirection: 'reverse' }}></div>
 
-        {/* Bottom Left Squares */}
-        <div className="absolute bottom-40 left-32 w-18 h-18 border-2 border-cyan-200 rounded-lg rotate-15 opacity-50 animate-pulse" style={{ animationDelay: '2s' }}></div>
-        <div className="absolute bottom-20 left-16 w-12 h-12 border-2 border-yellow-200 rounded-md -rotate-30 opacity-55 animate-bounce" style={{ animationDelay: '1.5s' }}></div>
-        <div className="absolute bottom-60 left-60 w-8 h-8 border-2 border-red-200 rounded-sm rotate-60 opacity-45 animate-spin" style={{ animationDuration: '10s' }}></div>
+          {/* Bottom Left Squares */}
+          <div className="absolute bottom-40 left-32 w-18 h-18 border-2 border-cyan-200 rounded-lg rotate-15 opacity-50 animate-pulse" style={{ animationDelay: '2s' }}></div>
+          <div className="absolute bottom-20 left-16 w-12 h-12 border-2 border-yellow-200 rounded-md -rotate-30 opacity-55 animate-bounce" style={{ animationDelay: '1.5s' }}></div>
+          <div className="absolute bottom-60 left-60 w-8 h-8 border-2 border-red-200 rounded-sm rotate-60 opacity-45 animate-spin" style={{ animationDuration: '10s' }}></div>
 
-        {/* Bottom Right Squares */}
-        <div className="absolute bottom-32 right-40 w-16 h-16 border-2 border-teal-200 rounded-lg -rotate-20 opacity-50 animate-pulse" style={{ animationDelay: '0.8s' }}></div>
-        <div className="absolute bottom-16 right-20 w-14 h-14 border-2 border-violet-200 rounded-md rotate-45 opacity-45 animate-bounce" style={{ animationDelay: '2.5s' }}></div>
-        <div className="absolute bottom-48 right-64 w-10 h-10 border-2 border-emerald-200 rounded-sm -rotate-15 opacity-55 animate-spin" style={{ animationDuration: '7s', animationDirection: 'reverse' }}></div>
+          {/* Bottom Right Squares */}
+          <div className="absolute bottom-32 right-40 w-16 h-16 border-2 border-teal-200 rounded-lg -rotate-20 opacity-50 animate-pulse" style={{ animationDelay: '0.8s' }}></div>
+          <div className="absolute bottom-16 right-20 w-14 h-14 border-2 border-violet-200 rounded-md rotate-45 opacity-45 animate-bounce" style={{ animationDelay: '2.5s' }}></div>
+          <div className="absolute bottom-48 right-64 w-10 h-10 border-2 border-emerald-200 rounded-sm -rotate-15 opacity-55 animate-spin" style={{ animationDuration: '7s', animationDirection: 'reverse' }}></div>
 
-        {/* Center Area Squares - Subtle with gentle animations */}
-        <div className="absolute top-1/2 left-1/4 w-6 h-6 border border-gray-200 rounded-sm rotate-45 opacity-35 animate-pulse" style={{ animationDelay: '3s' }}></div>
-        <div className="absolute top-1/3 right-1/3 w-8 h-8 border border-gray-200 rounded-md -rotate-30 opacity-35 animate-pulse" style={{ animationDelay: '4s' }}></div>
-        <div className="absolute bottom-1/3 left-1/2 w-4 h-4 border border-gray-200 rounded-sm rotate-12 opacity-40 animate-pulse" style={{ animationDelay: '1.2s' }}></div>
-      </div>
-
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 relative z-10">
-        {/* Header Section */}
-        <div className="text-center mb-16">
-          {/* Alpha Mini Badge */}
-          <div className="inline-flex items-center gap-3 px-6 py-3 bg-white backdrop-blur-sm border border-gray-200 text-gray-700 rounded-2xl text-sm font-semibold mb-8 shadow-lg hover:shadow-xl transition-all duration-300">
-            <div className="w-8 h-8 bg-gray-600 rounded-lg flex items-center justify-center">
-              <Activity className="w-5 h-5 text-white" />
-            </div>
-            Alpha Mini Activities
-            <Star className="w-5 h-5 text-gray-600" />
-          </div>
-
-          {/* Main Title */}
-          <div className="space-y-6">
-            <h1 className="text-6xl md:text-7xl font-bold text-gray-900 mb-6 tracking-tight">
-              Learning
-              <span className="block text-gray-700 py-2">
-                Activities Hub
-              </span>
-            </h1>
-
-            <p className="text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed">
-              Tạo và quản lý các hoạt động học tập tương tác với robot Alpha Mini
-            </p>
-
-            {/* Features */}
-            <div className="flex flex-wrap justify-center gap-6 mt-8">
-              <div className="flex items-center gap-2 text-gray-600">
-                <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
-                <span className="text-sm font-medium">Bài học tương tác</span>
-              </div>
-              <div className="flex items-center gap-2 text-gray-600">
-                <div className="w-2 h-2 bg-purple-500 rounded-full"></div>
-                <span className="text-sm font-medium">Trò chơi giáo dục</span>
-              </div>
-              <div className="flex items-center gap-2 text-gray-600">
-                <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                <span className="text-sm font-medium">Theo dõi tiến độ</span>
-              </div>
-            </div>
-          </div>
+          {/* Center Area Squares - Subtle with gentle animations */}
+          <div className="absolute top-1/2 left-1/4 w-6 h-6 border border-gray-200 rounded-sm rotate-45 opacity-35 animate-pulse" style={{ animationDelay: '3s' }}></div>
+          <div className="absolute top-1/3 right-1/3 w-8 h-8 border border-gray-200 rounded-md -rotate-30 opacity-35 animate-pulse" style={{ animationDelay: '4s' }}></div>
+          <div className="absolute bottom-1/3 left-1/2 w-4 h-4 border border-gray-200 rounded-sm rotate-12 opacity-40 animate-pulse" style={{ animationDelay: '1.2s' }}></div>
         </div>
 
-        {/* Controls Section */}
-        <div className="flex flex-col sm:flex-row gap-4 mb-8">
-          <div className="flex-1 relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
-            <Input
-              placeholder="Tìm kiếm hoạt động..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-10 pr-10"
-            />
-            {searchTerm !== debouncedSearchTerm && (
-              <Loader2 className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4 animate-spin" />
-            )}
-          </div>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 relative z-10">
+          {/* Header Section */}
+          <div className="text-center mb-16">
+            {/* Alpha Mini Badge */}
+            <div className="inline-flex items-center gap-3 px-6 py-3 bg-white backdrop-blur-sm border border-gray-200 text-gray-700 rounded-2xl text-sm font-semibold mb-8 shadow-lg hover:shadow-xl transition-all duration-300">
+              <div className="w-8 h-8 bg-gray-600 rounded-lg flex items-center justify-center">
+                <Activity className="w-5 h-5 text-white" />
+              </div>
+              Hành động của Alpha Mini
+              <Star className="w-5 h-5 text-gray-600" />
+            </div>
 
-          <div className="flex gap-2">
-            <PerPageSelector
-              perPage={perPage}
-              onPerPageChange={setPerPage}
-              options={[6, 12, 24, 48]}
-            />
+            {/* Main Title */}
+            <div className="space-y-6">
+              <h1 className="text-6xl md:text-7xl font-bold text-gray-900 mb-6 tracking-tight">
+                Học tập
+                <span className="block text-gray-700 py-2">
+                  Trung tâm hoạt động
+                </span>
+              </h1>
 
-            <Select value={filterType} onValueChange={setFilterType}>
-              <SelectTrigger className="w-40">
-                <Filter className="w-4 h-4 mr-2" />
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">Tất cả loại</SelectItem>
-                <SelectItem value="dance_with_music">Nhảy với nhạc</SelectItem>
-                <SelectItem value="lesson">Bài học</SelectItem>
-                <SelectItem value="game">Trò chơi</SelectItem>
-                <SelectItem value="exercise">Bài tập</SelectItem>
-                <SelectItem value="project">Dự án</SelectItem>
-              </SelectContent>
-            </Select>
-
-            <Select value={filterStatus} onValueChange={setFilterStatus}>
-              <SelectTrigger className="w-40">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">Tất cả trạng thái</SelectItem>
-                <SelectItem value="1">Đã xuất bản</SelectItem>
-                <SelectItem value="0">Bản nháp</SelectItem>
-                <SelectItem value="2">Đã lưu trữ</SelectItem>
-                <SelectItem value="dance_with_music">Nhảy với nhạc</SelectItem>
-              </SelectContent>
-            </Select>
-
-            <Dialog open={isCreateModalOpen} onOpenChange={setIsCreateModalOpen}>
-              <DialogTrigger asChild>
-                <Button>
-                  <Plus className="w-4 h-4 mr-2" />
-                  Tạo mới
-                </Button>
-              </DialogTrigger>
-              <DialogContent className="max-w-2xl">
-                <DialogHeader>
-                  <DialogTitle>Tạo hoạt động mới</DialogTitle>
-                </DialogHeader>
-                <CreateActivityForm />
-              </DialogContent>
-            </Dialog>
-
-            <Button
-              variant="destructive"
-              onClick={handleStopAllActions}
-              disabled={!selectedRobotSerial || isRobotLoading}
-            >
-              <Square className="w-4 h-4 mr-2" />
-              Dừng tất cả
-            </Button>
-          </div>
-        </div>
-
-        {/* Activities Grid */}
-        {isLoading ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {[...Array(6)].map((_, index) => (
-              <Card key={index} className="animate-pulse">
-                <CardHeader>
-                  <div className="h-4 bg-gray-300 rounded w-3/4"></div>
-                  <div className="h-6 bg-gray-300 rounded w-full"></div>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-3">
-                    <div className="h-4 bg-gray-300 rounded w-full"></div>
-                    <div className="h-4 bg-gray-300 rounded w-2/3"></div>
-                    <div className="flex gap-2">
-                      <div className="h-6 bg-gray-300 rounded w-16"></div>
-                      <div className="h-6 bg-gray-300 rounded w-20"></div>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        ) : error &&
-          !(error && typeof error === 'object' &&
-            (('name' in error && error.name === 'CanceledError') ||
-              ('code' in error && error.code === 'ERR_CANCELED'))) ? (
-          <div className="text-center py-16">
-            <div className="text-red-500 mb-4">
-              <Activity className="w-16 h-16 mx-auto mb-4" />
-              <h3 className="text-lg font-semibold mb-2">Lỗi khi tải dữ liệu</h3>
-              <p className="text-gray-600">
-                {error && typeof error === 'object' && 'message' in error
-                  ? (error as { message: string }).message
-                  : 'Đã xảy ra lỗi khi tải dữ liệu'}
+              <p className="text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed">
+                Tạo và quản lý các hoạt động học tập tương tác với robot Alpha Mini
               </p>
+
+              {/* Features */}
+              <div className="flex flex-wrap justify-center gap-6 mt-8">
+                <div className="flex items-center gap-2 text-gray-600">
+                  <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+                  <span className="text-sm font-medium">Bài học tương tác</span>
+                </div>
+                <div className="flex items-center gap-2 text-gray-600">
+                  <div className="w-2 h-2 bg-purple-500 rounded-full"></div>
+                  <span className="text-sm font-medium">Trò chơi giáo dục</span>
+                </div>
+                <div className="flex items-center gap-2 text-gray-600">
+                  <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                  <span className="text-sm font-medium">Theo dõi tiến độ</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Controls Section */}
+          <div className="flex flex-col sm:flex-row gap-4 mb-8">
+            <div className="flex-1 relative">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+              <Input
+                placeholder="Tìm kiếm hoạt động..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="pl-10 pr-10"
+              />
+              {searchTerm !== debouncedSearchTerm && (
+                <Loader2 className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4 animate-spin" />
+              )}
+            </div>
+
+            <div className="flex gap-2">
+              <PerPageSelector
+                perPage={perPage}
+                onPerPageChange={setPerPage}
+                options={[6, 12, 24, 48]}
+              />
+
+              <Select value={filterType} onValueChange={setFilterType}>
+                <SelectTrigger className="w-40">
+                  <Filter className="w-4 h-4 mr-2" />
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Tất cả loại</SelectItem>
+                  <SelectItem value="dance_with_music">Nhảy với nhạc</SelectItem>
+                  <SelectItem value="lesson">Bài học</SelectItem>
+                  <SelectItem value="game">Trò chơi</SelectItem>
+                  <SelectItem value="exercise">Bài tập</SelectItem>
+                  <SelectItem value="project">Dự án</SelectItem>
+                </SelectContent>
+              </Select>
+
+              <Select value={filterStatus} onValueChange={setFilterStatus}>
+                <SelectTrigger className="w-40">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Tất cả trạng thái</SelectItem>
+                  <SelectItem value="1">Đã xuất bản</SelectItem>
+                  <SelectItem value="0">Bản nháp</SelectItem>
+                  <SelectItem value="2">Đã lưu trữ</SelectItem>
+                  <SelectItem value="dance_with_music">Nhảy với nhạc</SelectItem>
+                </SelectContent>
+              </Select>
+
+              <Dialog open={isCreateModalOpen} onOpenChange={setIsCreateModalOpen}>
+                <DialogTrigger asChild>
+                  <Button>
+                    <Plus className="w-4 h-4 mr-2" />
+                    Tạo mới
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className="max-w-2xl">
+                  <DialogHeader>
+                    <DialogTitle>Tạo hoạt động mới</DialogTitle>
+                  </DialogHeader>
+                  <CreateActivityForm />
+                </DialogContent>
+              </Dialog>
+
               <Button
-                onClick={() => window.location.reload()}
-                variant="outline"
-                className="mt-4"
+                variant="destructive"
+                onClick={handleStopAllActions}
+                disabled={!selectedRobotSerial || isRobotLoading}
               >
-                Thử lại
+                <Square className="w-4 h-4 mr-2" />
+                Dừng tất cả
               </Button>
             </div>
           </div>
-        ) : filteredActivities.length === 0 ? (
-          <div className="text-center py-16">
-            <Activity className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-            <h3 className="text-lg font-semibold text-gray-900 mb-2">Không tìm thấy hoạt động</h3>
-            <p className="text-gray-600 mb-6">Thử thay đổi bộ lọc hoặc tạo hoạt động mới</p>
-            <Button onClick={() => setIsCreateModalOpen(true)}>
-              <Plus className="w-4 h-4 mr-2" />
-              Tạo hoạt động đầu tiên
-            </Button>
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {filteredActivities.map((activity) => (
-              <Card key={activity.id} className="group hover:shadow-lg transition-all duration-200 border-0 shadow-md">
-                <CardHeader className="pb-3">
-                  <div className="flex items-start justify-between">
-                    <div className="flex items-center gap-2">
-                      {getTypeIcon(activity.type)}
-                      <Badge variant="secondary" className={getTypeColor(activity.type)}>
-                        {activity.type === "lesson" ? "Bài học" :
-                          activity.type === "game" ? "Trò chơi" :
-                            activity.type === "exercise" ? "Bài tập" : "Dự án"}
+
+          {/* Activities Grid */}
+          {isLoading ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {[...Array(6)].map((_, index) => (
+                <Card key={index} className="animate-pulse">
+                  <CardHeader>
+                    <div className="h-4 bg-gray-300 rounded w-3/4"></div>
+                    <div className="h-6 bg-gray-300 rounded w-full"></div>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-3">
+                      <div className="h-4 bg-gray-300 rounded w-full"></div>
+                      <div className="h-4 bg-gray-300 rounded w-2/3"></div>
+                      <div className="flex gap-2">
+                        <div className="h-6 bg-gray-300 rounded w-16"></div>
+                        <div className="h-6 bg-gray-300 rounded w-20"></div>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          ) : error &&
+            !(error && typeof error === 'object' &&
+              (('name' in error && error.name === 'CanceledError') ||
+                ('code' in error && error.code === 'ERR_CANCELED'))) ? (
+            <div className="text-center py-16">
+              <div className="text-red-500 mb-4">
+                <Activity className="w-16 h-16 mx-auto mb-4" />
+                <h3 className="text-lg font-semibold mb-2">Lỗi khi tải dữ liệu</h3>
+                <p className="text-gray-600">
+                  {error && typeof error === 'object' && 'message' in error
+                    ? (error as { message: string }).message
+                    : 'Đã xảy ra lỗi khi tải dữ liệu'}
+                </p>
+                <Button
+                  onClick={() => window.location.reload()}
+                  variant="outline"
+                  className="mt-4"
+                >
+                  Thử lại
+                </Button>
+              </div>
+            </div>
+          ) : filteredActivities.length === 0 ? (
+            <div className="text-center py-16">
+              <Activity className="w-16 h-16 text-gray-400 mx-auto mb-4" />
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">Không tìm thấy hoạt động</h3>
+              <p className="text-gray-600 mb-6">Thử thay đổi bộ lọc hoặc tạo hoạt động mới</p>
+              <Button onClick={() => setIsCreateModalOpen(true)}>
+                <Plus className="w-4 h-4 mr-2" />
+                Tạo hoạt động đầu tiên
+              </Button>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {filteredActivities.map((activity) => (
+                <Card key={activity.id} className="group hover:shadow-lg transition-all duration-200 border-0 shadow-md">
+                  <CardHeader className="pb-3">
+                    <div className="flex items-start justify-between">
+                      <div className="flex items-center gap-2">
+                        {getTypeIcon(activity.type)}
+                        <Badge variant="secondary" className={getTypeColor(activity.type)}>
+                          {activity.type === "lesson" ? "Bài học" :
+                            activity.type === "game" ? "Trò chơi" :
+                              activity.type === "exercise" ? "Bài tập" : "Dự án"}
+                        </Badge>
+                      </div>
+                      <Button variant="ghost" size="sm" className="opacity-0 group-hover:opacity-100 transition-opacity">
+                        <MoreVertical className="w-4 h-4" />
+                      </Button>
+                    </div>
+                    <CardTitle className="text-xl line-clamp-2">{activity.name}</CardTitle>
+                  </CardHeader>
+
+                  <CardContent className="space-y-4">
+                    {/* Hiển thị thông tin cho dance_with_music */}
+                    {activity.type === "dance_with_music" && activity.data && activity.data.activity ? (
+                      <div className="space-y-3">
+                        <div className="text-sm text-gray-600">
+                          <div className="flex items-center gap-2 mb-2">
+                            <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                            <span className="font-medium">Hoạt động nhảy múa với AI</span>
+                          </div>
+                          {activity.data.activity.actions && (
+                            <div className="grid grid-cols-2 gap-4 p-3 bg-gray-50 rounded-lg">
+                              <div>
+                                <span className="text-xs text-gray-500">Số hành động:</span>
+                                <p className="font-semibold text-lg text-blue-600">{activity.data.activity.actions.length}</p>
+                              </div>
+                              <div>
+                                <span className="text-xs text-gray-500">Thời lượng:</span>
+                                <p className="font-semibold text-lg text-green-600">
+                                  {activity.data.music_info?.duration ||
+                                    Math.max(...activity.data.activity.actions.map((a: ActionActivites) => a.start_time + a.duration)).toFixed(1)}s
+                                </p>
+                              </div>
+                            </div>
+                          )}
+                          {activity.data.music_info?.name && (
+                            <div className="flex items-center gap-2 mt-2 text-sm text-purple-600 bg-purple-50 p-2 rounded">
+                              <span>🎵</span>
+                              <span className="font-medium">{activity.data.music_info.name}</span>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    ) : (
+                      <p className="text-gray-600 text-sm line-clamp-3">Hoạt động Alpha Mini - {activity.type}</p>
+                    )}
+
+                    <div className="flex flex-wrap gap-2">
+                      <Badge variant="outline" className="bg-blue-100 text-blue-800">
+                        {activity.type === "dance_with_music" ? "Nhảy với nhạc" : activity.type}
+                      </Badge>
+                      <Badge variant="outline" className={getStatusColor(activity.status)}>
+                        {getStatusText(activity.status)}
                       </Badge>
                     </div>
-                    <Button variant="ghost" size="sm" className="opacity-0 group-hover:opacity-100 transition-opacity">
-                      <MoreVertical className="w-4 h-4" />
-                    </Button>
-                  </div>
-                  <CardTitle className="text-xl line-clamp-2">{activity.name}</CardTitle>
-                </CardHeader>
 
-                <CardContent className="space-y-4">
-                  {/* Hiển thị thông tin cho dance_with_music */}
-                  {activity.type === "dance_with_music" && activity.data && activity.data.activity ? (
-                    <div className="space-y-3">
-                      <div className="text-sm text-gray-600">
-                        <div className="flex items-center gap-2 mb-2">
-                          <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                          <span className="font-medium">Hoạt động nhảy múa với AI</span>
+                    <div className="flex items-center justify-between text-sm text-gray-500">
+                      <div className="flex items-center gap-4">
+                        <div className="flex items-center gap-1">
+                          <Clock className="w-4 h-4" />
+                          {activity.type === "dance_with_music" && activity.data?.music_info?.duration
+                            ? `${activity.data.music_info.duration}s`
+                            : "30 phút"
+                          }
                         </div>
-                        {activity.data.activity.actions && (
-                          <div className="grid grid-cols-2 gap-4 p-3 bg-gray-50 rounded-lg">
-                            <div>
-                              <span className="text-xs text-gray-500">Số hành động:</span>
-                              <p className="font-semibold text-lg text-blue-600">{activity.data.activity.actions.length}</p>
-                            </div>
-                            <div>
-                              <span className="text-xs text-gray-500">Thời lượng:</span>
-                              <p className="font-semibold text-lg text-green-600">
-                                {activity.data.music_info?.duration ||
-                                  Math.max(...activity.data.activity.actions.map((a: ActionActivites) => a.start_time + a.duration)).toFixed(1)}s
-                              </p>
-                            </div>
-                          </div>
+                        <div className="flex items-center gap-1">
+                          <Activity className="w-4 h-4" />
+                          {activity.type === "dance_with_music" && activity.data?.activity?.actions?.length
+                            ? `${activity.data.activity.actions.length} hành động`
+                            : "Hoạt động"
+                          }
+                        </div>
+                      </div>
+                      <div className="text-xs text-gray-400">
+                        {formatDate(activity.createdDate)}
+                      </div>
+                    </div>
+
+                    <div className="flex gap-2 pt-4">
+                      <Button
+                        size="sm"
+                        className="flex-1"
+                        onClick={() => handleStartActivity(activity)}
+                        disabled={isRobotLoading || !selectedRobotSerial}
+                      >
+                        {isRobotLoading ? (
+                          <Loader2 className="w-4 h-4 mr-1 animate-spin" />
+                        ) : (
+                          <Play className="w-4 h-4 mr-1" />
                         )}
-                        {activity.data.music_info?.name && (
-                          <div className="flex items-center gap-2 mt-2 text-sm text-purple-600 bg-purple-50 p-2 rounded">
-                            <span>🎵</span>
-                            <span className="font-medium">{activity.data.music_info.name}</span>
-                          </div>
-                        )}
-                      </div>
+                        Bắt đầu
+                      </Button>
+                      <Button size="sm" variant="outline">
+                        <Eye className="w-4 h-4" />
+                      </Button>
+                      <Button size="sm" variant="outline">
+                        <Edit className="w-4 h-4" />
+                      </Button>
                     </div>
-                  ) : (
-                    <p className="text-gray-600 text-sm line-clamp-3">Hoạt động Alpha Mini - {activity.type}</p>
-                  )}
 
-                  <div className="flex flex-wrap gap-2">
-                    <Badge variant="outline" className="bg-blue-100 text-blue-800">
-                      {activity.type === "dance_with_music" ? "Nhảy với nhạc" : activity.type}
-                    </Badge>
-                    <Badge variant="outline" className={getStatusColor(activity.status)}>
-                      {getStatusText(activity.status)}
-                    </Badge>
-                  </div>
-
-                  <div className="flex items-center justify-between text-sm text-gray-500">
-                    <div className="flex items-center gap-4">
-                      <div className="flex items-center gap-1">
-                        <Clock className="w-4 h-4" />
-                        {activity.type === "dance_with_music" && activity.data?.music_info?.duration
-                          ? `${activity.data.music_info.duration}s`
-                          : "30 phút"
-                        }
-                      </div>
-                      <div className="flex items-center gap-1">
-                        <Activity className="w-4 h-4" />
-                        {activity.type === "dance_with_music" && activity.data?.activity?.actions?.length
-                          ? `${activity.data.activity.actions.length} hành động`
-                          : "Hoạt động"
-                        }
-                      </div>
+                    <div className="text-xs text-gray-400 border-t pt-3">
+                      Cập nhật: {formatDate(activity.lastUpdate)}
                     </div>
-                    <div className="text-xs text-gray-400">
-                      {formatDate(activity.createdDate)}
-                    </div>
-                  </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          )}
 
-                  <div className="flex gap-2 pt-4">
-                    <Button
-                      size="sm"
-                      className="flex-1"
-                      onClick={() => handleStartActivity(activity)}
-                      disabled={isRobotLoading || !selectedRobotSerial}
-                    >
-                      {isRobotLoading ? (
-                        <Loader2 className="w-4 h-4 mr-1 animate-spin" />
-                      ) : (
-                        <Play className="w-4 h-4 mr-1" />
-                      )}
-                      Bắt đầu
-                    </Button>
-                    <Button size="sm" variant="outline">
-                      <Eye className="w-4 h-4" />
-                    </Button>
-                    <Button size="sm" variant="outline">
-                      <Edit className="w-4 h-4" />
-                    </Button>
-                  </div>
+          {/* Pagination */}
+          {pagination && !isLoading && activities.length > 0 && (
+            <div className="mt-8">
+              <Pagination
+                currentPage={pagination.page}
+                totalPages={pagination.total_pages}
+                onPageChange={setCurrentPage}
+                hasNext={pagination.has_next}
+                hasPrevious={pagination.has_previous}
+                totalCount={pagination.total_count}
+                perPage={pagination.per_page}
+                className="border-t pt-8"
+              />
+              {/* Note: Backend search only. Type/status filters are applied on frontend */}
+              {(filterType !== "all" || filterStatus !== "all") && (
+                <p className="text-sm text-gray-500 text-center mt-4">
+                  Hiển thị {filteredActivities.length} / {activities.length} kết quả (đã lọc)
+                </p>
+              )}
+            </div>
+          )}
 
-                  <div className="text-xs text-gray-400 border-t pt-3">
-                    Cập nhật: {formatDate(activity.lastUpdate)}
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
+          {/* Stats Section */}
+          <div className="mt-16 grid grid-cols-1 md:grid-cols-4 gap-6">
+            <Card className="text-center border-0 shadow-md">
+              <CardContent className="p-6">
+                <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <BookOpen className="w-6 h-6 text-blue-600" />
+                </div>
+                <h3 className="text-2xl font-bold text-gray-900">
+                  {activities.filter(a => a.type === "lesson").length}
+                </h3>
+                <p className="text-gray-600">Bài học</p>
+              </CardContent>
+            </Card>
+
+            <Card className="text-center border-0 shadow-md">
+              <CardContent className="p-6">
+                <div className="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <Trophy className="w-6 h-6 text-purple-600" />
+                </div>
+                <h3 className="text-2xl font-bold text-gray-900">
+                  {activities.filter(a => a.type === "game").length}
+                </h3>
+                <p className="text-gray-600">Trò chơi</p>
+              </CardContent>
+            </Card>
+
+            <Card className="text-center border-0 shadow-md">
+              <CardContent className="p-6">
+                <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <Users className="w-6 h-6 text-green-600" />
+                </div>
+                <h3 className="text-2xl font-bold text-gray-900">
+                  {activities.length}
+                </h3>
+                <p className="text-gray-600">Hoạt động</p>
+              </CardContent>
+            </Card>
+
+            <Card className="text-center border-0 shadow-md">
+              <CardContent className="p-6">
+                <div className="w-12 h-12 bg-orange-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <Clock className="w-6 h-6 text-orange-600" />
+                </div>
+                <h3 className="text-2xl font-bold text-gray-900">
+                  {pagination?.total_count || 0}
+                </h3>
+                <p className="text-gray-600">Tổng số</p>
+              </CardContent>
+            </Card>
           </div>
-        )}
-
-        {/* Pagination */}
-        {pagination && !isLoading && activities.length > 0 && (
-          <div className="mt-8">
-            <Pagination
-              currentPage={pagination.page}
-              totalPages={pagination.total_pages}
-              onPageChange={setCurrentPage}
-              hasNext={pagination.has_next}
-              hasPrevious={pagination.has_previous}
-              totalCount={pagination.total_count}
-              perPage={pagination.per_page}
-              className="border-t pt-8"
-            />
-            {/* Note: Backend search only. Type/status filters are applied on frontend */}
-            {(filterType !== "all" || filterStatus !== "all") && (
-              <p className="text-sm text-gray-500 text-center mt-4">
-                Hiển thị {filteredActivities.length} / {activities.length} kết quả (đã lọc)
-              </p>
-            )}
-          </div>
-        )}
-
-        {/* Stats Section */}
-        <div className="mt-16 grid grid-cols-1 md:grid-cols-4 gap-6">
-          <Card className="text-center border-0 shadow-md">
-            <CardContent className="p-6">
-              <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <BookOpen className="w-6 h-6 text-blue-600" />
-              </div>
-              <h3 className="text-2xl font-bold text-gray-900">
-                {activities.filter(a => a.type === "lesson").length}
-              </h3>
-              <p className="text-gray-600">Bài học</p>
-            </CardContent>
-          </Card>
-
-          <Card className="text-center border-0 shadow-md">
-            <CardContent className="p-6">
-              <div className="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <Trophy className="w-6 h-6 text-purple-600" />
-              </div>
-              <h3 className="text-2xl font-bold text-gray-900">
-                {activities.filter(a => a.type === "game").length}
-              </h3>
-              <p className="text-gray-600">Trò chơi</p>
-            </CardContent>
-          </Card>
-
-          <Card className="text-center border-0 shadow-md">
-            <CardContent className="p-6">
-              <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <Users className="w-6 h-6 text-green-600" />
-              </div>
-              <h3 className="text-2xl font-bold text-gray-900">
-                {activities.length}
-              </h3>
-              <p className="text-gray-600">Hoạt động</p>
-            </CardContent>
-          </Card>
-
-          <Card className="text-center border-0 shadow-md">
-            <CardContent className="p-6">
-              <div className="w-12 h-12 bg-orange-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <Clock className="w-6 h-6 text-orange-600" />
-              </div>
-              <h3 className="text-2xl font-bold text-gray-900">
-                {pagination?.total_count || 0}
-              </h3>
-              <p className="text-gray-600">Tổng số</p>
-            </CardContent>
-          </Card>
         </div>
       </div>
-    </div>
+    </ProtectAddon>
   )
 }
