@@ -57,31 +57,33 @@ export function RobotSelector({ className = "" }: RobotSelectorProps) {
   const { data: robotsResponse, isLoading, error } = useGetRobotsByAccountId(accountId);
   const robotsApi = robotsResponse?.data || [];
 
-  // Add robots vào Redux store
+  // Đồng bộ robots vào Redux store
   useEffect(() => {
-    robotsApi.forEach((r) => {
-      // Đảm bảo pin là string/null khi add vào store
-      const batteryLevel = r.battery;
-
-      addRobot({
-        id: r.id,
-        serial: r.serialNumber,
-        name: r.robotModelName || "Unknown Robot",
-        status: r.status === 1 ? "online" : "offline",
-        battery: batteryLevel,
-        robotModelId: r.robotModelId,
-        robotModelName: r.robotModelName,
-        accountId: r.accountId,
+    if (robotsApi.length > 0) {
+      robotsApi.forEach((r) => {
+        if (r.accountId === accountId) {
+          addRobot({
+            id: r.id,
+            serial: r.serialNumber,
+            name: r.robotModelName || "Unknown Robot",
+            status: r.status === 1 ? "online" : "offline",
+            battery: r.battery,
+            robotModelId: r.robotModelId,
+            robotModelName: r.robotModelName,
+            accountId: r.accountId,
+          });
+        }
       });
-    });
-  }, [robotsApi, addRobot]);
+    }
+  }, [robotsApi, addRobot, accountId]);
 
   // Chọn robot đầu tiên nếu chưa chọn
   useEffect(() => {
     if (robotsApi.length > 0 && !selectedRobotSerial) {
-      selectRobot(robotsApi[0].serialNumber);
+      const firstRobot = robotsApi.find((r) => r.accountId === accountId);
+      if (firstRobot) selectRobot(firstRobot.serialNumber);
     }
-  }, [robotsApi, selectedRobotSerial, selectRobot]);
+  }, [robotsApi, selectedRobotSerial, selectRobot, accountId]);
 
   // Poll status & battery cho tất cả robot
   const { useGetMultipleRobotInfo } = useRobotInfo();
@@ -156,18 +158,7 @@ export function RobotSelector({ className = "" }: RobotSelectorProps) {
   const handleRobotSelect = (serial: string) => selectRobot(serial);
 
   // Render display robot
-  const displayRobots = robots.map((r) => {
-    const status = r.status;
-    const avatar =
-      status === "online" || status === "charging"
-        ? "/img_top_alphamini_connect.webp"
-        : "/img_top_alphamini_disconnect.webp";
-
-    return {
-      ...r,
-      avatar,
-    };
-  });
+  const displayRobots = robots.filter((r) => r.accountId === accountId);
 
   const selectedSerials = Array.isArray(selectedRobotSerial)
     ? selectedRobotSerial
