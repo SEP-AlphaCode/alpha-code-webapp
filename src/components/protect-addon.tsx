@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { paymentsHttp } from "@/utils/http";
 import { getUserIdFromToken } from "@/utils/tokenUtils";
 import { ValidateAddon } from "@/types/addon";
+import { useAddonAccess } from "@/features/addon/hooks/use-license-key-addon";
 
 interface ProtectAddonProps {
   children: React.ReactNode;
@@ -27,7 +28,6 @@ export const ProtectAddon = ({
 
   useEffect(() => {
     let mounted = true;
-
     const checkAccess = async () => {
       setIsLoading(true);
 
@@ -51,24 +51,28 @@ export const ProtectAddon = ({
 
         const payload: ValidateAddon = { sessionKey, accountId, category };
 
-        const doValidate = validateFn
-          ? validateFn
-          : async (p: ValidateAddon) => {
-              const res = await paymentsHttp.post("/access/validate", p);
-              return res.data as { allowed: boolean; status?: string };
-            };
+        // If caller provided a custom validateFn, keep using it (backwards compatibility).
+        if (validateFn) {
+          const result = await Promise.race([
+            validateFn(payload),
+            new Promise<never>((_, reject) =>
+              setTimeout(() => reject(new Error("Validation timeout")), 8000)
+            ),
+          ]);
 
-        const result = await Promise.race([
-          doValidate(payload),
-          new Promise<never>((_, reject) =>
-            setTimeout(() => reject(new Error("Validation timeout")), 8000)
-          ),
-        ]);
-
-        if (mounted) {
-          setIsAllowed(Boolean(result.allowed));
-          setIsLoading(false);
+          if (mounted) {
+            // result may be { allowed: boolean } or boolean (in case of different shapes)
+            const allowed = typeof result === "boolean" ? result : Boolean((result as any)?.allowed);
+            setIsAllowed(Boolean(allowed));
+            setIsLoading(false);
+          }
+          return;
         }
+
+        // Otherwise use the react-query based hook (useAddonAccess)
+        // We call the hook outside of this effect below; here we only keep the
+        // legacy path which uses validateFn. The react-query path is the default
+        // and handled by the hook invocation in the component body.
       } catch (err) {
         console.error("ProtectAddon: validation failed", err);
         if (mounted) {
@@ -83,6 +87,49 @@ export const ProtectAddon = ({
       mounted = false;
     };
   }, [category, sessionKeyName, validateFn, router]);
+
+  // If no custom validateFn is provided, use the react-query hook
+  const { useValidateAccess } = useAddonAccess();
+
+  // Read session/accessToken synchronously (client) and trigger the query
+  const sessionKey =
+    typeof window !== "undefined"
+      ? sessionStorage.getItem(sessionKeyName) || undefined
+      : undefined;
+
+  const accessToken =
+    typeof window !== "undefined"
+      ? sessionStorage.getItem("accessToken") || ""
+      : "";
+
+  const accountId = getUserIdFromToken(accessToken || "") || undefined;
+
+  // If no access token, redirect immediately (same behavior as before)
+  useEffect(() => {
+    if (typeof window !== "undefined" && !accessToken) {
+      router.push("/login");
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [accessToken]);
+
+  const payload: ValidateAddon = { sessionKey, accountId, category };
+  const query = validateFn ? undefined : useValidateAccess(payload as ValidateAddon);
+
+  // Prefer the query loading state when available
+  const queryLoading = query ? query.isLoading || query.isFetching : false;
+  const queryAllowed = query ? Boolean(query.data) : undefined;
+
+  if (!validateFn) {
+    // Only update derived states when using the hook (not when validateFn handled)
+    if (queryLoading) {
+      // Let the earlier isLoading state drive the spinner while query loads
+      // Keep existing isLoading for backwards compatibility
+      setIsLoading(true);
+    } else if (query && query.data !== undefined) {
+      setIsAllowed(Boolean(queryAllowed));
+      setIsLoading(false);
+    }
+  }
 
   if (isLoading) {
     return (
