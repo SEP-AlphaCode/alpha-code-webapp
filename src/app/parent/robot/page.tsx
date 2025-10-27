@@ -168,14 +168,6 @@ export default function UserDashboard() {
 
       <RobotGrid
         robots={filteredRobots}
-        selectedRobot={selectedRobotSerial}
-        onRobotSelect={(robotSerial) => {
-          selectRobot(robotSerial);
-          const robot = filteredRobots.find((r) => r.serialNumber === robotSerial);
-          if (robot) {
-            sessionStorage.setItem("selectedRobotSerial", robot.serialNumber);
-          }
-        }}
         sectionTitle="Danh sách robot"
         statusTexts={{
           online: "Đang hoạt động",

@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useEffect } from "react";
 import Image from "next/image";
 import {
   Battery,
@@ -17,15 +17,7 @@ interface Robot {
   id: string;
   name: string;
   status: "online" | "offline" | "charging" | "busy";
-  battery_level?: number | null; // số thực tế
-  battery?: string | null;       // để hiển thị width % trong div
-  lastSeen: string;
-  version: string;
-  students: number;
-  currentTask: string;
-  uptime: string;
-  ip: string;
-  temperature: number;
+  battery?: string | null;
   image: string;
   serialNumber: string;
   robotModelName?: string;
@@ -33,8 +25,6 @@ interface Robot {
 
 interface RobotGridProps {
   robots: Robot[];
-  selectedRobot: string | string[] | null;
-  onRobotSelect: (robotSerial: string) => void;
   sectionTitle: string;
   statusTexts: {
     online: string;
@@ -46,14 +36,37 @@ interface RobotGridProps {
 
 export function RobotGrid({
   robots,
-  selectedRobot,
-  onRobotSelect,
   sectionTitle,
   statusTexts,
 }: RobotGridProps) {
-  // ✅ Lấy connectMode từ Redux
-  const { connectMode } = useRobotStore();
+  const {
+    selectedRobotSerial,
+    selectRobot,
+    connectMode,
+  } = useRobotStore();
+
   const isMultiMode = connectMode === "multi";
+
+  // 🧠 Khôi phục robot đã chọn khi reload
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+
+    const savedSerial = localStorage.getItem("selectedRobotSerial");
+    if (savedSerial && robots.some((r) => r.serialNumber === savedSerial)) {
+      selectRobot(savedSerial);
+    } else if (!selectedRobotSerial && robots.length > 0) {
+      // Nếu chưa có robot nào được chọn, chọn robot đầu tiên
+      selectRobot(robots[0].serialNumber);
+    }
+  }, [robots, selectRobot, selectedRobotSerial]);
+
+  // ✅ Khi chọn robot
+  const handleSelectRobot = (serial: string) => {
+    selectRobot(serial);
+    if (typeof window !== "undefined") {
+      localStorage.setItem("selectedRobotSerial", serial);
+    }
+  };
 
   const getStatusIcon = (status: string) => {
     switch (status) {
@@ -82,8 +95,9 @@ export function RobotGrid({
   };
 
   const getBatteryColor = (battery: string) => {
-    if (battery > "60") return "bg-green-500";
-    if (battery > "30") return "bg-yellow-500";
+    const value = Number(battery);
+    if (value > 60) return "bg-green-500";
+    if (value > 30) return "bg-yellow-500";
     return "bg-red-500";
   };
 
@@ -101,8 +115,9 @@ export function RobotGrid({
   };
 
   const isRobotSelected = (serial: string) => {
-    if (Array.isArray(selectedRobot)) return selectedRobot.includes(serial);
-    return selectedRobot === serial;
+    if (Array.isArray(selectedRobotSerial))
+      return selectedRobotSerial.includes(serial);
+    return selectedRobotSerial === serial;
   };
 
   return (
@@ -110,11 +125,11 @@ export function RobotGrid({
       {/* 🔵 Title */}
       <div className="flex items-center justify-between mb-4">
         <h2 className="text-2xl font-semibold text-blue-800">{sectionTitle}</h2>
-
-        {/* ✅ Hiển thị chế độ connect hiện tại */}
         <span
           className={`text-sm px-3 py-1 rounded-full ${
-            isMultiMode ? "bg-purple-100 text-purple-700" : "bg-blue-100 text-blue-700"
+            isMultiMode
+              ? "bg-purple-100 text-purple-700"
+              : "bg-blue-100 text-blue-700"
           }`}
         >
           {isMultiMode ? "Multi Mode" : "Single Mode"}
@@ -138,7 +153,7 @@ export function RobotGrid({
               className={`relative min-w-[320px] bg-white rounded-2xl shadow-lg border border-gray-100 p-5 flex flex-col items-center transition-transform duration-200 hover:scale-105 cursor-pointer ${
                 selected ? "ring-2 ring-blue-400" : ""
               }`}
-              onClick={() => onRobotSelect(robot.serialNumber)}
+              onClick={() => handleSelectRobot(robot.serialNumber)}
             >
               {/* 🟣 Multi-Select Checkbox */}
               {isMultiMode && (
