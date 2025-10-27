@@ -419,7 +419,7 @@ export default function PaymentPageClient(props: PaymentPageClientProps = {}) {
       setIsFetchingResource(false)
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [idFromParams, paymentCategory, courseQuery.data, addonQuery.data, planQuery.data, bundleQuery.data])
+  }, [idFromParams, paymentCategory, courseQuery.data, addonQuery.data, planQuery.data, bundleQuery.data, keyPriceData])
 
   // Respect parent-provided states first
   if (propLoading) {
