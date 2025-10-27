@@ -62,26 +62,29 @@ export function RobotSelector({ className = "" }: RobotSelectorProps) {
     robotsApi.forEach((r) => {
       // Đảm bảo pin là string/null khi add vào store
       const batteryLevel = r.battery;
+      if (r.accountId === accountId) {
 
-      addRobot({
-        id: r.id,
-        serial: r.serialNumber,
-        name: r.robotModelName || "Unknown Robot",
-        status: r.status === 1 ? "online" : "offline",
-        battery: batteryLevel,
-        robotModelId: r.robotModelId,
-        robotModelName: r.robotModelName,
-        accountId: r.accountId,
-      });
+        addRobot({
+          id: r.id,
+          serial: r.serialNumber,
+          name: r.robotModelName || "Unknown Robot",
+          status: r.status === 1 ? "online" : "offline",
+          battery: batteryLevel,
+          robotModelId: r.robotModelId,
+          robotModelName: r.robotModelName,
+          accountId: r.accountId,
+        });
+      }
     });
-  }, [robotsApi, addRobot]);
+  }, [robotsApi, addRobot, accountId]);
 
   // Chọn robot đầu tiên nếu chưa chọn
   useEffect(() => {
     if (robotsApi.length > 0 && !selectedRobotSerial) {
-      selectRobot(robotsApi[0].serialNumber);
+      const firstRobot = robotsApi.find((r) => r.accountId === accountId);
+      if (firstRobot) selectRobot(firstRobot.serialNumber);
     }
-  }, [robotsApi, selectedRobotSerial, selectRobot]);
+  }, [robotsApi, selectedRobotSerial, selectRobot, accountId]);
 
   // Poll status & battery cho tất cả robot
   const { useGetMultipleRobotInfo } = useRobotInfo();
@@ -156,18 +159,16 @@ export function RobotSelector({ className = "" }: RobotSelectorProps) {
   const handleRobotSelect = (serial: string) => selectRobot(serial);
 
   // Render display robot
-  const displayRobots = robots.map((r) => {
-    const status = r.status;
-    const avatar =
-      status === "online" || status === "charging"
-        ? "/img_top_alphamini_connect.webp"
-        : "/img_top_alphamini_disconnect.webp";
-
-    return {
+  const displayRobots = robots
+    .filter((r) => r.accountId === accountId)
+    .map((r) => ({
       ...r,
-      avatar,
-    };
-  });
+      avatar:
+        r.status === "online" || r.status === "charging"
+          ? "/img_top_alphamini_connect.webp"
+          : "/img_top_alphamini_disconnect.webp",
+    }));
+
 
   const selectedSerials = Array.isArray(selectedRobotSerial)
     ? selectedRobotSerial
@@ -198,25 +199,25 @@ export function RobotSelector({ className = "" }: RobotSelectorProps) {
   }
 
   if (error || displayRobots.length === 0) {
-  return (
-    <div
-      className={`flex items-center justify-between px-3 py-2 rounded-xl shadow border border-gray-100 bg-blue-50 hover:bg-blue-100 transition-colors min-w-[260px] ${className}`}
-    >
-      <div className="flex flex-col justify-center">
-        <span className="font-semibold text-gray-900 text-sm">Chưa có robot nào</span>
-        <span className="text-xs text-gray-500 mt-0.5">Hãy thêm robot để bắt đầu</span>
-      </div>
-      <button
-        onClick={() => setIsModalOpen(true)}
-        className="ml-3 px-3 py-1.5 text-sm font-medium rounded-md bg-blue-600 text-white hover:bg-blue-700 transition"
+    return (
+      <div
+        className={`flex items-center justify-between px-3 py-2 rounded-xl shadow border border-gray-100 bg-blue-50 hover:bg-blue-100 transition-colors min-w-[260px] ${className}`}
       >
-        Thêm mới
-      </button>
+        <div className="flex flex-col justify-center">
+          <span className="font-semibold text-gray-900 text-sm">Chưa có robot nào</span>
+          <span className="text-xs text-gray-500 mt-0.5">Hãy thêm robot để bắt đầu</span>
+        </div>
+        <button
+          onClick={() => setIsModalOpen(true)}
+          className="ml-3 px-3 py-1.5 text-sm font-medium rounded-md bg-blue-600 text-white hover:bg-blue-700 transition"
+        >
+          Thêm mới
+        </button>
 
-      <RobotModal open={isModalOpen} onClose={() => setIsModalOpen(false)} />
-    </div>
-  )
-}
+        <RobotModal open={isModalOpen} onClose={() => setIsModalOpen(false)} />
+      </div>
+    )
+  }
 
   return (
     <>
