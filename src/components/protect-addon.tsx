@@ -54,7 +54,7 @@ export const ProtectAddon = ({
         const doValidate = validateFn
           ? validateFn
           : async (p: ValidateAddon) => {
-              const res = await paymentsHttp.post("/access/validate", p);
+              const res = await paymentsHttp.post("/license-key-addons/validate", p);
               return res.data as { allowed: boolean; status?: string };
             };
 
