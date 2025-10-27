@@ -34,10 +34,13 @@ export const blockControls = (ws: Blockly.WorkspaceSvg): Operations => {
             //yield checks
             const startTimeVarName = '_' + (uuid.v4() + '_' + uuid.v4() + '_' + uuid.v4()).replaceAll('-', '_')
             const nowVarName = '_' + (uuid.v4() + '_' + uuid.v4() + '_' + uuid.v4()).replaceAll('-', '_')
-            let mainFn = `
-function main() {
+            let mainFn = `function main() {
+let list = []
 try{
 ${main}
+return {
+result: list
+}
 }
 catch(e) {
 console.log('Error in main function', e);
@@ -47,6 +50,7 @@ error: e.message
 }}
 
 return main()`
+
             const injected = injectLoopCheck(mainFn)
             mainFn = injected.result
             const checkFnName = injected.checkFnName

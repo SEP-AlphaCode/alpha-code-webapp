@@ -42,7 +42,7 @@ export default function BlocklyUI({ robotModelId, serial, hasAllData, data }: Bl
             // Use Function constructor to create an async function
             const fn = new Function(code)
             const x = fn()
-            if(x.error){
+            if (x.error) {
                 toast.error(x.error)
             }
         }
@@ -100,7 +100,7 @@ export default function BlocklyUI({ robotModelId, serial, hasAllData, data }: Bl
         // Redo init
         actualInit()
         definedModels.add(robotModelId)
-    }, [robotModelId, hasAllData])
+    }, [robotModelId, hasAllData, serial])
 
     return (
         <div className="p-4 space-y-4">

@@ -1,5 +1,6 @@
 import { javascriptGenerator, Order } from 'blockly/javascript';
 import * as Blockly from 'blockly/core';
+import { apiPythonUrl } from '@/app/constants/constants';
 
 function addPrefixInPlace<T>(obj: Record<string, T>, prefix: string, condition: (x: string) => boolean) {
     for (const key of Object.keys(obj)) {
@@ -22,7 +23,8 @@ function hexToRgb(hex: string) {
 }
 
 
-export const buildCodeGeneratorForModelId = (modelId: string) => {
+export const buildCodeGeneratorForModelId = (modelId: string, serial: string) => {
+    const callUrl = apiPythonUrl + "/websocket/command/" + serial
     // TODO: Load allowed actions specific to a robot model
     const alphaCodeGenerator = javascriptGenerator
     /**
@@ -35,9 +37,14 @@ export const buildCodeGeneratorForModelId = (modelId: string) => {
      * @returns A string code that push the number of call into variable 'list'
      */
     function baseRequest(body: string, n: unknown) {
-        return `for(let i = 0; i < ${n}; i++){
-list.push(${body})
-increaseLoop()
+        const unit = `fetch("${callUrl}", {
+headers: { 'Content-Type': 'application/json' },
+method: 'POST', 
+body:JSON.stringify(${body})
+})
+`
+        return `for(let i=0; i<${n}; i++){ 
+${unit}
 }`
     }
     /**
@@ -56,7 +63,9 @@ increaseLoop()
         //Inner function, fetch the ws call
         const body = JSON.stringify({
             type: block.type.split('.')[1],
-            code: dropdown_action_name
+            data: {
+                code: dropdown_action_name
+            }
         })
         const comment = `// calling function ${block.type} ${count} time(s)\n`
         const inner = baseRequest(body, count)
