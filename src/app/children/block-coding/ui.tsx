@@ -100,7 +100,12 @@ export default function BlocklyUI({ robotModelId, serial, hasAllData, data }: Bl
         // Redo init
         actualInit()
         definedModels.add(robotModelId)
-    }, [robotModelId, hasAllData, serial])
+    }, [robotModelId, hasAllData])
+
+    useEffect(() => {
+        const gen = buildCodeGeneratorForModelId(robotModelId, serial)
+        setCodeGenerator(gen)
+    }, [serial])
 
     return (
         <div className="p-4 space-y-4">
