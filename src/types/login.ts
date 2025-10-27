@@ -39,4 +39,5 @@ export interface SwitchProfileResponse {
   accessToken: string;
   refreshToken: string;
   profile: Profile;
+  key: string;
 }
