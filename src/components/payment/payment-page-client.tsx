@@ -253,12 +253,12 @@ export default function PaymentPageClient(props: PaymentPageClientProps = {}) {
       setIsEmbeddedProcessing(true)
       setTimeout(() => {
         closePayOS()
-        window.location.href = `/payment/result?success=true&method=payos&id=${encodeURIComponent(idFromParams)}`
+        window.location.href = `/payment/result?success=true&category=${paymentCategory}&id=${encodeURIComponent(idFromParams)}`
       }, 1500)
     },
     onCancel: () => {
       closePayOS()
-      window.location.href = `/payment/result?success=false&id=${encodeURIComponent(idFromParams)}`
+      window.location.href = `/payment/result?success=false&category=${paymentCategory}&id=${encodeURIComponent(idFromParams)}`
     },
   })
 
@@ -290,7 +290,7 @@ export default function PaymentPageClient(props: PaymentPageClientProps = {}) {
           setIsEmbeddedProcessing(true)
           setTimeout(() => {
             closePayOS()
-            window.location.href = `/payment/result?success=true&method=payos&id=${encodeURIComponent(idFromParams)}`
+            window.location.href = `/payment/result?success=true&category=${paymentCategory}&id=${encodeURIComponent(idFromParams)}`
           }, 1500)
         } else if (data?.status === 'cancel') {
           closePayOS()
