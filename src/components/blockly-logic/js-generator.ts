@@ -58,7 +58,7 @@ ${unit}
         const dropdown_action_name = block.getFieldValue('ACTION_NAME');
         const value_count = alphaCodeGenerator.valueToCode(block, 'COUNT', Order.ATOMIC);
 
-        let count = value_count.length === 0 ? '0' : value_count
+        const count = value_count.length === 0 ? '0' : value_count
         // TODO: Assemble javascript into the code variable.
         //Inner function, fetch the ws call
         const body = JSON.stringify({
@@ -79,7 +79,7 @@ ${unit}
         const dropdown_action_name = block.getFieldValue('ACTION_NAME');
         const value_count = alphaCodeGenerator.valueToCode(block, 'COUNT', Order.ATOMIC);
 
-        let count = value_count.length === 0 ? '0' : value_count
+        const count = value_count.length === 0 ? '0' : value_count
         // TODO: Assemble javascript into the code variable.
         //Inner function, fetch the ws call
         const body = JSON.stringify({
