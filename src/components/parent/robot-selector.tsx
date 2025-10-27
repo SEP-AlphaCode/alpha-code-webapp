@@ -80,11 +80,13 @@ export function RobotSelector({ className = "" }: RobotSelectorProps) {
 
   // Chọn robot đầu tiên nếu chưa chọn
   useEffect(() => {
-    if (robotsApi.length > 0 && !selectedRobotSerial) {
-      const firstRobot = robotsApi.find((r) => r.accountId === accountId);
-      if (firstRobot) selectRobot(firstRobot.serialNumber);
+  if (typeof window !== "undefined") {
+    const savedSerial = localStorage.getItem("selectedRobotSerial");
+    if (savedSerial && robotsApi.some(r => r.serialNumber === savedSerial)) {
+      selectRobot(savedSerial);
     }
-  }, [robotsApi, selectedRobotSerial, selectRobot, accountId]);
+  }
+}, [robotsApi, selectRobot]);
 
   // Poll status & battery cho tất cả robot
   const { useGetMultipleRobotInfo } = useRobotInfo();
@@ -156,7 +158,12 @@ export function RobotSelector({ className = "" }: RobotSelectorProps) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [robotInfos]);
 
-  const handleRobotSelect = (serial: string) => selectRobot(serial);
+  const handleRobotSelect = (serial: string) => {
+  selectRobot(serial);
+  if (typeof window !== "undefined") {
+    localStorage.setItem("selectedRobotSerial", serial);
+  }
+};
 
   // Render display robot
   const displayRobots = robots
