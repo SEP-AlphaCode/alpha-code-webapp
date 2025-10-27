@@ -1,16 +1,13 @@
 import { useQuery } from '@tanstack/react-query'
-import { paymentsHttp } from '@/utils/http'
+import { getActiveBundleById } from '../api/bundle-api'
 
 export const useBundle = () => {
-  const useGetBundleById = (id: string) =>
+  const useGetActiveBundleById = (id: string) =>
     useQuery({
       queryKey: ['bundle', id],
-      queryFn: async () => {
-        const resp = await paymentsHttp.get(`/bundles/${id}`)
-        return resp.data
-      },
+      queryFn: () => getActiveBundleById(id),
       enabled: !!id,
     })
 
-  return { useGetBundleById }
+  return { useGetActiveBundleById }
 }

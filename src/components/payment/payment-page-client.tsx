@@ -253,12 +253,12 @@ export default function PaymentPageClient(props: PaymentPageClientProps = {}) {
       setIsEmbeddedProcessing(true)
       setTimeout(() => {
         closePayOS()
-        window.location.href = `/payment/result?success=true&method=payos&id=${encodeURIComponent(idFromParams)}`
+        window.location.href = `/payment/result?success=true&category=${paymentCategory}&id=${encodeURIComponent(idFromParams)}`
       }, 1500)
     },
     onCancel: () => {
       closePayOS()
-      window.location.href = `/payment/result?success=false&id=${encodeURIComponent(idFromParams)}`
+      window.location.href = `/payment/result?success=false&category=${paymentCategory}&id=${encodeURIComponent(idFromParams)}`
     },
   })
 
@@ -290,7 +290,7 @@ export default function PaymentPageClient(props: PaymentPageClientProps = {}) {
           setIsEmbeddedProcessing(true)
           setTimeout(() => {
             closePayOS()
-            window.location.href = `/payment/result?success=true&method=payos&id=${encodeURIComponent(idFromParams)}`
+            window.location.href = `/payment/result?success=true&category=${paymentCategory}&id=${encodeURIComponent(idFromParams)}`
           }, 1500)
         } else if (data?.status === 'cancel') {
           closePayOS()
@@ -328,7 +328,7 @@ export default function PaymentPageClient(props: PaymentPageClientProps = {}) {
   const { useGetCourseById } = useCourse()
   const { useGetActiveAddonById } = useAddon()
   const { useGetSubscriptionById } = useSubscription()
-  const { useGetBundleById } = useBundle()
+  const { useGetActiveBundleById } = useBundle()
   const { data: keyPriceData } = useGetKeyPrice()
 
   // Only pass id to the hook that matches the current payment category.
@@ -341,7 +341,7 @@ export default function PaymentPageClient(props: PaymentPageClientProps = {}) {
   const courseQuery = useGetCourseById(courseId)
   const addonQuery = useGetActiveAddonById(addonId)
   const planQuery = useGetSubscriptionById(planId)
-  const bundleQuery = useGetBundleById(bundleId)
+  const bundleQuery = useGetActiveBundleById(bundleId)
 
   // Combine query states
   useEffect(() => {
@@ -419,7 +419,7 @@ export default function PaymentPageClient(props: PaymentPageClientProps = {}) {
       setIsFetchingResource(false)
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [idFromParams, paymentCategory, courseQuery.data, addonQuery.data, planQuery.data, bundleQuery.data])
+  }, [idFromParams, paymentCategory, courseQuery.data, addonQuery.data, planQuery.data, bundleQuery.data, keyPriceData])
 
   // Respect parent-provided states first
   if (propLoading) {

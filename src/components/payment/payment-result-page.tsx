@@ -9,13 +9,13 @@ export default function PaymentResultPage() {
 
   const success =
     String(searchParams.get("success") ?? "").toLowerCase() === "true";
-  const method = searchParams.get("method") || undefined;
+  const category = searchParams.get("category") || undefined;
   const id = searchParams.get("id") || undefined;
 
   const detailLink =
-    method && id
-      ? `/payment/success?method=${encodeURIComponent(
-          method
+    category && id
+      ? `/payment/success?category=${encodeURIComponent(
+          category
         )}&id=${encodeURIComponent(id)}`
       : "/payment";
 
@@ -58,12 +58,12 @@ export default function PaymentResultPage() {
               >
                 Về trang chủ
               </Link>
-              <Link
+              {/* <Link
                 href={detailLink}
                 className="px-5 py-2.5 rounded-xl bg-neutral-900 dark:bg-neutral-100 text-white dark:text-neutral-900 hover:bg-neutral-800 dark:hover:bg-neutral-200 text-sm transition"
               >
-                {method && id ? "Xem đơn hàng" : "Quay lại thanh toán"}
-              </Link>
+                {category && id ? "Xem đơn hàng" : "Quay lại thanh toán"}
+              </Link> */}
             </div>
           </>
         ) : (
@@ -84,7 +84,7 @@ export default function PaymentResultPage() {
 
             <div className="pt-6 flex flex-col sm:flex-row gap-4 justify-center">
               <Link
-                href="/payment"
+                href={`/payment?category=${category}&id=${id}`}
                 className="px-5 py-2.5 rounded-xl bg-neutral-900 dark:bg-neutral-100 text-white dark:text-neutral-900 hover:bg-neutral-800 dark:hover:bg-neutral-200 text-sm transition"
               >
                 Thử lại

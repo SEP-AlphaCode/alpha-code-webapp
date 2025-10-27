@@ -21,6 +21,7 @@ export const useLogin = () => {
       if (data.accessToken && data.refreshToken && !data.requiresProfile) {
         sessionStorage.setItem('accessToken', data.accessToken);
         sessionStorage.setItem('refreshToken', data.refreshToken);
+        sessionStorage.setItem('key', data.key || ''); // Lưu key nếu có
         
         const accountData = getTokenPayload(data.accessToken);
         if (!accountData) {
@@ -52,7 +53,7 @@ export const useLogin = () => {
         
         // Lưu accountId để dùng khi tạo profile
         // Backend có thể trả về accountId (camelCase) hoặc accountid (lowercase)
-        let accountIdToSave = data.accountId || data.accountid;
+        let accountIdToSave = data.accountId;
         
         if (!accountIdToSave && data.accessToken) {
           const accountData = getTokenPayload(data.accessToken);
@@ -134,6 +135,7 @@ export const useGoogleLogin = () => {
       if (data.accessToken && data.refreshToken && !data.requiresProfile) {
         sessionStorage.setItem('accessToken', data.accessToken);
         sessionStorage.setItem('refreshToken', data.refreshToken);
+        sessionStorage.setItem('key', data.key || ''); // Lưu key nếu có
 
         const accountData = getTokenPayload(data.accessToken);
         if (!accountData) {
@@ -164,7 +166,7 @@ export const useGoogleLogin = () => {
         console.log('🔍 Debug - Google Login response with requiresProfile:', data);
 
         // Lưu accountId để dùng khi tạo profile
-        let accountIdToSave = data.accountId || data.accountid;
+        let accountIdToSave = data.accountId;
 
         if (!accountIdToSave && data.accessToken) {
           const accountData = getTokenPayload(data.accessToken);

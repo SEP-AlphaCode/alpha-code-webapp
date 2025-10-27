@@ -7,7 +7,9 @@ import { createKeyPrice, deleteKeyPrice, getKeyPrice, updateKeyPrice } from '../
 export const useGetKeyPrice = () => {
   return useQuery({
     queryKey: ['key-price'],
+    // getKeyPrice now returns KeyPrice | null; react-query will store null as data
     queryFn: getKeyPrice,
+    // Treat 404 as handled in API; let other errors bubble up
   });
 };
 
@@ -21,11 +23,7 @@ export const useCreateKeyPrice = () => {
     onSuccess: () => {
       toast.success('Key price created successfully');
       queryClient.invalidateQueries({ queryKey: ['key-price'] });
-    },
-
-    onError: (error: Error) => {
-      toast.error(error.message || 'Failed to create key price');
-    },
+    }
   });
 };
 
