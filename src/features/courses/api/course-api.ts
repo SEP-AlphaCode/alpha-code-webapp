@@ -193,3 +193,47 @@ export const getStaffDashboardStats = async (signal?: AbortSignal) => {
         throw error;
     }
 };
+
+// Get all cost active courses with pagination and optional search filter
+export const getCostCourses = async (page: number, size: number, search?: string, signal?: AbortSignal) => {
+    try {
+        const response = await coursesHttp.get<PagedResult<Course>>('/courses/cost', {
+            params: {
+                page,
+                size,
+                search
+            },
+            signal
+        });
+        return response.data;
+    } catch (error) {
+        if (axios.isCancel(error)) {
+            console.log("Request canceled for getCostCourses");
+            return null;
+        }
+        console.error("API Error in getCostCourses:", error);
+        throw error;
+    }
+};
+
+// Get all free active courses with pagination and optional search filter
+export const getFreeCourses = async (page: number, size: number, search?: string, signal?: AbortSignal) => {
+    try {
+        const response = await coursesHttp.get<PagedResult<Course>>('/courses/free', {
+            params: {
+                page,
+                size,
+                search
+            },
+            signal
+        });
+        return response.data;
+    } catch (error) {
+        if (axios.isCancel(error)) {
+            console.log("Request canceled for getFreeCourses");
+            return null;
+        }
+        console.error("API Error in getFreeCourses:", error);
+        throw error;
+    }
+};

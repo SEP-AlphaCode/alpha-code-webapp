@@ -4,7 +4,7 @@ import { forwardRef } from "react"
 
 
 interface FooterProps {
-  currentSection: number
+  currentSection?: number
 }
 
 export const Footer = forwardRef<HTMLElement, FooterProps>(
