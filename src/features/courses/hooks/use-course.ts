@@ -3,10 +3,9 @@ import { PagedResult } from "@/types/page-result";
 import { useQuery, UseQueryOptions, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useRouter } from 'next/navigation';
 import { getCategories, getCategoryBySlug } from "../api/category-api";
-import { getCourseBySlug, getCourses } from "../api/course-api";
+import { getCourseBySlug, getCourses, getCostCourses, getFreeCourses } from "../api/course-api";
 import { getLessonsSolutionByCourseId } from "../api/lesson-api";
 import * as courseApi from '@/features/courses/api/course-api';
-import { use } from "react";
 
 const STALE_TIME = 24 * 3600 * 1000
 export const useCourse = () => {
@@ -91,7 +90,7 @@ export const useCourse = () => {
         useGetCategoryBySlug,
         useGetCourseBySlug,
         useGetLessonsSolutionByCourseId,
-        useGetCourseById
+        useGetCourseById,
     }
 }
 
@@ -204,3 +203,28 @@ export function useStaffDashboardStats() {
     queryFn: ({ signal }) => courseApi.getStaffDashboardStats(signal),
   })
 }
+
+// ==================== ACTIVE COURSES ====================
+
+export const useGetCostCourses = (page: number, size: number, search?: string, signal?: AbortSignal) => {
+    const queryClient = useQueryClient();
+
+    return useMutation({
+        mutationFn: () => getCostCourses(page, size, search, signal),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['courses'] });
+        },
+    });
+};
+
+export const useGetFreeCourses = (page: number, size: number, search?: string, signal?: AbortSignal) => {
+    const queryClient = useQueryClient();
+
+    return useMutation({
+        mutationFn: () => getFreeCourses(page, size, search, signal),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['courses'] });
+        },
+    });
+};
+

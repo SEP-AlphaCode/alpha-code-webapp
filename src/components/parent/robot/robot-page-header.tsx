@@ -12,6 +12,7 @@ import { deleteRobot } from "@/features/robots/api/robot-api"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog"
 import { useQueryClient } from "@tanstack/react-query"
 import { toast } from "sonner"
+import { webURL } from "@/app/constants/constants"
 
 interface RobotPageHeaderProps {
   title: string
@@ -25,38 +26,38 @@ export function RobotPageHeader({ title, subtitle, onModelSelect, onAddRobot }: 
   const [selectedModel, setSelectedModel] = useState<string>("")
   const [isDeleting, setIsDeleting] = useState(false)
   const [checkingLicense, setCheckingLicense] = useState(false)
+  const [buyModalOpen, setBuyModalOpen] = useState(false)
   const [confirmOpen, setConfirmOpen] = useState(false)
   const queryClient = useQueryClient()
 
   const handleToggle = async (checked: boolean) => {
-    // Turning ON multi-mode -> only check for a stored license key in sessionStorage
     if (checked) {
       try {
-        setCheckingLicense(true)
+        setCheckingLicense(true);
 
         const sessionKey =
           typeof window !== "undefined"
             ? sessionStorage.getItem("key") || null
-            : null
+            : null;
 
         if (sessionKey) {
-          setConnectMode("multi")
+          setConnectMode("multi");
         } else {
-          toast.error("Vui lòng mua license key để bật Multi Mode.")
-          setConnectMode("single")
+          // Open a modal prompting purchase instead of rendering complex JSX inside toast
+          setBuyModalOpen(true)
+          setConnectMode("single");
         }
       } catch (err) {
-        console.error("License key check failed", err)
-        toast.error("Không thể kiểm tra license. Vui lòng thử lại sau.")
-        setConnectMode("single")
+        console.error("License key check failed", err);
+        toast.error("Không thể kiểm tra license. Vui lòng thử lại sau.");
+        setConnectMode("single");
       } finally {
-        setCheckingLicense(false)
+        setCheckingLicense(false);
       }
     } else {
-      // Turning OFF -> always allow
-      setConnectMode("single")
+      setConnectMode("single");
     }
-  }
+  };
 
 
   const modelOptions = useMemo(() => {
@@ -159,6 +160,33 @@ export function RobotPageHeader({ title, subtitle, onModelSelect, onAddRobot }: 
         </div>
       </header>
 
+      {/* Buy license modal (opened when user tries to enable Multi Mode without a key) */}
+      <Dialog open={buyModalOpen} onOpenChange={setBuyModalOpen}>
+        <DialogContent className="max-w-sm">
+          <DialogHeader>
+            <DialogTitle>Yêu cầu license</DialogTitle>
+          </DialogHeader>
+
+          <div className="text-gray-700 mb-4">
+            Vui lòng mua license key để bật <span className="font-semibold text-blue-600">Multi Mode</span>.
+          </div>
+
+          <DialogFooter className="flex justify-end space-x-2 mt-4">
+            <Button variant="outline" onClick={() => setBuyModalOpen(false)}>
+              Hủy
+            </Button>
+            <Button
+              onClick={() => {
+                window.open(`${webURL}/license-key`);
+                setBuyModalOpen(false);
+              }}
+            >
+              Mua ngay
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
       {/* ⚠️ Confirm Delete Modal */}
       <Dialog open={confirmOpen} onOpenChange={setConfirmOpen}>
         <DialogContent className="max-w-sm">
@@ -166,12 +194,12 @@ export function RobotPageHeader({ title, subtitle, onModelSelect, onAddRobot }: 
             <DialogTitle>Xác nhận xóa robot</DialogTitle>
           </DialogHeader>
           <p className="text-gray-600">
-  Bạn có chắc chắn muốn xóa robot{" "}
-  <span className="font-semibold text-red-600">
-    &quot;{selectedRobot?.name}&quot;
-  </span>{" "}
-  không? Hành động này không thể hoàn tác.
-</p>
+            Bạn có chắc chắn muốn xóa robot{" "}
+            <span className="font-semibold text-red-600">
+              &quot;{selectedRobot?.name}&quot;
+            </span>{" "}
+            không? Hành động này không thể hoàn tác.
+          </p>
 
           <DialogFooter className="flex justify-end space-x-2 mt-4">
             <Button variant="outline" onClick={() => setConfirmOpen(false)}>
