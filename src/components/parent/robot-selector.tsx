@@ -18,7 +18,7 @@ import { useRobotInfo } from "@/features/robots/hooks/use-robot-info";
 import { getUserIdFromToken } from "@/utils/tokenUtils";
 import { useRobotStore } from "@/hooks/use-robot-store";
 import { RobotModal } from "@/app/admin/robots/robot-modal";
-import { Battery, Zap, WifiOff } from "lucide-react";
+import { Battery, Zap, WifiOff, Wifi } from "lucide-react";
 
 interface RobotSelectorProps {
   className?: string;
@@ -260,7 +260,7 @@ export function RobotSelector({ className = "" }: RobotSelectorProps) {
                   <div className="flex flex-col flex-1">
                     <div className="flex flex-row items-center gap-2">
                       <span className="font-medium text-gray-900 text-sm">{robot.name}</span>
-                      {robot.status === "online" && <span className="text-xs px-2 py-0.5 rounded bg-green-100 text-green-600">Online</span>}
+                      {robot.status === "online" && <span className="text-xs px-2 py-0.5 rounded bg-green-100 text-green-600 flex items-center gap-1"><Wifi size={12} />Online</span>}
                       {robot.status === "charging" && <span className="text-xs px-2 py-0.5 rounded bg-yellow-100 text-yellow-600 flex items-center gap-1"><Zap size={12} />Charging</span>}
                       {robot.status === "offline" && <span className="text-xs px-2 py-0.5 rounded bg-gray-200 text-gray-600 flex items-center gap-1"><WifiOff size={12} />Offline</span>}
                     </div>
