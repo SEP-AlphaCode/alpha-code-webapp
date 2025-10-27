@@ -27,7 +27,7 @@ export const getPagedActivitiesByAccount = async (
         page,
         size,
         search,
-        robotModelId, // 👈 thêm dòng này
+        modelId: robotModelId, // 👈 thêm dòng này
         accountId // 👈 thêm dòng này
       },
       signal,
