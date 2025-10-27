@@ -12,21 +12,23 @@ export const getAllActivities = async () => {
   }
 };
 
-export const getPagedActivities = async (
+export const getPagedActivitiesByAccount = async (
   page: number,
   size: number,
+  accountId: string,
   search?: string,
   signal?: AbortSignal,
   robotModelId?: string
 ) => {
-  console.log('API Call - getPagedActivities:', { page, size, search, robotModelId });
+  console.log('API Call - getPagedActivities:', { page, size, search, robotModelId, accountId });
   try {
-    const response = await activitiesHttp.get<ActivitiesResponse>('/activities', {
+    const response = await activitiesHttp.get<ActivitiesResponse>('/activities/account', {
       params: {
         page,
         size,
         search,
         robotModelId, // 👈 thêm dòng này
+        accountId // 👈 thêm dòng này
       },
       signal,
     });

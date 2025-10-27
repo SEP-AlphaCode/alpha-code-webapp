@@ -26,9 +26,11 @@ interface RobotCardProps {
 export function RobotCard({ robot, selectedRobot, onRobotSelect, statusTexts }: RobotCardProps) {
   const { status } = useRobotStatus(robot.serialNumber, 5000);
 
-  const battery = status?.battery_level ?? 0;
+  const battery = status?.battery_level ?? "0";
   const isCharging = status?.is_charging ?? false;
   const isOnline = !!status;
+
+  
 
   const computedStatus = isCharging ? "charging" : isOnline ? "online" : "offline";
 
@@ -58,9 +60,9 @@ export function RobotCard({ robot, selectedRobot, onRobotSelect, statusTexts }: 
     }
   };
 
-  const getBatteryColor = (battery: number) => {
-    if (battery > 60) return "bg-green-500";
-    if (battery > 30) return "bg-yellow-500";
+  const getBatteryColor = (battery: string) => {
+    if (battery > "60") return "bg-green-500";
+    if (battery > "30") return "bg-yellow-500";
     return "bg-red-500";
   };
 

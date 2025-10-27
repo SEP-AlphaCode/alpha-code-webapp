@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Profile } from '@/types/login';
 import { useSwitchProfile } from '@/features/auth/hooks/use-switch-profile';
 import { Card, CardContent } from '@/components/ui/card';
@@ -17,6 +17,7 @@ export function ProfileSelection() {
   const [passCodeInput, setPassCodeInput] = useState('');
   const switchProfileMutation = useSwitchProfile();
   const router = useRouter();
+  const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     // Lấy danh sách profiles từ sessionStorage
@@ -34,6 +35,12 @@ export function ProfileSelection() {
       router.push('/login');
     }
   }, [router]);
+
+  useEffect(() => {
+    if (selectedProfileId && inputRef.current) {
+      inputRef.current.focus();
+    }
+  }, [selectedProfileId]);
 
   const handleSelectProfile = (profileId: string) => {
     setSelectedProfileId(profileId);
@@ -63,16 +70,16 @@ export function ProfileSelection() {
 
   return (
   <div className="min-h-screen flex items-center justify-center bg-gray-50 p-4">
-      <Card className="w-full max-w-3xl shadow-2xl">
+      <Card className="w-full max-w-3xl shadow-2xl" style={{ backgroundColor: '#F4F4F4' }}>
         <CardContent className="p-8">
           {/* Logo */}
           <div className="flex justify-center mb-6">
             <div className="w-25 h-25 rounded-2xl flex items-center justify-center overflow-hidden">
               <Image
-                src={logo2}
+                src="/pulling_down_2.gif" // Updated to use pulling_down_2.gif
                 alt="Alpha Logo"
-                width={64}
-                height={64}
+                width={128}
+                height={128}
                 className="object-contain"
               />
             </div>
@@ -162,6 +169,8 @@ export function ProfileSelection() {
                   onChange={(val: string) => setPassCodeInput((val || '').replace(/\D/g, '').slice(0, 4))}
                   disabled={switchProfileMutation.isPending}
                   className="mx-auto"
+                  ref={inputRef}
+                  type="password" // Added to mask input with '*'
                 >
                   <InputOTPGroup className="justify-center">
                     <InputOTPSlot index={0} />

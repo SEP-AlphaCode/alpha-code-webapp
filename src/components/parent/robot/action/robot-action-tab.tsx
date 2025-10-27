@@ -1,19 +1,19 @@
-// src/components/user/robot/action/robot-action-tab.tsx
 "use client";
 
 import { Dispatch, SetStateAction } from "react";
 import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
 import { ChevronLeft, ChevronRight } from "lucide-react";
-import type { RobotActionUI } from "@/types/robot-ui"; // 👈 đổi sang RobotActionUI
+import type { RobotActionUI } from "@/types/robot-ui";
 import { RobotPaginationDots } from "./robot-pagination.dots";
+import ErrorState from "@/components/error-state"; // 👈 thêm import
 
 interface RobotActionTabProps {
-  actions: RobotActionUI[]; // 👈 đổi type
+  actions: RobotActionUI[];
   currentActionIndex: number | null;
   setCurrentActionIndex: Dispatch<SetStateAction<number | null>>;
   sendCommandToBackend: (actionCode: string) => Promise<unknown>;
-  onActionSelect: (action: RobotActionUI) => void; // 👈 đổi type
+  onActionSelect: (action: RobotActionUI) => void;
   pageSize: number;
   currentPage: number;
   setCurrentPage: Dispatch<SetStateAction<number>>;
@@ -35,11 +35,24 @@ export function RobotActionTab({
   loading,
   error,
 }: RobotActionTabProps) {
+  // Có thể thêm retry logic (gọi lại API ngoài này nếu bạn có refetch từ React Query)
+  const handleRetry = () => {
+    // placeholder: có thể gọi invalidateQuery hoặc refetch() tùy hook bạn dùng
+    window.location.reload(); // 👈 tạm thời reload trang nếu chưa có refetch
+  };
+
   return (
     <div className="flex flex-col items-center w-full">
-      {/* trạng thái loading/error */}
-      {loading && <p>⏳ Đang tải...</p>}
-      {error && <p className="text-red-500">{error}</p>}
+      {/* Trạng thái loading / error */}
+      {loading && <p className="text-gray-500 text-sm">⏳ Đang tải...</p>}
+
+      {error && (
+        <ErrorState
+          error={error}
+          onRetry={handleRetry}
+          className="mt-6"
+        />
+      )}
 
       {!loading && !error && (
         <>

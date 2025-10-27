@@ -6,6 +6,7 @@ export type Skill = {
   createdDate: string
   lastUpdated: string | null
   robotModelId?: string
+  robotModelName?: string
   status: number
   statusText: string
 }

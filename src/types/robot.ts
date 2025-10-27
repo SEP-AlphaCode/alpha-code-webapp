@@ -16,15 +16,15 @@ export type Robot = {
   id: string
   serialNumber: string
   robotModelId: string
-  robotModelName: string
-  ctrl_version?: string
-  firmware_version?: string
+  robotModelName?: string
+  ctrlVersion?: string
+  firmwareVersion?: string
   battery?: string | null
   accountId: string
-  status: string
-  statusText: string
-  createdDate: string
-  lastUpdate: string
+  status: number
+  statusText?: string
+  createdDate?: string
+  lastUpdate?: string
 }
 
 export type RobotResponse = {

@@ -253,12 +253,12 @@ export default function PaymentPageClient(props: PaymentPageClientProps = {}) {
       setIsEmbeddedProcessing(true)
       setTimeout(() => {
         closePayOS()
-        router.push(`/payment/result?success=true&method=payos&id=${encodeURIComponent(idFromParams)}`)
+        window.location.href = `/payment/result?success=true&method=payos&id=${encodeURIComponent(idFromParams)}`
       }, 1500)
     },
     onCancel: () => {
       closePayOS()
-      router.push(`/payment/result?success=false&id=${encodeURIComponent(idFromParams)}`)
+      window.location.href = `/payment/result?success=false&id=${encodeURIComponent(idFromParams)}`
     },
   })
 
@@ -290,7 +290,7 @@ export default function PaymentPageClient(props: PaymentPageClientProps = {}) {
           setIsEmbeddedProcessing(true)
           setTimeout(() => {
             closePayOS()
-            router.push(`/payment/result?success=true&method=payos&id=${encodeURIComponent(idFromParams)}`)
+            window.location.href = `/payment/result?success=true&method=payos&id=${encodeURIComponent(idFromParams)}`
           }, 1500)
         } else if (data?.status === 'cancel') {
           closePayOS()
@@ -441,7 +441,7 @@ export default function PaymentPageClient(props: PaymentPageClientProps = {}) {
   // If we are actively fetching resource, show loading
   if (isFetchingResource) {
     return (
-      <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: '#F4F4F4' }}>
+      <div className="min-h-screen flex items-center justify-center">
         <LoadingState message="Đang tải thông tin thanh toán..." />
       </div>
     )
@@ -450,7 +450,7 @@ export default function PaymentPageClient(props: PaymentPageClientProps = {}) {
   // If there's an id param and we don't yet have the title, show loading (fetch will start in effect)
   if (idFromParams && !fetchedTitle) {
     return (
-      <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: '#F4F4F4' }}>
+      <div className="min-h-screen flex items-center justify-center">
         <LoadingState message="Đang tải thông tin thanh toán..." />
       </div>
     )
@@ -459,7 +459,7 @@ export default function PaymentPageClient(props: PaymentPageClientProps = {}) {
   // No id and no resource -> show not found error
   if (!idFromParams && !fetchedTitle) {
     return (
-      <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: '#F4F4F4' }}>
+      <div className="min-h-screen flex items-center justify-center">
         <ErrorState error={`Không tìm thấy tài nguyên để thanh toán. Vui lòng kiểm tra lại liên kết hoặc quay lại trang trước đó.`} />
       </div>
     )
@@ -472,7 +472,7 @@ export default function PaymentPageClient(props: PaymentPageClientProps = {}) {
     <div className="min-h-screen flex items-start lg:items-center justify-center" style={{ backgroundColor: '#F4F4F4' }}>
       <div className="max-w-6xl mx-auto">
         {/* Header */}
-  <div className="mb-6 flex items-center gap-4 relative">
+        <div className="mb-6 flex items-center gap-4 relative">
           <button
             onClick={() => router.back()}
             aria-label="Quay lại"
@@ -484,11 +484,11 @@ export default function PaymentPageClient(props: PaymentPageClientProps = {}) {
             <h1 className="text-2xl md:text-3xl font-extrabold text-foreground">Thanh toán</h1>
             <p className="text-sm text-muted-foreground">Hoàn tất thanh toán một cách an toàn và nhanh chóng</p>
           </div>
-            {/* Decorative mini GIF: centered inside the header row (absolute center of this row) */}
-            <div className="pointer-events-none hidden md:flex absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-10">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={miniGif.src} alt="" aria-hidden="true" className="w-16 h-16 md:w-30 md:h-30 object-contain" />
-            </div>
+          {/* Decorative mini GIF: centered inside the header row (absolute center of this row) */}
+          <div className="pointer-events-none hidden md:flex absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-10">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src={miniGif.src} alt="" aria-hidden="true" className="w-16 h-16 md:w-30 md:h-30 object-contain" />
+          </div>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -663,7 +663,7 @@ export default function PaymentPageClient(props: PaymentPageClientProps = {}) {
         </div>
 
         {/* Mobile sticky checkout bar */}
-  <div className="fixed inset-x-0 bottom-0 bg-white border-t border-border p-3 lg:hidden shadow-lg">
+        <div className="fixed inset-x-0 bottom-0 bg-white border-t border-border p-3 lg:hidden shadow-lg">
           <div className="max-w-6xl mx-auto flex items-center justify-between gap-4">
             <div>
               <div className="text-sm text-muted-foreground">Tổng</div>
@@ -692,75 +692,58 @@ export default function PaymentPageClient(props: PaymentPageClientProps = {}) {
           </div>
         </div>
 
-        {/* PayOS embedded modal: show centered modal when payosOpen is true */}
         {payosOpen && (
-          <div className="fixed inset-0 z-50 flex items-start justify-center pt-12 md:pt-20">
-            {/* backdrop */}
-            <div className="fixed inset-0 bg-black/50" onClick={() => closePayOS()} aria-hidden="true" />
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+            <div className="relative max-w-lg w-full rounded-xl shadow-2xl bg-white flex flex-col overflow-hidden border border-gray-200">
 
-            <div className="relative w-full max-w-4xl mx-4">
-              <div
-                role="dialog"
-                aria-modal="true"
-                className="overflow-hidden rounded-lg shadow-lg bg-transparent"
-              >
-                <div className="bg-white border border-border rounded-lg overflow-hidden shadow-lg">
-                  <div className="flex items-center justify-between px-4 py-3 border-b border-border">
-                    <h3 className="text-lg font-semibold text-foreground">Thanh toán</h3>
-                    <button
-                      onClick={() => closePayOS()}
-                      aria-label="Đóng"
-                      className="p-2 rounded-md hover:bg-muted/10 focus:outline-none"
-                    >
-                      ✕
-                    </button>
+              {/* Header */}
+              <div className="flex items-center justify-between px-5 py-3 border-b border-gray-200 bg-gray-50">
+                <h3 className="text-base font-semibold text-gray-900">Thanh toán qua PayOS</h3>
+                <button
+                  onClick={closePayOS}
+                  aria-label="Đóng"
+                  className="p-2 rounded-md hover:bg-gray-100 transition"
+                >
+                  ✕
+                </button>
+              </div>
+
+              {/* Content */}
+              <div className="relative flex-1 flex items-center justify-center p-4 bg-white">
+                {/* Loading state */}
+                {createPayOS.isPending && payosUrl && (
+                  <div className="flex items-center justify-center w-full h-[400px]">
+                    <LoadingState message="Đang khởi tạo PayOS..." />
                   </div>
+                )}
 
-                  {/* content: remove outer padding so iframe can use full width */}
-                  <div className="w-full bg-white">
-                    {/* show loading state while the createPayOS mutation is pending */}
-                    {createPayOS.isPending && payosUrl && (
-                      <div className="w-full flex items-center justify-center py-6">
-                        <LoadingState message="Khởi tạo PayOS..." />
-                      </div>
-                    )}
-
-                    {createPayOS.error && (
-                      <div className="p-4">
-                        <ErrorState error={error || String(createPayOS.error)} />
-                      </div>
-                    )}
-
-                    <div id="embedded-payment-container" className="w-full h-[min(80vh,720px)] relative overflow-hidden bg-white">
-                      {/* embedded SDK renders into this element when open() is called */}
-
-                      {isEmbeddedProcessing && (
-                        <div className="absolute inset-0 bg-white/90 flex flex-col items-center justify-center z-50">
-                          <Loader2 className="w-12 h-12 animate-spin text-blue-600" />
-                          <p className="mt-4 text-lg font-semibold text-gray-900">Đang xử lý thanh toán...</p>
-                          <p className="text-sm text-muted-foreground">Vui lòng chờ trong giây lát.</p>
-                        </div>
-                      )}
-
-                      {/* iframe fallback to ensure checkout is accessible even if SDK
-                          cannot render into the container. */}
-                      {payosUrl && (
-                        // eslint-disable-next-line @next/next/no-html-link-for-pages
-                        <iframe
-                          src={payosUrl}
-                          title="PayOS Checkout"
-                          className="w-full h-full border-0 block"
-                          style={{ display: 'block' }}
-                        />
-                      )}
-                    </div>
+                {/* Error state */}
+                {createPayOS.error && (
+                  <div className="flex items-center justify-center w-full h-[400px] p-5 bg-white">
+                    <ErrorState error={error || String(createPayOS.error)} />
                   </div>
-                </div>
+                )}
+
+                {/* Embedded SDK area (căn giữa) */}
+                <div
+                  id="embedded-payment-container"
+                  className="w-full max-w-full h-[350px] flex items-center justify-center overflow-auto"
+                />
+
+                {/* Overlay khi đang xử lý */}
+                {isEmbeddedProcessing && (
+                  <div className="absolute inset-0 bg-white/90 flex flex-col items-center justify-center z-10">
+                    <Loader2 className="w-10 h-10 animate-spin" />
+                    <p className="mt-3 text-base font-medium text-gray-900">Đang xử lý thanh toán...</p>
+                    <p className="text-xs text-gray-500">Vui lòng chờ trong giây lát...</p>
+                  </div>
+                )}
               </div>
             </div>
           </div>
         )}
+
       </div>
-    </div>
+    </div >
   )
 }

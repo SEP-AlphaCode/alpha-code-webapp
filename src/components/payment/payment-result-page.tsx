@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import { Suspense } from "react";
+import { CheckCircle2, XCircle } from "lucide-react";
 
 export default function PaymentResultPage() {
   const searchParams = useSearchParams();
@@ -21,69 +21,77 @@ export default function PaymentResultPage() {
 
   return (
     <div
-      className="min-h-screen flex items-center justify-center"
-      style={{ backgroundColor: "#F4F4F4" }}
+      className={`min-h-screen flex items-center justify-center px-4 relative overflow-hidden
+      ${
+        success
+          ? "bg-gradient-to-b from-white via-gray-50 to-green-50 dark:from-neutral-900 dark:via-neutral-800 dark:to-green-900"
+          : "bg-gradient-to-b from-white via-gray-50 to-red-50 dark:from-neutral-900 dark:via-neutral-800 dark:to-red-900"
+      }`}
     >
-      <div className="max-w-lg w-full p-8 bg-white rounded-lg shadow-lg text-center">
+      {/* Grid pattern */}
+      <div className="absolute inset-0">
+                  <div className="absolute inset-0 bg-[linear-gradient(rgba(59,130,246,0.1)_1px,transparent_1px),linear-gradient(90deg,rgba(59,130,246,0.1)_1px,transparent_1px)] bg-[size:60px_60px]"></div>
+      </div>
+
+      {/* Card */}
+      <div className="max-w-md w-full p-10 bg-white dark:bg-neutral-800 rounded-3xl shadow-xl border border-neutral-200 dark:border-neutral-700 text-center space-y-6 relative z-10 animate-fadeIn">
         {success ? (
           <>
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src="/pulling_down_2.gif"
-              alt="Thanh toán thành công"
-              className="mx-auto w-36 h-36 object-contain mb-6"
-            />
-            <h1 className="text-2xl font-bold text-foreground">
+            <div className="flex justify-center relative">
+              <div className="absolute inset-0 flex justify-center items-center">
+                <div className="w-24 h-24 rounded-full bg-emerald-100 dark:bg-emerald-900 opacity-40 blur-2xl animate-pulse" />
+              </div>
+              <CheckCircle2 className="w-24 h-24 text-emerald-500 dark:text-emerald-400 relative animate-scaleIn" />
+            </div>
+
+            <h1 className="text-2xl font-semibold text-neutral-900 dark:text-neutral-100">
               Thanh toán thành công
             </h1>
-            <p className="text-sm text-muted-foreground mt-2">
-              Cảm ơn bạn đã hoàn tất thanh toán. Giao dịch của bạn đã được ghi
-              nhận.
+            <p className="text-neutral-500 dark:text-neutral-400 text-sm leading-relaxed">
+              Cảm ơn bạn! Giao dịch đã được ghi nhận và sẽ sớm được xử lý.
             </p>
 
-            <div className="mt-6 flex justify-center gap-3">
+            <div className="pt-6 flex flex-col sm:flex-row gap-4 justify-center">
               <Link
                 href="/"
-                className="px-4 py-2 rounded-lg bg-muted/20 hover:bg-muted/30 text-foreground"
+                className="px-5 py-2.5 rounded-xl border border-neutral-300 dark:border-neutral-600 hover:bg-neutral-100 dark:hover:bg-neutral-700 text-neutral-700 dark:text-neutral-200 text-sm transition"
               >
                 Về trang chủ
               </Link>
               <Link
                 href={detailLink}
-                className="px-4 py-2 rounded-lg bg-primary text-white hover:opacity-95"
+                className="px-5 py-2.5 rounded-xl bg-neutral-900 dark:bg-neutral-100 text-white dark:text-neutral-900 hover:bg-neutral-800 dark:hover:bg-neutral-200 text-sm transition"
               >
-                {method && id
-                  ? "Xem chi tiết đơn hàng"
-                  : "Quay lại thanh toán"}
+                {method && id ? "Xem đơn hàng" : "Quay lại thanh toán"}
               </Link>
             </div>
           </>
         ) : (
           <>
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src="/img_prompt.webp"
-              alt="Thanh toán thất bại"
-              className="mx-auto w-36 h-36 object-contain mb-6"
-            />
-            <h1 className="text-2xl font-bold text-foreground">
-              Thanh toán không thành công
+            <div className="flex justify-center relative">
+              <div className="absolute inset-0 flex justify-center items-center">
+                <div className="w-24 h-24 rounded-full bg-red-100 dark:bg-red-900 opacity-40 blur-2xl animate-pulse" />
+              </div>
+              <XCircle className="w-24 h-24 text-red-500 dark:text-red-400 relative animate-scaleIn" />
+            </div>
+
+            <h1 className="text-2xl font-semibold text-neutral-900 dark:text-neutral-100">
+              Thanh toán thất bại
             </h1>
-            <p className="text-sm text-muted-foreground mt-2">
-              Có lỗi xảy ra hoặc giao dịch đã bị hủy. Vui lòng thử lại hoặc liên
-              hệ hỗ trợ nếu cần.
+            <p className="text-neutral-500 dark:text-neutral-400 text-sm leading-relaxed">
+              Giao dịch bị hủy hoặc xảy ra lỗi. Vui lòng thử lại hoặc liên hệ hỗ trợ.
             </p>
 
-            <div className="mt-6 flex justify-center gap-3">
+            <div className="pt-6 flex flex-col sm:flex-row gap-4 justify-center">
               <Link
                 href="/payment"
-                className="px-4 py-2 rounded-lg bg-primary text-white hover:opacity-95"
+                className="px-5 py-2.5 rounded-xl bg-neutral-900 dark:bg-neutral-100 text-white dark:text-neutral-900 hover:bg-neutral-800 dark:hover:bg-neutral-200 text-sm transition"
               >
                 Thử lại
               </Link>
               <Link
                 href="/"
-                className="px-4 py-2 rounded-lg bg-muted/20 hover:bg-muted/30 text-foreground"
+                className="px-5 py-2.5 rounded-xl border border-neutral-300 dark:border-neutral-600 hover:bg-neutral-100 dark:hover:bg-neutral-700 text-neutral-700 dark:text-neutral-200 text-sm transition"
               >
                 Về trang chủ
               </Link>
