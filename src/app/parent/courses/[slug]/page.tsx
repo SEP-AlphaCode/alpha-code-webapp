@@ -9,16 +9,27 @@ import { useCourse } from '@/features/courses/hooks/use-course'
 import { useSections } from '@/features/courses/hooks/use-section'
 import { AppDispatch } from '@/store/store'
 import { setCurrentCourse } from '@/store/user-course-slice'
+import { Button } from '@/components/ui/button'
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from '@/components/ui/dialog'
 import { useParams } from 'next/navigation'
 import React, { useEffect, useState } from 'react'
 import { useDispatch } from 'react-redux'
 import { useRouter } from 'next/navigation';
+import { getUserIdFromToken } from '@/utils/tokenUtils'
+import { useCreateAccountCourse } from '@/features/courses/hooks/use-account-course'
 
 export default function CoursePage() {
   const dispatch = useDispatch<AppDispatch>();
   const { slug } = useParams<{ slug: string }>();
   const router = useRouter(); // Add router for navigation
   const [expandedSections, setExpandedSections] = useState<string[]>([]);
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
 
   const { data: courseData, isLoading: isCourseLoading } = useCourse().useGetCourseBySlug(slug);
 
@@ -47,6 +58,43 @@ export default function CoursePage() {
   const handleLessonClick = (lessonId: string) => {
     router.push(`/parent/courses/${slug}/lesson/${lessonId}`); // Navigate to lesson detail page
   };
+
+  const handleRegisterClick = () => {
+    setIsDialogOpen(true);
+  };
+
+  const createMutation = useCreateAccountCourse();
+
+  const handleConfirmRegister = () => {
+    // Use mutation hook to create account-course for the logged-in account
+    const accessToken = typeof window !== 'undefined' ? sessionStorage.getItem('accessToken') || '' : '';
+    const accountId = accessToken ? getUserIdFromToken(accessToken) : null;
+
+    if (!accountId) {
+      // Not authenticated or no account id found
+      console.error('No account id found. Please login.');
+      setIsDialogOpen(false);
+      return;
+    }
+
+    createMutation.mutate(
+      { accountId, courseId: courseData!.id },
+      {
+        onSuccess: () => {
+          // close dialog and navigate to course or lessons page if desired
+          setIsDialogOpen(false);
+          // navigate to the first lesson or course home
+          router.push(`/parent/courses/${slug}`);
+        },
+        onError: (err) => {
+          console.error('Failed to assign course to account', err);
+          setIsDialogOpen(false);
+        }
+      }
+    );
+  };
+
+  
 
   useEffect(() => {
     if (courseData) {
@@ -128,9 +176,12 @@ export default function CoursePage() {
                       {courseData?.price ? `${courseData.price} VND` : 'Miễn phí'}
                     </span>
                   </div>
-                  <button className="w-full bg-blue-500 hover:bg-blue-600 text-white font-semibold py-3 px-6 rounded-lg transition-colors mb-4">
+                  <Button
+                    onClick={handleRegisterClick}
+                    className="w-full bg-blue-500 hover:bg-blue-600 text-white font-semibold py-3 px-6 rounded-lg transition-colors mb-4"
+                  >
                     Đăng ký khóa học
-                  </button>
+                  </Button>
                 </div>
               </div>
             </div>
@@ -212,7 +263,7 @@ export default function CoursePage() {
                           <li
                             key={lesson.id}
                             className="p-4 flex items-center justify-between hover:bg-gray-100 transition-colors cursor-pointer"
-                            onClick={() => handleLessonClick(lesson.id)} // Add click handler
+                            // onClick={() => handleLessonClick(lesson.id)} // Add click handler
                           >
                             <div className="flex items-center gap-4">
                               <div className="w-6 h-6 rounded-full bg-gray-300 flex items-center justify-center text-xs font-medium">
@@ -239,6 +290,29 @@ export default function CoursePage() {
           </div>
         </div>
       </div>
+
+      {isDialogOpen && (
+        <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Xác nhận đăng ký</DialogTitle>
+            </DialogHeader>
+
+            <div>
+              <p>Bạn có chắc chắn muốn đăng ký khóa học này?</p>
+            </div>
+
+            <DialogFooter>
+              <Button onClick={() => setIsDialogOpen(false)} className="bg-gray-300 hover:bg-gray-400" disabled={createMutation.status === 'pending'}>
+                Hủy
+              </Button>
+              <Button onClick={handleConfirmRegister} className="bg-orange-500 text-white hover:bg-orange-600" disabled={createMutation.status === 'pending'}>
+                {createMutation.status === 'pending' ? 'Đang xử lý...' : 'Xác nhận'}
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+      )}
     </div>
   );
 }
