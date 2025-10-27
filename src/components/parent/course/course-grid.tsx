@@ -56,10 +56,10 @@ export function CourseGrid({ courses }: CourseGridProps) {
                                 <span className="flex items-center gap-1 font-medium">⏱️ {formatTimespan(course.totalDuration)}</span>
                             </div>
                         </div>
-
+                                
                         <div className="px-4 md:px-5 pb-4 md:pb-5">
                             <div className="flex bg-blue-50 rounded-lg p-3 border border-slate-200 text-xl font-bold text-blue-600 justify-center">
-                                {formatPrice(course.price)}
+                                {course.price === 0 ? "Miễn phí" : formatPrice(course.price)}
                             </div>
                         </div>
                     </Link>

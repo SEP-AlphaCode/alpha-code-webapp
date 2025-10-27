@@ -40,6 +40,15 @@ export default function CoursePage() {
     return courses.filter((course) => course.categoryId === selectedCategory);
   }, [courses, selectedCategory]);
 
+  // Separate free and paid courses
+  const freeCourses = useMemo(() => {
+    return courses.filter((course) => course.price === 0);
+  }, [courses]);
+
+  const paidCourses = useMemo(() => {
+    return courses.filter((course) => course.price > 0);
+  }, [courses]);
+
   const handleSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     dispatch(setSearch(searchInput));
@@ -106,7 +115,12 @@ export default function CoursePage() {
           <div className="py-12 text-center text-slate-600">Đang tải các khóa học...</div>
         ) : (
           <>
-            <CourseGrid courses={filteredCourses} />
+            <h2 className="text-2xl font-bold text-gray-900 mb-4">Khóa học miễn phí</h2>
+            <CourseGrid courses={freeCourses} />
+
+            <h2 className="text-2xl font-bold text-gray-900 mt-8 mb-4">Khóa học trả phí</h2>
+            <CourseGrid courses={paidCourses} />
+
             {totalPages > 1 && (
               <Pagination page={pagination.page} totalPages={totalPages} onPageChange={(p) => dispatch(setPage(p))} />
             )}
