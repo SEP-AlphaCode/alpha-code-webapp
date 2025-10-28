@@ -23,6 +23,7 @@ import { useDispatch } from 'react-redux'
 import { useRouter } from 'next/navigation';
 import { getUserIdFromToken } from '@/utils/tokenUtils'
 import { useCreateAccountCourse } from '@/features/courses/hooks/use-account-course'
+import { AccountCourse } from '@/types/AccountCourse'
 
 export default function CoursePage() {
   const dispatch = useDispatch<AppDispatch>();
@@ -60,12 +61,19 @@ export default function CoursePage() {
   };
 
   const handleRegisterClick = () => {
+    // If the course is paid, go to payment page instead of enrolling directly
+    if (courseData?.price && courseData.price > 0) {
+      // Use payment page with query params expected by PaymentPageClient
+      router.push(`/payment?category=course&id=${encodeURIComponent(courseData.id)}`)
+      return
+    }
+
     setIsDialogOpen(true);
   };
 
   const createMutation = useCreateAccountCourse();
 
-  const handleConfirmRegister = () => {
+  const handleConfirmRegister = async () => {
     // Use mutation hook to create account-course for the logged-in account
     const accessToken = typeof window !== 'undefined' ? sessionStorage.getItem('accessToken') || '' : '';
     const accountId = accessToken ? getUserIdFromToken(accessToken) : null;
@@ -76,25 +84,31 @@ export default function CoursePage() {
       setIsDialogOpen(false);
       return;
     }
+    try {
+      // Some React Query versions/types may not expose mutateAsync on the typed object.
+      // Use a safe wrapper that falls back to mutate+callbacks when mutateAsync is not present.
+      type MutateFn = (data: Partial<AccountCourse>) => Promise<unknown>
 
-    createMutation.mutate(
-      { accountId, courseId: courseData!.id },
-      {
-        onSuccess: () => {
-          // close dialog and navigate to course or lessons page if desired
-          setIsDialogOpen(false);
-          // navigate to the first lesson or course home
-          router.push(`/parent/courses/${slug}`);
-        },
-        onError: (err) => {
-          console.error('Failed to assign course to account', err);
-          setIsDialogOpen(false);
-        }
-      }
-    );
+      const maybeMutateAsync = (createMutation as unknown as { mutateAsync?: MutateFn }).mutateAsync
+
+      const mutateAsyncFn: MutateFn = maybeMutateAsync
+        ? (maybeMutateAsync.bind(createMutation) as MutateFn)
+        : (data: Partial<AccountCourse>) =>
+            new Promise<unknown>((resolve, reject) =>
+              createMutation.mutate(data, { onSuccess: (res) => resolve(res), onError: (err) => reject(err) })
+            )
+
+      await mutateAsyncFn({ accountId, courseId: courseData!.id });
+      setIsDialogOpen(false);
+      // Use replace to avoid keeping the dialog route in history
+      router.replace(`/parent/courses/learning/${courseData!.id}`);
+    } catch (err) {
+      console.error('Failed to assign course to account', err);
+      setIsDialogOpen(false);
+    }
   };
 
-  
+
 
   useEffect(() => {
     if (courseData) {
@@ -131,9 +145,11 @@ export default function CoursePage() {
               <h1 className="text-3xl md:text-4xl font-bold mb-4 leading-tight text-gray-900">
                 {courseData.name}
               </h1>
-              <p className="text-lg text-gray-600 mb-6 leading-relaxed">
-                {courseData.description}
-              </p>
+              <p
+                className="text-lg text-gray-600 mb-6 leading-relaxed"
+                dangerouslySetInnerHTML={{ __html: courseData.description }}
+              />
+
 
               <div className="flex flex-wrap gap-6 text-sm text-gray-700">
                 <div className="flex items-center gap-2">
@@ -180,7 +196,7 @@ export default function CoursePage() {
                     onClick={handleRegisterClick}
                     className="w-full bg-blue-500 hover:bg-blue-600 text-white font-semibold py-3 px-6 rounded-lg transition-colors mb-4"
                   >
-                    Đăng ký khóa học
+                    {courseData?.price && courseData.price > 0 ? 'Mua khóa học' : 'Đăng ký khóa học'}
                   </Button>
                 </div>
               </div>
@@ -263,7 +279,7 @@ export default function CoursePage() {
                           <li
                             key={lesson.id}
                             className="p-4 flex items-center justify-between hover:bg-gray-100 transition-colors cursor-pointer"
-                            // onClick={() => handleLessonClick(lesson.id)} // Add click handler
+                          // onClick={() => handleLessonClick(lesson.id)} // Add click handler
                           >
                             <div className="flex items-center gap-4">
                               <div className="w-6 h-6 rounded-full bg-gray-300 flex items-center justify-center text-xs font-medium">

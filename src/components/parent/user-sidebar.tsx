@@ -122,6 +122,12 @@ export function UserSidebar({
                   </Link>
                 </DropdownMenuItem>
                 <DropdownMenuItem asChild>
+                  <Link href="/parent/courses/mycourse" className="cursor-pointer">
+                    <UserCircle className="mr-2 h-4 w-4" />
+                    <span>My Course</span>
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
                   <Link href="/user/settings" className="cursor-pointer">
                     <Settings className="mr-2 h-4 w-4" />
                     <span>Settings</span>

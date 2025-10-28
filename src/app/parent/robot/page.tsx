@@ -107,8 +107,16 @@ export default function UserDashboard() {
       <RobotGrid
         robots={filteredRobots.map(r => ({
           ...r,
-          serialNumber: r.serial, // Map 'serial' to 'serialNumber'
+          serialNumber: r.serial ?? "",
         }))}
+        selectedRobot={selectedRobotSerial}
+        onRobotSelect={(robotSerial) => {
+          selectRobot(robotSerial);
+          const robot = filteredRobots.find((r) => r.serial === robotSerial);
+          if (robot) {
+            sessionStorage.setItem("selectedRobotSerial", robot.serial);
+          }
+        }}
         sectionTitle="Danh sách robot"
         statusTexts={{ online: "Đang hoạt động", offline: "Ngoại tuyến", charging: "Đang sạc" }}
       />
