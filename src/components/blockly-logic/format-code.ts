@@ -33,7 +33,7 @@ export function injectLoopCheck(code: string) {
         // do {...} while (...)
         /\bdo\s*\{/g,
     ];
-    const loopCheckFnName = '_' + (uuid.v4() + '_' + uuid.v4() + '_' + uuid.v4()).replaceAll('-', '_')
+    const loopCheckFnName = 'loop_check_' + (uuid.v4()).replaceAll('-', '_')
     for (const pattern of patterns) {
         code = code.replace(pattern, (match) => `${match}\n${loopCheckFnName}();\n`);
     }

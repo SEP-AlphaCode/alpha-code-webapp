@@ -634,10 +634,6 @@ export const robotCategory = {
         },
         {
             kind: 'block',
-            type: 'tts_en',
-        },
-        {
-            kind: 'block',
             type: 'set_mouth_led',
         },
         {

@@ -1,6 +1,7 @@
-import { javascriptGenerator, Order } from 'blockly/javascript';
+import { JavascriptGenerator, javascriptGenerator, Order } from 'blockly/javascript';
 import * as Blockly from 'blockly/core';
 import { apiPythonUrl } from '@/app/constants/constants';
+import * as uuid from 'uuid'
 
 function addPrefixInPlace<T>(obj: Record<string, T>, prefix: string, condition: (x: string) => boolean) {
     for (const key of Object.keys(obj)) {
@@ -23,7 +24,7 @@ function hexToRgb(hex: string) {
 }
 
 
-export const buildCodeGeneratorForModelId = (modelId: string, serial: string) => {
+export const buildCodeGeneratorForModelId = (modelId: string, serial: string): JavascriptGenerator => {
     const callUrl = apiPythonUrl + "/websocket/command/" + serial
     // TODO: Load allowed actions specific to a robot model
     const alphaCodeGenerator = javascriptGenerator
@@ -63,6 +64,7 @@ ${unit}
         //Inner function, fetch the ws call
         const body = JSON.stringify({
             type: block.type.split('.')[1],
+            lang: 'vi',
             data: {
                 code: dropdown_action_name
             }
@@ -84,6 +86,7 @@ ${unit}
         //Inner function, fetch the ws call
         const body = JSON.stringify({
             type: block.type.split('.')[1],
+            lang: 'vi',
             data: {
                 code: dropdown_action_name
             }
@@ -96,23 +99,15 @@ ${unit}
     alphaCodeGenerator.forBlock['.skill_helper'] = generateActionBlocks
     alphaCodeGenerator.forBlock['tts'] = (block) => {
         const value_text = alphaCodeGenerator.valueToCode(block, 'TEXT', Order.ATOMIC);
+        const dropdown_language = block.getFieldValue('LANGUAGE');
         const body = JSON.stringify({
             type: 'tts',
-            lang: 'vi',
-            text: value_text
+            lang: dropdown_language,
+            data: {
+                text: value_text
+            }
         })
-        const comment = `// nói '${value_text}'\n`
-        const inner = baseRequest(body, 1)
-        return `${comment} ${inner}\n`
-    }
-    alphaCodeGenerator.forBlock['tts_en'] = (block) => {
-        const value_text = alphaCodeGenerator.valueToCode(block, 'TEXT', Order.ATOMIC);
-        const body = JSON.stringify({
-            type: 'tts',
-            lang: 'en',
-            text: value_text
-        })
-        const comment = `// say "${value_text}"\n`
+        const comment = `// nói ${value_text}\n`
         const inner = baseRequest(body, 1)
         return `${comment} ${inner}\n`
     }

@@ -1,6 +1,6 @@
 export type BaseBlockDef = {
     args0: {
-        options?: string[][],
+        options?: unknown[][],
         name: string,
         type: string,
         value?: number,
@@ -17,7 +17,8 @@ export type BaseBlockDef = {
     previousStatement?: null,
     nextStatement?: null,
     colour: number,
-    output?: string
+    output?: string,
+    extensions?: string[]
 }
 
 //These are Blockly's types that aren't exposed

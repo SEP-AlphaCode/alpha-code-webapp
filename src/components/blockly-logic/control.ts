@@ -1,8 +1,9 @@
+import * as Vi from 'blockly/msg/vi';
+import { registerFieldColour } from '@blockly/field-colour';
 import { pythonHttp } from '@/utils/http';
 import * as Blockly from 'blockly/core';
 import { JavascriptGenerator } from 'blockly/javascript';
 import { robotCategory, toolbox, ToolboxDef } from './toolbox';
-import { ToolboxItemInfo } from '@/types/blockly';
 import * as uuid from 'uuid'
 import { injectLoopCheck } from './format-code';
 
@@ -11,7 +12,7 @@ export const CATEGORY_NAME = 'Robot'
 export type Operations = {
     serialize: () => { [key: string]: unknown },
     loadFromJson: (json: { [key: string]: unknown }) => void,
-    makeListCode: (gen: JavascriptGenerator) => string,
+    makeListCode: (gen: JavascriptGenerator) => { code: string, listVar: string },
     addStrayScrollbarDestructor: (injectedDiv: HTMLDivElement) => void,
     sendCommandToBackend: (
         actions: { type: string, code?: string, text?: string, lang?: string }[],
@@ -19,7 +20,8 @@ export type Operations = {
         setNotify: (text: string, status: string) => void
     ) => void,
     getToolboxForRobotModel: (robotModelId: string) => ToolboxDef,
-    getDefaultToolbox: () => ToolboxDef
+    getDefaultToolbox: () => ToolboxDef,
+    setUpUI: () => void
 }
 export const blockControls = (ws: Blockly.WorkspaceSvg): Operations => {
     const serialize = () => Blockly.serialization.workspaces.save(ws)
@@ -32,14 +34,15 @@ export const blockControls = (ws: Blockly.WorkspaceSvg): Operations => {
             // main code
             const main = gen.workspaceToCode(ws)
             //yield checks
-            const startTimeVarName = '_' + (uuid.v4() + '_' + uuid.v4() + '_' + uuid.v4()).replaceAll('-', '_')
-            const nowVarName = '_' + (uuid.v4() + '_' + uuid.v4() + '_' + uuid.v4()).replaceAll('-', '_')
+            const startTimeVarName = '_' + (uuid.v4()).replaceAll('-', '_')
+            const nowVarName = '_' + (uuid.v4()).replaceAll('-', '_')
+            const listVar = 'pending_call_' + (uuid.v4()).replaceAll('-', '_')
             let mainFn = `function main() {
-let list = []
+var ${listVar} = []
 try{
 ${main}
 return {
-result: list
+result: ${listVar}
 }
 }
 catch(e) {
@@ -50,7 +53,7 @@ error: e.message
 }}
 
 return main()`
-
+            mainFn = mainFn.replaceAll('<LIST_VAR>', listVar)
             const injected = injectLoopCheck(mainFn)
             mainFn = injected.result
             const checkFnName = injected.checkFnName
@@ -60,13 +63,14 @@ ${nowVarName} = Date.now()
 //console.log('Checking loop time', ${nowVarName} - ${startTimeVarName})
 if(${nowVarName} - ${startTimeVarName} >= 0.25 * 1000) throw Error("Time exceeded")
 }`
-            return loopCheck + '\n' + mainFn
+            return { code: loopCheck + '\n' + mainFn, listVar }
         }
         catch (e) {
             console.log(e);
         }
-        return ""
+        return { code: '', listVar: '' }
     }
+
 
     const addStrayScrollbarDestructor = (injectedDiv: HTMLDivElement) => {
         ws.addChangeListener((event: Blockly.Events.Abstract) => {
@@ -152,6 +156,44 @@ if(${nowVarName} - ${startTimeVarName} >= 0.25 * 1000) throw Error("Time exceede
         return def
     }
 
+    const setUpUI = () => {
+        registerFieldColour()
+        Blockly.setLocale(Vi as unknown as { [key: string]: string })
+        Blockly.utils.colour.setHsvSaturation(1) // 0 (inclusive) to 1 (exclusive), defaulting to 0.45
+        Blockly.utils.colour.setHsvValue(0.75) // 0 (inclusive) to 1 (exclusive), defaulting to 0.65
+        if (!Blockly.Extensions.isRegistered('flag_with_text_extension')) {
+            Blockly.Extensions.register('flag_with_text_extension',
+                function () {
+                    function createFlagWithTextDiv(text: string, src: string) {
+                        const div = document.createElement('div');
+                        div.setAttribute('style', 'padding: 2px');
+                        const img = document.createElement('img');
+                        img.setAttribute('src', src);
+                        img.setAttribute('style', 'width: 20px; height: 15px; display: inline;');
+                        const para = document.createElement('span');
+                        para.setAttribute('style', 'flex:row')
+                        para.appendChild(img)
+                        const textNode = document.createElement('span')
+                        textNode.innerHTML = `&nbsp;&nbsp;${text}`
+                        para.appendChild(textNode);
+                        div.appendChild(para);
+                        div.setAttribute('title', text);
+                        return div;
+                    }
+
+                    const viDiv = createFlagWithTextDiv('Tiếng Việt', 'https://upload.wikimedia.org/wikipedia/commons/thumb/2/21/Flag_of_Vietnam.svg/1280px-Flag_of_Vietnam.svg.png?20250708231458');
+                    const enDiv = createFlagWithTextDiv('Tiếng Anh', 'https://upload.wikimedia.org/wikipedia/commons/thumb/a/a4/Flag_of_the_United_States.svg/1280px-Flag_of_the_United_States.svg.png');
+                    const options: Blockly.MenuGenerator = [
+                        [viDiv, 'vi'],
+                        [enDiv, 'en'],
+                    ];
+                    const f = this.getField('LANGUAGE') as Blockly.FieldDropdown;
+                    if (f) {
+                        f.setOptions(options);
+                    }
+                });
+        }
+    }
     return {
         serialize,
         loadFromJson,
@@ -159,6 +201,7 @@ if(${nowVarName} - ${startTimeVarName} >= 0.25 * 1000) throw Error("Time exceede
         addStrayScrollbarDestructor,
         sendCommandToBackend,
         getDefaultToolbox,
-        getToolboxForRobotModel
+        getToolboxForRobotModel,
+        setUpUI
     }
 }

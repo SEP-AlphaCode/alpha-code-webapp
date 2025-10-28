@@ -124,32 +124,44 @@ const customBlockTemplate: BaseBlockDef[] = [
     },
     {
         "type": "tts",
-        "tooltip": "Nói bằng TIẾNG VIỆT",
+        "tooltip": "",
         "helpUrl": "",
-        "message0": "nói %1",
+        "message0": "nói %1 bằng tiếng %2 %3",
         "args0": [
             {
                 "type": "input_value",
-                "name": "TEXT",
-                "check": "String"
-            }
-        ],
-        "previousStatement": null,
-        "nextStatement": null,
-        "colour": HUE
-    },
-    {
-        "type": "tts_en",
-        "tooltip": "Nói bằng TIẾNG ANH (spoken in ENGLISH)",
-        "helpUrl": "",
-        "message0": "say %1",
-        "args0": [
+                "name": "TEXT"
+            },
             {
-                "type": "input_value",
-                "name": "TEXT",
-                "check": "String"
+                "type": "field_dropdown",
+                "name": "LANGUAGE",
+                "options": [
+                    [
+                        {
+                            "src": "https://upload.wikimedia.org/wikipedia/commons/thumb/2/21/Flag_of_Vietnam.svg/1280px-Flag_of_Vietnam.svg.png?20250708231458",
+                            "width": 15,
+                            "height": 15,
+                            "alt": "Việt"
+                        },
+                        'vi'
+                    ],
+                    [
+                        {
+                            "src": "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a4/Flag_of_the_United_States.svg/1280px-Flag_of_the_United_States.svg.png",
+                            "width": 15,
+                            "height": 15,
+                            "alt": "Anh",
+                        },
+                        "en"
+                    ],
+                ],
+            },
+            {
+                "type": "input_dummy",
+                "name": "NAME"
             }
         ],
+        "extensions": ["flag_with_text_extension"],
         "previousStatement": null,
         "nextStatement": null,
         "colour": HUE
