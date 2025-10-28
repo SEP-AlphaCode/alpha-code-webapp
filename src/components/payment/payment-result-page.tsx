@@ -3,6 +3,9 @@
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { CheckCircle2, XCircle } from "lucide-react";
+import { useEffect, useState } from "react";
+import { toast } from "sonner";
+import { useLicenseKey } from "@/features/license-key/hooks/use-license-key";
 
 export default function PaymentResultPage() {
   const searchParams = useSearchParams();
@@ -12,12 +15,25 @@ export default function PaymentResultPage() {
   const category = searchParams.get("category") || undefined;
   const id = searchParams.get("id") || undefined;
 
-  const detailLink =
-    category && id
-      ? `/payment/success?category=${encodeURIComponent(
-          category
-        )}&id=${encodeURIComponent(id)}`
-      : "/payment";
+  // prepare license hook and a local flag so we only show toasts when
+  // we triggered the fetch from this success redirect.
+  const licenseQuery = useLicenseKey()
+  const [requestedFetch, setRequestedFetch] = useState(false)
+
+  useEffect(() => {
+    if (!success || category !== 'key') return
+    setRequestedFetch(true)
+    void licenseQuery.refetch()
+  }, [success, category])
+
+  useEffect(() => {
+    if (!requestedFetch) return
+    if (licenseQuery.isSuccess && licenseQuery.data) {
+      toast.success('Khóa bản quyền đã được lưu vào phiên.')
+    } else if (licenseQuery.isError) {
+      toast.error('Không thể tải khóa bản quyền ngay bây giờ. Vui lòng thử lại sau.')
+    }
+  }, [requestedFetch, licenseQuery.isSuccess, licenseQuery.isError])
 
   return (
     <div

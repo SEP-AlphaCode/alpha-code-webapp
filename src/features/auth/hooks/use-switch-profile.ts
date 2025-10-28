@@ -16,6 +16,7 @@ export const useSwitchProfile = () => {
       // Lưu token mới
       sessionStorage.setItem('accessToken', data.accessToken);
       sessionStorage.setItem('refreshToken', data.refreshToken);
+      sessionStorage.setItem('key', data.key);
 
       // Giải mã accessToken để lấy fullName
       const accountData = getTokenPayload(data.accessToken);

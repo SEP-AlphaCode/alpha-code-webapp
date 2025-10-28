@@ -41,7 +41,7 @@ export function useCreateAccountCourse() {
 export function useCreateAccountCoursesFromBundle() {
 	const queryClient = useQueryClient()
 	return useMutation({
-		mutationFn: (data: any) => accountCourseApi.createAccountCoursesFromBundle(data),
+		mutationFn: (data: unknown) => accountCourseApi.createAccountCoursesFromBundle(data),
 		onSuccess: () => {
 			queryClient.invalidateQueries({ queryKey: ['account-courses'] })
 			queryClient.invalidateQueries({ queryKey: ['account-course'] })
@@ -60,11 +60,13 @@ export function useDeleteAccountCourse() {
 	})
 }
 
-export default {
-	useGetAccountCoursesByAccount,
-	useGetAccountCourseById,
-	useCreateAccountCourse,
-	useCreateAccountCoursesFromBundle,
-	useDeleteAccountCourse,
+const accountCourseHooks = {
+ 	useGetAccountCoursesByAccount,
+ 	useGetAccountCourseById,
+ 	useCreateAccountCourse,
+ 	useCreateAccountCoursesFromBundle,
+ 	useDeleteAccountCourse,
 }
+
+export default accountCourseHooks
 

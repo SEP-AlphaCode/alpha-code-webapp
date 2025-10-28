@@ -54,7 +54,7 @@ export const createAccountCourse = async (data: Partial<AccountCourse>) => {
 };
 
 // Create account courses from bundle
-export const createAccountCoursesFromBundle = async (data: any) => {
+export const createAccountCoursesFromBundle = async (data: unknown) => {
 	try {
 		const response = await coursesHttp.post('/account-courses/from-bundle', data);
 		return response.data;

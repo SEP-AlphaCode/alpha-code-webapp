@@ -72,7 +72,7 @@ export function Header({ currentSection, onNavigate }: HeaderProps) {
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   const handleLogout = () => {
-  // Chỉ chạy khi ở phía client (trình duyệt)
+    // Chỉ chạy khi ở phía client (trình duyệt)
     if (typeof window !== "undefined") {
       clearAuthData();
       window.dispatchEvent(new Event("authStateChange"));
@@ -81,7 +81,7 @@ export function Header({ currentSection, onNavigate }: HeaderProps) {
   };
 
   const getUserInfo = () => {
-  // Chỉ chạy khi ở phía client (trình duyệt)
+    // Chỉ chạy khi ở phía client (trình duyệt)
     if (typeof window !== "undefined") {
       const accessToken = sessionStorage.getItem("accessToken");
       if (accessToken) return getUserInfoFromToken(accessToken);
@@ -90,14 +90,14 @@ export function Header({ currentSection, onNavigate }: HeaderProps) {
   };
 
   const getUserRole = () => {
-  // Chỉ chạy khi ở phía client (trình duyệt)
+    // Chỉ chạy khi ở phía client (trình duyệt)
     if (typeof window !== "undefined") {
       const accessToken = sessionStorage.getItem("accessToken");
       if (accessToken) return getUserRoleFromToken(accessToken);
     }
     return null;
   };
-  
+
   const userRole = getUserRole();
 
   // Hàm chọn mảng điều hướng dựa trên Role
@@ -148,10 +148,12 @@ export function Header({ currentSection, onNavigate }: HeaderProps) {
 
           <nav className="hidden md:flex items-center gap-8 text-sm font-medium text-gray-600">
             <Link href="/" className="hover:text-blue-600 transition-colors">Trang chủ</Link>
+            {/* Link tới trang Tài nguyên (Resources) để hiển thị khóa học, tính năng robot, license key, download APK, v.v. */}
             <button onClick={() => onNavigate?.(1)} className="hover:text-blue-600 transition-colors">Robot</button>
             <button onClick={() => onNavigate?.(2)} className="hover:text-blue-600 transition-colors">Tính năng</button>
             <button onClick={() => onNavigate?.(3)} className="hover:text-blue-600 transition-colors">Giới thiệu</button>
             <button onClick={() => onNavigate?.(4)} className="hover:text-blue-600 transition-colors">Liên hệ</button>
+            <Link href="/resources" className="hover:text-blue-600 transition-colors">Tài nguyên</Link>
           </nav>
 
           <div className="relative flex items-center gap-4" ref={dropdownRef}>
@@ -164,44 +166,44 @@ export function Header({ currentSection, onNavigate }: HeaderProps) {
                   className="flex items-center gap-2 px-3 py-2 h-auto text-gray-700 hover:bg-gray-100 rounded-lg transition-colors duration-200 focus:ring-2 focus:ring-blue-500"
                 >
                   <div className="w-8 h-8 rounded-full bg-blue-500 flex items-center justify-center text-white">
-                      <User className="w-4 h-4" />
+                    <User className="w-4 h-4" />
                   </div>
                   <span className="hidden sm:inline font-semibold">
                     {userInfo?.fullName || userInfo?.username || "User"}
                   </span>
                 </Button>
-                
+
                 {/* CẬP NHẬT LOGIC: Hiển thị nếu đã đăng nhập và có Role */}
-                {isDropdownOpen && userRole && ( 
+                {isDropdownOpen && userRole && (
                   // Tinh chỉnh thiết kế dropdown
                   <div className="absolute right-0 top-full mt-2 w-64 bg-white border border-gray-100 rounded-xl shadow-xl overflow-hidden animate-fade-in z-50">
-                    
+
                     {/* Phần thông tin người dùng */}
                     <div className="p-4 border-b border-gray-100">
                       <p className="font-bold text-gray-800 truncate">
-                          {userInfo?.fullName || userInfo?.username || "Người dùng"}
+                        {userInfo?.fullName || userInfo?.username || "Người dùng"}
                       </p>
                       <p className="text-sm text-blue-600">
-                          {userRole}
-                          {userInfo?.email ? ` | ${userInfo.email}` : ""}
+                        {userRole}
+                        {userInfo?.email ? ` | ${userInfo.email}` : ""}
                       </p>
                     </div>
-                    
+
                     {/* Các mục navigation */}
                     <div className="p-1">
                       {currentNavigationItems.map(item => { // DÙNG MẢNG ĐÃ ĐƯỢC CHỌN TỪ ROLE
-                          const Icon = item.icon;
-                          return (
+                        const Icon = item.icon;
+                        return (
                           <Link
-                              key={item.href}
-                              href={item.href}
-                              className="flex items-center gap-3 px-3 py-2 text-gray-700 hover:bg-blue-50 hover:text-blue-600 rounded-lg transition-all duration-150"
-                              onClick={() => setDropdownOpen(false)}
+                            key={item.href}
+                            href={item.href}
+                            className="flex items-center gap-3 px-3 py-2 text-gray-700 hover:bg-blue-50 hover:text-blue-600 rounded-lg transition-all duration-150"
+                            onClick={() => setDropdownOpen(false)}
                           >
-                              <Icon className="w-5 h-5" />
-                              <span className="font-medium">{item.name}</span>
+                            <Icon className="w-5 h-5" />
+                            <span className="font-medium">{item.name}</span>
                           </Link>
-                          );
+                        );
                       })}
                     </div>
 
