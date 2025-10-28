@@ -85,23 +85,28 @@ const initialState: RobotState = {
 // --------------------
 const convertApiRobotToReduxRobot = (apiRobot: ApiRobot): Robot => ({
   id: apiRobot.id,
-  serial: apiRobot.serialNumber, // 👈 fix
-  name: apiRobot.robotModelName || 'Unknown Robot',
+  serial: apiRobot.serialNumber,
+  name: apiRobot.robotModelName || apiRobot.robotModelName || 'Unknown Robot',
   status:
-    apiRobot.status === 1 || apiRobot.status === 1
+    apiRobot.status === 1
       ? 'online'
       : apiRobot.status === 2
         ? 'busy'
-        : 'offline',
+        : apiRobot.status === 3
+          ? 'charging'
+          : 'offline',
   isSelected: false,
   battery:
-    apiRobot.battery?.toString() ??
-    null, // 👈 handle number or string
+    apiRobot.battery != null ? String(apiRobot.battery) : null,
   robotModelId: apiRobot.robotModelId,
   robotModelName: apiRobot.robotModelName,
   accountId: apiRobot.accountId,
-  ctrlVersion: apiRobot.ctrlVersion || null, // 👈 fix
-  firmwareVersion: apiRobot.firmwareVersion || null, // 👈 fix
+  ctrlVersion:
+    apiRobot.ctrlVersion ??
+    null,
+  firmwareVersion:
+    apiRobot.firmwareVersion ??
+    null,
 })
 
 
@@ -164,19 +169,20 @@ const robotSlice = createSlice({
       state.isConnected = action.payload
     },
 
-    updateRobotInfo: (state, action: PayloadAction<Partial<Robot> & { serial: string }>) => {
-      const robot = state.robots.find(r => r.serial === action.payload.serial)
-      if (robot) Object.assign(robot, action.payload)
+    updateRobotInfo: (state, action) => {
+      state.robots = state.robots.map(r =>
+        r.serial === action.payload.serial
+          ? { ...r, ...action.payload }
+          : r
+      )
     },
 
-    updateRobotBattery: (
-      state,
-      action: PayloadAction<{ serial: string; battery: string | null }> // ✅ ĐIỀU CHỈNH: Cho phép nhận string HOẶC number
-    ) => {
-      const robot = state.robots.find(r => r.serial === action.payload.serial)
-      if (robot) {
-        robot.battery = String(action.payload.battery) // ✅ GÁN STRING VÀO STORE
-      }
+    updateRobotBattery: (state, action) => {
+      state.robots = state.robots.map(r =>
+        r.serial === action.payload.serial
+          ? { ...r, battery: action.payload.battery ? String(action.payload.battery) : null }
+          : r
+      )
     },
 
     clearAllRobots: state => {
@@ -220,10 +226,10 @@ const robotSlice = createSlice({
         state.isLoading = false
         const robots = action.payload.map(convertApiRobotToReduxRobot)
         if (robots.length > 0) {
-          state.robots = robots
+          state.robots = JSON.parse(JSON.stringify(robots)) // ✅ clone sâu tránh trùng reference
           if (!state.selectedRobotSerial) {
             state.selectedRobotSerial = robots[0].serial
-            robots[0].isSelected = true
+            state.robots[0].isSelected = true
           }
         }
       })

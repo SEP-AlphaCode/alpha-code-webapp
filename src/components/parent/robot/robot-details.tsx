@@ -46,6 +46,14 @@ interface RobotDetailsProps {
   };
 }
 
+const formatLongString = (str: string | undefined, maxLength: number = 10): string => {
+  if (!str) return "N/A";
+  // Nếu chuỗi ngắn hơn hoặc bằng maxLength thì giữ nguyên
+  if (str.length <= maxLength) return str;
+  // Còn nếu dài hơn, chỉ lấy 10 ký tự đầu và thêm "..."
+  return `${str.substring(0, maxLength)}...`;
+};
+
 export function RobotDetails({ robot, translations }: RobotDetailsProps) {
   const { connectMode } = useRobotStore();
   const isMultiMode = connectMode === "multi";
@@ -62,15 +70,19 @@ export function RobotDetails({ robot, translations }: RobotDetailsProps) {
 
   // 🔄 Cập nhật liveStatus
   useEffect(() => {
-    if (liveStatus) {
-      setDisplayRobot((prev) => ({
-        ...prev,
-        version: liveStatus.firmware_version,
-        battery: liveStatus.battery_level != null ? String(liveStatus.battery_level) : prev.battery,
-        status: liveStatus.is_charging ? "charging" : prev.status,
-      }));
-    }
-  }, [liveStatus]);
+  if (liveStatus) {
+    setDisplayRobot((prev) => ({
+      ...prev,
+      // 1. Cập nhật đúng các key name (dùng snake_case)
+      firmware_version: liveStatus.firmware_version || prev.firmware_version,
+      // 2. Thêm cập nhật cho ctrl_version nếu có
+      ctrl_version: liveStatus.ctrl_version || prev.ctrl_version, 
+      // ... các cập nhật khác
+      battery: liveStatus.battery_level != null ? String(liveStatus.battery_level) : prev.battery,
+      status: liveStatus.is_charging ? "charging" : prev.status,
+    }));
+  }
+}, [liveStatus]);
   
 
   const getStatusColor = (status: string) => {
@@ -145,13 +157,13 @@ export function RobotDetails({ robot, translations }: RobotDetailsProps) {
             <div className="flex justify-between">
               <span className="text-gray-400">{translations.systemInfo.firmware}:</span>
               <span className="text-gray-900 font-medium">
-                {robot.firmware_version}
+                {displayRobot.firmware_version}
               </span>
             </div>
             <div className="flex justify-between">
               <span className="text-gray-400">{translations.systemInfo.ctrl}:</span>
               <span className="text-gray-900 font-medium">
-                {robot.ctrl_version}
+                {formatLongString(displayRobot.ctrl_version)}
               </span>
             </div>
           </div>
