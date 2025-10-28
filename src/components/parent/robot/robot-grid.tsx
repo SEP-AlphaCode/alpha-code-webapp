@@ -12,7 +12,6 @@ import {
   Square,
 } from "lucide-react";
 import { useRobotStore } from "@/hooks/use-robot-store";
-import alphamini2 from '../../../../public/alpha-mini-2.webp'
 
 interface Robot {
   id: string;
@@ -20,6 +19,14 @@ interface Robot {
   status: "online" | "offline" | "charging" | "busy";
   battery_level?: number | null; // số thực tế
   battery?: string | null;       // để hiển thị width % trong div
+  lastSeen: string;
+  version: string;
+  students: number;
+  currentTask: string;
+  uptime: string;
+  ip: string;
+  temperature: number;
+  image: string;
   serialNumber: string;
   robotModelName?: string;
 }
@@ -146,7 +153,7 @@ export function RobotGrid({
 
               {/* 🖼️ Robot Avatar */}
               <Image
-                src={alphamini2.src}
+                src={robot.image}
                 alt={robot.name}
                 width={80}
                 height={80}
