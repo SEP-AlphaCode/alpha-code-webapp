@@ -33,13 +33,6 @@ export const useRobotStore = () => {
     ? robots.find((r) => r.serial === selectedRobotSerial[0]) // nếu multi, lấy robot đầu tiên làm “chính”
     : robots.find((r) => r.serial === selectedRobotSerial)
 
-  // ✅ chỉ fetch robot list khi chưa có
-  const initializeMockData = useCallback(() => {
-    if (robots.length === 0 && !isLoading) {
-      dispatch(fetchRobotsFromToken())
-    }
-  }, [dispatch, robots.length, isLoading])
-
   return {
     // -------------------
     // 📦 STATE
@@ -102,11 +95,6 @@ export const useRobotStore = () => {
     fetchRobotsFromToken: useCallback(
       () => dispatch(fetchRobotsFromToken()),
       [dispatch]
-    ),
-
-    // -------------------
-    // 🧩 Legacy helper
-    // -------------------
-    initializeMockData,
+    )
   }
 }
