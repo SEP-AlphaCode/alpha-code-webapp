@@ -70,7 +70,7 @@ export default function AddonsStore() {
 
   return (
     <>
-    <Header />
+      <Header />
       <div className="space-y-8 p-10" suppressHydrationWarning>
         {/* Header */}
         <div className="rounded-3xl border bg-gradient-to-br from-white to-sky-50 p-8">

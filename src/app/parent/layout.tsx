@@ -44,15 +44,9 @@ export default function UserLayout({ children }: UserLayoutProps) {
     { name: "Dashboard", href: "/parent", icon: "📊" },
     { name: "Robots", href: "/parent/robot", icon: "🤖" },
     { name: "Joysticks Control", href: "/parent/joystick", icon: "🕹️" },
-    { name: "Students", href: "/parent/student", icon: "👥" },
-    { name: "Programming", href: "/parent/programming", icon: "💻" },
-    { name: "Classroom", href: "/parent/classroom", icon: "🏫" },
     { name: "Activities", href: "/parent/activities", icon: "🎯" },
     { name: "Music", href: "/parent/music", icon: "🎵" },
-    { name: "Courses", href: "/parent/courses", icon: "📖" },
-    { name: "Addons", href: "/parent/addons", icon: "➕" },
-    { name: "Videos", href: "/parent/videos", icon: "🎬" },
-
+    { name: "Courses", href: "/parent/courses", icon: "📖" }
   ];
 
   const isActiveRoute = (href: string) => {
