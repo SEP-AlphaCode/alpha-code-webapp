@@ -61,7 +61,6 @@ export default function ActivitiesPage() {
   const [hasError, setHasError] = useState(false);
 
 
-
   useEffect(() => {
     try {
       setIsClient(true);
@@ -137,43 +136,41 @@ export default function ActivitiesPage() {
   )
 
   const handleStartActivity = useCallback((activity: ActivityType) => {
-    // Sử dụng selected robot serial từ Redux
-    const robotSerial = Array.isArray(selectedRobotSerial)
-      ? selectedRobotSerial[0]
-      : selectedRobotSerial;
+  // Danh sách robot được chọn
+  const serials = Array.isArray(selectedRobotSerial)
+    ? selectedRobotSerial
+    : selectedRobotSerial
+    ? [selectedRobotSerial]
+    : [];
 
-    if (!robotSerial) {
-      console.error('No robot selected to start activity');
-      return;
-    }
+  if (serials.length === 0) {
+    console.error('No robot selected to start activity');
+    return;
+  }
 
-    // Update robot status to busy when starting activity
-    if (robotSerial && selectedRobot) {
-      updateRobotStatus(robotSerial, 'busy');
-    }
+  // Parse data từ activity (nếu là JSON string)
+  let activityData;
+  try {
+    activityData = typeof activity.data === 'string' ? JSON.parse(activity.data) : activity.data;
+  } catch (error) {
+    console.error('Error parsing activity data:', error);
+    activityData = activity.data;
+  }
 
-    // Parse data từ activity (nếu là JSON string)
-    let activityData;
-    try {
-      activityData = typeof activity.data === 'string' ? JSON.parse(activity.data) : activity.data;
-    } catch (error) {
-      console.error('Error parsing activity data:', error);
-      activityData = activity.data;
-    }
+  console.log('Processed activity data:', activityData);
+  console.log('Activity type:', activity.type);
 
-    console.log('Processed activity data:', activityData);
-    console.log('Activity type:', activity.type);
+  // Gửi command đến từng robot
+  serials.forEach((serial) => {
+    updateRobotStatus(serial, 'busy');
+    startActivity(serial, activity.type, activityData);
 
-    // Gửi command với selected robot
-    startActivity(robotSerial, activity.type, activityData);
-
-    // Set robot back to online after a delay (mock behavior)
+    // Giả lập robot hoàn thành sau 3s
     setTimeout(() => {
-      if (robotSerial) {
-        updateRobotStatus(robotSerial, 'online');
-      }
+      updateRobotStatus(serial, 'online');
     }, 3000);
-  }, [selectedRobotSerial, selectedRobot, updateRobotStatus, startActivity])
+  });
+}, [selectedRobotSerial, updateRobotStatus, startActivity]);
 
   // Handle stop all actions
   const handleStopAllActions = useCallback(() => {
