@@ -61,6 +61,13 @@ export default function CoursePage() {
   };
 
   const handleRegisterClick = () => {
+    // If the course is paid, go to payment page instead of enrolling directly
+    if (courseData?.price && courseData.price > 0) {
+      // Use payment page with query params expected by PaymentPageClient
+      router.push(`/payment?category=course&id=${encodeURIComponent(courseData.id)}`)
+      return
+    }
+
     setIsDialogOpen(true);
   };
 
@@ -189,7 +196,7 @@ export default function CoursePage() {
                     onClick={handleRegisterClick}
                     className="w-full bg-blue-500 hover:bg-blue-600 text-white font-semibold py-3 px-6 rounded-lg transition-colors mb-4"
                   >
-                    Đăng ký khóa học
+                    {courseData?.price && courseData.price > 0 ? 'Mua khóa học' : 'Đăng ký khóa học'}
                   </Button>
                 </div>
               </div>
