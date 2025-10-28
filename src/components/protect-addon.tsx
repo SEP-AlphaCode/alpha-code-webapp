@@ -74,7 +74,8 @@ export const ProtectAddon = ({
   const accountId = getUserIdFromToken(accessToken || "") || undefined;
 
   const { useValidateAccess } = useAddonAccess();
-  const query = !validateFn ? useValidateAccess({ sessionKey, accountId, category } as ValidateAddon) : undefined;
+  // Call the hook unconditionally — the internal `enabled` option will prevent queries when data is missing.
+  const query = useValidateAccess({ sessionKey, accountId, category } as ValidateAddon);
 
   // Redirect nếu chưa login
   useEffect(() => {
@@ -99,7 +100,9 @@ export const ProtectAddon = ({
 
         if (!mounted) return;
 
-        const allowed = typeof result === "boolean" ? result : Boolean((result as any)?.allowed);
+        const allowed = typeof result === "boolean"
+          ? result
+          : Boolean((result as { allowed?: boolean })?.allowed);
         setIsAllowed(allowed);
       } catch (err) {
         console.error("ProtectAddon: validation failed", err);
