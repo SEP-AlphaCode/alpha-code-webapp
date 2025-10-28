@@ -1,12 +1,13 @@
 "use client";
 
-import { BookOpen } from "lucide-react";
+import { BookOpen, Check } from "lucide-react";
+import Link from "next/link";
 
 export default function BundleCard() {
   return (
-    <article className="p-6 border rounded-lg hover:shadow-lg transition bg-white">
+    <article className="p-6 border rounded-2xl hover:shadow-lg transition bg-white">
       <div className="flex items-start gap-4">
-        <div className="p-3 bg-blue-50 text-blue-600 rounded-lg">
+        <div className="p-3 bg-violet-50 text-violet-600 rounded-lg">
           <BookOpen className="w-6 h-6" />
         </div>
         <div className="flex-1">
@@ -18,24 +19,13 @@ export default function BundleCard() {
           </p>
 
           <ul className="mt-4 grid gap-2 text-sm text-gray-700">
-            <li className="flex items-center gap-3">
-              <span className="w-2 h-2 bg-blue-600 rounded-full" /> 
-              Gói cấp độ (Beginner → Intermediate → Advanced)
-            </li>
-            <li className="flex items-center gap-3">
-              <span className="w-2 h-2 bg-blue-600 rounded-full" /> 
-              Kết hợp lý thuyết, thực hành trên robot & project cuối khóa
-            </li>
-            <li className="flex items-center gap-3">
-              <span className="w-2 h-2 bg-blue-600 rounded-full" /> 
-              Giảm giá khi mua theo combo – hỗ trợ tài liệu giảng dạy
-            </li>
+            <li className="flex items-center gap-2"><Check className="w-4 h-4 text-violet-600" /> Gói cấp độ (Beginner → Intermediate → Advanced)</li>
+            <li className="flex items-center gap-2"><Check className="w-4 h-4 text-violet-600" /> Lý thuyết + thực hành trên robot + project cuối khóa</li>
+            <li className="flex items-center gap-2"><Check className="w-4 h-4 text-violet-600" /> Giảm giá combo, kèm tài liệu giảng dạy</li>
           </ul>
 
           <div className="mt-4 flex flex-wrap gap-2">
-            <button className="px-4 py-2 bg-blue-600 text-white rounded-md text-sm">
-              Xem gói học
-            </button>
+            <Link href="/parent/courses" className="px-4 py-2 bg-violet-600 text-white rounded-md text-sm hover:bg-violet-700 transition">Xem gói học</Link>
           </div>
         </div>
       </div>

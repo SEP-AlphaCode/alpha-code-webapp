@@ -158,68 +158,73 @@ export const createColumns = (
   onDelete?: (addon: Addon) => void,
   onView?: (addon: Addon) => void
 ): ColumnDef<Addon>[] => [
-  {
-    id: "select",
-    header: ({ table }) => (
-      <Checkbox
-        checked={
-          table.getIsAllPageRowsSelected() ||
-          (table.getIsSomePageRowsSelected() && "indeterminate")
-        }
-        onCheckedChange={(value: boolean) => table.toggleAllPageRowsSelected(!!value)}
-        aria-label="Select all"
-      />
-    ),
-    cell: ({ row }) => (
-      <Checkbox
-        checked={row.getIsSelected()}
-        onCheckedChange={(value: boolean) => row.toggleSelected(!!value)}
-        aria-label="Select row"
-      />
-    ),
-    enableSorting: false,
-    enableHiding: false,
-  },
-  {
-    accessorKey: "id",
-    header: () => <IdHeaderCell />,
-    cell: ({ row }) => (
-      <span className="text-gray-700 font-semibold">
-        {row.original.id.substring(0, 8)}...
-      </span>
-    ),
-  },
-  {
-    accessorKey: "name",
-    header: ({ column }) => <NameHeaderCell column={column} />,
-    cell: ({ row }) => (
-      <span className="text-purple-700 font-semibold">{row.original.name}</span>
-    ),
-  },
-  {
-    accessorKey: "description",
-    header: () => <DescriptionHeaderCell />,
-    cell: ({ row }) => <DescriptionCell description={row.original.description} />,
-  },
-  {
-    accessorKey: "price",
-    header: () => <PriceHeaderCell />,
-    cell: ({ row }) => <PriceCell price={row.original.price} />,
-  },
-  {
-    accessorKey: "category",
-    header: () => <CategoryHeaderCell />,
-    cell: ({ row }) => <CategoryCell category={row.original.category} />,
-  },
-  {
-    accessorKey: "status",
-    header: () => <StatusHeaderCell />,
-    cell: ({ row }) => <StatusCell status={row.original.status} />,
-  },
-  {
-    id: "actions",
-    cell: ({ row }) => (
-      <ActionCell addon={row.original} onEdit={onEdit} onDelete={onDelete} onView={onView} />
-    ),
-  },
-]
+    {
+      id: "select",
+      header: ({ table }) => (
+        <Checkbox
+          checked={
+            table.getIsAllPageRowsSelected() ||
+            (table.getIsSomePageRowsSelected() && "indeterminate")
+          }
+          onCheckedChange={(value: boolean) => table.toggleAllPageRowsSelected(!!value)}
+          aria-label="Select all"
+        />
+      ),
+      cell: ({ row }) => (
+        <Checkbox
+          checked={row.getIsSelected()}
+          onCheckedChange={(value: boolean) => row.toggleSelected(!!value)}
+          aria-label="Select row"
+        />
+      ),
+      enableSorting: false,
+      enableHiding: false,
+    },
+    {
+      accessorKey: "id",
+      header: () => <IdHeaderCell />,
+      cell: ({ row }) => (
+        <span className="text-gray-700 font-semibold">
+          {row.original.id.substring(0, 8)}...
+        </span>
+      ),
+    },
+    {
+      accessorKey: "name",
+      header: ({ column }) => <NameHeaderCell column={column} />,
+      cell: ({ row }) => (
+        <span className="text-purple-700 font-semibold">{row.original.name}</span>
+      ),
+    },
+    {
+      accessorKey: "description",
+      header: () => <DescriptionHeaderCell />,
+      cell: ({ row }) => (
+        <div
+          className="line-clamp-3" // hoặc thêm CSS để giới hạn chiều cao
+          dangerouslySetInnerHTML={{ __html: row.original.description || "" }}
+        />
+      ),
+    },
+    {
+      accessorKey: "price",
+      header: () => <PriceHeaderCell />,
+      cell: ({ row }) => <PriceCell price={row.original.price} />,
+    },
+    {
+      accessorKey: "category",
+      header: () => <CategoryHeaderCell />,
+      cell: ({ row }) => <CategoryCell category={row.original.category} />,
+    },
+    {
+      accessorKey: "status",
+      header: () => <StatusHeaderCell />,
+      cell: ({ row }) => <StatusCell status={row.original.status} />,
+    },
+    {
+      id: "actions",
+      cell: ({ row }) => (
+        <ActionCell addon={row.original} onEdit={onEdit} onDelete={onDelete} onView={onView} />
+      ),
+    },
+  ]
