@@ -10,3 +10,19 @@ export const getLicenseKey = async (accountId: string): Promise<string> => {
         throw error;    
     }
 }
+
+export const validateLicenseKey = async (accountId: string, licenseKey: string): Promise<boolean> => {
+    try {
+        const response = await paymentsHttp.get<boolean>('/license-keys/validate-key', {
+            params: {
+                accountId,
+                key: licenseKey
+            }
+        })
+        return response.data
+    }
+    catch (error) {
+        console.error("API Error in validateLicenseKey:", error);
+        throw error;
+    }
+}

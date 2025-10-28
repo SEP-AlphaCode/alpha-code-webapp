@@ -1,6 +1,6 @@
 import { useEffect } from 'react'
 import { useQuery } from '@tanstack/react-query'
-import { getLicenseKey } from '@/features/license-key/api/license-key-api'
+import { getLicenseKey, validateLicenseKey } from '@/features/license-key/api/license-key-api'
 import { getUserIdFromToken } from '@/utils/tokenUtils'
 
 /**
@@ -41,4 +41,23 @@ export const useLicenseKey = (accountId?: string, persistToSession = true) => {
   return query
 }
 
-export default useLicenseKey
+export const useValidateLicenseKey = (accountId?: string, licenseKey?: string) => {
+  const token = typeof window !== 'undefined' ? sessionStorage.getItem('accessToken') : null
+  const inferredAccountId = accountId ?? (token ? getUserIdFromToken(token) ?? undefined : undefined)
+  const inferredLicenseKey = licenseKey ?? (typeof window !== 'undefined' ? sessionStorage.getItem('key') || undefined : undefined)
+
+  const query = useQuery({
+    queryKey: ['validateLicenseKey', inferredAccountId, inferredLicenseKey],
+    queryFn: async () => {
+      if (!inferredAccountId) throw new Error('AccountId là bắt buộc để xác thực license key')
+      if (!inferredLicenseKey) throw new Error('LicenseKey là bắt buộc để xác thực license key')
+      return await validateLicenseKey(inferredAccountId, inferredLicenseKey)
+    },
+    enabled: !!inferredAccountId && !!inferredLicenseKey,
+    staleTime: 0,
+    retry: 1,
+  })
+  return query
+
+}
+
