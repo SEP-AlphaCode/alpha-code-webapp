@@ -5,7 +5,7 @@ import { useSearchParams } from "next/navigation";
 import { CheckCircle2, XCircle } from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
-import useLicenseKey from '@/features/license-key/hooks/use-license-key'
+import { useLicenseKey } from "@/features/license-key/hooks/use-license-key";
 
 export default function PaymentResultPage() {
   const searchParams = useSearchParams();
