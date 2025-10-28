@@ -23,7 +23,7 @@ import { useDispatch } from 'react-redux'
 import { useRouter } from 'next/navigation';
 import { getUserIdFromToken } from '@/utils/tokenUtils'
 import { useCreateAccountCourse } from '@/features/courses/hooks/use-account-course'
-import { AccountCourse } from '@/types/AccountCourse'
+import { AccountCourse } from '@/types/account-course'
 
 export default function CoursePage() {
   const dispatch = useDispatch<AppDispatch>();

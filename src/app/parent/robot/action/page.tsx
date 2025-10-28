@@ -47,18 +47,7 @@ export default function RobotActionPage() {
   const [currentAction, setCurrentAction] = useState<RobotAction | RobotActionUI | null>(null);
   const direction = 0;
 
-  const { selectedRobotSerial, initializeMockData, robots } = useRobotStore();
-
-  useEffect(() => {
-    try {
-      if (typeof initializeMockData === "function") {
-        initializeMockData();
-      }
-    } catch (err) {
-      console.error("initializeMockData error", err);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  const { selectedRobotSerial, robots } = useRobotStore();
 
   // ------------------------------
   // 🧭 Send Command Handler
