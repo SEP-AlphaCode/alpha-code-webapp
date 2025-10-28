@@ -101,7 +101,7 @@ export const useDeleteActivity = () => {
     mutationFn: deleteActivity,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['activities'] });
-      toast.success('Activity deleted successfully!');
+      toast.success('Xóa hoạt động thành công!');
     },
     onError: (error: unknown) => {
       const errorMessage = error && typeof error === 'object' && 'message' in error 

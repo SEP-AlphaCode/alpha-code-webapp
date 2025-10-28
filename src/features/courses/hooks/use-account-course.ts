@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { PagedResult } from '@/types/page-result'
-import { AccountCourse } from '@/types/AccountCourse'
+import { AccountCourse } from '@/types/account-course'
 import * as accountCourseApi from '@/features/courses/api/account-course-api'
 
 const STALE_TIME = 24 * 3600 * 1000

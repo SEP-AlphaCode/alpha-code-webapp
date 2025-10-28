@@ -1,4 +1,4 @@
-import { AccountCourse } from '@/types/AccountCourse';
+import { AccountCourse } from '@/types/account-course';
 import { PagedResult } from '@/types/page-result';
 import { coursesHttp } from '@/utils/http';
 import axios from 'axios';

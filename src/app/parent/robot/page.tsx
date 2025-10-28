@@ -33,10 +33,6 @@ interface ExtendedRobot {
   ctrl_version: string;
   firmware_version: string;
   students: number;
-  currentTask: string;
-  uptime: string;
-  ip: string;
-  temperature: number;
   image: string;
   serialNumber: string;
   robotmodel: string | undefined;
@@ -167,7 +163,18 @@ export default function UserDashboard() {
       />
 
       <RobotGrid
-        robots={filteredRobots}
+        robots={filteredRobots.map(r => ({
+          ...r,
+          serialNumber: r.serialNumber ?? "",
+        }))}
+        selectedRobot={selectedRobotSerial}
+        onRobotSelect={(robotSerial) => {
+          selectRobot(robotSerial);
+          const robot = filteredRobots.find((r) => r.serialNumber === robotSerial);
+          if (robot) {
+            sessionStorage.setItem("selectedRobotSerial", robot.serialNumber);
+          }
+        }}
         sectionTitle="Danh sách robot"
         statusTexts={{
           online: "Đang hoạt động",
@@ -184,13 +191,11 @@ export default function UserDashboard() {
               title: "Thông tin hệ thống",
               firmware: "Phiên bản phần mềm",
               ctrl: "Phiên bản điều khiển",
-              temperature: "Nhiệt độ",
               robotmodel: "Mẫu robot"
             },
             currentStatus: {
               title: "Trạng thái hiện tại",
               status: "Trạng thái",
-              task: "Nhiệm vụ",
               battery: "Pin"
             },
             quickActions: {

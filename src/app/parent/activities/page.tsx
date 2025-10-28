@@ -28,8 +28,14 @@ import {
   Square
 } from "lucide-react"
 import { Pagination } from "@/components/ui/pagination"
+import {
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenuItem,
+} from "@/components/ui/dropdown-menu"
 import { PerPageSelector } from "@/components/ui/per-page-selector"
-import { useActivities, useCreateActivity } from "@/features/activities/hooks/use-activities"
+import { useActivities, useCreateActivity, useDeleteActivity } from "@/features/activities/hooks/use-activities"
 import { useRobotControls } from "@/features/users/hooks/use-websocket"
 import { useRobotStore } from "@/hooks/use-robot-store"
 import { Activity as ActivityType, ActivityData } from "@/types/activities"
@@ -37,7 +43,7 @@ import { ActionActivites } from "@/types/action"
 import { getUserInfoFromToken } from "@/utils/tokenUtils"
 import LoadingState from "@/components/loading-state"
 import ErrorState from "@/components/error-state"
-import ProtectAddon from "@/components/protect-addon"
+import ProtectLicense from "@/components/protect-license"
 
 export default function ActivitiesPage() {
   const renderCount = useRef(0);
@@ -53,7 +59,6 @@ export default function ActivitiesPage() {
   const [accountId, setAccountId] = useState<string>('');
   const [isClient, setIsClient] = useState(false);
   const [hasError, setHasError] = useState(false);
-
 
 
   useEffect(() => {
@@ -106,6 +111,7 @@ export default function ActivitiesPage() {
   // API Hooks - use debounced search term
   const { data: activitiesData, isLoading, error, refetch } = useActivities(currentPage, perPage, accountId, debouncedSearchTerm, selectedRobot?.robotModelId ?? '');
   const createActivityMutation = useCreateActivity()
+  const deleteActivityMutation = useDeleteActivity()
 
   const activities = useMemo(() => activitiesData?.data || [], [activitiesData?.data])
   const pagination = useMemo(() =>
@@ -130,47 +136,41 @@ export default function ActivitiesPage() {
   )
 
   const handleStartActivity = useCallback((activity: ActivityType) => {
-    // Sử dụng selected robot serial từ Redux
-    const robotSerial = Array.isArray(selectedRobotSerial)
-      ? selectedRobotSerial[0]
-      : selectedRobotSerial;
+  // Danh sách robot được chọn
+  const serials = Array.isArray(selectedRobotSerial)
+    ? selectedRobotSerial
+    : selectedRobotSerial
+    ? [selectedRobotSerial]
+    : [];
 
-    if (!robotSerial) {
-      console.error('No robot selected to start activity');
-      return;
-    }
+  if (serials.length === 0) {
+    console.error('No robot selected to start activity');
+    return;
+  }
 
-    console.log('Selected Robot:', selectedRobot);
-    console.log('Using Robot Serial:', robotSerial);
-    console.log('Activity data before processing:', activity);
+  // Parse data từ activity (nếu là JSON string)
+  let activityData;
+  try {
+    activityData = typeof activity.data === 'string' ? JSON.parse(activity.data) : activity.data;
+  } catch (error) {
+    console.error('Error parsing activity data:', error);
+    activityData = activity.data;
+  }
 
-    // Update robot status to busy when starting activity
-    if (robotSerial && selectedRobot) {
-      updateRobotStatus(robotSerial, 'busy');
-    }
+  console.log('Processed activity data:', activityData);
+  console.log('Activity type:', activity.type);
 
-    // Parse data từ activity (nếu là JSON string)
-    let activityData;
-    try {
-      activityData = typeof activity.data === 'string' ? JSON.parse(activity.data) : activity.data;
-    } catch (error) {
-      console.error('Error parsing activity data:', error);
-      activityData = activity.data;
-    }
+  // Gửi command đến từng robot
+  serials.forEach((serial) => {
+    updateRobotStatus(serial, 'busy');
+    startActivity(serial, activity.type, activityData);
 
-    console.log('Processed activity data:', activityData);
-    console.log('Activity type:', activity.type);
-
-    // Gửi command với selected robot
-    startActivity(robotSerial, activity.type, activityData);
-
-    // Set robot back to online after a delay (mock behavior)
+    // Giả lập robot hoàn thành sau 3s
     setTimeout(() => {
-      if (robotSerial) {
-        updateRobotStatus(robotSerial, 'online');
-      }
+      updateRobotStatus(serial, 'online');
     }, 3000);
-  }, [selectedRobotSerial, selectedRobot, updateRobotStatus, startActivity])
+  });
+}, [selectedRobotSerial, updateRobotStatus, startActivity]);
 
   // Handle stop all actions
   const handleStopAllActions = useCallback(() => {
@@ -416,7 +416,7 @@ export default function ActivitiesPage() {
   }
 
   return (
-    <ProtectAddon category={3}>
+    <ProtectLicense>
       <div className="min-h-screen bg-white relative overflow-hidden p-5">
         {/* Background Grid Pattern */}
         <div
@@ -645,9 +645,26 @@ export default function ActivitiesPage() {
                               activity.type === "exercise" ? "Bài tập" : "Dự án"}
                         </Badge>
                       </div>
-                      <Button variant="ghost" size="sm" className="opacity-0 group-hover:opacity-100 transition-opacity">
-                        <MoreVertical className="w-4 h-4" />
-                      </Button>
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button variant="ghost" size="sm" className="opacity-0 group-hover:opacity-100 transition-opacity">
+                            <MoreVertical className="w-4 h-4" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          <DropdownMenuItem onSelect={() => { /* view */ }}>Xem</DropdownMenuItem>
+                          <DropdownMenuItem onSelect={() => { /* edit */ }}>Chỉnh sửa</DropdownMenuItem>
+                          <DropdownMenuItem
+                            onSelect={() => {
+                              if (!confirm('Bạn có chắc muốn xóa hoạt động này?')) return;
+                              deleteActivityMutation.mutate(activity.id);
+                            }}
+                            data-variant="destructive"
+                          >
+                            Xóa
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
                     </div>
                     <CardTitle className="text-xl line-clamp-2">{activity.name}</CardTitle>
                   </CardHeader>
@@ -824,6 +841,6 @@ export default function ActivitiesPage() {
           </div>
         </div>
       </div>
-    </ProtectAddon>
+    </ProtectLicense>
   )
 }

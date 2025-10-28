@@ -55,21 +55,6 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       icon: Users,
     },
     {
-      name: "Phân tích hệ thống",
-      url: "/admin/analytics",
-      icon: BarChart3,
-    },
-    {
-      name: "Robot",
-      url: "/admin/robots",
-      icon: Bot,
-    },
-    {
-      name: "Lớp học",
-      url: "/admin/classrooms",
-      icon: School,
-    },
-    {
       name: "Mã QR",
       url: "/admin/qr-codes",
       icon: QrCode,
@@ -78,17 +63,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       name: "Thẻ Osmo",
       url: "/admin/osmo-cards",
       icon: CreditCard,
-    },
-    {
-      name: "Dấu đánh dấu",
-      url: "/admin/markers",
-      icon: BookMarkedIcon,
-    },
-    {
-      name: "Test Lesson Upload",
-      url: "/admin/test-lesson-upload",
-      icon: Upload,
-    },
+    }
   ], []);
   React.useEffect(() => {
     const accessToken = sessionStorage.getItem('accessToken');

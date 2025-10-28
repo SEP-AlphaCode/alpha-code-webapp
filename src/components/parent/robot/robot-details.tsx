@@ -12,15 +12,8 @@ interface Robot {
   name: string;
   status: "online" | "offline" | "charging" | "busy";
   battery?: string | null;
-  lastSeen: string;
-  version: string;
   ctrl_version: string;
   firmware_version: string;
-  students: number;
-  currentTask: string;
-  uptime: string;
-  ip: string;
-  image: string;
   serialNumber: string;
   robotmodel: string | undefined;
 }
@@ -32,13 +25,11 @@ interface RobotDetailsProps {
       title: string;
       firmware: string;
       ctrl: string;
-      temperature: string;
       robotmodel: string;
     };
     currentStatus: {
       title: string;
       status: string;
-      task: string;
       battery: string;
     };
     quickActions: {
@@ -74,7 +65,7 @@ export function RobotDetails({ robot, translations }: RobotDetailsProps) {
     if (liveStatus) {
       setDisplayRobot((prev) => ({
         ...prev,
-        version: liveStatus.firmware_version || prev.version,
+        version: liveStatus.firmware_version,
         battery: liveStatus.battery_level != null ? String(liveStatus.battery_level) : prev.battery,
         status: liveStatus.is_charging ? "charging" : prev.status,
       }));
