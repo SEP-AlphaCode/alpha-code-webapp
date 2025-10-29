@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import Image from "next/image";
 import {
   DropdownMenu,
@@ -35,6 +35,7 @@ export function RobotSelector({ className = "" }: RobotSelectorProps) {
     addRobot,
     updateRobotStatus,
     updateRobotBattery,
+    updateRobotInfo,
     connectMode,
   } = useRobotStore();
 
@@ -88,12 +89,33 @@ export function RobotSelector({ className = "" }: RobotSelectorProps) {
 
   // Poll status & battery cho tất cả robot
   const { useGetMultipleRobotInfo } = useRobotInfo();
+  const serialList = useMemo(() => robots.map((r) => r.serialNumber), [robots]);
   const robotInfos = useGetMultipleRobotInfo(
-    robots.map((r) => r.serialNumber),
+    serialList,
     3, // ✅ ĐIỀU CHỈNH: Giảm Polling Interval xuống 3 giây
     { enabled: robots.length > 0 }
   );
-  console.log("Robot Polling Data:", robotInfos);
+
+  // Snapshot the important fields (avoid devtools live object expansion)
+  try {
+    console.log(
+      "Robot Polling Snapshot:",
+      JSON.stringify(
+        robotInfos.map((info, i) => ({
+          requestedSerial: serialList[i],
+          infoSerialField: info.serial,
+          returned__requestedSerial: info.data?.__requestedSerial,
+          returnedSerialInsideData: info.data?.data?.serial_number,
+          status: info.status,
+          isLoading: info.isLoading,
+        })),
+        null,
+        2
+      )
+    );
+  } catch (e) {
+    console.log("Robot Polling: (could not stringify)", robotInfos);
+  }
   // Cập nhật Redux store theo poll
   useEffect(() => {
     robotInfos.forEach((info) => {
@@ -103,6 +125,25 @@ export function RobotSelector({ className = "" }: RobotSelectorProps) {
 
       const existing = robots.find((r) => r.serialNumber === info.serial);
       if (!existing) return;
+
+      // Safety guard: ensure the returned payload corresponds to the requested serial.
+      const requestedSerial = info.serial;
+      const annotatedRequested = info.data?.__requestedSerial;
+      const returnedSerial = apiData?.serial_number;
+
+      if (annotatedRequested && annotatedRequested !== requestedSerial) {
+        console.warn(
+          `[Robot Polling] annotated requested serial mismatch, requested=${requestedSerial}, annotated=${annotatedRequested}. Skipping update.`
+        );
+        return;
+      }
+
+      if (returnedSerial && returnedSerial !== requestedSerial) {
+        console.warn(
+          `[Robot Polling] returned serial (${returnedSerial}) does not match requested (${requestedSerial}). Skipping update.`
+        );
+        return;
+      }
 
       let newStatus = existing.status;
       let newBattery = existing.battery; // Redux store lưu string/null
@@ -139,6 +180,21 @@ export function RobotSelector({ className = "" }: RobotSelectorProps) {
           // Cập nhật pin
           if (data.battery_level != null) {
             newBattery = String(data.battery_level);
+          }
+
+          // Cập nhật firmware / ctrl version vào store **chỉ khi thay đổi**
+          try {
+            const needUpdateFirmware = existing.firmwareVersion !== data.firmware_version;
+            const needUpdateCtrl = existing.ctrlVersion !== data.ctrl_version;
+            if (needUpdateFirmware || needUpdateCtrl) {
+              updateRobotInfo({
+                serial: info.serial,
+                ...(needUpdateFirmware ? { firmwareVersion: data.firmware_version } : {}),
+                ...(needUpdateCtrl ? { ctrlVersion: data.ctrl_version } : {}),
+              });
+            }
+          } catch (e) {
+            // ignore
           }
         }
       }

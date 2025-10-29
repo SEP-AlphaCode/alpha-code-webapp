@@ -2,11 +2,11 @@
 import { useCourse } from '@/features/courses/hooks/use-course';
 import { useGetAllCategories } from '@/features/courses/hooks/use-category';
 import { Search } from 'lucide-react';
-import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import LoadingState from '@/components/loading-state'
 import { useDispatch, useSelector } from 'react-redux';
 import { AppDispatch, RootState } from '@/store/store';
-import { setPage, setSearch, setCategoryFilter } from '@/store/user-course-slice';
+import { setPage, setSearch } from '@/store/user-course-slice';
 import { Pagination } from '@/components/parent/course/pagination';
 import { CourseGrid } from '@/components/parent/course/course-grid';
 import React, { useState, useMemo } from 'react'
@@ -87,7 +87,7 @@ export default function CoursePage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
           {loadingCategories ? (
             <div className="text-center py-4">
-              <span className="text-gray-500">Đang tải danh mục...</span>
+              <LoadingState message="Đang tải danh mục..." />
             </div>
           ) : (
             <div className="flex items-center gap-4 overflow-x-auto scrollbar-hide pb-2">
@@ -112,7 +112,9 @@ export default function CoursePage() {
       {/* Courses Section */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {loadingCourses ? (
-          <div className="py-12 text-center text-slate-600">Đang tải các khóa học...</div>
+          <div className="py-12 text-center">
+            <LoadingState message="Đang tải các khóa học..." />
+          </div>
         ) : (
           <>
             <h2 className="text-2xl font-bold text-gray-900 mb-4">Khóa học miễn phí</h2>

@@ -1,10 +1,7 @@
 'use client'
-import { CourseDescription } from '@/components/parent/course/detail/course-desc'
 import { CourseError } from '@/components/parent/course/detail/course-error'
-import { CourseHeader } from '@/components/parent/course/detail/course-header'
-import { CourseLessons } from '@/components/parent/course/detail/course-lesson'
-import { CourseSidebar } from '@/components/parent/course/detail/course-sidebar'
 import { CourseSkeleton } from '@/components/parent/course/detail/course-skeleton'
+import LoadingState from '@/components/loading-state'
 import { useCourse } from '@/features/courses/hooks/use-course'
 import { useSections } from '@/features/courses/hooks/use-section'
 import { AppDispatch } from '@/store/store'
@@ -225,9 +222,8 @@ export default function CoursePage() {
 
           <div className="divide-y divide-gray-100">
             {isSectionsLoading && (
-              <div className="p-6 text-center">
-                <div className="inline-block animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600"></div>
-                <p className="mt-2 text-gray-600">Đang tải chương học...</p>
+              <div className="p-6">
+                <LoadingState message="Đang tải chương học..." />
               </div>
             )}
 
