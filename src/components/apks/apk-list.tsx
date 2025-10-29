@@ -6,6 +6,8 @@ import { usePagedRobotApks, useFilePath } from "@/features/apks/hooks/use-robot-
 import { getUserInfoFromToken } from "@/utils/tokenUtils";
 import type { RobotApk } from "@/types/robot-apk";
 import LoadingState from "../loading-state";
+import Image from "next/image";
+import Link from "next/link";
 
 export default function ApkList({ page = 1, size = 20, search = "" }: { page?: number; size?: number; search?: string }) {
   const [accountId, setAccountId] = useState<string | null>(null);
@@ -34,6 +36,27 @@ export default function ApkList({ page = 1, size = 20, search = "" }: { page?: n
     <div className="grid gap-4">
       {error && (
         <div className="p-3 bg-red-50 text-red-700 border border-red-100 rounded">Lỗi khi tải danh sách APK: {(error as Error).message}</div>
+      )}
+
+      {list.length === 0 && !error && (
+        <div className="flex flex-col items-center justify-center py-16 bg-white border rounded-lg text-center shadow-sm">
+          <Image
+            src="/collect.png"
+            alt="Chưa có APK nào được phát hành"
+            width={200}
+            height={200}
+            className="mb-6 opacity-90"
+            priority={false}
+          />
+          <div className="text-xl font-semibold text-gray-800">Chưa có APK nào được phát hành</div>
+          <div className="text-sm text-gray-500 mt-2 max-w-md">
+            Vui lòng quay lại sau khi quản trị viên tải lên phiên bản mới cho robot của bạn.
+          </div>
+          <div className="mt-6 flex gap-3">
+            <Link href="/" className="px-4 py-2 bg-rose-600 text-white rounded-md">Về trang chủ</Link>
+            <Link href="/resources" className="px-4 py-2 border rounded-md text-sm">Xem tài nguyên khác</Link>
+          </div>
+        </div>
       )}
 
       {list.map((a) => (

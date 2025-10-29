@@ -759,7 +759,7 @@ export default function ActivitiesPage() {
                     </div>
 
                     <div className="text-xs text-gray-400 border-t pt-3">
-                      Cập nhật: {formatDate(activity.lastUpdate)}
+                      Lần cuối cập nhật: {activity.lastUpdate != null? formatDate(activity.lastUpdate) : 'N/A'}
                     </div>
                   </CardContent>
                 </Card>

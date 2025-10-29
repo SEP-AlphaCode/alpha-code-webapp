@@ -60,16 +60,14 @@ export function RobotSelector({ className = "" }: RobotSelectorProps) {
   // Add robots vào Redux store
   useEffect(() => {
     robotsApi.forEach((r) => {
-      // Đảm bảo pin là string/null khi add vào store
-      const batteryLevel = r.battery;
       if (r.accountId === accountId) {
 
         addRobot({
           id: r.id,
-          serial: r.serialNumber,
+          serialNumber: r.serialNumber,
           name: r.robotModelName || "Unknown Robot",
           status: r.status === 1 ? "online" : "offline",
-          battery: batteryLevel,
+          battery: r.battery,
           robotModelId: r.robotModelId,
           robotModelName: r.robotModelName,
           accountId: r.accountId,
@@ -91,11 +89,11 @@ export function RobotSelector({ className = "" }: RobotSelectorProps) {
   // Poll status & battery cho tất cả robot
   const { useGetMultipleRobotInfo } = useRobotInfo();
   const robotInfos = useGetMultipleRobotInfo(
-    robots.map((r) => r.serial),
+    robots.map((r) => r.serialNumber),
     3, // ✅ ĐIỀU CHỈNH: Giảm Polling Interval xuống 3 giây
     { enabled: robots.length > 0 }
   );
-
+  console.log("Robot Polling Data:", robotInfos);
   // Cập nhật Redux store theo poll
   useEffect(() => {
     robotInfos.forEach((info) => {
@@ -103,7 +101,7 @@ export function RobotSelector({ className = "" }: RobotSelectorProps) {
       const apiStatus = info.data?.status;
       const apiMessage = info.data?.message;
 
-      const existing = robots.find((r) => r.serial === info.serial);
+      const existing = robots.find((r) => r.serialNumber === info.serial);
       if (!existing) return;
 
       let newStatus = existing.status;
@@ -152,6 +150,7 @@ export function RobotSelector({ className = "" }: RobotSelectorProps) {
 
       // Cập nhật pin chỉ khi có thay đổi (kích hoạt re-render)
       if (existing.battery !== newBattery && newBattery != null) {
+        console.log(`[BatteryUpdate] ${info.serial}: ${existing.battery} → ${newBattery}`);
         updateRobotBattery(info.serial, newBattery);
       }
     });
@@ -183,7 +182,7 @@ export function RobotSelector({ className = "" }: RobotSelectorProps) {
       ? [selectedRobotSerial]
       : [];
 
-  const selectedRobots = displayRobots.filter((r) => selectedSerials.includes(r.serial));
+  const selectedRobots = displayRobots.filter((r) => selectedSerials.includes(r.serialNumber));
 
   const displayName =
     selectedRobots.length === 0
@@ -237,7 +236,7 @@ export function RobotSelector({ className = "" }: RobotSelectorProps) {
             <div className="flex flex-col justify-center ml-3 leading-tight text-left">
               <span className="font-semibold text-base text-gray-900">{displayName}</span>
               <span className="text-xs text-gray-500 font-mono tracking-wide mt-0.5">
-                {isMultiMode ? "Multi mode" : selectedRobots[0]?.serial ?? ""}
+                {isMultiMode ? "Multi mode" : selectedRobots[0]?.serialNumber ?? ""}
               </span>
             </div>
           </button>
@@ -250,11 +249,11 @@ export function RobotSelector({ className = "" }: RobotSelectorProps) {
           <DropdownMenuSeparator />
           <DropdownMenuGroup>
             {displayRobots.map((robot) => {
-              const isSelected = selectedSerials.includes(robot.serial);
+              const isSelected = selectedSerials.includes(robot.serialNumber);
               return (
                 <DropdownMenuItem
                   key={robot.id}
-                  onClick={() => handleRobotSelect(robot.serial)}
+                  onClick={() => handleRobotSelect(robot.serialNumber)}
                   className={`flex items-center gap-3 py-2 px-2 rounded-lg cursor-pointer ${isSelected ? "bg-blue-50" : ""}`}
                 >
                   <Avatar className="h-9 w-9 rounded-none overflow-hidden">
@@ -271,7 +270,7 @@ export function RobotSelector({ className = "" }: RobotSelectorProps) {
                       {robot.status === "charging" && <span className="text-xs px-2 py-0.5 rounded bg-yellow-100 text-yellow-600 flex items-center gap-1"><Zap size={12} />Charging</span>}
                       {robot.status === "offline" && <span className="text-xs px-2 py-0.5 rounded bg-gray-200 text-gray-600 flex items-center gap-1"><WifiOff size={12} />Offline</span>}
                     </div>
-                    <span className="text-xs text-gray-400 mt-1">{robot.serial}</span>
+                    <span className="text-xs text-gray-400 mt-1">{robot.serialNumber}</span>
                   </div>
 
                   {robot.status !== "offline" && robot.battery != null && (

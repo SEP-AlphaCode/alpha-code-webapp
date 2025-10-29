@@ -21,7 +21,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
-import { useAddon } from "@/features/plan/hooks/use-addon"
+import { useAddon } from "@/features/addon/hooks/use-addon"
 import { Addon, AddonModal } from "@/types/addon"
 import { toast } from "sonner"
 import "react-quill-new/dist/quill.snow.css"
@@ -40,11 +40,8 @@ interface CreateAddonModalProps {
 const CATEGORY_MAP = [
   { value: 1, label: "OSMO" },
   { value: 2, label: "QR CODE" },
-  { value: 3, label: "NHẢY THEO NHẠC" },
-  { value: 4, label: "NÓI SONG NGỮ" },
-  { value: 5, label: "ĐIỀU KHIỂN BẰNG CẦN ĐIỀU KHIỂN" },
-  { value: 6, label: "ĐIỀU KHIỂN BẰNG GIỌNG NÓI" },
-  { value: 7, label: "NHÀ THÔNG MINH" },
+  { value: 3, label: "NHÀ THÔNG MINH" },
+  { value: 4, label: "LẬP TRÌNH BLOCKLY" }
 ]
 
 export function CreateAddonModal({

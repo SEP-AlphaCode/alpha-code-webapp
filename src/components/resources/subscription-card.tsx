@@ -1,11 +1,11 @@
 "use client";
 
-import { Mic } from "lucide-react";
+import { Check, Mic } from "lucide-react";
 import Link from "next/link";
 
 export default function SubscriptionCard() {
   return (
-    <article className="p-6 border rounded-2xl hover:shadow-lg transition-all bg-gradient-to-br from-white to-blue-50">
+    <article className="p-6 border rounded-2xl hover:shadow-lg transition bg-white">
       <div className="flex items-start gap-4">
         {/* Icon */}
         <div className="p-3 bg-blue-100 text-blue-700 rounded-xl shadow-inner">
@@ -22,28 +22,16 @@ export default function SubscriptionCard() {
           </p>
 
           <ul className="mt-3 text-sm text-gray-700 grid gap-2">
-            <li className="flex items-center gap-3">
-              <span className="w-2 h-2 bg-blue-600 rounded-full" />
-              Trò chuyện không giới hạn với robot (VN/EN)
-            </li>
-            <li className="flex items-center gap-3">
-              <span className="w-2 h-2 bg-blue-600 rounded-full" />
-              Ra lệnh bằng giọng nói để robot thực hiện hành động
-            </li>
-            <li className="flex items-center gap-3">
-              <span className="w-2 h-2 bg-blue-600 rounded-full" />
-              Tốc độ phản hồi nhanh hơn & ưu tiên xử lý AI
-            </li>
-            <li className="flex items-center gap-3">
-              <span className="w-2 h-2 bg-blue-600 rounded-full" />
-              Hỗ trợ định kỳ theo tháng hoặc năm (gia hạn tự động)
-            </li>
+            <li className="flex items-center gap-2"><Check className="w-4 h-4 text-blue-600" /> Trò chuyện không giới hạn với robot (VN/EN)</li>
+            <li className="flex items-center gap-2"><Check className="w-4 h-4 text-blue-600" /> Ra lệnh bằng giọng nói để robot thực hiện hành động</li>
+            <li className="flex items-center gap-2"><Check className="w-4 h-4 text-blue-600" /> Tốc độ phản hồi nhanh hơn & ưu tiên xử lý AI</li>
+            <li className="flex items-center gap-2"><Check className="w-4 h-4 text-blue-600" /> Hỗ trợ định kỳ theo tháng hoặc năm (gia hạn tự động)</li>
           </ul>
 
           {/* Actions */}
           <div className="mt-4 flex gap-3">
             <Link
-              href="/purchase/subscription"
+              href="/payment"
               className="px-4 py-2 bg-blue-600 text-white rounded-md text-sm font-medium hover:bg-blue-700 transition"
             >
               Chọn gói ngay

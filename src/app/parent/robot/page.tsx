@@ -93,7 +93,7 @@ function extendRobotWithMockData(
     battery: robot.battery || "",
     ctrl_version: robot.ctrlVersion ?? "",
     firmware_version: robot.firmwareVersion ?? "",
-    serialNumber: robot.serial,
+    serialNumber: robot.serialNumber,
     robotmodel: robot.robotModelName ?? "",
     ...mockInfo
   };

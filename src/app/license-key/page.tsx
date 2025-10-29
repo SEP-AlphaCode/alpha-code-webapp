@@ -1,6 +1,8 @@
 "use client"
 
 import React, { useEffect, useState } from "react"
+import Image from "next/image"
+import { Check } from "lucide-react"
 import { getKeyPrice } from "@/features/config/api/key-price-api"
 import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
@@ -68,44 +70,68 @@ export default function LicenseKeyPage() {
 
             <div className="relative bg-gradient-to-b from-blue-50 to-white min-h-screen py-16 px-6 md:px-12">
                 {/* Hero Section */}
-                <div className="max-w-5xl mx-auto text-center space-y-6">
-                    <h1 className="text-4xl md:text-5xl font-extrabold text-gray-900">
-                        Trải nghiệm Multi-Robot ngay hôm nay
-                    </h1>
-                    <p className="text-gray-700 text-lg md:text-xl">
-                        Kích hoạt Multi Mode để điều khiển nhiều robot cùng lúc, quản lý trên nhiều thiết bị và trải nghiệm các tính năng cao cấp.
-                    </p>
-                    <Button
-                        onClick={handlePurchase}
-                        disabled={buying || !keyPrice}
-                        className="bg-blue-600 hover:bg-blue-700 text-white text-lg px-8 py-4 rounded-xl shadow-lg transition-all"
-                    >
-                        {buying ? "Đang chuyển tới thanh toán..." : "Trải nghiệm ngay"}
-                    </Button>
+                <div className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-10 items-center">
+                    <div className="space-y-6 text-center md:text-left">
+                        <h1 className="text-4xl md:text-5xl font-extrabold text-gray-900">
+                            License Key — Mở khóa toàn bộ tính năng cao cấp
+                        </h1>
+                        <p className="text-gray-700 text-lg md:text-xl">
+                            Kích hoạt để robot thông minh hơn, tương tác tự nhiên hơn và điều khiển linh hoạt hơn.
+                        </p>
+
+                        <ul className="text-gray-800 grid gap-2 text-sm md:text-base">
+                            <li className="flex items-center gap-2 justify-center md:justify-start"><Check className="w-5 h-5 text-blue-600" /> Nhảy theo nhạc (Music Dance)</li>
+                            <li className="flex items-center gap-2 justify-center md:justify-start"><Check className="w-5 h-5 text-blue-600" /> Trò chuyện tiếng Việt và tiếng Anh tự nhiên</li>
+                            <li className="flex items-center gap-2 justify-center md:justify-start"><Check className="w-5 h-5 text-blue-600" /> Điều khiển robot bằng Joystick ảo</li>
+                            <li className="flex items-center gap-2 justify-center md:justify-start"><Check className="w-5 h-5 text-blue-600" /> APK cao cấp: điều khiển bằng giọng nói</li>
+                            <li className="flex items-center gap-2 justify-center md:justify-start"><Check className="w-5 h-5 text-blue-600" /> Nhận diện khuôn mặt & vật thể để tương tác</li>
+                        </ul>
+
+                        <Button
+                            onClick={handlePurchase}
+                            disabled={buying || !keyPrice}
+                            className="bg-blue-600 hover:bg-blue-700 text-white text-lg px-8 py-4 rounded-xl shadow-lg transition-all"
+                        >
+                            {buying ? "Đang chuyển tới thanh toán..." : "Mua License Key"}
+                        </Button>
+                    </div>
+
+                    <div className="flex justify-center">
+                        <Image
+                            src="/img_action_default.webp"
+                            alt="Alpha robot action preview"
+                            width={560}
+                            height={420}
+                            priority={false}
+                        />
+                    </div>
                 </div>
 
                 {/* Feature Section */}
-                <div className="mt-16 max-w-5xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-8 text-center">
-                    <div className="p-6 bg-white rounded-2xl shadow hover:shadow-xl transition-shadow">
-                        <div className="text-4xl mb-4">🤖</div>
-                        <h3 className="text-xl font-semibold mb-2">Điều khiển nhiều robot</h3>
-                        <p className="text-gray-600 text-sm">
-                            Điều khiển đồng thời nhiều robot từ cùng một tài khoản, tiết kiệm thời gian và năng suất cao.
-                        </p>
+                <div className="mt-16 max-w-5xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div className="p-6 bg-white rounded-2xl shadow hover:shadow-lg transition">
+                        <h3 className="text-lg font-semibold mb-2">Nhảy theo nhạc</h3>
+                        <p className="text-gray-600 text-sm">Robot bắt nhịp và thể hiện các điệu nhảy sinh động theo bài hát bạn chọn.</p>
                     </div>
-                    <div className="p-6 bg-white rounded-2xl shadow hover:shadow-xl transition-shadow">
-                        <div className="text-4xl mb-4">📱</div>
-                        <h3 className="text-xl font-semibold mb-2">Quản lý đa thiết bị</h3>
-                        <p className="text-gray-600 text-sm">
-                            Truy cập và quản lý robot trên nhiều thiết bị hoặc child profiles dễ dàng.
-                        </p>
+                    <div className="p-6 bg-white rounded-2xl shadow hover:shadow-lg transition">
+                        <h3 className="text-lg font-semibold mb-2">Chat song ngữ VN/EN</h3>
+                        <p className="text-gray-600 text-sm">Giao tiếp tự nhiên bằng tiếng Việt và tiếng Anh, phản hồi nhanh và mượt.</p>
                     </div>
-                    <div className="p-6 bg-white rounded-2xl shadow hover:shadow-xl transition-shadow">
-                        <div className="text-4xl mb-4">⚡</div>
-                        <h3 className="text-xl font-semibold mb-2">Hỗ trợ & cập nhật ưu tiên</h3>
-                        <p className="text-gray-600 text-sm">
-                            Nhận hỗ trợ kỹ thuật ưu tiên và cập nhật các tính năng Multi-Robot mới nhất.
-                        </p>
+                    <div className="p-6 bg-white rounded-2xl shadow hover:shadow-lg transition">
+                        <h3 className="text-lg font-semibold mb-2">Joystick ảo</h3>
+                        <p className="text-gray-600 text-sm">Điều khiển chuyển động trực quan bằng joystick trên điện thoại hoặc web.</p>
+                    </div>
+                    <div className="p-6 bg-white rounded-2xl shadow hover:shadow-lg transition">
+                        <h3 className="text-lg font-semibold mb-2">APK điều khiển bằng giọng nói</h3>
+                        <p className="text-gray-600 text-sm">Truy cập các APK cao cấp để điều khiển robot bằng giọng nói.</p>
+                    </div>
+                    <div className="p-6 bg-white rounded-2xl shadow hover:shadow-lg transition">
+                        <h3 className="text-lg font-semibold mb-2">Nhận diện khuôn mặt</h3>
+                        <p className="text-gray-600 text-sm">Robot nhận diện và phản hồi theo người dùng đã đăng ký.</p>
+                    </div>
+                    <div className="p-6 bg-white rounded-2xl shadow hover:shadow-lg transition">
+                        <h3 className="text-lg font-semibold mb-2">Nhận diện vật thể</h3>
+                        <p className="text-gray-600 text-sm">Tương tác thông minh dựa trên các vật thể robot nhìn thấy.</p>
                     </div>
                 </div>
 

@@ -9,7 +9,7 @@ import { CreateSubscriptionModal } from "./subscription-modal"
 import { DeleteSubscriptionModal } from "./delete-subscription-modal"
 import { ViewSubscriptionModal } from "./view-subscription-modal"
 import { SubscriptionPlan } from "@/types/subscription"
-import { getPagedSubscriptions } from "@/features/plan/api/subscription-api"
+import { getPagedSubscriptions } from "@/features/subscription/api/subscription-api"
 import { toast } from "sonner"
 import LoadingGif from "@/components/ui/loading-gif"
 
