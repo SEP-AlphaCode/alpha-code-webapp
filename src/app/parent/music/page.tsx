@@ -11,6 +11,7 @@ import LoadingOverlay from "@/components/parent/music/loading-overlay"
 import MediaPreview from "@/components/parent/music/media-preview"
 import ProTips from "@/components/parent/music/pro-tips"
 import { navigateToPreviewActivities } from "@/utils/preview-navigation"
+import ProtectLicense from "@/components/protect-license"
 
 export default function MusicPage() {
   const router = useRouter()
@@ -82,7 +83,7 @@ export default function MusicPage() {
   const togglePlayPause = () => {
     const isAudio = fileType.startsWith("audio/")
     const isVideo = fileType.startsWith("video/")
-    
+
     if (isAudio && audioRef.current) {
       if (isPlaying) {
         audioRef.current.pause()
@@ -102,12 +103,12 @@ export default function MusicPage() {
 
   const parseTimeToSeconds = (timeString: string): number => {
     if (!timeString) return 0
-    
+
     // If it's already a number, return as is
     if (!isNaN(parseFloat(timeString)) && !timeString.includes(':')) {
       return parseFloat(timeString)
     }
-    
+
     // If it's in mm:ss format, convert to seconds
     const parts = timeString.split(':')
     if (parts.length === 2) {
@@ -115,7 +116,7 @@ export default function MusicPage() {
       const seconds = parseInt(parts[1]) || 0
       return minutes * 60 + seconds
     }
-    
+
     return 0
   }
 
@@ -181,7 +182,7 @@ export default function MusicPage() {
 
     const startTimeNum = startTime ? parseTimeToSeconds(startTime) : undefined
     const endTimeNum = endTime ? parseTimeToSeconds(endTime) : undefined
-    
+
     if (startTime && endTime) {
       if (isNaN(startTimeNum!) || isNaN(endTimeNum!)) {
         toast.error("Định dạng thời gian không hợp lệ!")
@@ -201,15 +202,15 @@ export default function MusicPage() {
 
     try {
       const result = await getDancePlan(currentFile, startTimeNum, endTimeNum)
-      
+
       toast.success("Tạo dance plan thành công! Đang chuyển hướng...")
-      
+
       // Prepare time range text
       let timeRangeText = ""
       if (startTime && endTime) {
         timeRangeText = `${startTime.includes(':') ? startTime : formatTime(parseFloat(startTime))} - ${endTime.includes(':') ? endTime : formatTime(parseFloat(endTime))} (${(parseTimeToSeconds(endTime) - parseTimeToSeconds(startTime)).toFixed(1)}s)`
       }
-      
+
       // Use sessionStorage navigation instead of URL params
       setTimeout(() => {
         navigateToPreviewActivities(router, {
@@ -220,7 +221,7 @@ export default function MusicPage() {
       }, 1000)
     } catch (error: unknown) {
       let errorMessage = 'Có lỗi xảy ra. Vui lòng thử lại!'
-      
+
       if (error && typeof error === 'object' && 'response' in error) {
         const httpError = error as { response: { status: number } }
         const status = httpError.response.status
@@ -244,7 +245,7 @@ export default function MusicPage() {
       } else if (error && typeof error === 'object' && 'request' in error) {
         errorMessage = 'Không thể kết nối đến server.'
       }
-      
+
       toast.error(errorMessage)
     } finally {
       setIsGeneratingPlan(false)
@@ -252,56 +253,58 @@ export default function MusicPage() {
   }
 
   return (
-    <div className="min-h-screen bg-white relative overflow-hidden p-10" suppressHydrationWarning>
-      {/* Loading Overlay */}
-      <LoadingOverlay isGeneratingPlan={isGeneratingPlan} />
-      
-      {/* Background Decorations */}
-      <BackgroundDecorations />
+    <ProtectLicense>
+      <div className="min-h-screen bg-white relative overflow-hidden p-10" suppressHydrationWarning>
+        {/* Loading Overlay */}
+        <LoadingOverlay isGeneratingPlan={isGeneratingPlan} />
 
-      <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Header */}
-        <MusicHeader />
+        {/* Background Decorations */}
+        <BackgroundDecorations />
 
-        {/* Upload Area */}
-        <FileUploadArea
-          isDragOver={isDragOver}
-          onDragOver={handleDragOver}
-          onDragLeave={handleDragLeave}
-          onDrop={handleDrop}
-          onFileChange={handleFileChange}
-        />
+        <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          {/* Header */}
+          <MusicHeader />
 
-        {/* Media Preview */}
-        {fileUrl && (
-          <MediaPreview
-            fileUrl={fileUrl}
-            fileType={fileType}
-            fileName={fileName}
-            fileSize={fileSize}
-            isPlaying={isPlaying}
-            onTogglePlayPause={togglePlayPause}
-            onRemovePreview={removePreview}
-            onGenerateDancePlan={handleGenerateDancePlan}
-            isGeneratingPlan={isGeneratingPlan}
-            startTime={startTime}
-            endTime={endTime}
-            onStartTimeChange={setStartTime}
-            onEndTimeChange={setEndTime}
-            onSetStartTime={handleSetStartTime}
-            onSetEndTime={handleSetEndTime}
-            currentTime={currentTime}
-            duration={duration}
-            onTimeUpdate={handleTimeUpdate}
-            onLoadedMetadata={handleLoadedMetadata}
-            audioRef={audioRef}
-            videoRef={videoRef}
+          {/* Upload Area */}
+          <FileUploadArea
+            isDragOver={isDragOver}
+            onDragOver={handleDragOver}
+            onDragLeave={handleDragLeave}
+            onDrop={handleDrop}
+            onFileChange={handleFileChange}
           />
-        )}
 
-        {/* Pro Tips */}
-        {!fileUrl && <ProTips />}
+          {/* Media Preview */}
+          {fileUrl && (
+            <MediaPreview
+              fileUrl={fileUrl}
+              fileType={fileType}
+              fileName={fileName}
+              fileSize={fileSize}
+              isPlaying={isPlaying}
+              onTogglePlayPause={togglePlayPause}
+              onRemovePreview={removePreview}
+              onGenerateDancePlan={handleGenerateDancePlan}
+              isGeneratingPlan={isGeneratingPlan}
+              startTime={startTime}
+              endTime={endTime}
+              onStartTimeChange={setStartTime}
+              onEndTimeChange={setEndTime}
+              onSetStartTime={handleSetStartTime}
+              onSetEndTime={handleSetEndTime}
+              currentTime={currentTime}
+              duration={duration}
+              onTimeUpdate={handleTimeUpdate}
+              onLoadedMetadata={handleLoadedMetadata}
+              audioRef={audioRef}
+              videoRef={videoRef}
+            />
+          )}
+
+          {/* Pro Tips */}
+          {!fileUrl && <ProTips />}
+        </div>
       </div>
-    </div>
+    </ProtectLicense>
   )
 }

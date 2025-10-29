@@ -66,7 +66,7 @@ export function CreateParentProfile() {
         const profileDataSwagger = {
           accountId: accountId,  // camelCase
           name: name.trim(),
-          passCode: parseInt(passcode || '0000', 10),  // integer
+          passCode: passcode || '0000',
           isKid: isKid,  // từ state
           status: 1,
         };
@@ -75,15 +75,13 @@ export function CreateParentProfile() {
         // Xóa pendingAccountId sau khi tạo xong
         sessionStorage.removeItem('pendingAccountId');
         
-        toast.success('Tạo profile thành công!');
-        
         // Sau khi tạo xong, tự động switch sang profile đó
         if (profile?.id) {
           console.log('🔄 Switching to profile:', profile.id);
           switchProfileMutation.mutate({
             profileId: profile.id,
             accountId: accountId,
-            passCode: parseInt(passcode || '0000', 10)
+            passCode: passcode || '0000'
           });
         }
         
@@ -117,7 +115,7 @@ export function CreateParentProfile() {
         switchProfileMutation.mutate({
           profileId: profile.id,
           accountId: accountId,
-          passCode: parseInt(passcode || '0000', 10)
+          passCode: passcode || '0000'
         });
       } else {
         console.error('❌ Profile created but no ID returned');
@@ -152,7 +150,7 @@ export function CreateParentProfile() {
         <CardHeader>
           {/* Logo */}
           <div className="flex justify-center mb-4">
-            <div className="w-16 h-16 rounded-2xl flex items-center justify-center overflow-hidden">
+            <div className="w-25 h-25 rounded-2xl flex items-center justify-center overflow-hidden">
               <Image
                 src={logo2}
                 alt="Alpha Logo"
@@ -211,7 +209,7 @@ export function CreateParentProfile() {
                   onClick={() => setIsKid(false)}
                   className={`flex-1 p-4 rounded-lg border-2 transition-all ${
                     !isKid 
-                      ? 'border-gray-400 bg-gray-50' 
+                      ? 'border-blue-500 bg-blue-50' // Updated to make selected parent profile border more prominent
                       : 'border-gray-200 dark:border-gray-700 hover:border-gray-300'
                   }`}
                 >
@@ -226,7 +224,7 @@ export function CreateParentProfile() {
                   onClick={() => setIsKid(true)}
                   className={`flex-1 p-4 rounded-lg border-2 transition-all ${
                     isKid 
-                      ? 'border-gray-400 bg-gray-50' 
+                      ? 'border-blue-500 bg-blue-50' // Updated to make selected children profile border more prominent
                       : 'border-gray-200 dark:border-gray-700 hover:border-gray-300'
                   }`}
                 >
@@ -242,7 +240,7 @@ export function CreateParentProfile() {
             {/* Passcode Input (Optional) */}
             <div className="space-y-2">
               <Label className="text-gray-700 font-medium">Mã PIN</Label>
-              <div>
+              <div className ="justify-center flex">
                 <InputOTP
                   maxLength={4}
                   value={passcode}

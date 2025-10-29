@@ -31,7 +31,7 @@ interface RobotModalProps {
 }
 
 // ===============================
-// AccountSelect Component
+// AccountSelect Component (nếu cần bật lại sau)
 // ===============================
 interface AccountSelectProps {
   selectedAccountId: string;
@@ -46,7 +46,7 @@ export function AccountSelect({ selectedAccountId, onChange }: AccountSelectProp
     const fetchAccounts = async () => {
       try {
         const res = await getAllAccounts();
-        setAccounts(res.data); // API trả về { data: Account[], ... }
+        setAccounts(res.data);
       } catch (err) {
         console.error("Failed to load accounts:", err);
         toast.error("Không thể tải danh sách người dùng");
@@ -67,10 +67,7 @@ export function AccountSelect({ selectedAccountId, onChange }: AccountSelectProp
   return (
     <div className="space-y-1">
       <Label>Người sử dụng</Label>
-      <Select
-        value={selectedAccountId}
-        onValueChange={(value) => onChange(value)}
-      >
+      <Select value={selectedAccountId} onValueChange={onChange}>
         <SelectTrigger>
           <SelectValue placeholder="Chọn người dùng" />
         </SelectTrigger>
@@ -94,24 +91,21 @@ export const RobotModal: React.FC<RobotModalProps> = ({ open, onClose }) => {
   const [accountId, setAccountId] = useState<string>("");
   const [robotModelId, setRobotModelId] = useState<string>("");
   const [serialNumber, setSerialNumber] = useState<string>("");
-  const [status, setStatus] = useState<number>(1);
 
-
-    interface RobotModel {
-      id: string;
-      name: string;
-      firmwareVersion: string;
-    }
-
+  interface RobotModel {
+    id: string;
+    name: string;
+    firmwareVersion: string;
+  }
 
   // 🔹 Fetch model list
   const { data: models, isLoading: loadingModels } = useQuery<RobotModel[]>({
-  queryKey: ["robotModels"],
-  queryFn: async () => {
-    const res = await getAllRobotModels();
-    return res.data || []; // assuming API returns { robotModels: RobotModel[] }
-  },
-});
+    queryKey: ["robotModels"],
+    queryFn: async () => {
+      const res = await getAllRobotModels();
+      return res.data || [];
+    },
+  });
 
   // 🔹 Create mutation
   const { mutate: createNewRobot, isPending } = useMutation({
@@ -126,36 +120,43 @@ export const RobotModal: React.FC<RobotModalProps> = ({ open, onClose }) => {
     },
     onError: (err: unknown) => {
       let message = "Không thể tạo robot.";
-      if (err instanceof Error) message += " " + err.message;
+      if (err && typeof err === "object" && "response" in err) {
+        const axiosErr = err as { response?: { data?: { message?: string } } };
+        if (axiosErr.response?.data?.message) {
+          message = axiosErr.response.data.message;
+        }
+      } else if (err instanceof Error) {
+        message = err.message;
+      }
       toast.error(message);
     },
   });
 
-    const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
     const token = sessionStorage.getItem("accessToken") || "";
     const userId = getUserIdFromToken(token);
 
     if (!robotModelId || !serialNumber || !userId) {
-        toast.warning("Vui lòng điền đầy đủ thông tin.");
-        return;
+      toast.warning("Vui lòng điền đầy đủ thông tin.");
+      return;
     }
 
-    // Find robot model name from the selected model
-    const selectedModel = models?.find(model => model.id === robotModelId);
+    const selectedModel = models?.find((m) => m.id === robotModelId);
     const robotModelName = selectedModel?.name || "";
 
     if (!robotModelName) {
-        toast.error("Không tìm thấy thông tin model robot.");
-        return;
+      toast.error("Không tìm thấy thông tin model robot.");
+      return;
     }
 
+    // 🔹 Luôn gửi status = 1
     createNewRobot({
       accountId: userId,
       robotModelId,
-      robotModelName,
       serialNumber,
+      status: 1,
     });
   };
 
@@ -167,9 +168,6 @@ export const RobotModal: React.FC<RobotModalProps> = ({ open, onClose }) => {
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-4 mt-2">
-          {/* Account Dropdown */}
-          {/* <AccountSelect selectedAccountId={accountId} onChange={setAccountId} /> */}
-
           {/* Model Dropdown */}
           <div>
             <Label>Model Robot</Label>
@@ -201,22 +199,7 @@ export const RobotModal: React.FC<RobotModalProps> = ({ open, onClose }) => {
             />
           </div>
 
-          {/* Status */}
-          <div>
-            <Label>Trạng thái</Label>
-            <Select
-              onValueChange={(val) => setStatus(Number(val))}
-              value={String(status)}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="Chọn trạng thái" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="1">Hoạt động</SelectItem>
-                <SelectItem value="0">Ngừng hoạt động</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
+          {/* Status bị ẩn hoàn toàn */}
 
           {/* Buttons */}
           <div className="flex justify-end space-x-2 pt-2">

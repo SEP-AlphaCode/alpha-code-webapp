@@ -17,7 +17,9 @@ import {
   DollarSign,
   Layers,
   Settings,
+  ShoppingCart,
 } from "lucide-react"
+import Link from "next/link"
 
 interface ViewAddonModalProps {
   isOpen: boolean
@@ -131,9 +133,7 @@ export function ViewAddonModal({
                   <label className="text-sm font-medium text-gray-700">
                     Mô tả
                   </label>
-                  <p className="text-sm text-gray-900 bg-yellow-50 p-2 rounded border min-h-[40px]">
-                    {addon.description || "Không có mô tả"}
-                  </p>
+                  <div className="text-sm text-gray-900 bg-yellow-50 p-2 rounded border min-h-[40px]" dangerouslySetInnerHTML={{ __html: addon.description || "Không có mô tả" }} />
                 </div>
               </div>
             </div>
@@ -214,7 +214,16 @@ export function ViewAddonModal({
           </div>
         </div>
 
-        <div className="flex justify-end pt-4 border-t">
+        <div className="flex justify-between pt-4 border-t">
+          <Link
+            href={`/payment?category=addon&id=${encodeURIComponent(addon.id)}`}
+            className="inline-flex"
+          >
+            <Button type="button" className="bg-blue-600 hover:bg-blue-700 text-white">
+              <ShoppingCart className="mr-2 h-4 w-4" />
+              Mua Addon
+            </Button>
+          </Link>
           <Button type="button" variant="outline" onClick={onClose}>
             Đóng
           </Button>

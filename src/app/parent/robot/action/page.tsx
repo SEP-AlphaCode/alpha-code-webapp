@@ -47,18 +47,7 @@ export default function RobotActionPage() {
   const [currentAction, setCurrentAction] = useState<RobotAction | RobotActionUI | null>(null);
   const direction = 0;
 
-  const { selectedRobotSerial, initializeMockData, robots } = useRobotStore();
-
-  useEffect(() => {
-    try {
-      if (typeof initializeMockData === "function") {
-        initializeMockData();
-      }
-    } catch (err) {
-      console.error("initializeMockData error", err);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  const { selectedRobotSerial, robots } = useRobotStore();
 
   // ------------------------------
   // 🧭 Send Command Handler
@@ -80,17 +69,17 @@ export default function RobotActionPage() {
       }
 
       const offlineTargets = targets
-        .map((s) => robots.find((r) => r.serial === s))
+        .map((s) => robots.find((r) => r.serialNumber === s))
         .filter((r) => r && r.status === "offline") as typeof robots;
 
       if (offlineTargets.length > 0) {
         setNotify(
-          `Một số robot đang offline: ${offlineTargets.map((r) => r?.name || r?.serial).join(", ")}`,
+          `Một số robot đang offline: ${offlineTargets.map((r) => r?.name || r?.serialNumber).join(", ")}`,
           "error"
         );
       }
 
-      const onlineTargets = targets.filter((s) => !offlineTargets.some((r) => r?.serial === s));
+      const onlineTargets = targets.filter((s) => !offlineTargets.some((r) => r?.serialNumber === s));
 
       if (onlineTargets.length === 0) return;
 

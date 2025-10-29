@@ -3,31 +3,50 @@ import { PagedResult } from "@/types/page-result";
 import { coursesHttp } from "@/utils/http";
 
 // Get lessons with solution by course ID
-export const getLessonsByCourseId = async (courseId: string, signal?: AbortSignal) => {
+export const getLessonsSolutionByCourseId = async (courseId: string, signal?: AbortSignal) => {
     try {
         const response = await coursesHttp.get<PagedResult<Lesson>>(`/lessons/all-with-solution-by-course/${courseId}`, {
             signal
         });
         return response.data;
     } catch (error) {
-        console.error("API Error in getLessonsByCourseId:", error);
+        console.error("API Error in getLessonsSolutionByCourseId:", error);
         throw error;
     }
 };
 
 // Get lessons with solution by section ID
-export const getLessonsBySectionId = async (courseId: string, sectionId: string, signal?: AbortSignal) => {
+export const getLessonsSolutionBySectionId = async (courseId: string, sectionId: string, signal?: AbortSignal) => {
     try {
         const response = await coursesHttp.get<Lesson[]>(`/lessons/all-with-solution-by-section/${sectionId}`, {
             signal
         });
         return response.data;
     } catch (error) {
-        console.error("API Error in getLessonsBySectionId:", error);
+        console.error("API Error in getLessonsSolutionBySectionId:", error);
         throw error;
     }
 };
-
+//GET LESSONS BY SECTION ID
+export const getLessonsBySectionId = async (
+  sectionId: string,
+  params?: { page?: number; size?: number },
+  signal?: AbortSignal
+) => {
+  try {
+    const response = await coursesHttp.get<PagedResult<Lesson>>(
+      `/lessons/get-by-section/${sectionId}`,
+      {
+        params,
+        signal,
+      }
+    );
+    return response.data;
+  } catch (error) {
+    console.error("API Error in getLessonsBySectionId:", error);
+    throw error;
+  }
+};
 // Get all lessons with filters
 export const getAllLessons = async (params?: {
     page?: number;
@@ -123,25 +142,69 @@ export const createLesson = async (sectionId: string, data: {
 };
 
 // Update lesson
-export const updateLesson = async (lessonId: string, data: {
+// Update lesson (multipart/form-data)
+export const updateLesson = async (
+  lessonId: string,
+  data: {
+    id: string;
     title: string;
     content: string;
-    videoUrl?: string;
+    videoFile?: File; // đổi từ videoUrl sang videoFile nếu upload lại
     duration: number;
     requireRobot: boolean;
     type: number;
     orderNumber: number;
     sectionId?: string;
-    solution?: unknown;
-}) => {
-    try {
-        const response = await coursesHttp.put<Lesson>(`/lessons/${lessonId}`, data);
-        return response.data;
-    } catch (error) {
-        console.error("API Error in updateLesson:", error);
-        throw error;
+    solution?: object | null;
+    status: number;
+  }
+) => {
+  try {
+    const formData = new FormData();
+
+    // Tạo DTO để gửi cùng file
+    const updateLessonDto = {
+        id: data.id,
+      title: data.title,
+      content: data.content,
+      duration: data.duration,
+      requireRobot: data.requireRobot,
+      type: data.type,
+      orderNumber: data.orderNumber,
+      sectionId: data.sectionId || null,
+      solution: data.solution || null,
+    status: data.status,
+    };
+
+    // Thêm DTO vào formData
+    formData.append(
+      "updateLesson",
+      new Blob([JSON.stringify(updateLessonDto)], { type: "application/json" })
+    );
+
+    // Nếu có videoFile mới, thêm vào
+    if (data.videoFile) {
+      formData.append("videoFile", data.videoFile);
     }
+
+    // Gửi request PUT với multipart/form-data
+    const response = await coursesHttp.put<Lesson>(
+      `/lessons/${lessonId}`,
+      formData,
+      {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      }
+    );
+
+    return response.data;
+  } catch (error) {
+    console.error("API Error in updateLesson:", error);
+    throw error;
+  }
 };
+
 
 // Delete lesson
 export const deleteLesson = async (lessonId: string) => {

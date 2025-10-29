@@ -19,9 +19,7 @@ export const AddonCategoryText: Record<number, string> = {
   1: "OSMO",
   2: "QR CODE",
   3: "NHẢY THEO NHẠC",
-  4: "NÓI SONG NGỮ",
   5: "ĐIỀU KHIỂN BẰNG CẦN ĐIỀU KHIỂN",
-  6: "ĐIỀU KHIỂN BẰNG GIỌNG NÓI",
   7: "NHÀ THÔNG MINH",
 }
 
@@ -55,4 +53,10 @@ export type AddonPaginationResponse = {
   data: Addon[]
   total_pages: number
   total_count: number
+}
+
+export interface ValidateAddon {
+  sessionKey?: string;
+  accountId?: string;
+  category?: number;
 }

@@ -4,7 +4,7 @@ import { forwardRef } from "react"
 
 
 interface FooterProps {
-  currentSection: number
+  currentSection?: number
 }
 
 export const Footer = forwardRef<HTMLElement, FooterProps>(
@@ -73,11 +73,11 @@ export const Footer = forwardRef<HTMLElement, FooterProps>(
                 </li>
                 <li className="flex items-center gap-2 sm:gap-3">
                   <Phone className="w-3 h-3 sm:w-4 sm:h-4 text-blue-400 flex-shrink-0" />
-                  <span className="text-gray-300 text-xs sm:text-sm">0966 123 456</span>
+                  <span className="text-gray-300 text-xs sm:text-sm">0977 300 916</span>
                 </li>
                 <li className="flex items-start gap-2 sm:gap-3">
                   <MapPin className="w-3 h-3 sm:w-4 sm:h-4 text-blue-400 flex-shrink-0 mt-0.5" />
-                  <span className="text-gray-300 text-xs sm:text-sm leading-relaxed">Tầng 5, Tòa nhà ABC, Quận 1, TP. Hồ Chí Minh</span>
+                  <span className="text-gray-300 text-xs sm:text-sm leading-relaxed">7 Đ. D1, Long Thạnh Mỹ, Thủ Đức, Thành phố Hồ Chí Minh 700000</span>
                 </li>
               </ul>
             </div>

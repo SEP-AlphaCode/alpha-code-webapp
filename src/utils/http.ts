@@ -56,6 +56,7 @@ class Http {
             const res = await callRefreshToken();
             sessionStorage.setItem('accessToken', res.accessToken);
             sessionStorage.setItem('refreshToken', res.refreshToken);
+            sessionStorage.setItem('key', res.key);
 
             // Retry the original request with new token
             originalRequest.headers.Authorization = `Bearer ${res.accessToken}`;

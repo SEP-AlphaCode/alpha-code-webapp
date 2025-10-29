@@ -194,8 +194,11 @@ function EditCourseForm({
       
       toast.success("Cập nhật khóa học thành công!")
       // Router will be handled by the mutation's onSuccess
-    } catch (error) {
-      toast.error("Lỗi khi cập nhật khóa học")
+    } catch (error: unknown) {
+      const errorMessage = error && typeof error === 'object' && 'response' in error 
+        ? (error as { response?: { data?: { message?: string } } }).response?.data?.message 
+        : undefined;
+      toast.error(errorMessage || "Lỗi khi cập nhật khóa học")
       console.error("Error updating course:", error)
       setIsSubmitting(false)
     }

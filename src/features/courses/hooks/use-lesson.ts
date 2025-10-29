@@ -3,11 +3,18 @@ import { useRouter } from 'next/navigation'
 import * as lessonApi from '@/features/courses/api/lesson-api'
 
 // ==================== LESSON HOOKS ====================
+export function useLessonsBySection( sectionId: string, params?: { page?: number; size?: number }) {
+  return useQuery({
+    queryKey: ['lessons', 'section', sectionId, params],
+    queryFn: ({ signal }) => lessonApi.getLessonsBySectionId(sectionId, params, signal),
+    enabled: !!sectionId,
+  });
+}
 
-export function useLessonsBySection(courseId: string, sectionId: string) {
+export function useLessonsSolutionBySection(courseId: string, sectionId: string) {
   return useQuery({
     queryKey: ['lessons', 'section', sectionId],
-    queryFn: ({ signal }) => lessonApi.getLessonsBySectionId(courseId, sectionId, signal),
+    queryFn: ({ signal }) => lessonApi.getLessonsSolutionBySectionId(courseId, sectionId, signal),
     enabled: !!courseId && !!sectionId,
   })
 }
@@ -26,7 +33,7 @@ export function useAllLessons(params?: {
   })
 }
 
-export function useLesson(lessonId: string) {
+export function useLessonById(lessonId: string) {
   return useQuery({
     queryKey: ['lesson', lessonId],
     queryFn: ({ signal }) => lessonApi.getLessonById(lessonId, signal),
@@ -87,15 +94,17 @@ export function useUpdateLesson(courseId: string, lessonId: string, sectionId?: 
 
   return useMutation({
     mutationFn: (data: {
+      id: string
       title: string
       content: string
-      videoUrl?: string
+      videoFile?: File
       duration: number
       requireRobot: boolean
       type: number
       orderNumber: number
       sectionId?: string
-      solution?: unknown
+      solution?: object | null | undefined
+      status: number
     }) => lessonApi.updateLesson(lessonId, data),
     onSuccess: async () => {
       // Invalidate queries - the target page will refetch them automatically

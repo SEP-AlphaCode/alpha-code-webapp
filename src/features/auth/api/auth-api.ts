@@ -31,7 +31,7 @@ export const login = async (data: LoginRequest): Promise<LoginWithProfileRespons
   }
 };
 
-export const refreshToken = async (): Promise<{ accessToken: string; refreshToken: string }> => {
+export const refreshToken = async (): Promise<{ accessToken: string; refreshToken: string, key: string }> => {
   try {
     const refreshTokenValue = sessionStorage.getItem('refreshToken');
     if (!refreshTokenValue) {
@@ -56,7 +56,8 @@ export const refreshToken = async (): Promise<{ accessToken: string; refreshToke
 
     return {
       accessToken: responseData.accessToken || responseData.token,
-      refreshToken: responseData.refreshToken
+      refreshToken: responseData.refreshToken,
+      key: responseData.key
     };
   } catch (error) {
     throw error;
@@ -75,12 +76,19 @@ export const logout = async (): Promise<void> => {
   }
 };
 
-export const googleLogin = async (idToken: string): Promise<TokenResponse> => {
+export const googleLogin = async (idToken: string): Promise<LoginWithProfileResponse> => {
   try {
     const response = await usersHttp.post('/auth/google-login', idToken, {
       headers: { "Content-Type": "text/plain" }
     });
-    return response.data;
+
+    const responseData = response.data;
+
+    // Ensure the response includes the `requiresProfile` property
+    return {
+      ...responseData,
+      requiresProfile: responseData.requiresProfile || false, // Default to false if not provided
+    };
   } catch (error) {
     throw error;
   }
@@ -142,7 +150,7 @@ export const resetPassword = async (resetToken: string, newPassword: string) => 
 export const switchProfile = async (
   profileId: string,
   accountId: string,
-  passCode: number
+  passCode: string
 ): Promise<SwitchProfileResponse> => {
   try {
     // Truyền đủ thông tin theo spec: accountId, passCode, profileId

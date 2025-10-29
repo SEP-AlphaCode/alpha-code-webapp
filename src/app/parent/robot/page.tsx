@@ -1,20 +1,18 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-
 import { useRobotStore } from "@/hooks/use-robot-store";
 
-// Import extracted components
+// Import UI components
 import { RobotPageHeader } from "@/components/parent/robot/robot-page-header";
 import { RobotGrid } from "@/components/parent/robot/robot-grid";
 import { RobotDetails } from "@/components/parent/robot/robot-details";
 import { ProgrammingSection } from "@/components/parent/robot/programming-section";
 import { EntertainmentSection } from "@/components/parent/robot/entertainment-section";
 import { ThingsToTrySection } from "@/components/parent/robot/things-to-try-section";
+import { RobotModal } from "@/app/admin/robots/robot-modal";
 
-// Import tĩnh cả hai file ngôn ngữ
-
-// Hardcoded Vietnamese prompts for "Things to Try"
+// Prompts
 const thingsToTryPrompts = [
   "Hãy thử cho robot nhảy một điệu nhạc vui nhộn!",
   "Yêu cầu robot kể một câu chuyện cho lớp học.",
@@ -25,27 +23,22 @@ const thingsToTryPrompts = [
   "Yêu cầu robot giải thích một khái niệm khoa học đơn giản."
 ];
 
-// Define Robot type to match component expectations - extending Redux Robot type
 interface ExtendedRobot {
   id: string;
   name: string;
   status: "online" | "offline" | "charging" | "busy";
-  battery: number | null;
+  battery?: string | null;
   lastSeen: string;
   version: string;
   ctrl_version: string;
   firmware_version: string;
   students: number;
-  currentTask: string;
-  uptime: string;
-  ip: string;
-  temperature: number;
   image: string;
   serialNumber: string;
   robotmodel: string | undefined;
 }
 
-// Hàm xáo trộn mảng ngẫu nhiên
+// Shuffle helper
 function shuffleArray(array: string[]) {
   const newArray = [...array];
   for (let i = newArray.length - 1; i > 0; i--) {
@@ -55,8 +48,10 @@ function shuffleArray(array: string[]) {
   return newArray;
 }
 
-// Function to extend Redux Robot with additional mock data
-function extendRobotWithMockData(robot: ReturnType<typeof useRobotStore>['robots'][0], index: number): ExtendedRobot {
+function extendRobotWithMockData(
+  robot: ReturnType<typeof useRobotStore>["robots"][0],
+  index: number
+): ExtendedRobot {
   const mockData = [
     {
       lastSeen: "2 minutes ago",
@@ -66,7 +61,7 @@ function extendRobotWithMockData(robot: ReturnType<typeof useRobotStore>['robots
       uptime: "4h 23m",
       ip: "192.168.1.101",
       temperature: 32,
-      image: "/alpha-mini-2.webp",
+      image: "/alpha-mini-2.webp"
     },
     {
       lastSeen: "1 minute ago",
@@ -76,7 +71,7 @@ function extendRobotWithMockData(robot: ReturnType<typeof useRobotStore>['robots
       uptime: "3h 45m",
       ip: "192.168.1.102",
       temperature: 29,
-      image: "/alpha-mini-2.webp",
+      image: "/alpha-mini-2.webp"
     },
     {
       lastSeen: "5 minutes ago",
@@ -86,40 +81,29 @@ function extendRobotWithMockData(robot: ReturnType<typeof useRobotStore>['robots
       uptime: "1h 12m",
       ip: "192.168.1.103",
       temperature: 26,
-      image: "/alpha-mini-2.webp",
-    },
+      image: "/alpha-mini-2.webp"
+    }
   ];
 
   const mockInfo = mockData[index] || mockData[0];
-
   return {
     id: robot.id,
     name: robot.name,
-    // ✅ Giữ nguyên status thật, fallback “offline”
     status: robot.status || "offline",
-    // ✅ Nếu pin không có, để null để RobotGrid tự ẩn
-    battery: typeof robot.battery === "number" ? robot.battery : null,
-    ctrl_version: robot.ctrl_version || "",
-    firmware_version: robot.firmware_version || "",
-    serialNumber: robot.serial,
+    battery: robot.battery || "",
+    ctrl_version: robot.ctrlVersion ?? "",
+    firmware_version: robot.firmwareVersion ?? "",
+    serialNumber: robot.serialNumber,
     robotmodel: robot.robotModelName ?? "",
-    ...mockInfo,
+    ...mockInfo
   };
 }
 
 export default function UserDashboard() {
   const { robots, selectedRobotSerial, selectRobot, initializeMockData, connectMode } = useRobotStore();
   const [shuffledPrompts, setShuffledPrompts] = useState<string[]>([]);
-  const [selectedModelName, setSelectedModelName] = useState<string>(""); // ✅ thêm state model  
-
-
-  useEffect(() => {
-  if (connectMode === "single") {
-    setSelectedModelName(""); // 👈 hiển thị lại tất cả robot
-    selectRobot(""); // 👈 bỏ chọn robot cũ (nếu cần)
-    sessionStorage.removeItem("selectedRobotSerial");
-  }
-}, [connectMode]);
+  const [selectedModelName, setSelectedModelName] = useState<string>("");
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   useEffect(() => {
     initializeMockData();
@@ -129,6 +113,14 @@ export default function UserDashboard() {
     setShuffledPrompts(shuffleArray(thingsToTryPrompts));
   }, []);
 
+  useEffect(() => {
+    if (connectMode === "single") {
+      setSelectedModelName("");
+      selectRobot("");
+      sessionStorage.removeItem("selectedRobotSerial");
+    }
+  }, [connectMode]);
+
   const handleRefreshPrompts = () => {
     setShuffledPrompts(shuffleArray(thingsToTryPrompts));
   };
@@ -137,10 +129,16 @@ export default function UserDashboard() {
     extendRobotWithMockData(robot, index)
   );
 
-  // ✅ Lọc robot theo model được chọn (nếu có)
   const filteredRobots = selectedModelName
     ? extendedRobots.filter((r) => r.robotmodel === selectedModelName)
-    : extendedRobots
+    : extendedRobots;
+
+  useEffect(() => {
+    if (!selectedRobotSerial && filteredRobots.length > 0) {
+      selectRobot(filteredRobots[0].serialNumber);
+      sessionStorage.setItem("selectedRobotSerial", filteredRobots[0].serialNumber);
+    }
+  }, [filteredRobots, selectedRobotSerial]);
 
   const selectedRobotDetails =
     filteredRobots.find((robot) => robot.serialNumber === selectedRobotSerial) || null;
@@ -151,18 +149,28 @@ export default function UserDashboard() {
         title="Quản lý robot"
         subtitle="Quản lý và tương tác với các robot AlphaMini của bạn"
         onModelSelect={(modelName) => {
-          setSelectedModelName(modelName)
-          selectRobot("") // 👈 reset robot đang chọn trong store
-          sessionStorage.removeItem("selectedRobotSerial") // 👈 xóa khỏi sessionStorage luôn
+          setSelectedModelName(modelName);
+          const filtered = extendedRobots.filter((r) => r.robotmodel === modelName);
+          if (filtered.length > 0) {
+            selectRobot(filtered[0].serialNumber);
+            sessionStorage.setItem("selectedRobotSerial", filtered[0].serialNumber);
+          } else {
+            selectRobot("");
+            sessionStorage.removeItem("selectedRobotSerial");
+          }
         }}
+        onAddRobot={() => setIsModalOpen(true)} // 👈 mở modal chọn robot
       />
 
       <RobotGrid
-        robots={filteredRobots} // ✅ truyền danh sách đã lọc
+        robots={filteredRobots.map(r => ({
+          ...r,
+          serialNumber: r.serialNumber ?? "",
+        }))}
         selectedRobot={selectedRobotSerial}
         onRobotSelect={(robotSerial) => {
           selectRobot(robotSerial);
-          const robot = filteredRobots.find(r => r.serialNumber === robotSerial);
+          const robot = filteredRobots.find((r) => r.serialNumber === robotSerial);
           if (robot) {
             sessionStorage.setItem("selectedRobotSerial", robot.serialNumber);
           }
@@ -171,7 +179,7 @@ export default function UserDashboard() {
         statusTexts={{
           online: "Đang hoạt động",
           offline: "Ngoại tuyến",
-          charging: "Đang sạc",
+          charging: "Đang sạc"
         }}
       />
 
@@ -183,26 +191,24 @@ export default function UserDashboard() {
               title: "Thông tin hệ thống",
               firmware: "Phiên bản phần mềm",
               ctrl: "Phiên bản điều khiển",
-              temperature: "Nhiệt độ",
-              robotmodel: "Mẫu robot",
+              robotmodel: "Mẫu robot"
             },
             currentStatus: {
               title: "Trạng thái hiện tại",
               status: "Trạng thái",
-              task: "Nhiệm vụ",
-              battery: "Pin",
+              battery: "Pin"
             },
             quickActions: {
               title: "Tác vụ nhanh",
               restart: "Tắt nguồn - Khởi động lại",
               settings: "Cài đặt",
-              forceStop: "Dừng hành động",
+              forceStop: "Dừng hành động"
             },
             statusTexts: {
               online: "Đang hoạt động",
               offline: "Ngoại tuyến",
-              charging: "Đang sạc",
-            },
+              charging: "Đang sạc"
+            }
           }}
         />
       )}
@@ -212,7 +218,7 @@ export default function UserDashboard() {
         items={{
           createActions: "Tạo hành động",
           workspace: "Không gian lập trình",
-          myWorks: "Công việc của tôi",
+          myWorks: "Công việc của tôi"
         }}
       />
 
@@ -221,7 +227,7 @@ export default function UserDashboard() {
         items={{
           action: "Hành động vui nhộn",
           album: "Album ảnh",
-          friends: "Bạn bè",
+          friends: "Bạn bè"
         }}
       />
 
@@ -230,6 +236,12 @@ export default function UserDashboard() {
         refreshText="Làm mới đề xuất"
         prompts={shuffledPrompts}
         onRefresh={handleRefreshPrompts}
+      />
+
+      {/* 🧩 Modal chọn robot */}
+      <RobotModal
+        open={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
       />
     </div>
   );

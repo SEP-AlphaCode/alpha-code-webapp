@@ -44,13 +44,9 @@ export default function UserLayout({ children }: UserLayoutProps) {
     { name: "Dashboard", href: "/parent", icon: "📊" },
     { name: "Robots", href: "/parent/robot", icon: "🤖" },
     { name: "Joysticks Control", href: "/parent/joystick", icon: "🕹️" },
-    { name: "Students", href: "/parent/student", icon: "👥" },
-    { name: "Programming", href: "/parent/programming", icon: "💻" },
-    { name: "Classroom", href: "/parent/classroom", icon: "🏫" },
     { name: "Activities", href: "/parent/activities", icon: "🎯" },
     { name: "Music", href: "/parent/music", icon: "🎵" },
     { name: "Courses", href: "/parent/courses", icon: "📖" },
-    { name: "Videos", href: "/parent/videos", icon: "🎬" },
   ];
 
   const isActiveRoute = (href: string) => {
@@ -102,7 +98,7 @@ export default function UserLayout({ children }: UserLayoutProps) {
             isSidebarOpen ? "ml-64" : "ml-16"
           }`}
         >
-          <div className="mt-10 bg-white min-h-screen pt-10">
+          <div className="mt-10 bg-white min-h-screen">
             {children}
           </div>
         </main>

@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button"
 import { ArrowRight, Play, ChevronDown, Sparkles, Zap, Star, Bot, Shield, Lightbulb } from "lucide-react"
-import { forwardRef } from "react"
+import { forwardRef, useEffect, useRef, useState } from "react"
 
 
 interface HeroSectionProps {
@@ -10,11 +10,50 @@ interface HeroSectionProps {
 
 export const HeroSection = forwardRef<HTMLElement, HeroSectionProps>(
   ({  }, ref) => {
+    const videoContainerRef = useRef<HTMLDivElement | null>(null)
+    const videoElRef = useRef<HTMLVideoElement | null>(null)
+    const [loadVideo, setLoadVideo] = useState(false)
+
+    useEffect(() => {
+      // Lazy-load the video only when the hero enters viewport to avoid heavy decoding during scroll
+      if (!videoContainerRef.current) return
+
+      const io = new IntersectionObserver(
+        (entries) => {
+          entries.forEach((entry) => {
+            if (entry.isIntersecting) {
+              setLoadVideo(true)
+              io.disconnect()
+            }
+          })
+        },
+        { threshold: 0.25 }
+      )
+
+      io.observe(videoContainerRef.current)
+
+      return () => io.disconnect()
+    }, [])
+
+    // Pause video when page is hidden (save CPU) and resume when visible
+    useEffect(() => {
+      const onVisibility = () => {
+        const v = videoElRef.current
+        if (!v) return
+        if (document.visibilityState === 'hidden') {
+          try { v.pause() } catch {};
+        } else {
+          try { v.play().catch(() => {}) } catch {};
+        }
+      }
+      document.addEventListener('visibilitychange', onVisibility)
+      return () => document.removeEventListener('visibilitychange', onVisibility)
+    }, [loadVideo])
 
 
 
     return (
-      <section ref={ref} className="relative min-h-screen mt-10 bg-gradient-to-b from-white via-gray-50 to-blue-50 overflow-hidden">
+      <section ref={ref} className="relative min-h-screen bg-gradient-to-b from-white via-gray-50 to-blue-50 overflow-hidden">
         {/* Clean Background Pattern */}
         <div className="absolute inset-0">
           {/* Grid pattern - made more visible */}
@@ -89,19 +128,26 @@ export const HeroSection = forwardRef<HTMLElement, HeroSectionProps>(
             <div data-aos="fade-left" data-aos-delay="300" className="relative mt-8 lg:mt-0">
               <div className="relative">
                 {/* Robot Video/Image Container - Clean without overlays */}
-                <div className="relative z-10 bg-white rounded-2xl sm:rounded-3xl shadow-2xl overflow-hidden border border-gray-200">
-                  <div className="aspect-video">
-                    <video
-                      className="w-full h-full object-cover"
-                      autoPlay
-                      loop
-                      muted
-                      playsInline
-                    >
-                      <source src="/alpha-mini-home.mp4" type="video/mp4" />
-                    </video>
+                <div ref={videoContainerRef} className="relative z-10 bg-white rounded-2xl sm:rounded-3xl shadow-2xl overflow-hidden border border-gray-200" style={{transform: 'translateZ(0)'}}>
+                    <div className="aspect-video">
+                      {loadVideo ? (
+                        <video
+                          ref={videoElRef}
+                          className="w-full h-full object-cover"
+                          autoPlay
+                          loop
+                          muted
+                          playsInline
+                          preload="metadata"
+                        >
+                          <source src="/alpha-mini-home.mp4" type="video/mp4" />
+                        </video>
+                      ) : (
+                        // Lightweight poster image until video is needed
+                        <img src="/alpha-mini-home-poster.jpg" alt="Alpha Mini preview" className="w-full h-full object-cover" />
+                      )}
+                    </div>
                   </div>
-                </div>
 
                 {/* Simple Alpha Mini info card below video */}
                 <div className="mt-6 bg-white rounded-xl p-4 shadow-lg border border-gray-200">

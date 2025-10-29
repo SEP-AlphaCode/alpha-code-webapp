@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -16,9 +16,10 @@ import { Key, Save, Loader2 } from "lucide-react"
 import { toast } from "sonner"
 import LoadingGif from '@/components/ui/loading-gif'
 import { useCreateKeyPrice, useGetKeyPrice, useUpdateKeyPrice } from '@/features/config/hooks/use-key-price'
+import ErrorState from '@/components/error-state'
 
 export default function KeyPricePage() {
-  const { data: keyPrice, isLoading, isError } = useGetKeyPrice()
+  const { data: keyPrice, isLoading, error , refetch} = useGetKeyPrice()
   const updateMutation = useUpdateKeyPrice()
   const createMutation = useCreateKeyPrice()
 
@@ -26,6 +27,11 @@ export default function KeyPricePage() {
     value: keyPrice?.price?.toString() || '',
     note: ''
   })
+
+  // sync form when keyPrice loads or changes (handles case when there's no key)
+  useEffect(() => {
+    setFormData(prev => ({ ...prev, value: keyPrice?.price?.toString() || '' }))
+  }, [keyPrice])
 
   const isSaving = updateMutation.isPending || createMutation.isPending
 
@@ -71,11 +77,10 @@ export default function KeyPricePage() {
     )
   }
 
-  if (isError) {
+  if (error) {
     return (
       <div className="flex flex-col items-center justify-center min-h-screen text-center">
-        <p className="text-red-500 mb-4">Không tải được dữ liệu giá key</p>
-        <Button onClick={() => location.reload()}>Thử lại</Button>
+        <ErrorState onRetry={refetch} error={error}/>
       </div>
     )
   }

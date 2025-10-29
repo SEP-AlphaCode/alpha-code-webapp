@@ -12,13 +12,15 @@ export const useLogout = () => {
       // Clear tokens and navigate
       sessionStorage.removeItem('accessToken');
       sessionStorage.removeItem('refreshToken');
-      toast.success('Logout successful!');
+      sessionStorage.removeItem('key');
+      toast.success('Đăng xuất thành công!');
       router.push('/login');
     },
     onError: () => {
       // Ensure tokens are removed even if API call fails
       sessionStorage.removeItem('accessToken');
       sessionStorage.removeItem('refreshToken');
+      sessionStorage.removeItem('key');
       router.push('/login');
     }
   });

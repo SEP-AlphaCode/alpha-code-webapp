@@ -12,20 +12,14 @@ import {
   Square,
 } from "lucide-react";
 import { useRobotStore } from "@/hooks/use-robot-store";
+import alphamini2 from '../../../../public/alpha-mini-2.webp'
 
 interface Robot {
   id: string;
   name: string;
   status: "online" | "offline" | "charging" | "busy";
-  battery: number | null;
-  lastSeen: string;
-  version: string;
-  students: number;
-  currentTask: string;
-  uptime: string;
-  ip: string;
-  temperature: number;
-  image: string;
+  battery_level?: number | null; // số thực tế
+  battery?: string | null;       // để hiển thị width % trong div
   serialNumber: string;
   robotModelName?: string;
 }
@@ -80,9 +74,9 @@ export function RobotGrid({
     }
   };
 
-  const getBatteryColor = (battery: number) => {
-    if (battery > 60) return "bg-green-500";
-    if (battery > 30) return "bg-yellow-500";
+  const getBatteryColor = (battery: string) => {
+    if (battery > "60") return "bg-green-500";
+    if (battery > "30") return "bg-yellow-500";
     return "bg-red-500";
   };
 
@@ -152,7 +146,7 @@ export function RobotGrid({
 
               {/* 🖼️ Robot Avatar */}
               <Image
-                src={robot.image}
+                src={alphamini2.src}
                 alt={robot.name}
                 width={80}
                 height={80}
@@ -189,7 +183,7 @@ export function RobotGrid({
                   <div className="w-20 h-2 bg-gray-200 rounded-full overflow-hidden">
                     <div
                       className={`h-2 rounded-full ${getBatteryColor(
-                        robot.battery ?? 0
+                        robot.battery ?? "0"
                       )}`}
                       style={{ width: `${robot.battery ?? 0}%` }}
                     ></div>
