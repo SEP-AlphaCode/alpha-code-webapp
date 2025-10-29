@@ -113,6 +113,15 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       { title: "Giá Token", url: "/admin/settings/token-rule" },
     ],
   },
+  {
+    title: "Robots",
+    url: "#",
+    icon: Bot,
+    items: [
+      { title: "Danh sách Robot", url: "/admin/robots" },
+      { title: "APK", url: "/admin/apks" },
+    ],
+  },
 ],
     navSecondary: [
       {

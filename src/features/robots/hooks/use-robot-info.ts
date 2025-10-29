@@ -1,7 +1,9 @@
 // src/features/robots/hooks/useRobotInfo.ts
-import { useQuery, useQueries } from "@tanstack/react-query";
+import { useQuery, useQueries, UseQueryResult } from "@tanstack/react-query";
 import { getRobotInfo } from "@/features/robots/api/robot_info_api";
 import { RobotInfoResponse } from "@/types/robot-info";
+
+type AnnotatedRobotInfoResponse = RobotInfoResponse & { __requestedSerial?: string };
 
 export const useRobotInfo = () => {
   const useGetRobotInfo = (
@@ -9,9 +11,12 @@ export const useRobotInfo = () => {
     timeout: number = 10,
     options: { enabled?: boolean } = {}
   ) => {
-    return useQuery<RobotInfoResponse>({
+    return useQuery<AnnotatedRobotInfoResponse>({
       queryKey: ["robot-info", serial, timeout],
-      queryFn: () => getRobotInfo(serial, timeout),
+      queryFn: async () => {
+        const data = await getRobotInfo(serial, timeout);
+        return { ...data, __requestedSerial: serial } as AnnotatedRobotInfoResponse;
+      },
       enabled: options.enabled !== false && !!serial,
       retry: 2,
       retryDelay: 1000,
@@ -28,7 +33,10 @@ export const useRobotInfo = () => {
     const queries = serials.map((serial) => ({
       queryKey: ["robot-info", serial, 10], // Giữ timeout API là 10s trong key
       // queryFn gọi API với timeout cứng là 10s (có thể chỉnh)
-      queryFn: () => getRobotInfo(serial, 10),
+      queryFn: async () => {
+        const data = await getRobotInfo(serial, 10);
+        return { ...data, __requestedSerial: serial } as AnnotatedRobotInfoResponse;
+      },
 
       enabled: options.enabled !== false && !!serial,
 
@@ -43,11 +51,12 @@ export const useRobotInfo = () => {
       retryDelay: 1000,
     }));
 
-    const results = useQueries({ queries });
+    const results = useQueries({ queries }) as UseQueryResult<AnnotatedRobotInfoResponse, unknown>[];
 
-    // Chuẩn hóa kết quả - giữ nguyên logic của bạn
+    // Chuẩn hóa kết quả - ưu tiên __requestedSerial để ghép chính xác
     return results.map((r, idx) => {
-      const serialFromMap = serials[idx];
+      const serialFromResponse = r.data?.__requestedSerial;
+      const serialFromMap = serialFromResponse ?? serials[idx];
 
       return ({
         serial: serialFromMap,
