@@ -24,31 +24,71 @@ type BlocklyUIProps = {
 export default function BlocklyUI({ robotModelId, serial, hasAllData, data }: BlocklyUIProps) {
     const blocklyRef = useRef<HTMLDivElement>(null)
     const workspaceRef = useRef<Blockly.WorkspaceSvg>(undefined)
+    const workerRef = useRef<Worker | null>(null)
     const [wsHelper, setWsHelper] = useState<Operations>()
     const [codeGenerator, setCodeGenerator] = useState<JavascriptGenerator>()
     const [definedModels, setDefinedModel] = useState(new Set<string>())
     const [isRunning, setIsRunning] = useState(false)
     const key = 'AlphaCode'
     const executeCode = (code: string, resultKey: string) => {
-        setIsRunning(true)
-        
-        toast.success('Đang chạy')
-        try {
-            // Use Function constructor to create an async function
-            const fn = new Function(code)
-            const x = fn()
-            if (x.error) {
-                toast.error(x.error)
-            } else {
+        // Terminate any existing worker first
+        if (workerRef.current) {
+            try { workerRef.current.terminate(); } catch { }
+            workerRef.current = null;
+        }
 
-                toast.success('Đã chạy thành công')
+        setIsRunning(true)
+        toast.success('Đang chạy')
+
+        try {
+            // Create worker from source file (bundler will handle this)
+            // Relative path from this file to the worker source
+            const w = new Worker(new URL('../../../components/blockly-logic/block-executor.worker.ts', import.meta.url), { type: 'module' })
+            workerRef.current = w
+
+            w.onmessage = (ev) => {
+                const msg = ev.data || {}
+                if (msg.type === 'log') {
+                    // show logs lightly
+                    console.debug('[worker]', msg.message)
+                    return
+                }
+
+                // New worker contract: { result: [...] } on success, { error: '...' } on failure
+                if ('result' in msg) {
+                    toast.success('Đã chạy thành công')
+                    // you can use msg.result if needed
+                    setIsRunning(false)
+                    try { w.terminate(); } catch { }
+                    workerRef.current = null
+                    return
+                }
+
+                if ('error' in msg) {
+                    toast.error(msg.error || 'Lỗi khi chạy mã')
+                    setIsRunning(false)
+                    try { w.terminate(); } catch { }
+                    workerRef.current = null
+                    return
+                }
             }
-        }
-        catch (e) {
-            toast.error('Lỗi biên dịch khi chạy mã')
-        }
-        finally {
+
+            w.onerror = (err) => {
+                toast.error('Lỗi khi chạy mã')
+                setIsRunning(false)
+                try { w.terminate(); } catch { }
+                workerRef.current = null
+            }
+
+            // Post code to worker
+            w.postMessage({ type: 'run', code, resultKey })
+        } catch (e) {
+            toast.error('Lỗi khi chạy mã')
             setIsRunning(false)
+            if (workerRef.current) {
+                try { workerRef.current.terminate(); } catch { }
+                workerRef.current = null
+            }
         }
     }
 
@@ -83,6 +123,16 @@ export default function BlocklyUI({ robotModelId, serial, hasAllData, data }: Bl
             if (!workspaceRef.current) { return; }
             workspaceRef.current.dispose()
             workspaceRef.current = undefined
+        }
+    }, [])
+
+    // Clean up worker on unmount
+    useEffect(() => {
+        return () => {
+            if (workerRef.current) {
+                try { workerRef.current.terminate(); } catch { }
+                workerRef.current = null
+            }
         }
     }, [])
 
@@ -151,6 +201,10 @@ export default function BlocklyUI({ robotModelId, serial, hasAllData, data }: Bl
                     </button>
                     <button
                         onClick={() => {
+                            if (workerRef.current) {
+                                try { workerRef.current.terminate(); } catch { }
+                                workerRef.current = null
+                            }
                             setIsRunning(false);
                             toast.info('Đã dừng thực thi');
                         }}
