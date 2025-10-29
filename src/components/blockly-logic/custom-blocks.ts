@@ -36,7 +36,8 @@ const customBlockTemplate: BaseBlockDef[] = [
         ],
         "previousStatement": null,
         "nextStatement": null,
-        "colour": HUE
+        "colour": HUE,
+        classes: 'customBlockCSS'
     },
     {
         "type": ".extended_action",
@@ -64,7 +65,8 @@ const customBlockTemplate: BaseBlockDef[] = [
         ],
         "previousStatement": null,
         "nextStatement": null,
-        "colour": HUE
+        "colour": HUE,
+        classes: 'customBlockCSS'
     },
     {
         "type": ".expression",
@@ -92,7 +94,8 @@ const customBlockTemplate: BaseBlockDef[] = [
         ],
         "previousStatement": null,
         "nextStatement": null,
-        "colour": HUE
+        "colour": HUE,
+        classes: 'customBlockCSS'
     },
     {
         "type": ".skill_helper",
@@ -120,7 +123,8 @@ const customBlockTemplate: BaseBlockDef[] = [
         ],
         "previousStatement": null,
         "nextStatement": null,
-        "colour": HUE
+        "colour": HUE,
+        classes: 'customBlockCSS'
     },
     {
         "type": "tts",
@@ -164,7 +168,8 @@ const customBlockTemplate: BaseBlockDef[] = [
         "extensions": ["flag_with_text_extension"],
         "previousStatement": null,
         "nextStatement": null,
-        "colour": HUE
+        "colour": HUE,
+        classes: 'customBlockCSS'
     },
     {
         "type": "set_mouth_led",
@@ -193,7 +198,8 @@ const customBlockTemplate: BaseBlockDef[] = [
         ],
         "previousStatement": null,
         "nextStatement": null,
-        "colour": HUE
+        "colour": HUE,
+        classes: 'customBlockCSS'
     },
     {
         "type": "inp_color",
@@ -212,7 +218,8 @@ const customBlockTemplate: BaseBlockDef[] = [
             }
         ],
         "output": "Color",
-        "colour": 180
+        "colour": HUE,
+        classes: 'customBlockCSS'
     }
 ]
 

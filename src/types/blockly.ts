@@ -18,7 +18,8 @@ export type BaseBlockDef = {
     nextStatement?: null,
     colour: number,
     output?: string,
-    extensions?: string[]
+    extensions?: string[],
+    classes?: string[] | string
 }
 
 //These are Blockly's types that aren't exposed
