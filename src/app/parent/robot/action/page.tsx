@@ -69,17 +69,17 @@ export default function RobotActionPage() {
       }
 
       const offlineTargets = targets
-        .map((s) => robots.find((r) => r.serial === s))
+        .map((s) => robots.find((r) => r.serialNumber === s))
         .filter((r) => r && r.status === "offline") as typeof robots;
 
       if (offlineTargets.length > 0) {
         setNotify(
-          `Một số robot đang offline: ${offlineTargets.map((r) => r?.name || r?.serial).join(", ")}`,
+          `Một số robot đang offline: ${offlineTargets.map((r) => r?.name || r?.serialNumber).join(", ")}`,
           "error"
         );
       }
 
-      const onlineTargets = targets.filter((s) => !offlineTargets.some((r) => r?.serial === s));
+      const onlineTargets = targets.filter((s) => !offlineTargets.some((r) => r?.serialNumber === s));
 
       if (onlineTargets.length === 0) return;
 
