@@ -5,7 +5,7 @@ export interface RobotApk {
   description: string;
   robotModelId: string;
   robotModelName: string; // backend should include this
-  isRequiredLicense: boolean
+  isRequireLicense: boolean
   createdDate: string;
   status: number;
   lastUpdated?: string;
