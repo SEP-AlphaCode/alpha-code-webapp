@@ -148,12 +148,24 @@ export function Header({ currentSection, onNavigate }: HeaderProps) {
 
           <nav className="hidden md:flex items-center gap-8 text-sm font-medium text-gray-600">
             <Link href="/" className="hover:text-blue-600 transition-colors">Trang chủ</Link>
-            {/* Link tới trang Tài nguyên (Resources) để hiển thị khóa học, tính năng robot, license key, download APK, v.v. */}
-            <button onClick={() => onNavigate?.(1)} className="hover:text-blue-600 transition-colors">Robot</button>
-            <button onClick={() => onNavigate?.(2)} className="hover:text-blue-600 transition-colors">Tính năng</button>
-            <button onClick={() => onNavigate?.(3)} className="hover:text-blue-600 transition-colors">Giới thiệu</button>
-            <button onClick={() => onNavigate?.(4)} className="hover:text-blue-600 transition-colors">Liên hệ</button>
-            <Link href="/resources" className="hover:text-blue-600 transition-colors">Tài nguyên</Link>
+            {/* Render as Link only when onNavigate is not available (other pages), use button when on homepage */}
+            {onNavigate ? (
+              <>
+                <button onClick={() => onNavigate?.(1)} className="hover:text-blue-600 transition-colors">Robot</button>
+                <button onClick={() => onNavigate?.(2)} className="hover:text-blue-600 transition-colors">Tính năng</button>
+                <button onClick={() => onNavigate?.(3)} className="hover:text-blue-600 transition-colors">Giới thiệu</button>
+                <button onClick={() => onNavigate?.(4)} className="hover:text-blue-600 transition-colors">Liên hệ</button>
+                <Link href="/resources" className="hover:text-blue-600 transition-colors">Tài nguyên</Link>
+              </>
+            ) : (
+              <>
+                <Link href="/#robot" className="hover:text-blue-600 transition-colors">Robot</Link>
+                <Link href="/#features" className="hover:text-blue-600 transition-colors">Tính năng</Link>
+                <Link href="/#about" className="hover:text-blue-600 transition-colors">Giới thiệu</Link>
+                <Link href="/#contact" className="hover:text-blue-600 transition-colors">Liên hệ</Link>
+                <Link href="/resources" className="hover:text-blue-600 transition-colors">Tài nguyên</Link>
+              </>
+            )}
           </nav>
 
           <div className="relative flex items-center gap-4" ref={dropdownRef}>

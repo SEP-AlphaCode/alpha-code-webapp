@@ -14,7 +14,7 @@ const customBlockTemplate: BaseBlockDef[] = [
         "type": ".action",
         "tooltip": "",
         "helpUrl": "",
-        "message0": "thực hiện hành động %1 %2 lần %3",
+        "message0": "Thực hiện hành động %1 %2 lần %3",
         "args0": [
             {
                 "type": "field_dropdown",
@@ -42,7 +42,7 @@ const customBlockTemplate: BaseBlockDef[] = [
         "type": ".extended_action",
         "tooltip": "",
         "helpUrl": "",
-        "message0": "thực hiện hành động mở rộng %1 %2 lần %3",
+        "message0": "Thực hiện hành động mở rộng %1 %2 lần %3",
         "args0": [
             {
                 "type": "field_dropdown",
@@ -70,7 +70,7 @@ const customBlockTemplate: BaseBlockDef[] = [
         "type": ".expression",
         "tooltip": "",
         "helpUrl": "",
-        "message0": "thực hiện biểu cảm %1 %2 lần %3",
+        "message0": "Thực hiện biểu cảm %1 %2 lần %3",
         "args0": [
             {
                 "type": "field_dropdown",
@@ -98,7 +98,7 @@ const customBlockTemplate: BaseBlockDef[] = [
         "type": ".skill_helper",
         "tooltip": "",
         "helpUrl": "",
-        "message0": "thực hiện kỹ năng %1 %2 lần %3",
+        "message0": "Thực hiện kỹ năng %1 %2 lần %3",
         "args0": [
             {
                 "type": "field_dropdown",
@@ -126,7 +126,7 @@ const customBlockTemplate: BaseBlockDef[] = [
         "type": "tts",
         "tooltip": "",
         "helpUrl": "",
-        "message0": "nói %1 bằng tiếng %2 %3",
+        "message0": "Nói %1 bằng tiếng %2 %3",
         "args0": [
             {
                 "type": "input_value",
@@ -170,7 +170,7 @@ const customBlockTemplate: BaseBlockDef[] = [
         "type": "set_mouth_led",
         "tooltip": "",
         "helpUrl": "",
-        "message0": "đặt LED miệng thành màu %1 trong %2 %3 giây %4",
+        "message0": "Đặt LED miệng thành màu %1 trong %2 %3 giây %4",
         "args0": [
             {
                 "type": "input_value",

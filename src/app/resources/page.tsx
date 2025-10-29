@@ -14,24 +14,36 @@ export default function ResourcesPage() {
         <>
             <Header />
 
-            <main className="container mx-auto px-4 py-20">
-                {/* Hero nhỏ */}
-                <section className="text-center space-y-4 mb-16">
-                    <h1 className="text-4xl font-bold tracking-tight">
-                        Danh mục sản phẩm & dịch vụ AlphaCode
-                    </h1>
-                    <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
-                        Khám phá hệ sinh thái sản phẩm toàn diện dành cho khách hàng AlphaCode:
-                        từ ứng dụng APK, license key AI, dịch vụ subscription định kỳ,
-                        addon mở rộng, khóa học chuyên sâu cho đến những gói combo ưu đãi nhất.
-                    </p>
+            <main className="container mx-auto px-4 py-16">
+                {/* Hero */}
+                <section className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-rose-50 via-white to-sky-50 border border-gray-100 p-10 mb-12">
+                    <div className="relative z-10 text-center max-w-3xl mx-auto">
+                        <h1 className="text-4xl font-bold tracking-tight">
+                            Danh mục sản phẩm & dịch vụ AlphaCode
+                        </h1>
+                        <p className="text-muted-foreground text-lg max-w-2xl mx-auto mt-3">
+                            Khám phá hệ sinh thái sản phẩm toàn diện: ứng dụng APK, license key AI,
+                            subscription định kỳ, addon mở rộng, khóa học chuyên sâu và các gói combo ưu đãi.
+                        </p>
+
+                        {/* Quick anchors */}
+                        <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
+                            <a href="#apk" className="px-4 py-2 rounded-full bg-white border text-sm hover:bg-rose-50 transition">APK</a>
+                            <a href="#license" className="px-4 py-2 rounded-full bg-white border text-sm hover:bg-sky-50 transition">License</a>
+                            <a href="#subscription" className="px-4 py-2 rounded-full bg-white border text-sm hover:bg-blue-50 transition">Subscription</a>
+                            <a href="#addon" className="px-4 py-2 rounded-full bg-white border text-sm hover:bg-emerald-50 transition">Addon</a>
+                            <a href="#course" className="px-4 py-2 rounded-full bg-white border text-sm hover:bg-indigo-50 transition">Khóa học</a>
+                            <a href="#package" className="px-4 py-2 rounded-full bg-white border text-sm hover:bg-violet-50 transition">Bundle</a>
+                        </div>
+                    </div>
                 </section>
 
                 <div className="space-y-24">
                     {/* APK */}
-                    <section id="apk" className="space-y-6">
-                        <h2 className="text-2xl font-semibold flex items-center gap-2">
-                            📱 Ứng dụng APK độc quyền
+                    <section id="apk" className="space-y-6 scroll-mt-20">
+                        <h2 className="text-2xl font-semibold flex items-center gap-3">
+                            <span className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-rose-100">📱</span>
+                            Ứng dụng APK độc quyền
                         </h2>
                         <p className="text-muted-foreground">
                             Bộ sưu tập các ứng dụng (APK) được tối ưu dành riêng cho robot AlphaCode
@@ -45,9 +57,10 @@ export default function ResourcesPage() {
 
 
                     {/* License */}
-                    <section id="license" className="space-y-6">
-                        <h2 className="text-2xl font-semibold flex items-center gap-2">
-                            🔑 License Key Cao Cấp
+                    <section id="license" className="space-y-6 scroll-mt-20">
+                        <h2 className="text-2xl font-semibold flex items-center gap-3">
+                            <span className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-sky-100">🔑</span>
+                            License Key Cao Cấp
                         </h2>
                         <p className="text-muted-foreground">
                             Chỉ cần <span className="font-medium text-foreground">mua một lần</span> – bạn sẽ
@@ -60,9 +73,10 @@ export default function ResourcesPage() {
 
 
                     {/* Subscription */}
-                    <section id="subscription" className="space-y-6">
-                        <h2 className="text-2xl font-semibold flex items-center gap-2">
-                            🔁 Gói dịch vụ định kỳ (Subscription)
+                    <section id="subscription" className="space-y-6 scroll-mt-20">
+                        <h2 className="text-2xl font-semibold flex items-center gap-3">
+                            <span className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-blue-100">🔁</span>
+                            Gói dịch vụ định kỳ (Subscription)
                         </h2>
                         <p className="text-muted-foreground">
                             Kích hoạt khả năng giao tiếp giọng nói tiếng Việt & tiếng Anh với robot. Mua theo tháng hoặc năm để sử dụng không giới hạn, tốc độ phản hồi nhanh hơn và trải nghiệm AI ổn định hơn so với bản miễn phí.
@@ -72,22 +86,25 @@ export default function ResourcesPage() {
 
 
                     {/* Addon */}
-                    <section id="addon" className="space-y-6">
-                        <h2 className="text-2xl font-semibold flex items-center gap-2">
-                            ➕ Addon mở rộng nâng cao
+                    <section id="addon" className="space-y-6 scroll-mt-20">
+                        <h2 className="text-2xl font-semibold flex items-center gap-3">
+                            <span className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-emerald-100">➕</span>
+                            Addon mở rộng nâng cao
                         </h2>
                         <p className="text-muted-foreground">
-                            Các gói tính năng chuyên sâu giúp robot trở nên thông minh hơn – như dạy từ vựng AI, nhận diện cảm xúc, điểm danh khuôn mặt, nhảy theo nhạc, phân tích cử chỉ…
+                            Các gói tính năng chuyên sâu giúp robot trở nên thông minh hơn.
                             Người dùng có thể mua riêng từng addon hoặc kết hợp theo nhu cầu học tập và trải nghiệm.
                         </p>
                         <AddonCard />
                     </section>
 
 
+
                     {/* Course */}
-                    <section id="course" className="space-y-6">
-                        <h2 className="text-2xl font-semibold flex items-center gap-2">
-                            🎓 Khóa học chuyên sâu
+                    <section id="course" className="space-y-6 scroll-mt-20">
+                        <h2 className="text-2xl font-semibold flex items-center gap-3">
+                            <span className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-indigo-100">🎓</span>
+                            Khóa học chuyên sâu
                         </h2>
                         <p className="text-muted-foreground">
                             Lộ trình học từ cơ bản đến nâng cao về giao tiếp giọng nói (EN–VN), lập trình hành vi,
@@ -99,9 +116,10 @@ export default function ResourcesPage() {
 
 
                     {/* Bundle */}
-                    <section id="package" className="space-y-6">
-                        <h2 className="text-2xl font-semibold flex items-center gap-2">
-                            📦 Gói khóa học trọn bộ (Course Bundle)
+                    <section id="package" className="space-y-6 scroll-mt-20">
+                        <h2 className="text-2xl font-semibold flex items-center gap-3">
+                            <span className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-violet-100">📦</span>
+                            Gói khóa học trọn bộ (Course Bundle)
                         </h2>
                         <p className="text-muted-foreground">
                             Học tiết kiệm hơn với các lộ trình khóa học được đóng gói theo cấp độ

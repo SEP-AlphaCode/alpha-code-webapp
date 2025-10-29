@@ -6,14 +6,15 @@ import { AuthGuard } from "@/components/auth-guard";
 import { useLogout } from "@/features/auth/hooks/use-logout";
 import { getUserInfoFromToken } from "@/utils/tokenUtils";
 import { AccountData } from "@/types/account";
-import { UserHeader } from "@/components/parent/user-header";
-import { UserSidebar } from "@/components/parent/user-sidebar";
+import { ChildrenHeader } from "../../components/children/children-header";
+import { ChildrenSidebar } from "../../components/children/children-sidebar";
+import { Home, Blocks, BookOpen, Trophy, Video, Library } from "lucide-react";
 
-interface UserLayoutProps {
+interface ChildrenLayoutProps {
   children: React.ReactNode;
 }
 
-export default function UserLayout({ children }: UserLayoutProps) {
+export default function ChildrenLayout({ children }: ChildrenLayoutProps) {
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [accountData, setAccountData] = useState<AccountData | null>(null);
   
@@ -21,7 +22,6 @@ export default function UserLayout({ children }: UserLayoutProps) {
   const logoutMutation = useLogout();
 
   useEffect(() => {
-    // Lấy thông tin account từ token
     if (typeof window !== 'undefined') {
       const accessToken = sessionStorage.getItem('accessToken');
       if (accessToken) {
@@ -40,20 +40,19 @@ export default function UserLayout({ children }: UserLayoutProps) {
     }
   }, []);
 
+  const iconClass = "w-5 h-5";
   const navigationItems = [
-    { name: "Dashboard", href: "/parent", icon: "📊" },
-    { name: "Robots", href: "/parent/robot", icon: "🤖" },
-    { name: "Joysticks Control", href: "/parent/joystick", icon: "🕹️" },
-    { name: "Activities", href: "/parent/activities", icon: "🎯" },
-    { name: "Music", href: "/parent/music", icon: "🎵" },
-    { name: "Courses", href: "/parent/courses", icon: "📖" },
-    { name: "Add-ons", href: "/parent/add-ons", icon: "➕" },
-    { name: "Videos", href: "/parent/videos", icon: "🎬" },
+    { name: "Trang Chủ", href: "/children", icon: <Home className={iconClass} /> },
+    { name: "Lập Trình", href: "/children/blockly-coding", icon: <Blocks className={iconClass} /> },
+    { name: "Bài Học", href: "/children/lessons", icon: <BookOpen className={iconClass} /> },
+    { name: "Thành Tích", href: "/children/achievements", icon: <Trophy className={iconClass} /> },
+    { name: "Videos", href: "/children/videos", icon: <Video className={iconClass} /> },
+    { name: "Thư Viện", href: "/children/library", icon: <Library className={iconClass} /> }
   ];
 
   const isActiveRoute = (href: string) => {
-    if (href === "/parent") {
-      return pathname === "/parent";
+    if (href === "/children") {
+      return pathname === "/children";
     }
     return pathname?.startsWith(href);
   };
@@ -66,16 +65,11 @@ export default function UserLayout({ children }: UserLayoutProps) {
     setIsSidebarOpen(!isSidebarOpen);
   };
 
-  // Robot change handler is now handled by Redux
-  // const handleRobotChange = (robot: Robot) => {
-  //   setCurrentRobot(robot);
-  // };
-
   return (
-    <AuthGuard allowedRoles={['Parent']}>
-      <div className="min-h-screen bg-gray-50">
+    <AuthGuard allowedRoles={['Children']}>
+      <div className="min-h-screen w-full bg-gray-50">
         {/* Header */}
-        <UserHeader
+        <ChildrenHeader
           onToggleSidebar={handleToggleSidebar}
           navigationItems={navigationItems}
           isActiveRoute={isActiveRoute}
@@ -85,7 +79,7 @@ export default function UserLayout({ children }: UserLayoutProps) {
         />
 
         {/* Sidebar */}
-        <UserSidebar
+        <ChildrenSidebar
           isSidebarOpen={isSidebarOpen}
           navigationItems={navigationItems}
           isActiveRoute={isActiveRoute}
@@ -96,11 +90,11 @@ export default function UserLayout({ children }: UserLayoutProps) {
 
         {/* Main Content */}
         <main
-          className={`transition-all duration-300 ease-in-out pt-13 ${
-            isSidebarOpen ? "ml-64" : "ml-16"
+          className={`transition-all duration-300 ease-in-out pt-20 overflow-hidden ${
+            isSidebarOpen ? "ml-72" : "ml-24"
           }`}
         >
-          <div className="mt-10 bg-white min-h-screen">
+          <div className="w-full h-full">
             {children}
           </div>
         </main>
@@ -108,3 +102,4 @@ export default function UserLayout({ children }: UserLayoutProps) {
     </AuthGuard>
   );
 }
+

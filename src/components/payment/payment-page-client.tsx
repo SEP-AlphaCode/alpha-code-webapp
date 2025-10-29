@@ -7,8 +7,8 @@ import { Card } from "@/components/ui/card"
 import { useGetKeyPrice } from '@/features/config/hooks/use-key-price'
 import { usePayOS } from '@payos/payos-checkout'
 import { useCourse } from '@/features/courses/hooks/use-course'
-import { useAddon } from '@/features/plan/hooks/use-addon'
-import { useSubscription } from '@/features/plan/hooks/use-subscription'
+import { useAddon } from '@/features/addon/hooks/use-addon'
+import { useSubscription } from '@/features/subscription/hooks/use-subscription'
 import { useBundle } from '@/features/bundle/hooks/use-bundle'
 import { Loader2, Check, BookOpen, Package, Zap, Key, Gift, ArrowLeft, CreditCard, Smartphone } from "lucide-react"
 import visa from '../../../public/visa.jpg'

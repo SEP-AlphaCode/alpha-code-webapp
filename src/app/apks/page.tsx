@@ -14,7 +14,7 @@ export default function ApksPage() {
           <p className="mt-2 text-gray-600">Danh sách APK được phát hành cho từng model robot. Chọn phiên bản phù hợp với model của bạn và tải xuống.</p>
         </header>
 
-        <main className="min-h-screen">
+        <main className="py-6">
           <ApkList />
         </main>
       </div>
