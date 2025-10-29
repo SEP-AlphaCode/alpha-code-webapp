@@ -5,6 +5,7 @@ import { useGetAccountCoursesByAccount } from '@/features/courses/hooks/use-acco
 import { useSections } from '@/features/courses/hooks/use-section'
 import { useCourse } from '@/features/courses/hooks/use-course'
 import { getUserIdFromToken } from '@/utils/tokenUtils'
+import LoadingState from '@/components/loading-state'
 
 export default function LearningPageClient() {
   const params = useParams() as { courseId?: string }
@@ -51,7 +52,9 @@ export default function LearningPageClient() {
   if (isAccountCoursesLoading || isCourseLoading || isSectionsLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+        <div className="w-full max-w-md p-6">
+          <LoadingState message="Đang tải nội dung khóa học..." />
+        </div>
       </div>
     )
   }
@@ -66,7 +69,7 @@ export default function LearningPageClient() {
       <div className="p-8 text-center text-red-600">Có lỗi xảy ra khi tải nội dung khóa học.</div>
     )
   }
-  
+
   return (
     <div className="min-h-screen bg-white">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">

@@ -13,6 +13,7 @@ import { Joystick } from '@/types/joystick';
 import { getUserInfoFromToken } from '@/utils/tokenUtils';
 import RobotVideoStream from '@/components/parent/robot/robot-video-stream';
 import ProtectAddon from '@/components/protect-addon';
+import ProtectLicense from '@/components/protect-license';
 // import RobotVideoStream from '@/components/user/robot/robot-video-stream';
 
 interface JoystickPosition {
@@ -496,7 +497,7 @@ export default function JoystickPage() {
   }
 
   return (
-    <ProtectAddon category={5}>
+    <ProtectLicense>
       <div className="min-h-screen bg-gradient-to-br from-slate-50 via-gray-100 to-slate-200 p-6">
         <div className="max-w-5xl mx-auto">
           <header className="flex items-center justify-between mb-6">
@@ -790,6 +791,6 @@ export default function JoystickPage() {
           }}
         />
       </div>
-    </ProtectAddon>
+    </ProtectLicense>
   );
 }

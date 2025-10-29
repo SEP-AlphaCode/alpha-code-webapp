@@ -4,6 +4,7 @@ import { useGetAccountCoursesByAccount } from '@/features/courses/hooks/use-acco
 import { getUserIdFromToken } from '@/utils/tokenUtils'
 import { Pagination } from '@/components/parent/course/pagination'
 import { Button } from '@/components/ui/button'
+import LoadingState from '@/components/loading-state'
 import { useRouter } from 'next/navigation'
 
 export default function MyCoursePage() {
@@ -45,7 +46,9 @@ export default function MyCoursePage() {
         <p className="text-sm text-gray-600 mb-6">Danh sách các khoá học bạn đã đăng ký hoặc mua.</p>
 
         {isLoading ? (
-          <div className="py-12 text-center text-gray-600">Đang tải các khoá học...</div>
+          <div className="py-12">
+            <LoadingState message="Đang tải các khoá học..." />
+          </div>
         ) : courses.length === 0 ? (
           <div className="py-12 text-center text-gray-600">
             Bạn chưa có khoá học nào. Hãy khám phá và đăng ký khoá học.
