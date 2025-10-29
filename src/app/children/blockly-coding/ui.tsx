@@ -33,11 +33,11 @@ export default function BlocklyUI({ robotModelId, serial, hasAllData, data }: Bl
     const [isRunning, setIsRunning] = useState(false)
     const [showRobot, setShowRobot] = useState(false)
     const key = 'AlphaCode'
-    
+
     const executeCode = (code: string, resultKey: string) => {
         setIsRunning(true)
         setShowRobot(true)
-        
+
         toast.success('🎉 Đang chạy chương trình...')
         try {
             // Use Function constructor to create an async function
@@ -129,6 +129,9 @@ export default function BlocklyUI({ robotModelId, serial, hasAllData, data }: Bl
         const blockData = wsHelper.serialize();
         localStorage.setItem(key + '.' + robotModelId, JSON.stringify(blockData));
         toast.success("💾 Đã lưu kết quả!");
+        workspaceRef.current?.getAllBlocks().forEach(b => {
+            console.log(b);
+        })
     }
 
     const handleLoad = () => {
@@ -149,7 +152,7 @@ export default function BlocklyUI({ robotModelId, serial, hasAllData, data }: Bl
     }
 
     return (
-        <div className="h-[calc(100vh-5rem)] flex flex-col overflow-hidden">            
+        <div className="h-[calc(100vh-5rem)] flex flex-col overflow-hidden">
             {/* Main Layout - Full Screen */}
             <div className="flex-1 flex overflow-hidden">
                 {/* Left Sidebar with Robot */}
@@ -159,10 +162,10 @@ export default function BlocklyUI({ robotModelId, serial, hasAllData, data }: Bl
                         <div className="relative mb-6">
                             <div className="absolute inset-0 bg-blue-400 rounded-full blur-3xl opacity-30 animate-pulse"></div>
                             <div className="relative">
-                                <Image 
-                                    src="/running.png" 
-                                    alt="Robot" 
-                                    width={200} 
+                                <Image
+                                    src="/running.png"
+                                    alt="Robot"
+                                    width={200}
                                     height={200}
                                     className="drop-shadow-2xl"
                                     priority

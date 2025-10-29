@@ -39,3 +39,9 @@
     padding: 8px !important;
 }
 
+.customBlockCSS {
+    font-size: 140px !important;
+    padding: 100px !important;
+    color: red !important;
+    display: none !important;
+}
