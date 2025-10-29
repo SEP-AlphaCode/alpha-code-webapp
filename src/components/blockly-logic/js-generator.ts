@@ -63,10 +63,14 @@ ${unit}
         // TODO: Assemble javascript into the code variable.
         //Inner function, fetch the ws call
         const body = JSON.stringify({
-            type: block.type.split('.')[1],
-            lang: 'vi',
+            type: 'coding_block',
             data: {
-                code: dropdown_action_name
+                actions: [
+                    {
+                        type: block.type.split('.')[1],
+                        code: dropdown_action_name
+                    }
+                ]
             }
         })
         const comment = `// calling function ${block.type} ${count} time(s)\n`
@@ -85,10 +89,12 @@ ${unit}
         // TODO: Assemble javascript into the code variable.
         //Inner function, fetch the ws call
         const body = JSON.stringify({
-            type: block.type.split('.')[1],
-            lang: 'vi',
+            type: 'coding_block',
             data: {
-                code: dropdown_action_name
+                type: block.type.split('.')[1],
+                data: {
+                    code: dropdown_action_name
+                }
             }
         })
         const comment = `// calling function ${block.type} ${count} time(s)\n`
@@ -101,9 +107,10 @@ ${unit}
         const value_text = alphaCodeGenerator.valueToCode(block, 'TEXT', Order.ATOMIC);
         const dropdown_language = block.getFieldValue('LANGUAGE');
         const body = JSON.stringify({
-            type: 'tts',
-            lang: dropdown_language,
+            type: 'coding_block',
             data: {
+                type: 'tts',
+                lang: dropdown_language,
                 text: value_text
             }
         })
@@ -124,9 +131,12 @@ ${unit}
         // TODO: change Order.ATOMIC to the correct operator precedence strength
         const value_duration = alphaCodeGenerator.valueToCode(block, 'DURATION', Order.ATOMIC);
         const body = JSON.stringify({
-            type: 'led',
-            color: JSON.parse(colour_name),
-            duration: value_duration
+            type: 'coding_block',
+            data: {
+                type: 'led',
+                color: JSON.parse(colour_name),
+                duration: value_duration
+            }
         })
 
         // TODO: Assemble javascript into the code variable.
