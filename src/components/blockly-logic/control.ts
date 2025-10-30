@@ -158,14 +158,14 @@ if(${nowVarName} - ${startTimeVarName} >= 0.25 * 1000) throw Error("Time exceede
 
     const setUpUI = () => {
         registerFieldColour()
-        Blockly.setLocale(Vi as unknown as { [key: string]: string })
+        // Blockly.setLocale(Vi as unknown as { [key: string]: string })
         Blockly.utils.colour.setHsvSaturation(1) // 0 (inclusive) to 1 (exclusive), defaulting to 0.45
         Blockly.utils.colour.setHsvValue(0.75) // 0 (inclusive) to 1 (exclusive), defaulting to 0.65
         // Make blocks bigger and easier for children to see
         // ws.addChangeListener((e) => {
         //     console.log(e)
         // })
-        
+
         if (!Blockly.Extensions.isRegistered('flag_with_text_extension')) {
             Blockly.Extensions.register('flag_with_text_extension',
                 function () {

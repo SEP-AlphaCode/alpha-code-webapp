@@ -14,14 +14,14 @@ const customBlockTemplate: BaseBlockDef[] = [
         "type": ".action",
         "tooltip": "",
         "helpUrl": "",
-        "message0": "Thực hiện hành động %1 %2 lần %3",
+        "message0": "Perform action %1 %2 times %3",
         "args0": [
             {
                 "type": "field_dropdown",
                 "name": "ACTION_NAME",
                 "options": [
-                    // Put the actions here
-                    // [name, code]
+                    // Put the actions here 
+                    // [name, code] 
                 ]
             },
             {
@@ -43,14 +43,14 @@ const customBlockTemplate: BaseBlockDef[] = [
         "type": ".extended_action",
         "tooltip": "",
         "helpUrl": "",
-        "message0": "Thực hiện hành động mở rộng %1 %2 lần %3",
+        "message0": "Perform extended action %1 %2 times %3",
         "args0": [
             {
                 "type": "field_dropdown",
                 "name": "ACTION_NAME",
                 "options": [
-                    // Put the actions here
-                    // [name, code]
+                    // Put the actions here 
+                    // [name, code] 
                 ]
             },
             {
@@ -72,14 +72,14 @@ const customBlockTemplate: BaseBlockDef[] = [
         "type": ".expression",
         "tooltip": "",
         "helpUrl": "",
-        "message0": "Thực hiện biểu cảm %1 %2 lần %3",
+        "message0": "Execute expression felt %1 %2 times %3",
         "args0": [
             {
                 "type": "field_dropdown",
                 "name": "ACTION_NAME",
                 "options": [
-                    // Put the actions here
-                    // [name, code]
+                    // Put the actions here 
+                    // [name, code] 
                 ]
             },
             {
@@ -101,14 +101,14 @@ const customBlockTemplate: BaseBlockDef[] = [
         "type": ".skill_helper",
         "tooltip": "",
         "helpUrl": "",
-        "message0": "Thực hiện kỹ năng %1 %2 lần %3",
+        "message0": "Perform skill %1 %2 times %3",
         "args0": [
             {
                 "type": "field_dropdown",
                 "name": "ACTION_NAME",
                 "options": [
-                    // Put the actions here
-                    // [name, code]
+                    // Put the actions here 
+                    // [name, code] 
                 ]
             },
             {
@@ -130,7 +130,7 @@ const customBlockTemplate: BaseBlockDef[] = [
         "type": "tts",
         "tooltip": "",
         "helpUrl": "",
-        "message0": "Nói %1 bằng tiếng %2 %3",
+        "message0": "Speak %1 in %2 %3",
         "args0": [
             {
                 "type": "input_value",
@@ -145,16 +145,16 @@ const customBlockTemplate: BaseBlockDef[] = [
                             "src": "https://upload.wikimedia.org/wikipedia/commons/thumb/2/21/Flag_of_Vietnam.svg/1280px-Flag_of_Vietnam.svg.png?20250708231458",
                             "width": 15,
                             "height": 15,
-                            "alt": "Việt"
+                            "alt": "Vietnamese"
                         },
-                        'vi'
+                        'en'
                     ],
                     [
                         {
                             "src": "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a4/Flag_of_the_United_States.svg/1280px-Flag_of_the_United_States.svg.png",
                             "width": 15,
                             "height": 15,
-                            "alt": "Anh",
+                            "alt": "England",
                         },
                         "en"
                     ],
@@ -175,12 +175,12 @@ const customBlockTemplate: BaseBlockDef[] = [
         "type": "set_mouth_led",
         "tooltip": "",
         "helpUrl": "",
-        "message0": "Đặt LED miệng thành màu %1 trong %2 %3 giây %4",
+        "message0": "Set mouth LED to color %1 for %2 %3 seconds %4",
         "args0": [
             {
                 "type": "input_value",
                 "name": "COLOR",
-                "check": "Color"
+                "check": "colour"
             },
             {
                 "type": "input_dummy",
@@ -203,7 +203,7 @@ const customBlockTemplate: BaseBlockDef[] = [
     },
     {
         "type": "inp_color",
-        "tooltip": "Trả về 1 màu",
+        "tooltip": "Returns 1 color",
         "helpUrl": "",
         "message0": "%1 %2",
         "args0": [
@@ -217,7 +217,7 @@ const customBlockTemplate: BaseBlockDef[] = [
                 "name": "NONE"
             }
         ],
-        "output": "Color",
+        "output": "colour",
         "colour": HUE,
         classes: 'customBlockCSS'
     }

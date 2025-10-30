@@ -33,7 +33,6 @@ export default function BlocklyUI({ robotModelId, serial, hasAllData, data }: Bl
     const [isRunning, setIsRunning] = useState(false)
     const [showRobot, setShowRobot] = useState(false)
     const key = 'AlphaCode'
-
     const executeCode = (code: string, resultKey: string) => {
         setIsRunning(true)
         setShowRobot(true)
@@ -129,9 +128,9 @@ export default function BlocklyUI({ robotModelId, serial, hasAllData, data }: Bl
         const blockData = wsHelper.serialize();
         localStorage.setItem(key + '.' + robotModelId, JSON.stringify(blockData));
         toast.success("💾 Đã lưu kết quả!");
-        workspaceRef.current?.getAllBlocks().forEach(b => {
-            console.log(b);
-        })
+        // workspaceRef.current?.getAllBlocks().forEach(b => {
+        //     console.log(b);
+        // })
     }
 
     const handleLoad = () => {
