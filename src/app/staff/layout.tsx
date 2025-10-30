@@ -144,7 +144,7 @@ export default function StaffLayout({
   children: React.ReactNode
 }) {
   return (
-    <AuthGuard allowedRoles={['staff', 'admin']}>
+    <AuthGuard allowedRoles={['Staff']}>
       <SidebarProvider>
         <StaffSidebar />
         <SidebarInset>
