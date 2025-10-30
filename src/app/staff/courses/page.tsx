@@ -256,7 +256,7 @@ export default function CoursesPage() {
                             )}
                           </div>
                           <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                            <span>{course.sectionCount || 0} chương</span>
+                            <span>{course.sectionCount || 0} phần</span>
                             <span>•</span>
                             <span>{course.totalLessons} bài</span>
                             <span>•</span>
@@ -301,7 +301,7 @@ export default function CoursesPage() {
                             <DropdownMenuItem asChild>
                               <Link href={`/staff/courses/${course.slug}/sections`}>
                                 <Layers className="mr-2 h-4 w-4" />
-                                Quản lý chương
+                                Quản lý phần
                               </Link>
                             </DropdownMenuItem>
                             <DropdownMenuSeparator />

@@ -18,7 +18,7 @@ export default function StaffPage() {
       <div>
         <h1 className="text-3xl font-bold tracking-tight">Trang quản lý Nhân viên</h1>
         <p className="text-muted-foreground">
-          Quản lý danh mục, khóa học, chương và bài học
+          Quản lý danh mục, khóa học, phần và bài học
         </p>
       </div>
 
@@ -91,7 +91,7 @@ export default function StaffPage() {
               )}
             </div>
             <p className="text-xs text-muted-foreground">
-              Tổng số chương
+              Tổng số phần
             </p>
           </CardContent>
         </Card>
@@ -162,10 +162,10 @@ export default function StaffPage() {
               2. Thêm khóa học vào danh mục
             </p>
             <p className="text-sm text-muted-foreground">
-              3. Tổ chức nội dung thành các chương
+              3. Tổ chức nội dung thành các phần
             </p>
             <p className="text-sm text-muted-foreground">
-              4. Thêm bài học vào từng chương
+              4. Thêm bài học vào từng phần
             </p>
           </CardContent>
         </Card>

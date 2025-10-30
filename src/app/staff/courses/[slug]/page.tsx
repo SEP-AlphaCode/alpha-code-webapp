@@ -243,9 +243,9 @@ export default function CourseDetailPage() {
       // Silently update cache without refetch
       queryClient.setQueryData(['sections', courseId], sections)
       
-      toast.success('Đã cập nhật thứ tự chương')
+      toast.success('Đã cập nhật thứ tự phần')
     } catch (error) {
-      toast.error('Lỗi khi cập nhật thứ tự chương')
+      toast.error('Lỗi khi cập nhật thứ tự phần')
       console.error('Error updating section order:', error)
       // Revert local state on error
       setSectionsData(sectionsWithLessons)
@@ -292,9 +292,9 @@ export default function CourseDetailPage() {
       await deleteSectionMutation.mutateAsync(deletingSectionId)
       setDeleteSectionId(null)
       setDeleteSectionTitle("")
-      toast.success('Đã xóa chương thành công')
+      toast.success('Đã xóa phần thành công')
     } catch (error) {
-      toast.error('Lỗi khi xóa chương')
+      toast.error('Lỗi khi xóa phần')
       console.error('Error deleting section:', error)
     }
   }
@@ -344,7 +344,7 @@ export default function CourseDetailPage() {
         <div className="flex-1">
           <h1 className="text-3xl font-bold tracking-tight">{course.name}</h1>
           <p className="text-muted-foreground">
-            Quản lý chương và bài học - Kéo thả để sắp xếp
+            Quản lý phần và bài học - Kéo thả để sắp xếp
           </p>
         </div>
         <div className="flex gap-2">
@@ -356,7 +356,7 @@ export default function CourseDetailPage() {
           </Link>
           <Button onClick={() => setIsCreateSectionModalOpen(true)}>
             <Plus className="mr-2 h-4 w-4" />
-            Thêm chương
+            Thêm phần
           </Button>
         </div>
       </div>
@@ -414,13 +414,13 @@ export default function CourseDetailPage() {
               </Badge>
             </div>
             
-            {/* Số chương */}
+            {/* Số phần */}
             <div className="space-y-2">
-              <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Số chương</p>
+              <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Số phần</p>
               <div className="flex items-center gap-2">
                 <Layers className="h-4 w-4 text-muted-foreground" />
                 <p className="text-lg font-bold">{Array.isArray(sectionsData) ? sectionsData.length : 0}</p>
-                <span className="text-sm text-muted-foreground">chương</span>
+                <span className="text-sm text-muted-foreground">phần</span>
               </div>
             </div>
             
@@ -467,7 +467,7 @@ export default function CourseDetailPage() {
         <CardHeader>
           <CardTitle>Nội dung khóa học</CardTitle>
           <CardDescription>
-            Kéo thả bài học để sắp xếp hoặc di chuyển giữa các chương
+            Kéo thả bài học để sắp xếp hoặc di chuyển giữa các phần
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -493,7 +493,7 @@ export default function CourseDetailPage() {
                     }}
                     onDragEnd={() => setDraggedSection(null)}
                     className="flex flex-col gap-1 py-2 cursor-move"
-                    title="Kéo để di chuyển chương"
+                    title="Kéo để di chuyển phần"
                   >
                     <GripVertical className="h-5 w-5 text-muted-foreground" />
                   </div>
@@ -501,7 +501,7 @@ export default function CourseDetailPage() {
                     <div className="flex items-center gap-4 flex-1">
                       <div className="flex items-center gap-2">
                         <Badge variant="outline">
-                          Chương {sectionData.orderNumber}
+                          Phần {sectionData.orderNumber}
                         </Badge>
                         <span className="font-semibold text-lg">
                           {sectionData.title}
@@ -529,7 +529,7 @@ export default function CourseDetailPage() {
                         }}
                       >
                         <Pencil className="mr-2 h-4 w-4" />
-                        Chỉnh sửa chương
+                        Chỉnh sửa phần
                       </DropdownMenuItem>
                       <DropdownMenuItem asChild>
                         <Link href={`/staff/courses/${courseSlug}/sections/${sectionData.id}/lessons/new`}>
@@ -559,7 +559,7 @@ export default function CourseDetailPage() {
                         }}
                       >
                         <Trash2 className="mr-2 h-4 w-4" />
-                        Xóa chương
+                        Xóa phần
                       </DropdownMenuItem>
                     </DropdownMenuContent>
                   </DropdownMenu>
@@ -671,11 +671,11 @@ export default function CourseDetailPage() {
           {(!Array.isArray(sectionsData) || sectionsData.length === 0) && (
             <div className="text-center py-12 text-muted-foreground">
               <Layers className="h-12 w-12 mx-auto mb-4 opacity-50" />
-              <p className="text-lg font-medium mb-2">Chưa có chương nào</p>
-              <p className="mb-4">Hãy tạo chương đầu tiên cho khóa học này</p>
+              <p className="text-lg font-medium mb-2">Chưa có phần nào</p>
+              <p className="mb-4">Hãy tạo phần đầu tiên cho khóa học này</p>
               <Button onClick={() => setIsCreateSectionModalOpen(true)}>
                 <Plus className="mr-2 h-4 w-4" />
-                Tạo chương đầu tiên
+                Tạo phần đầu tiên
               </Button>
             </div>
           )}
