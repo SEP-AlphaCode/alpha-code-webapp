@@ -119,7 +119,7 @@ export default function SubscriptionPlansPage() {
   }
 
   const columns = createColumns(handleEditSubscription, handleDeleteSubscription, handleViewSubscription)
-
+  
   return (
     <div className="container mx-auto py-10">
       {/* Header */}
