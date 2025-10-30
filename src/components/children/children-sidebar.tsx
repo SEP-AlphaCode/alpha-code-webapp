@@ -2,7 +2,7 @@
 
 import React from "react";
 import Link from "next/link";
-import { LogOut, UserCircle, Settings } from "lucide-react";
+import { LogOut, UserCircle, Settings, Home as HomeIcon } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -44,6 +44,24 @@ export function ChildrenSidebar({
       <nav
         className={`flex-1 overflow-y-auto overflow-x-hidden px-4 mt-6 pb-6 scrollbar-thin scrollbar-thumb-blue-300 scrollbar-track-gray-100`}
       >
+        {/* Home shortcut */}
+        <div className="mb-3">
+          <Link
+            href="/"
+            className={`flex items-center px-3.5 py-3 rounded-lg text-sm font-semibold transition-colors group relative text-gray-800 hover:bg-blue-50`}
+          >
+            <div className={`text-lg flex items-center justify-center ${isSidebarOpen ? "mr-3" : "mx-auto"}`}>
+              <HomeIcon />
+            </div>
+            {isSidebarOpen && <span className="truncate">Trang chủ</span>}
+            {!isSidebarOpen && (
+              <div className="absolute left-full ml-3 px-2.5 py-1.5 bg-gray-900 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap shadow-lg">
+                Trang chủ
+              </div>
+            )}
+          </Link>
+        </div>
+
         <div className="space-y-1.5 w-full">
           {navigationItems.map((item) => {
             const isActive = isActiveRoute(item.href);

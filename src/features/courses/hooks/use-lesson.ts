@@ -57,7 +57,7 @@ export function useCreateLesson(courseId: string, sectionId: string, courseSlug?
     mutationFn: (data: {
       title: string
       content: string
-      videoFile?: File
+      videoUrl?: string | null
       duration: number
       requireRobot: boolean
       type: number
@@ -97,7 +97,7 @@ export function useUpdateLesson(courseId: string, lessonId: string, sectionId?: 
       id: string
       title: string
       content: string
-      videoFile?: File
+      videoUrl?: string | null
       duration: number
       requireRobot: boolean
       type: number

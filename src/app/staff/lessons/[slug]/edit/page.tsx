@@ -11,9 +11,12 @@ import { Switch } from "@/components/ui/switch"
 import { ArrowLeft, Save, Loader2 } from "lucide-react"
 import Link from "next/link"
 import { useLessonBySlug, useUpdateLesson } from "@/features/courses/hooks/use-lesson"
+import { presignLessonUpload, uploadFileToPresignedUrl } from "@/features/courses/api/lesson-api"
 import { toast } from "sonner"
 import { RichTextEditor } from "@/components/ui/rich-text-editor"
 import { SolutionBuilder, SolutionItem } from "@/components/course/solution-builder"
+import UploadingModal from "@/components/uploading-modal";
+import axios from "axios"
 
 interface LessonUpdatePayload {
   id: string;
@@ -24,7 +27,6 @@ interface LessonUpdatePayload {
   orderNumber: number;
   sectionId: string;
   videoUrl?: string;
-  videoFile?: File;
   type: number;
   solution?: object | null;
   status: number;
@@ -69,6 +71,9 @@ export default function EditLessonPage() {
 
   // New state for video file
   const [videoFile, setVideoFile] = useState<File | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [uploadPercent, setUploadPercent] = useState<number>(0);
+  const [uploadController, setUploadController] = useState<AbortController | null>(null);
 
   // Update form when lesson data is loaded
   useEffect(() => {
@@ -108,6 +113,7 @@ export default function EditLessonPage() {
     if (!lesson) return
 
     try {
+      setIsSubmitting(true)
       // Only Quiz (type 3) has solution
       let solutionObject: object | null | undefined = undefined
       if (formData.type === 3) {
@@ -128,7 +134,7 @@ export default function EditLessonPage() {
       }
 
       // Prepare payload for updateLesson
-      const payload: LessonUpdatePayload= {
+      const payload: LessonUpdatePayload = {
         id: formData.id,
         title: formData.title,
         content: formData.content,
@@ -140,11 +146,25 @@ export default function EditLessonPage() {
         solution: solutionObject as object | null,
         status: formData.status
       };
-      // For type 2 (video), handle video file upload
+      // For type 2 (video), handle direct S3 upload via presign
       if (formData.type === 2) {
         if (videoFile) {
-          payload.videoFile = videoFile;
-          // Remove videoUrl if uploading new file
+          const presign = await presignLessonUpload({
+            filename: videoFile.name,
+            contentType: videoFile.type || "video/mp4",
+            folder: "lessons",
+            expiresInSeconds: 900,
+          });
+          const controller = new AbortController();
+          setUploadController(controller);
+          await uploadFileToPresignedUrl(
+            presign.uploadUrl,
+            videoFile,
+            videoFile.type || "video/mp4",
+            (p) => setUploadPercent(p),
+            controller.signal
+          );
+          payload.videoUrl = presign.publicUrl;
         } else {
           payload.videoUrl = formData.videoUrl || undefined;
         }
@@ -154,19 +174,29 @@ export default function EditLessonPage() {
       }
 
       console.log("Update Lesson Payload:", payload);
+      //console.log("Video File:", payload.videoFile);
       await updateLessonMutation.mutateAsync(payload);
 
       toast.success('Đã cập nhật bài học')
       router.push(`/staff/lessons/${lessonSlug}`)
     } catch (error: unknown) {
-      console.error('Error updating lesson:', error)
-      // Extract error message from API response
-      const errorMessage = error && typeof error === 'object' && 'response' in error
-        ? (error as { response?: { data?: { message?: string } } }).response?.data?.message || 'Lỗi khi cập nhật bài học'
-        : error && typeof error === 'object' && 'message' in error
-          ? (error as { message: string }).message
-          : 'Lỗi khi cập nhật bài học'
-      toast.error(errorMessage)
+      console.error("Error creating lesson:", error)
+      // If upload was cancelled by user (axios abort) or AbortSignal triggered, skip showing another toast
+      if (axios.isCancel(error) || (error instanceof DOMException && error.name === 'AbortError')) {
+        console.info('Upload cancelled by user')
+      } else {
+        // Extract error message from API response
+        const errorMessage = error && typeof error === 'object' && 'response' in error
+          ? (error as { response?: { data?: { message?: string } } }).response?.data?.message || 'Lỗi khi cập nhật bài học'
+          : error && typeof error === 'object' && 'message' in error
+            ? (error as { message: string }).message
+            : 'Lỗi khi cập nhật bài học'
+        toast.error(errorMessage)
+      }
+    } finally {
+      setIsSubmitting(false)
+      setUploadPercent(0)
+      setUploadController(null)
     }
   }
 
@@ -209,6 +239,20 @@ export default function EditLessonPage() {
 
   return (
     <div className="space-y-6">
+      {/* Overlay Modal Uploading */}
+      <UploadingModal
+        open={isSubmitting && uploadPercent > 0}
+        progress={uploadPercent}
+        message="Đang tải lên video, vui lòng chờ..."
+        onClose={() => {
+          if (uploadController) {
+            uploadController.abort();
+            setUploadController(null);
+          }
+          setIsSubmitting(false);
+          setUploadPercent(0);
+        }}
+      />
       {/* Header */}
       <div className="flex items-center gap-4">
         <Link href={`/staff/lessons/${lessonSlug}`}>
@@ -306,9 +350,6 @@ export default function EditLessonPage() {
               <Card>
                 <CardHeader>
                   <CardTitle>Video</CardTitle>
-                  <CardDescription>
-                    Tải lên video mới hoặc nhập URL video cho bài học
-                  </CardDescription>
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-2">
@@ -397,12 +438,12 @@ export default function EditLessonPage() {
                 <Button
                   type="submit"
                   className="w-full"
-                  disabled={updateLessonMutation.isPending}
+                  disabled={updateLessonMutation.isPending || isSubmitting}
                 >
-                  {updateLessonMutation.isPending ? (
+                  {updateLessonMutation.isPending || isSubmitting ? (
                     <>
                       <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      Đang lưu...
+                      {uploadPercent > 0 ? `Đang tải video ${uploadPercent}%` : "Đang lưu..."}
                     </>
                   ) : (
                     <>

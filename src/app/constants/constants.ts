@@ -10,5 +10,6 @@ export const socketUrl = "wss://backend.alpha-code.site/ws";
 //export const apiPythonUrl = "http://192.168.1.240:8000"
 //export const apiCoursesUrl = "http://localhost:8091/api/v1"
 //export const apiRobotsUrl = "http://localhost:8083/api/v1"
+//export const apiPaymentsUrl = "http://localhost:8095/api/v1"
 
 
