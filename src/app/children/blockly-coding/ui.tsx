@@ -11,6 +11,7 @@ import { Play, Square, Save, RotateCcw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import 'blockly/blocks';
 import 'blockly/javascript'; // Or the generator of your choice
+import { pythonHttp } from '@/utils/http';
 
 type BlocklyUIProps = {
     robotModelId: string,
@@ -40,8 +41,12 @@ export default function BlocklyUI({ robotModelId, serial, hasAllData, data }: Bl
         toast.success('🎉 Đang chạy chương trình...')
         try {
             // Use Function constructor to create an async function
+            console.log(code);
+
             const fn = new Function(code)
             const x = fn()
+            console.log(x);
+
             if (x.error) {
                 toast.error(x.error)
                 setShowRobot(false)
@@ -51,7 +56,7 @@ export default function BlocklyUI({ robotModelId, serial, hasAllData, data }: Bl
             }
         }
         catch (e) {
-            toast.error('❌ Lỗi khi chạy mã')
+            toast.error('❌ Lỗi khi chạy mã. Điều này xảy ra do mã không hợp lệ hoặc lỗi logic trong khối.')
             setShowRobot(false)
         }
         finally {
@@ -118,9 +123,20 @@ export default function BlocklyUI({ robotModelId, serial, hasAllData, data }: Bl
     }
 
     const handleStop = () => {
-        setIsRunning(false);
-        setShowRobot(false);
-        toast.info('⏸️ Đã dừng thực thi');
+        const f = async () => {
+            setIsRunning(false);
+            setShowRobot(false);
+            toast.info('⏸️ Đã dừng thực thi');
+            await pythonHttp.post(`/websocket/command/${serial}`, {
+                type: 'stop_all_actions'
+            }, {
+                headers: {
+                    Accept: "application/json",
+                    "Content-Type": "application/json",
+                },
+            });
+        }
+        f()
     }
 
     const handleSave = () => {

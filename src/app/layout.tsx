@@ -43,6 +43,7 @@ export default function RootLayout({
               position="top-right" // top-left, top-center, bottom-left...
               richColors
               expand
+              closeButton
             />
         </Provider>
       </body>

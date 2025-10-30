@@ -189,7 +189,7 @@ const customBlockTemplate: BaseBlockDef[] = [
             {
                 "type": "input_value",
                 "name": "DURATION",
-                "check": "Number"
+                // "check": "Number"
             },
             {
                 "type": "input_dummy",
