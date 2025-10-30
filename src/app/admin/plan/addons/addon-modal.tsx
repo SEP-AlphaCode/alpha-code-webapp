@@ -44,6 +44,11 @@ const CATEGORY_MAP = [
   { value: 4, label: "LẬP TRÌNH BLOCKLY" }
 ]
 
+const STATUS_MAP = [
+  { value: 1, label: "Đang hoạt động" },
+  { value: 2, label: "Không hoạt động" },
+]
+
 export function CreateAddonModal({
   isOpen,
   onClose,
@@ -66,32 +71,39 @@ export function CreateAddonModal({
     formState: { errors, isSubmitting },
   } = useForm<AddonModal>({
     defaultValues: {
+      id: "",
       name: "",
       description: "",
       price: 0,
       category: 1,
+      status: 1,
     },
   })
 
   useEffect(() => {
     if (isEditMode && editAddon) {
       reset({
+        id: editAddon.id,
         name: editAddon.name,
         description: editAddon.description,
         price: editAddon.price,
         category: editAddon.category,
+        status: editAddon.status,
       })
     } else {
       reset({
+        id: "",
         name: "",
         description: "",
         price: 0,
         category: 1,
+        status: 1,
       })
     }
   }, [isEditMode, editAddon, reset])
 
   const category = watch("category")
+  const status = watch("status")
 
   const onSubmit = async (data: AddonModal) => {
     try {
@@ -106,9 +118,11 @@ export function CreateAddonModal({
       reset()
       onClose()
       onSuccess?.() // ✅ gọi callback để refresh danh sách
-    } catch (error) {
-      console.error("Error saving addon:", error)
-      toast.error(isEditMode ? "Cập nhật thất bại" : "Tạo mới thất bại")
+    } catch (error: unknown) {
+      const errorMessage = error && typeof error === 'object' && 'response' in error
+        ? (error as { response?: { data?: { message?: string } } }).response?.data?.message
+        : undefined;
+      toast.error(isEditMode ? errorMessage || "Lỗi khi cập nhật addon" : errorMessage || "Lỗi khi tạo addon")
     }
   }
 
@@ -196,6 +210,26 @@ export function CreateAddonModal({
                 {CATEGORY_MAP.map((c) => (
                   <SelectItem key={c.value} value={c.value.toString()}>
                     {c.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          {/* Status */}
+          <div className="space-y-2">
+            <Label htmlFor="status">Trạng thái *</Label>
+            <Select
+              value={status?.toString()}
+              onValueChange={(v) => setValue("status", parseInt(v))}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Chọn trạng thái" />
+              </SelectTrigger>
+              <SelectContent>
+                {STATUS_MAP.map((s) => (
+                  <SelectItem key={s.value} value={s.value.toString()}>
+                    {s.label}
                   </SelectItem>
                 ))}
               </SelectContent>

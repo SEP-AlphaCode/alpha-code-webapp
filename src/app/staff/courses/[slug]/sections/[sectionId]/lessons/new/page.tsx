@@ -266,10 +266,10 @@ export default function NewLessonPage() {
           )}
 
           {/* Coding Content */}
-          {formData.type === "1" && (
+          {formData.type === "3" && (
             <Card>
               <CardHeader>
-                <CardTitle>Nội dung bài học</CardTitle>
+                <CardTitle>Nội dung bài kiểm tra</CardTitle>
                 <CardDescription>
                   Cấu hình bài tập lập trình
                 </CardDescription>
@@ -279,34 +279,6 @@ export default function NewLessonPage() {
                   value={Array.isArray(formData.solution) ? formData.solution : []}
                   onChange={(value) => handleChange("solution", value)}
                 />
-              </CardContent>
-            </Card>
-          )}
-
-          {/* Quiz Content */}
-          {formData.type === "3" && (
-            <Card>
-              <CardHeader>
-                <CardTitle>Nội dung Kiểm tra</CardTitle>
-                <CardDescription>
-                  Cấu hình bài kiểm tra
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="quizData">Câu hỏi và đáp án (JSON)</Label>
-                  <Textarea
-                    id="quizData"
-                    placeholder='{"questions": [{"question": "...", "answers": [], "correct": 0}]}'
-                    value={typeof formData.solution === 'string' ? formData.solution : JSON.stringify(formData.solution, null, 2)}
-                    onChange={(e) => handleChange("solution", e.target.value)}
-                    rows={10}
-                    className="font-mono text-sm"
-                  />
-                  <p className="text-sm text-muted-foreground">
-                    Định dạng JSON cho câu hỏi và đáp án
-                  </p>
-                </div>
               </CardContent>
             </Card>
           )}

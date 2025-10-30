@@ -13,6 +13,7 @@ import { Input } from "@/components/ui/input";
 import { Search, ShoppingCart, CheckCircle, Zap, Puzzle, QrCode, Keyboard, Home, Info } from "lucide-react";
 import { useAddon } from "@/features/addon/hooks/use-addon";
 import { Addon } from "@/types/addon";
+import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Footer } from "@/components/home/footer";
@@ -65,7 +66,14 @@ export default function AddonsStore() {
   }));
 
   const handlePurchase = (addon: Addon) => {
-    router.push(`/payment?category=addon&id=${encodeURIComponent(addon.id)}`)
+    const target = `/payment?category=addon&id=${encodeURIComponent(addon.id)}`
+    const accessToken = typeof window !== 'undefined' ? sessionStorage.getItem('accessToken') : null
+    if (!accessToken) {
+      // Show toast informing the user to login and don't navigate
+      toast.error("Vui lòng đăng nhập để mua Addon.")
+      return
+    }
+    router.push(target)
   }
 
   return (

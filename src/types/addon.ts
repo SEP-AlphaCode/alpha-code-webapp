@@ -43,10 +43,12 @@ export type Addon = {
 }
 
 export type AddonModal = {
+  id?: string
   name: string
   description: string
   price: number
   category: AddonCategory
+  status?: number
 }
 
 export type AddonPaginationResponse = {

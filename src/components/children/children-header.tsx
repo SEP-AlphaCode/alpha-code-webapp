@@ -3,6 +3,7 @@
 import React from "react";
 import { Button } from "@/components/ui/button";
 import { Menu, LogOut } from "lucide-react";
+import Link from "next/link";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { AccountData } from "@/types/account";
 import Image from "next/image";
@@ -69,8 +70,8 @@ export function ChildrenHeader({
             </SheetContent>
           </Sheet>
 
-          {/* Logo/Title */}
-          <div className="flex items-center space-x-3">
+          {/* Logo/Title (clickable -> home) */}
+          <Link href="/" className="flex items-center space-x-3">
             <div className="relative w-14 h-14 overflow-hidden">
               <Image src="/img_edu_login.png" alt="Alpha Kids" fill sizes="36px" className="object-contain" />
             </div>
@@ -78,7 +79,7 @@ export function ChildrenHeader({
               <h1 className="text-xl font-bold text-gray-900">Alpha Kids</h1>
               <p className="text-xs text-gray-600">Học lập trình với Robot</p>
             </div>
-          </div>
+          </Link>
         </div>
 
         {/* Right side - Empty for cleaner look */}
