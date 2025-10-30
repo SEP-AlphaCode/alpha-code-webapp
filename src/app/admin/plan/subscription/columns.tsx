@@ -12,7 +12,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import { ArrowUpDown, MoreHorizontal, Edit, Trash2, Eye } from "lucide-react"
+import { ArrowUpDown, MoreHorizontal, Edit, Trash2, Eye, Star } from "lucide-react"
 
 // Helper format
 const formatPrice = (price: number) =>
@@ -32,6 +32,7 @@ const formatBillingCycle = (cycle: number) => {
       return "Không xác định"
   }
 }
+
 // Header cells
 const IdHeaderCell = () => (
   <span className="flex items-center gap-1 text-gray-700 font-semibold">ID</span>
@@ -51,9 +52,7 @@ const NameHeaderCell = ({ column }: { column: Column<SubscriptionPlan, unknown> 
 )
 
 const DescriptionHeaderCell = () => (
-  <span className="flex items-center gap-1 text-yellow-700 font-semibold">
-    Mô tả
-  </span>
+  <span className="flex items-center gap-1 text-yellow-700 font-semibold">Mô tả</span>
 )
 
 const PriceHeaderCell = () => (
@@ -63,6 +62,13 @@ const PriceHeaderCell = () => (
 const BillingCycleHeaderCell = () => (
   <span className="flex items-center gap-1 text-indigo-700 font-semibold">
     Chu kỳ thanh toán
+  </span>
+)
+
+const RecommendedHeaderCell = () => (
+  <span className="flex items-center gap-1 text-orange-700 font-semibold">
+    <Star className="w-4 h-4 text-orange-500" />
+    Đề xuất
   </span>
 )
 
@@ -86,6 +92,22 @@ const PriceCell = ({ price }: { price: number }) => (
 
 const BillingCycleCell = ({ billingCycle }: { billingCycle: number }) => (
   <span className="text-indigo-600 font-medium">{formatBillingCycle(billingCycle)}</span>
+)
+
+// ✅ Recommended Cell
+const RecommendedCell = ({ isRecommended  }: { isRecommended : boolean }) => (
+  <div className="flex items-center justify-center">
+    {isRecommended  ? (
+      <span className="inline-flex items-center px-2 py-1 rounded bg-orange-100 text-orange-700 font-semibold text-xs">
+        <Star className="w-3 h-3 mr-1 fill-orange-500" />
+        Có
+      </span>
+    ) : (
+      <span className="inline-flex items-center px-2 py-1 rounded bg-gray-100 text-gray-600 font-semibold text-xs">
+        Không
+      </span>
+    )}
+  </div>
 )
 
 const StatusCell = ({ status }: { status: number }) => {
@@ -154,7 +176,7 @@ const ActionCell = ({
   </DropdownMenu>
 )
 
-// Column definition
+// ✅ Column definition
 export const createColumns = (
   onEdit?: (plan: SubscriptionPlan) => void,
   onDelete?: (plan: SubscriptionPlan) => void,
@@ -212,6 +234,12 @@ export const createColumns = (
     accessorKey: "billingCycle",
     header: () => <BillingCycleHeaderCell />,
     cell: ({ row }) => <BillingCycleCell billingCycle={row.original.billingCycle} />,
+  },
+  // ✅ Thêm cột Recommended
+  {
+    accessorKey: "isRecommended ",
+    header: () => <RecommendedHeaderCell />,
+    cell: ({ row }) => <RecommendedCell isRecommended ={row.original.isRecommended } />,
   },
   {
     accessorKey: "status",

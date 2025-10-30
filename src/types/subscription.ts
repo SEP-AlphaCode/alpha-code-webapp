@@ -8,14 +8,17 @@ export type SubscriptionPlan = {
   statusText?: string
   createdDate: string
   lastUpdated: string
+  isRecommended : boolean
 }
 
 export type SubscriptionPlanModal = {
+  id: string
   name: string
   description: string
   price: number
   billingCycle: number
   // status?: number
+  isRecommended : boolean
 }
 
 export type SubscriptionActivity = {

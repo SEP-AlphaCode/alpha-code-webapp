@@ -49,6 +49,7 @@ export default function UserLayout({ children }: UserLayoutProps) {
     { name: "Courses", href: "/parent/courses", icon: "📖" },
     { name: "Add-ons", href: "/parent/add-ons", icon: "➕" },
     { name: "Videos", href: "/parent/videos", icon: "🎬" },
+    { name: "Subscriptions", href: "/parent/subscription-plan", icon: "💳" },
   ];
 
   const isActiveRoute = (href: string) => {
