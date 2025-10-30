@@ -116,12 +116,11 @@ export function CreateSubscriptionModal({
 
       reset()
       onClose()
-    } catch (error: any) {
-      console.error("Error saving subscription:", error)
-      toast.error(
-        error?.response?.data?.message ||
-          (isEditMode ? "Cập nhật thất bại" : "Tạo mới thất bại")
-      )
+    } catch (error: unknown) {
+      const errorMessage = error && typeof error === 'object' && 'response' in error
+        ? (error as { response?: { data?: { message?: string } } }).response?.data?.message
+        : undefined;
+      toast.error(isEditMode ? errorMessage || "Lỗi khi cập nhật gói đăng ký" : errorMessage || "Lỗi khi tạo gói đăng ký")
     }
   }
 
