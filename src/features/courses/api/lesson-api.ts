@@ -1,6 +1,7 @@
 import { Lesson } from "@/types/courses";
 import { PagedResult } from "@/types/page-result";
 import { coursesHttp } from "@/utils/http";
+import axios from "axios";
 
 // Get lessons with solution by course ID
 export const getLessonsSolutionByCourseId = async (courseId: string, signal?: AbortSignal) => {
@@ -95,45 +96,83 @@ export const getLessonBySlug = async (slug: string, signal?: AbortSignal) => {
     }
 };
 
-// Create new lesson
+// Presign upload for S3 (Admin/Staff)
+export const presignLessonUpload = async (params: {
+  filename: string;
+  contentType?: string;
+  folder?: string;
+  expiresInSeconds?: number;
+}, signal?: AbortSignal) => {
+  try {
+    const response = await coursesHttp.get<{
+      key: string;
+      uploadUrl: string;
+      publicUrl: string;
+      expiresInSeconds: number;
+    }>(`/lessons/presign`, {
+      params: {
+        filename: params.filename,
+        contentType: params.contentType || "video/mp4",
+        folder: params.folder || "lessons",
+        expiresInSeconds: params.expiresInSeconds || 900,
+      },
+      signal,
+    });
+    return response.data;
+  } catch (error) {
+    console.error("API Error in presignLessonUpload:", error);
+    throw error;
+  }
+};
+
+// Upload file to presigned URL (direct to S3)
+export const uploadFileToPresignedUrl = async (
+  uploadUrl: string,
+  file: File,
+  contentType?: string,
+  onProgress?: (percent: number) => void,
+  signal?: AbortSignal
+) => {
+  try {
+    await axios.put(uploadUrl, file, {
+      headers: {
+        "Content-Type": contentType || file.type || "application/octet-stream",
+      },
+      onUploadProgress: (evt) => {
+        if (!onProgress || !evt.total) return;
+        const percent = Math.round((evt.loaded * 100) / evt.total);
+        onProgress(percent);
+      },
+      signal,
+    });
+  } catch (error) {
+    console.error("Upload error in uploadFileToPresignedUrl:", error);
+    throw error;
+  }
+};
+
+// Create new lesson (JSON body; video uploaded separately via presign)
 export const createLesson = async (sectionId: string, data: {
     title: string;
     content: string;
-    videoFile?: File;
     duration: number;
     requireRobot: boolean;
     type: number;
-    solution?: object;
+    solution?: object | null;
+    videoUrl?: string | null;
 }) => {
     try {
-        const formData = new FormData();
-        
-        // Create the createLesson object
-        const createLessonDto = {
+        const body = {
             title: data.title,
             content: data.content,
             duration: data.duration,
             requireRobot: data.requireRobot,
             sectionId: sectionId,
             type: data.type,
-            solution: data.solution || null
+            solution: data.solution ?? null,
+            videoUrl: data.videoUrl ?? null,
         };
-        
-        // Add JSON data as blob
-        formData.append('createLesson', new Blob([JSON.stringify(createLessonDto)], {
-            type: 'application/json'
-        }));
-        
-        // Add video file if provided
-        if (data.videoFile) {
-            formData.append('videoFile', data.videoFile);
-        }
-        
-        const response = await coursesHttp.post<Lesson>('/lessons', formData, {
-            headers: {
-                'Content-Type': 'multipart/form-data'
-            }
-        });
+        const response = await coursesHttp.post<Lesson>('/lessons', body);
         return response.data;
     } catch (error) {
         console.error("API Error in createLesson:", error);
@@ -149,7 +188,7 @@ export const updateLesson = async (
     id: string;
     title: string;
     content: string;
-    videoFile?: File; // đổi từ videoUrl sang videoFile nếu upload lại
+    videoUrl?: string | null;
     duration: number;
     requireRobot: boolean;
     type: number;
@@ -160,11 +199,8 @@ export const updateLesson = async (
   }
 ) => {
   try {
-    const formData = new FormData();
-
-    // Tạo DTO để gửi cùng file
-    const updateLessonDto = {
-        id: data.id,
+    const body = {
+      id: data.id,
       title: data.title,
       content: data.content,
       duration: data.duration,
@@ -172,31 +208,11 @@ export const updateLesson = async (
       type: data.type,
       orderNumber: data.orderNumber,
       sectionId: data.sectionId || null,
-      solution: data.solution || null,
-    status: data.status,
+      solution: data.solution ?? null,
+      status: data.status,
+      videoUrl: data.videoUrl ?? null,
     };
-
-    // Thêm DTO vào formData
-    formData.append(
-      "updateLesson",
-      new Blob([JSON.stringify(updateLessonDto)], { type: "application/json" })
-    );
-
-    // Nếu có videoFile mới, thêm vào
-    if (data.videoFile) {
-      formData.append("videoFile", data.videoFile);
-    }
-
-    // Gửi request PUT với multipart/form-data
-    const response = await coursesHttp.put<Lesson>(
-      `/lessons/${lessonId}`,
-      formData,
-      {
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
-      }
-    );
+    const response = await coursesHttp.put<Lesson>(`/lessons/${lessonId}`, body);
 
     return response.data;
   } catch (error) {
