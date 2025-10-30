@@ -154,6 +154,7 @@ export default function EditLessonPage() {
       }
 
       console.log("Update Lesson Payload:", payload);
+      //console.log("Video File:", payload.videoFile);
       await updateLessonMutation.mutateAsync(payload);
 
       toast.success('Đã cập nhật bài học')
