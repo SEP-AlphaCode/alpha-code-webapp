@@ -96,12 +96,12 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
     ],
   },
   {
-    title: "Plan",
+    title: "Mua thêm",
     url: "#",
     icon: CreditCard,
     items: [
-      { title: "Gói đăng ký", url: "/admin/plan/subscription" },
-      { title: "Tiện ích mở rộng", url: "/admin/plan/addons" },
+      { title: "Subscription", url: "/admin/plan/subscription" },
+      { title: "Addon", url: "/admin/plan/addons" },
     ],
   },
   {

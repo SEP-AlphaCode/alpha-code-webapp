@@ -52,12 +52,16 @@ export function ViewAddonModal({
 
   const getCategoryText = (category: number) => {
     switch (category) {
+      case 0:
+        return "Không xác định"
       case 1:
-        return "Tính năng thêm"
+        return "Osmo"
       case 2:
-        return "Dịch vụ mở rộng"
+        return "Qr Code"
       case 3:
-        return "Gói hỗ trợ"
+        return "Nhà thông minh"
+      case 4:
+        return "Lập trình Blockly"
       default:
         return "Không xác định"
     }
@@ -214,16 +218,7 @@ export function ViewAddonModal({
           </div>
         </div>
 
-        <div className="flex justify-between pt-4 border-t">
-          <Link
-            href={`/payment?category=addon&id=${encodeURIComponent(addon.id)}`}
-            className="inline-flex"
-          >
-            <Button type="button" className="bg-blue-600 hover:bg-blue-700 text-white">
-              <ShoppingCart className="mr-2 h-4 w-4" />
-              Mua Addon
-            </Button>
-          </Link>
+        <div className="flex justify-end pt-4 border-t">
           <Button type="button" variant="outline" onClick={onClose}>
             Đóng
           </Button>
