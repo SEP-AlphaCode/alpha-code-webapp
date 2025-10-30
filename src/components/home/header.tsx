@@ -19,7 +19,8 @@ import {
   BarChart2, // Phân tích hệ thống
   QrCode,     // Mã QR
   CreditCard, // Thẻ Osmo (dùng icon thẻ tín dụng)
-  Bookmark,   // Dấu đánh dấu
+  Bookmark,
+  Joystick,   // Dấu đánh dấu
 } from "lucide-react";
 
 import { useAuth } from "@/features/auth/hooks/use-auth";
@@ -51,18 +52,15 @@ const adminNavigationItems = [
 const parentNavigationItems = [
   { name: "Bảng điều khiển", href: "/parent", icon: LayoutDashboard },
   { name: "Robot", href: "/parent/robot", icon: ToyBrick },
-  { name: "Học sinh", href: "/parent/student", icon: Users },
-  { name: "Lập trình", href: "/parent/programming", icon: Code },
-  { name: "Lớp học", href: "/parent/classroom", icon: School },
+  { name: "Joystick", href: "parent/joystick", icon: Joystick },
   { name: "Hoạt động", href: "/parent/activities", icon: Target },
   { name: "Âm nhạc", href: "/parent/music", icon: Music },
 ];
 
 // Navigation items cho Child (Ví dụ)
 const childNavigationItems = [
-  { name: "Bảng điều khiển của tôi", href: "/child", icon: LayoutDashboard },
-  { name: "Lớp học của tôi", href: "/child/classroom", icon: School },
-  { name: "Lập trình của tôi", href: "/child/programming", icon: Code },
+  { name: "Bảng điều khiển của tôi", href: "/children", icon: LayoutDashboard },
+  { name: "Lập trình của tôi", href: "/children/programming", icon: Code },
 ];
 
 
@@ -105,7 +103,7 @@ export function Header({ currentSection, onNavigate }: HeaderProps) {
     switch (role) {
       case "Admin":
         return adminNavigationItems;
-      case "Child":
+      case "Children":
         return childNavigationItems;
       case "Parent":
         return parentNavigationItems;

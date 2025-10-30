@@ -52,7 +52,7 @@ export function UserSidebar({
             className={`flex items-center px-3 py-3 rounded-lg text-sm font-medium transition-colors duration-200 group relative text-gray-700 hover:bg-gray-50 hover:text-gray-900`}
           >
             <div className={`text-xl flex items-center justify-center ${isSidebarOpen ? "mr-3" : "mx-auto"}`}>
-              <HomeIcon />
+              🏠
             </div>
             {isSidebarOpen && <span className="truncate">Trang chủ</span>}
             {!isSidebarOpen && (
