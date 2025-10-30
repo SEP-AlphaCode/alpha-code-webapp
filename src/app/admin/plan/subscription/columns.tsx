@@ -95,9 +95,9 @@ const BillingCycleCell = ({ billingCycle }: { billingCycle: number }) => (
 )
 
 // ✅ Recommended Cell
-const RecommendedCell = ({ isRecommneded }: { isRecommneded: boolean }) => (
+const RecommendedCell = ({ isRecommended  }: { isRecommended : boolean }) => (
   <div className="flex items-center justify-center">
-    {isRecommneded ? (
+    {isRecommended  ? (
       <span className="inline-flex items-center px-2 py-1 rounded bg-orange-100 text-orange-700 font-semibold text-xs">
         <Star className="w-3 h-3 mr-1 fill-orange-500" />
         Có
@@ -237,9 +237,9 @@ export const createColumns = (
   },
   // ✅ Thêm cột Recommended
   {
-    accessorKey: "isRecommneded",
+    accessorKey: "isRecommended ",
     header: () => <RecommendedHeaderCell />,
-    cell: ({ row }) => <RecommendedCell isRecommneded={row.original.isRecommneded} />,
+    cell: ({ row }) => <RecommendedCell isRecommended ={row.original.isRecommended } />,
   },
   {
     accessorKey: "status",

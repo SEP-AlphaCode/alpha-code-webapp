@@ -9,7 +9,7 @@ import { CreateSubscriptionModal } from "./subscription-modal"
 import { DeleteSubscriptionModal } from "./delete-subscription-modal"
 import { ViewSubscriptionModal } from "./view-subscription-modal"
 import { SubscriptionPlan } from "@/types/subscription"
-import { getPagedSubscriptions } from "@/features/subscription/api/subscription-api"
+import { deleteSubscription, getPagedSubscriptions } from "@/features/subscription/api/subscription-api"
 import { toast } from "sonner"
 import LoadingGif from "@/components/ui/loading-gif"
 
@@ -106,17 +106,22 @@ export default function SubscriptionPlansPage() {
   }
 
   const handleConfirmDelete = async () => {
-    if (!deletePlan) return
-    try {
-      // await deleteSubscriptionPlan(deletePlan.id)
-      toast.success("Subscription deleted successfully!")
-      setIsDeleteModalOpen(false)
-      setDeletePlan(null)
-    } catch (error) {
-      console.error("Error deleting subscription:", error)
-      toast.error("Failed to delete subscription. Please try again.")
-    }
+  if (!deletePlan) return
+  try {
+    const res = await deleteSubscription(deletePlan.id)
+    toast.success(res?.message || "Xóa gói đăng ký thành công!")
+    
+    // 🔄 Reload lại danh sách
+    await refetch()
+
+    // 🔒 Đóng modal
+    setIsDeleteModalOpen(false)
+    setDeletePlan(null)
+  } catch (error: any) {
+    console.error("Error deleting subscription:", error)
+    toast.error(error?.response?.data?.message || "Xóa gói đăng ký thất bại. Vui lòng thử lại.")
   }
+}
 
   const columns = createColumns(handleEditSubscription, handleDeleteSubscription, handleViewSubscription)
   
