@@ -47,6 +47,7 @@ export const useCreateRobotApk = () => {
     mutationFn: (params: { robotApk: CreateRobotApkDto; file: File }) =>
       createRobotApk(params.robotApk, params.file),
     onSuccess: () => {
+      // Làm mới toàn bộ danh sách APK (mọi trang/từ khóa)
       queryClient.invalidateQueries({ queryKey: ["robot-apks"] });
     },
   });
@@ -64,9 +65,11 @@ export const useUpdateRobotApk = () => {
       file?: File;
     }) => updateRobotApk(params.apkId, params.robotApk, params.file),
     onSuccess: (_, variables) => {
+      // Làm mới toàn bộ danh sách APK
       queryClient.invalidateQueries({ queryKey: ["robot-apks"] });
+      // Invalidate mọi cache file-path của apkId này (bất kể accountId nào)
       queryClient.invalidateQueries({
-        queryKey: ["robot-apk-file-path", variables.apkId],
+        predicate: (q) => Array.isArray(q.queryKey) && q.queryKey[0] === "robot-apk-file-path" && q.queryKey[1] === variables.apkId,
       });
     },
   });
@@ -80,7 +83,10 @@ export const useDeleteRobotApk = () => {
   return useMutation({
     mutationFn: (apkId: string) => deleteRobotApk(apkId),
     onSuccess: () => {
+      // Làm mới toàn bộ danh sách APK
       queryClient.invalidateQueries({ queryKey: ["robot-apks"] });
+      // Xóa mọi cache file-path vì apk đã xóa
+      queryClient.invalidateQueries({ queryKey: ["robot-apk-file-path"] });
     },
   });
 };
