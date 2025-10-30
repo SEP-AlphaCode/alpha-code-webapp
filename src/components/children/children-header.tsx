@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Menu, LogOut } from "lucide-react";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { AccountData } from "@/types/account";
+import { RobotSelector } from "../parent/robot-selector";
 import Image from "next/image";
 import ReactNode = React.ReactNode;
 
@@ -82,7 +83,9 @@ export function ChildrenHeader({
         </div>
 
         {/* Right side - Empty for cleaner look */}
-        <div></div>
+        <div>
+          <RobotSelector/>
+        </div>
       </div>
     </header>
   );
