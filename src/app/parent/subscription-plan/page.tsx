@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useMemo } from "react";
-import { useSubscription } from "@/features/plan/hooks/use-subscription";
+import { useSubscription } from "@/features/subscription/hooks/use-subscription";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Loader2, Check, X } from "lucide-react";
@@ -14,11 +14,11 @@ interface SubscriptionPlan {
   price: number;
   billingCycle: number; // 1,3,9,12
   status: number;
-  statusText: string;
+  // statusText: string;
   createdDate: string;
   lastUpdated: string;
   // Optional để UI
-  isRecommended?: boolean;
+  isRecommended?: boolean;  
   isCurrent?: boolean;
   buttonText?: string;
   badge?: string;
