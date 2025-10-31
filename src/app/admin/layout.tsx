@@ -91,6 +91,8 @@ function AdminBreadcrumb() {
         currentPageName = 'Gói đăng ký'; break;
       case 'addons':
         currentPageName = 'Tiện ích mở rộng'; break;
+      case 'bundle':
+        currentPageName = 'Bundle'; break;
 
       default:
         currentPageName = formatPathToDisplayName(lastSegment);
