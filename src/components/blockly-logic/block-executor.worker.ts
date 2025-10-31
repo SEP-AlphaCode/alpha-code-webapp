@@ -17,7 +17,7 @@ const forward = (level: string, args: unknown[]) => {
 }
 
 // Replace console methods with forwarders (keeps other console methods intact)
-const _console = console as any
+
 // console.log = (...args: unknown[]) => forward('log', args)
 // console.info = (...args: unknown[]) => forward('info', args)
 // console.warn = (...args: unknown[]) => forward('warn', args)
