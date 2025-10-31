@@ -88,6 +88,12 @@ const CanInterruptHeaderCell = () => (
     </span>
 )
 
+const RobotModel = () => (
+    <span className="flex items-center gap-1 text-orange-600 font-semibold">
+        Model
+    </span>
+)
+
 // Cell components
 const DescriptionCell = ({ description }: { description?: string }) => (
     <div className="max-w-xs">
@@ -140,12 +146,12 @@ const CanInterruptCell = ({ canInterrupt }: { canInterrupt: boolean }) => (
     )
 )
 
-const ActionCell = ({ 
-    action, 
-    onEdit, 
-    onDelete, 
-    onView 
-}: { 
+const ActionCell = ({
+    action,
+    onEdit,
+    onDelete,
+    onView
+}: {
     action: Action
     onEdit?: (action: Action) => void
     onDelete?: (action: Action) => void
@@ -186,93 +192,102 @@ const ActionCell = ({
 // This type is used to define the shape of our data.
 // You can use a Zod schema here if you want.
 export const createColumns = (
-  onEdit?: (action: Action) => void, 
-  onDelete?: (action: Action) => void,
-  onView?: (action: Action) => void
+    onEdit?: (action: Action) => void,
+    onDelete?: (action: Action) => void,
+    onView?: (action: Action) => void
 ): ColumnDef<Action>[] => [
-    {
-        id: "select",
-        header: ({ table }) => (
-            <Checkbox
-                checked={
-                    table.getIsAllPageRowsSelected() ||
-                    (table.getIsSomePageRowsSelected() && "indeterminate")
-                }
-                onCheckedChange={(value: boolean) => table.toggleAllPageRowsSelected(!!value)}
-                aria-label="Select all"
-            />
-        ),
-        cell: ({ row }) => (
-            <Checkbox
-                checked={row.getIsSelected()}
-                onCheckedChange={(value: boolean) => row.toggleSelected(!!value)}
-                aria-label="Select row"
-            />
-        ),
-        enableSorting: false,
-        enableHiding: false,
-    },
-    {
-        accessorKey: "id",
-        header: () => <IdHeaderCell />,
-        cell: ({ row }) => (
-            <span className="text-gray-700 font-semibold">
-                {row.original.id.substring(0, 8)}...
-            </span>
-        ),
-    },
-    {
-        accessorKey: "code",
-        header: () => <CodeHeaderCell />,
-        cell: ({ row }) => (
-            <span className="text-blue-700 font-mono bg-blue-50 px-2 py-1 rounded text-sm">
-                {row.original.code}
-            </span>
-        ),
-    },
-    {
-        accessorKey: "name",
-        header: ({ column }) => <NameHeaderCell column={column} />,
-    },
-    {
-        accessorKey: "description",
-        header: () => <DescriptionHeaderCell />,
-        cell: ({ row }) => <DescriptionCell description={row.original.description} />,
-    },
-     {
-        accessorKey: "icon",
-        header: () => <IconHeaderCell />,
-        cell: ({ row }) => <IconCell icon={row.original.icon} />,
-    },
-    {
-        accessorKey: "duration",
-        header: () => <DurationHeaderCell />,
-        cell: ({ row }) => (
-            <span className="flex items-center gap-1 text-blue-600 font-medium">
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-                {formatDuration(row.original.duration)}
-            </span>
-        ),
-    },
-    {
-        accessorKey: "status",
-        header: () => <StatusHeaderCell />,
-        cell: ({ row }) => <StatusCell status={row.original.status} />,
-    },
-    {
-        accessorKey: "canInterrupt",
-        header: () => <CanInterruptHeaderCell />,
-        cell: ({ row }) => <CanInterruptCell canInterrupt={row.original.canInterrupt} />,
-    },
-    {
-        id: "actions",
-        cell: ({ row }) => (
-            <ActionCell 
-                action={row.original}
-                onEdit={onEdit}
-                onDelete={onDelete}
-                onView={onView}
-            />
-        ),
-    },
-]
+        {
+            id: "select",
+            header: ({ table }) => (
+                <Checkbox
+                    checked={
+                        table.getIsAllPageRowsSelected() ||
+                        (table.getIsSomePageRowsSelected() && "indeterminate")
+                    }
+                    onCheckedChange={(value: boolean) => table.toggleAllPageRowsSelected(!!value)}
+                    aria-label="Select all"
+                />
+            ),
+            cell: ({ row }) => (
+                <Checkbox
+                    checked={row.getIsSelected()}
+                    onCheckedChange={(value: boolean) => row.toggleSelected(!!value)}
+                    aria-label="Select row"
+                />
+            ),
+            enableSorting: false,
+            enableHiding: false,
+        },
+        {
+            accessorKey: "id",
+            header: () => <IdHeaderCell />,
+            cell: ({ row }) => (
+                <span className="text-gray-700 font-semibold">
+                    {row.original.id.substring(0, 8)}...
+                </span>
+            ),
+        },
+        {
+            accessorKey: "code",
+            header: () => <CodeHeaderCell />,
+            cell: ({ row }) => (
+                <span className="text-blue-700 font-mono bg-blue-50 px-2 py-1 rounded text-sm">
+                    {row.original.code}
+                </span>
+            ),
+        },
+        {
+            accessorKey: "name",
+            header: ({ column }) => <NameHeaderCell column={column} />,
+        },
+        {
+            accessorKey: "description",
+            header: () => <DescriptionHeaderCell />,
+            cell: ({ row }) => <DescriptionCell description={row.original.description} />,
+        },
+        {
+            accessorKey: "icon",
+            header: () => <IconHeaderCell />,
+            cell: ({ row }) => <IconCell icon={row.original.icon} />,
+        },
+        {
+            accessorKey: "duration",
+            header: () => <DurationHeaderCell />,
+            cell: ({ row }) => (
+                <span className="flex items-center gap-1 text-blue-600 font-medium">
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                    {formatDuration(row.original.duration)}
+                </span>
+            ),
+        },
+        {
+            accessorKey: "status",
+            header: () => <StatusHeaderCell />,
+            cell: ({ row }) => <StatusCell status={row.original.status} />,
+        },
+        {
+            accessorKey: "robotModel",
+            header: () => <RobotModel />,
+            cell: ({ row }) => (
+                <span className="flex items-center gap-1 font-medium">
+                    {row.original.robotModelName}
+                </span>
+            ),
+        },
+        {
+            accessorKey: "canInterrupt",
+            header: () => <CanInterruptHeaderCell />,
+            cell: ({ row }) => <CanInterruptCell canInterrupt={row.original.canInterrupt} />,
+        },
+        {
+            id: "actions",
+            cell: ({ row }) => (
+                <ActionCell
+                    action={row.original}
+                    onEdit={onEdit}
+                    onDelete={onDelete}
+                    onView={onView}
+                />
+            ),
+        },
+    ]
