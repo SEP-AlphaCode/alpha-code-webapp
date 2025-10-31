@@ -8,7 +8,7 @@ import { getUserInfoFromToken } from "@/utils/tokenUtils";
 import { AccountData } from "@/types/account";
 import { ChildrenHeader } from "../../components/children/children-header";
 import { ChildrenSidebar } from "../../components/children/children-sidebar";
-import { Home, Blocks, BookOpen, Trophy, Video, Library, Info } from "lucide-react";
+import { Home, Blocks, BookOpen, Trophy, Video, Library, Info, Activity, Joystick, QrCode, Bot } from "lucide-react";
 
 interface ChildrenLayoutProps {
   children: React.ReactNode;
@@ -42,12 +42,12 @@ export default function ChildrenLayout({ children }: ChildrenLayoutProps) {
 
   const iconClass = "w-5 h-5";
   const navigationItems = [
-    { name: "Khám phá", href: "/children", icon: <Info className={iconClass} /> },
+    { name: "Khám Phá", href: "/children", icon: <Info className={iconClass} /> },
+    { name: "Robot", href: "/children/robot", icon: <Bot className={iconClass} /> },
     { name: "Lập Trình", href: "/children/blockly-coding", icon: <Blocks className={iconClass} /> },
-    { name: "Bài Học", href: "/children/lessons", icon: <BookOpen className={iconClass} /> },
-    { name: "Thành Tích", href: "/children/achievements", icon: <Trophy className={iconClass} /> },
-    { name: "Videos", href: "/children/videos", icon: <Video className={iconClass} /> },
-    { name: "Thư Viện", href: "/children/library", icon: <Library className={iconClass} /> }
+    { name: "Hoạt động", href: "/children/activities", icon: <Activity className={iconClass} /> },
+    { name: "Điều khiển", href: "/children/joystick", icon: <Joystick className={iconClass} /> },
+    { name: "Qr Codes", href: "/children/qr-codes", icon: <QrCode className={iconClass} /> }
   ];
 
   const isActiveRoute = (href: string) => {
