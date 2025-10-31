@@ -10,6 +10,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { useRegisterAccount } from '@/features/auth/hooks/use-register'
+import { RegisterAccount } from '@/types/account'
 
 
 export default function RegisterForm() {
@@ -59,11 +60,11 @@ export default function RegisterForm() {
         avatarFile: avatarFile ?? undefined,
         // below fields required by Account but server sets others
         image: '', status: 1, bannedReason: null, createdDate: '', lastEdited: null, roleName: ''
-              } as any)
+              } as RegisterAccount)
       toast.success('Đăng ký thành công! Vui lòng đăng nhập')
       router.push('/login')
-    } catch (err: any) {
-      toast.error(err?.message || 'Đăng ký thất bại')
+    } catch (err: unknown) {
+      toast.error((err as { message?: string })?.message || 'Đăng ký thất bại')
     }
   }
 
