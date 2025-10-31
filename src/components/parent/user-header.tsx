@@ -6,7 +6,8 @@ import Image from "next/image";
 import { Menu } from "lucide-react";
 import Link from "next/link";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
-import Logo2 from "../../../public/logo2.png";
+// Use updated visual for parent header
+// Note: using public path for Next/Image
 import { RobotSelector } from "./robot-selector";
 import { UserSidebar } from "./user-sidebar";
 import { AccountData } from "@/types/account";
@@ -61,16 +62,14 @@ export function UserHeader({
             </SheetContent>
           </Sheet>
 
-          {/* Logo (clickable -> home) */}
+          {/* Logo/Title (clickable -> home) */}
           <Link href="/" className="flex items-center space-x-3">
-            <Image src={Logo2} alt="AlphaCode" width={32} height={32} />
+            <div className="relative w-15 h-15 overflow-hidden">
+              <Image src="/img_update.webp" alt="Alpha Parent" fill sizes="56px" className="object-contain" />
+            </div>
             <div>
-              <h1 className="text-lg sm:text-xl font-semibold text-gray-900">
-                AlphaCode
-              </h1>
-              <p className="text-xs sm:text-sm text-gray-500 -mt-1">
-                Nền tảng điều khiển robot AI thông minh
-              </p>
+              <h1 className="text-xl font-bold text-gray-900">Alpha Parent</h1>
+              <p className="text-xs text-gray-600">Quản lý Robot và Học tập</p>
             </div>
           </Link>
         </div>

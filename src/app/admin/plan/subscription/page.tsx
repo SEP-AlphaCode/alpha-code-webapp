@@ -117,10 +117,12 @@ export default function SubscriptionPlansPage() {
     // 🔒 Đóng modal
     setIsDeleteModalOpen(false)
     setDeletePlan(null)
-  } catch (error: any) {
-    console.error("Error deleting subscription:", error)
-    toast.error(error?.response?.data?.message || "Xóa gói đăng ký thất bại. Vui lòng thử lại.")
-  }
+ } catch (error: unknown) {
+      const errorMessage = error && typeof error === 'object' && 'response' in error
+        ? (error as { response?: { data?: { message?: string } } }).response?.data?.message
+        : undefined;
+      toast.error(errorMessage || "Lỗi khi xóa gói đăng ký. Vui lòng thử lại.")
+    }
 }
 
   const columns = createColumns(handleEditSubscription, handleDeleteSubscription, handleViewSubscription)

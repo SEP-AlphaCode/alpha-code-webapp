@@ -192,7 +192,7 @@ export default function NewLessonPage() {
         <div>
           <h1 className="text-3xl font-bold tracking-tight">Tạo bài học mới</h1>
           <p className="text-muted-foreground">
-            Thêm bài học mới vào chương
+            Thêm bài học mới vào phần
           </p>
         </div>
       </div>

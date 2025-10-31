@@ -55,11 +55,6 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       icon: Users,
     },
     {
-      name: "Mã QR",
-      url: "/admin/qr-codes",
-      icon: QrCode,
-    },
-    {
       name: "Thẻ Osmo",
       url: "/admin/osmo-cards",
       icon: CreditCard,
@@ -102,6 +97,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
     items: [
       { title: "Subscription", url: "/admin/plan/subscription" },
       { title: "Addon", url: "/admin/plan/addons" },
+      { title: "Bundle", url: "/admin/plan/bundle" },
     ],
   },
   {

@@ -239,7 +239,7 @@ export const createColumns = (
   {
     accessorKey: "isRecommended ",
     header: () => <RecommendedHeaderCell />,
-    cell: ({ row }) => <RecommendedCell isRecommended ={row.original.isRecommended } />,
+    cell: ({ row }) => <RecommendedCell isRecommended={row.original.isRecommended ?? false} />,
   },
   {
     accessorKey: "status",

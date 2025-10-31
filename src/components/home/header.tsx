@@ -19,7 +19,11 @@ import {
   BarChart2, // Phân tích hệ thống
   QrCode,     // Mã QR
   CreditCard, // Thẻ Osmo (dùng icon thẻ tín dụng)
-  Bookmark,   // Dấu đánh dấu
+  Bookmark,
+  Joystick,
+  Activity,
+  Bot,
+  SquareCode,   // Dấu đánh dấu
 } from "lucide-react";
 
 import { useAuth } from "@/features/auth/hooks/use-auth";
@@ -51,18 +55,20 @@ const adminNavigationItems = [
 const parentNavigationItems = [
   { name: "Bảng điều khiển", href: "/parent", icon: LayoutDashboard },
   { name: "Robot", href: "/parent/robot", icon: ToyBrick },
-  { name: "Học sinh", href: "/parent/student", icon: Users },
-  { name: "Lập trình", href: "/parent/programming", icon: Code },
-  { name: "Lớp học", href: "/parent/classroom", icon: School },
-  { name: "Hoạt động", href: "/parent/activities", icon: Target },
+  { name: "Joystick", href: "parent/joystick", icon: Joystick },
+  { name: "Hoạt động", href: "/parent/activities", icon: Activity },
   { name: "Âm nhạc", href: "/parent/music", icon: Music },
+  { name: "Qr Codes", href: "/children/qr-codes", icon: QrCode },
 ];
 
 // Navigation items cho Child (Ví dụ)
 const childNavigationItems = [
-  { name: "Bảng điều khiển của tôi", href: "/child", icon: LayoutDashboard },
-  { name: "Lớp học của tôi", href: "/child/classroom", icon: School },
-  { name: "Lập trình của tôi", href: "/child/programming", icon: Code },
+  { name: "Bảng điều khiển của tôi", href: "/children", icon: LayoutDashboard },
+  { name: "Hoạt động", href: "/children/activities", icon: Activity },
+  { name: "Điều khiển", href: "/children/joystick", icon: Joystick },
+  { name: "Qr Codes", href: "/children/qr-codes", icon: QrCode },
+  { name: "Robot", href: "/children/robot", icon: Bot },
+  { name: "Lập trình", href: "/children/blockly-coding", icon: SquareCode },
 ];
 
 
@@ -105,7 +111,7 @@ export function Header({ currentSection, onNavigate }: HeaderProps) {
     switch (role) {
       case "Admin":
         return adminNavigationItems;
-      case "Child":
+      case "Children":
         return childNavigationItems;
       case "Parent":
         return parentNavigationItems;
