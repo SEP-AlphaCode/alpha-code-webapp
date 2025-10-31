@@ -19,9 +19,12 @@ import { ArrowLeft, Save } from "lucide-react"
 import Link from "next/link"
 import { useStaffCourse } from "@/features/courses/hooks/use-course"
 import { useCreateLesson } from "@/features/courses/hooks/use-lesson"
+import { presignLessonUpload, uploadFileToPresignedUrl } from "@/features/courses/api/lesson-api"
 import { toast } from "sonner"
+import axios from "axios"
 import { RichTextEditor } from "@/components/ui/rich-text-editor"
 import { SolutionBuilder } from "@/components/course/solution-builder"
+import UploadingModal from "@/components/uploading-modal";
 
 export default function NewLessonPage() {
   const router = useRouter()
@@ -36,6 +39,8 @@ export default function NewLessonPage() {
   
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [videoFile, setVideoFile] = useState<File | null>(null)
+  const [uploadPercent, setUploadPercent] = useState<number>(0)
+  const [uploadController, setUploadController] = useState<AbortController | null>(null)
   const [formData, setFormData] = useState<{
     title: string
     content: string
@@ -97,10 +102,31 @@ export default function NewLessonPage() {
         }
       }
 
+      setIsSubmitting(true)
+      let videoUrl: string | undefined = undefined
+      if (formData.type === "2" && videoFile) {
+        const presign = await presignLessonUpload({
+          filename: videoFile.name,
+          contentType: videoFile.type || "video/mp4",
+          folder: "lessons",
+          expiresInSeconds: 900,
+        })
+        const controller = new AbortController()
+        setUploadController(controller)
+        await uploadFileToPresignedUrl(
+          presign.uploadUrl,
+          videoFile,
+          videoFile.type || "video/mp4",
+          (p) => setUploadPercent(p),
+          controller.signal
+        )
+        videoUrl = presign.publicUrl
+      }
+
       await createLessonMutation.mutateAsync({
         title: formData.title.trim(),
         content: formData.content.trim(),
-        videoFile: videoFile || undefined,
+        videoUrl,
         duration: formData.duration,
         requireRobot: formData.requireRobot,
         type: parseInt(formData.type),
@@ -111,13 +137,24 @@ export default function NewLessonPage() {
       // Router push is handled in the mutation hook
     } catch (error: unknown) {
       console.error("Error creating lesson:", error)
-      // Extract error message from API response
-      const errorMessage = error && typeof error === 'object' && 'response' in error
-        ? (error as { response?: { data?: { message?: string } } }).response?.data?.message || "Lỗi khi tạo bài học"
-        : error && typeof error === 'object' && 'message' in error
-        ? (error as { message: string }).message
-        : "Lỗi khi tạo bài học"
-      toast.error(errorMessage)
+      // If upload was cancelled by user (axios abort) or AbortSignal triggered, skip showing another toast
+      if (axios.isCancel(error) || (error instanceof DOMException && error.name === 'AbortError')) {
+        console.info('Upload cancelled by user')
+      } else {
+        // Extract error message from API response
+        const errorMessage =
+          error && typeof error === 'object' && 'response' in error
+            ? (error as { response?: { data?: { message?: string } } }).response?.data?.message || "Lỗi khi tạo bài học"
+            : error && typeof error === 'object' && 'message' in error
+            ? (error as { message: string }).message
+            : "Lỗi khi tạo bài học"
+        toast.error(errorMessage)
+      }
+    } finally {
+      setIsSubmitting(false)
+      setUploadPercent(0)
+      // clear controller after upload finishes or is cancelled
+      setUploadController(null)
     }
   }
 
@@ -131,6 +168,21 @@ export default function NewLessonPage() {
 
   return (
     <div className="space-y-6">
+      {/* Overlay Modal Uploading */}
+      <UploadingModal
+        open={isSubmitting && uploadPercent > 0}
+        progress={uploadPercent}
+        message="Đang tải lên video, vui lòng chờ..."
+        onClose={() => {
+          // abort ongoing upload
+          if (uploadController) {
+            uploadController.abort()
+            setUploadController(null)
+          }
+          setIsSubmitting(false)
+          setUploadPercent(0)
+        }}
+      />
       <div className="flex items-center gap-4">
         <Link href={`/staff/courses/${courseSlug}`}>
           <Button variant="outline" size="icon">
@@ -266,10 +318,10 @@ export default function NewLessonPage() {
           )}
 
           {/* Coding Content */}
-          {formData.type === "1" && (
+          {formData.type === "3" && (
             <Card>
               <CardHeader>
-                <CardTitle>Nội dung bài học</CardTitle>
+                <CardTitle>Nội dung bài kiểm tra</CardTitle>
                 <CardDescription>
                   Cấu hình bài tập lập trình
                 </CardDescription>
@@ -279,34 +331,6 @@ export default function NewLessonPage() {
                   value={Array.isArray(formData.solution) ? formData.solution : []}
                   onChange={(value) => handleChange("solution", value)}
                 />
-              </CardContent>
-            </Card>
-          )}
-
-          {/* Quiz Content */}
-          {formData.type === "3" && (
-            <Card>
-              <CardHeader>
-                <CardTitle>Nội dung Kiểm tra</CardTitle>
-                <CardDescription>
-                  Cấu hình bài kiểm tra
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="quizData">Câu hỏi và đáp án (JSON)</Label>
-                  <Textarea
-                    id="quizData"
-                    placeholder='{"questions": [{"question": "...", "answers": [], "correct": 0}]}'
-                    value={typeof formData.solution === 'string' ? formData.solution : JSON.stringify(formData.solution, null, 2)}
-                    onChange={(e) => handleChange("solution", e.target.value)}
-                    rows={10}
-                    className="font-mono text-sm"
-                  />
-                  <p className="text-sm text-muted-foreground">
-                    Định dạng JSON cho câu hỏi và đáp án
-                  </p>
-                </div>
               </CardContent>
             </Card>
           )}
@@ -322,7 +346,7 @@ export default function NewLessonPage() {
                 </Link>
                 <Button type="submit" disabled={isSubmitting}>
                   <Save className="mr-2 h-4 w-4" />
-                  {isSubmitting ? "Đang lưu..." : "Lưu bài học"}
+                  {isSubmitting ? (uploadPercent > 0 ? `Đang tải video ${uploadPercent}%` : "Đang lưu...") : "Lưu bài học"}
                 </Button>
               </div>
             </CardContent>

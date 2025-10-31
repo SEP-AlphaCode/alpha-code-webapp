@@ -4,6 +4,7 @@ import React from "react";
 import { Button } from "@/components/ui/button";
 import Image from "next/image";
 import { Menu } from "lucide-react";
+import Link from "next/link";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import Logo2 from "../../../public/logo2.png";
 import { RobotSelector } from "./robot-selector";
@@ -60,8 +61,8 @@ export function UserHeader({
             </SheetContent>
           </Sheet>
 
-          {/* Logo */}
-          <div className="flex items-center space-x-3">
+          {/* Logo (clickable -> home) */}
+          <Link href="/" className="flex items-center space-x-3">
             <Image src={Logo2} alt="AlphaCode" width={32} height={32} />
             <div>
               <h1 className="text-lg sm:text-xl font-semibold text-gray-900">
@@ -71,7 +72,7 @@ export function UserHeader({
                 Nền tảng điều khiển robot AI thông minh
               </p>
             </div>
-          </div>
+          </Link>
         </div>
 
         {/* Right Actions */}
