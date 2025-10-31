@@ -8,6 +8,7 @@ import { getUserInfoFromToken } from "@/utils/tokenUtils";
 import { AccountData } from "@/types/account";
 import { UserHeader } from "@/components/parent/user-header";
 import { UserSidebar } from "@/components/parent/user-sidebar";
+import { Activity, BookPlus, Bot, Gamepad, Home, LayoutDashboard, Music, QrCode } from "lucide-react";
 
 interface UserLayoutProps {
   children: React.ReactNode;
@@ -16,7 +17,7 @@ interface UserLayoutProps {
 export default function UserLayout({ children }: UserLayoutProps) {
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [accountData, setAccountData] = useState<AccountData | null>(null);
-  
+
   const pathname = usePathname();
   const logoutMutation = useLogout();
 
@@ -41,20 +42,31 @@ export default function UserLayout({ children }: UserLayoutProps) {
   }, []);
 
   const navigationItems = [
-    { name: "Dashboard", href: "/parent", icon: "📊" },
-    { name: "Robots", href: "/parent/robot", icon: "🤖" },
-    { name: "Joysticks Control", href: "/parent/joystick", icon: "🕹️" },
-    { name: "Activities", href: "/parent/activities", icon: "🎯" },
-    { name: "Music", href: "/parent/music", icon: "🎵" },
-    { name: "Courses", href: "/parent/courses", icon: "📖" },
+    { name: "Home", href: "/", icon: Home },
+    { name: "Dashboard", href: "/parent", icon: LayoutDashboard },
+    { name: "Robots", href: "/parent/robot", icon: Bot },
+    { name: "Joysticks Control", href: "/parent/joystick", icon: Gamepad },
+    { name: "Activities", href: "/parent/activities", icon: Activity },
+    { name: "Music", href: "/parent/music", icon: Music },
+    { name: "Mã QR", href: "/parent/qr-codes", icon: QrCode },
+    { name: "Courses", href: "/parent/courses", icon: BookPlus },
   ];
 
   const isActiveRoute = (href: string) => {
+    if (href === "/") {
+      // Home chỉ active khi đúng route gốc
+      return pathname === "/";
+    }
+
     if (href === "/parent") {
+      // Dashboard chỉ active chính xác ở /parent
       return pathname === "/parent";
     }
+
+    // Các route khác: active nếu pathname bắt đầu bằng href
     return pathname?.startsWith(href);
   };
+
 
   const handleLogout = () => {
     logoutMutation.mutate();
@@ -94,9 +106,8 @@ export default function UserLayout({ children }: UserLayoutProps) {
 
         {/* Main Content */}
         <main
-          className={`transition-all duration-300 ease-in-out pt-13 ${
-            isSidebarOpen ? "ml-64" : "ml-16"
-          }`}
+          className={`transition-all duration-300 ease-in-out pt-13 ${isSidebarOpen ? "ml-64" : "ml-24"
+            }`}
         >
           <div className="mt-10 bg-white min-h-screen">
             {children}

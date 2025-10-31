@@ -86,7 +86,9 @@ export default function PreviewActivitiesPage() {
   const createActivityMutation = useCreateActivity({ showToast: false })
 
   useEffect(() => {
+    console.log("Loading preview activity data from sessionStorage");
     const sessionDataKey = searchParams.get('sessionKey') || 'preview_activity_data'
+    console.log( sessionDataKey);
 
     try {
       const sessionData = sessionStorage.getItem(sessionDataKey)
@@ -173,7 +175,7 @@ export default function PreviewActivitiesPage() {
       setIsModalOpen(false)
 
       setTimeout(() => {
-        router.push('/user/activities')
+        router.push('/parent/activities')
       }, 1500)
 
     } catch (error: unknown) {

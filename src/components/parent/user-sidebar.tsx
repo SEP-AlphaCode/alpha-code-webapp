@@ -2,7 +2,7 @@
 
 import React from "react";
 import Link from "next/link";
-import { LogOut, UserCircle, Settings, Home as HomeIcon } from "lucide-react";
+import { LogOut, UserCircle, Settings, Home as HomeIcon, Home } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -45,23 +45,6 @@ export function UserSidebar({
         scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100 hover:scrollbar-thumb-gray-400
       `}
       >
-        {/* Home shortcut */}
-        <div className="mb-3">
-          <Link
-            href="/"
-            className={`flex items-center px-3 py-3 rounded-lg text-sm font-medium transition-colors duration-200 group relative text-gray-700 hover:bg-gray-50 hover:text-gray-900`}
-          >
-            <div className={`text-xl flex items-center justify-center ${isSidebarOpen ? "mr-3" : "mx-auto"}`}>
-              🏠
-            </div>
-            {isSidebarOpen && <span className="truncate">Trang chủ</span>}
-            {!isSidebarOpen && (
-              <div className="absolute left-full ml-2 px-2 py-1 bg-gray-900 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap">
-                Trang chủ
-              </div>
-            )}
-          </Link>
-        </div>
         <div className="space-y-1 w-full">
           {navigationItems.map((item) => {
             const isActive = isActiveRoute(item.href);
@@ -78,7 +61,7 @@ export function UserSidebar({
                   className={`text-xl flex items-center justify-center ${isSidebarOpen ? "mr-3" : "mx-auto"
                     }`}
                 >
-                  {item.icon}
+                  <item.icon />
                 </div>
 
                 {/* Text hiển thị khi mở rộng */}

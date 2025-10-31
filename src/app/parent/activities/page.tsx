@@ -771,7 +771,7 @@ export default function ActivitiesPage() {
           {pagination && !isLoading && activities.length > 0 && (
             <div className="mt-8">
               <Pagination
-                currentPage={pagination.page}
+                currentPage={currentPage}
                 totalPages={pagination.total_pages}
                 onPageChange={setCurrentPage}
                 hasNext={pagination.has_next}

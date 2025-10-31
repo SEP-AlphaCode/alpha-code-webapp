@@ -14,12 +14,13 @@ export interface PreviewActivityData {
  */
 export function navigateToPreviewActivities(
   router: AppRouterInstance,
-  data: PreviewActivityData
+  data: PreviewActivityData,
+  role: "parent" | "children" = "parent" // mặc định là parent
 ): void {
   try {
     // Generate unique session key or use provided one
     const sessionKey = data.sessionKey || `preview_activity_data_${Date.now()}`
-    
+
     // Prepare data for sessionStorage
     const sessionData = {
       dancePlan: data.dancePlan,
@@ -27,28 +28,28 @@ export function navigateToPreviewActivities(
       timeRange: data.timeRange || '',
       timestamp: new Date().toISOString()
     }
-    
+
     // Store in sessionStorage
     sessionStorage.setItem(sessionKey, JSON.stringify(sessionData))
-    
+
     // Create backup in localStorage (fallback)
     localStorage.setItem('preview_dance_plan_backup', JSON.stringify(data.dancePlan))
-    
+
     // Navigate with only session key as param
     const searchParams = new URLSearchParams({
       sessionKey: sessionKey
     })
-    
-    router.push(`/user/music/previewactivities?${searchParams.toString()}`)
-    
+
+    router.push(`/${role}/music/previewactivities?${searchParams.toString()}`)
+
     console.log('✅ Navigated to preview with sessionStorage:', {
       sessionKey,
       dataSize: JSON.stringify(sessionData).length
     })
-    
+
   } catch (error) {
     console.error('❌ Error navigating to preview activities:', error)
-    
+
     // Fallback: Try with minimal URL params
     try {
       const searchParams = new URLSearchParams()
@@ -58,12 +59,12 @@ export function navigateToPreviewActivities(
       if (data.timeRange) {
         searchParams.set('range', encodeURIComponent(data.timeRange))
       }
-      
+
       // Store only dancePlan in sessionStorage for fallback
       sessionStorage.setItem('preview_activity_fallback', JSON.stringify(data.dancePlan))
-      
-      router.push(`/user/music/preview-activities?${searchParams.toString()}`)
-      
+
+      router.push(`/${role}/music/preview-activities?${searchParams.toString()}`)
+
     } catch (fallbackError) {
       console.error('❌ Fallback navigation also failed:', fallbackError)
       throw new Error('Unable to navigate to preview activities')
@@ -79,12 +80,12 @@ export function cleanupPreviewData(sessionKey?: string): void {
     if (sessionKey) {
       sessionStorage.removeItem(sessionKey)
     }
-    
+
     // Clean up common keys
     sessionStorage.removeItem('preview_activity_data')
     sessionStorage.removeItem('preview_activity_fallback')
     localStorage.removeItem('preview_dance_plan_backup')
-    
+
     console.log('✅ Cleaned up preview data')
   } catch (error) {
     console.error('❌ Error cleaning up preview data:', error)
@@ -98,9 +99,9 @@ export function hasValidPreviewData(sessionKey?: string): boolean {
   try {
     const key = sessionKey || 'preview_activity_data'
     const data = sessionStorage.getItem(key)
-    
+
     if (!data) return false
-    
+
     const parsedData = JSON.parse(data)
     return !!(parsedData.dancePlan && parsedData.dancePlan.activity)
   } catch (error) {

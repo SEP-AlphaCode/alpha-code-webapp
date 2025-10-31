@@ -18,7 +18,6 @@ export default function RobotActionPage() {
   // ------------------------------
   const [notify, setNotifyState] = useState<{ msg: string; type: "success" | "error" } | null>(null);
   const notifyTimeoutRef = useRef<number | null>(null);
-  const [sending, setSending] = useState(false);
 
   const setNotify = useCallback((msg: string, type: "success" | "error") => {
     setNotifyState({ msg, type });
@@ -83,7 +82,6 @@ export default function RobotActionPage() {
 
       if (onlineTargets.length === 0) return;
 
-      setSending(true);
       try {
         const results = await Promise.allSettled(
           onlineTargets.map((serial) => sendCommandToBackend(actionCode, serial, type))
@@ -105,7 +103,6 @@ export default function RobotActionPage() {
         console.error("Unexpected error sending commands:", err);
         setNotify("❌ Gửi lệnh thất bại! Lỗi hệ thống.", "error");
       } finally {
-        setSending(false);
       }
     },
     [selectedRobotSerial, robots, sendCommandToBackend, setNotify]
