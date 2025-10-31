@@ -17,7 +17,7 @@ const forward = (level: string, args: unknown[]) => {
 }
 
 // Replace console methods with forwarders (keeps other console methods intact)
-const _console = console as unknown
+const _console = console as any
 // console.log = (...args: unknown[]) => forward('log', args)
 // console.info = (...args: unknown[]) => forward('info', args)
 // console.warn = (...args: unknown[]) => forward('warn', args)
@@ -34,16 +34,16 @@ self.addEventListener('message', async (e: MessageEvent) => {
 
       const fn = new Function(wrapper)
       const res = fn()
-      const awaited = (res && typeof (res).then === 'function') ? await res : res
+      const awaited = (res && typeof (res as any).then === 'function') ? await res : res
 
       // If the user's code returns an object with `result` or `error`, forward it directly.
       if (awaited && typeof awaited === 'object') {
         if ('result' in awaited) {
-          try { self.postMessage({ result: (awaited).result }) } catch (e) { /* ignore */ }
+          try { self.postMessage({ result: (awaited as any).result }) } catch (e) { /* ignore */ }
           return
         }
         if ('error' in awaited) {
-          try { self.postMessage({ error: (awaited).error }) } catch (e) { /* ignore */ }
+          try { self.postMessage({ error: (awaited as any).error }) } catch (e) { /* ignore */ }
           return
         }
       }
@@ -56,7 +56,7 @@ self.addEventListener('message', async (e: MessageEvent) => {
   }
 })
 
-self.addEventListener('error', function (ev) {
+self.addEventListener('error', function (ev: any) {
   try { self.postMessage({ type: 'error', error: ev?.message || String(ev) }) } catch (e) { /* ignore */ }
 })
 

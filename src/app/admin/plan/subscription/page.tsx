@@ -106,36 +106,25 @@ export default function SubscriptionPlansPage() {
   }
 
   const handleConfirmDelete = async () => {
-    if (!deletePlan) return
-    try {
-      const res = await deleteSubscription(deletePlan.id)
-      toast.success(res?.message || "Xóa gói đăng ký thành công!")
+  if (!deletePlan) return
+  try {
+    const res = await deleteSubscription(deletePlan.id)
+    toast.success(res?.message || "Xóa gói đăng ký thành công!")
+    
+    // 🔄 Reload lại danh sách
+    await refetch()
 
-      // 🔄 Reload lại danh sách
-      await refetch()
-
-      // 🔒 Đóng modal
-      setIsDeleteModalOpen(false)
-      setDeletePlan(null)
-    } catch (error) {
-      console.error("Error deleting subscription:", error);
-
-      let message = "Xóa gói đăng ký thất bại. Vui lòng thử lại.";
-
-      if (error && typeof error === "object" && "response" in error) {
-        const err = error as { response?: { data?: { message?: string } } };
-        message = err.response?.data?.message || message;
-      } else if (error instanceof Error) {
-        message = error.message || message;
-      }
-
-      toast.error(message);
-    }
-
+    // 🔒 Đóng modal
+    setIsDeleteModalOpen(false)
+    setDeletePlan(null)
+  } catch (error: any) {
+    console.error("Error deleting subscription:", error)
+    toast.error(error?.response?.data?.message || "Xóa gói đăng ký thất bại. Vui lòng thử lại.")
   }
+}
 
   const columns = createColumns(handleEditSubscription, handleDeleteSubscription, handleViewSubscription)
-
+  
   return (
     <div className="container mx-auto py-10">
       {/* Header */}

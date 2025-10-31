@@ -57,7 +57,7 @@ export function CreateSubscriptionModal({
       description: "",
       price: 0,
       billingCycle: 1,
-      isRecommended: false,
+      isRecommended : false,
     },
   })
 
@@ -69,7 +69,7 @@ export function CreateSubscriptionModal({
         description: editSubscription.description,
         price: editSubscription.price,
         billingCycle: editSubscription.billingCycle,
-        isRecommended: editSubscription.isRecommended ?? false,
+        isRecommended : editSubscription.isRecommended  ?? false,
       })
     } else {
       reset({
@@ -78,7 +78,7 @@ export function CreateSubscriptionModal({
         description: "",
         price: 0,
         billingCycle: 1,
-        isRecommended: false,
+        isRecommended : false,
       })
     }
   }, [isEditMode, editSubscription, reset])
@@ -93,7 +93,7 @@ export function CreateSubscriptionModal({
   }, [isOpen])
 
   const billingCycle = watch("billingCycle")
-  const isRecommended = watch("isRecommended")
+  const isRecommended  = watch("isRecommended")
 
   const onSubmit = async (data: SubscriptionPlanModal & { id?: string }) => {
     try {
@@ -109,26 +109,19 @@ export function CreateSubscriptionModal({
 
       toast.success(
         response?.message ||
-        (isEditMode
-          ? "Cập nhật gói đăng ký thành công!"
-          : "Tạo gói đăng ký mới thành công!")
+          (isEditMode
+            ? "Cập nhật gói đăng ký thành công!"
+            : "Tạo gói đăng ký mới thành công!")
       )
 
       reset()
       onClose()
-    } catch (error) {
-      console.error("Error saving subscription:", error);
-
-      let message = isEditMode ? "Cập nhật thất bại" : "Tạo mới thất bại";
-
-      if (error && typeof error === "object" && "response" in error) {
-        const err = error as { response?: { data?: { message?: string } } };
-        message = err.response?.data?.message || message;
-      } else if (error instanceof Error) {
-        message = error.message || message;
-      }
-
-      toast.error(message);
+    } catch (error: any) {
+      console.error("Error saving subscription:", error)
+      toast.error(
+        error?.response?.data?.message ||
+          (isEditMode ? "Cập nhật thất bại" : "Tạo mới thất bại")
+      )
     }
   }
 
@@ -253,8 +246,8 @@ export function CreateSubscriptionModal({
                   ? "Đang cập nhật..."
                   : "Đang tạo..."
                 : isEditMode
-                  ? "Cập nhật"
-                  : "Tạo mới"}
+                ? "Cập nhật"
+                : "Tạo mới"}
             </Button>
           </DialogFooter>
         </form>
