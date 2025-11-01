@@ -3,7 +3,7 @@ import { getSelectOptions } from "./api";
 import { pythonHttp } from "@/utils/http";
 
 export const useGetSelectOptions = (robotModelId: string) => {
-    const { getActions, getExpressions, getExtendedActions, getSkills, params } = getSelectOptions(robotModelId)
+    const { getActions, getExpressions, getExtendedActions, getSkills, params, getCodingBlockStatus } = getSelectOptions(robotModelId)
     const { page, size } = params
     const useGetActions = () => {
         return useQuery({
@@ -29,11 +29,23 @@ export const useGetSelectOptions = (robotModelId: string) => {
             queryFn: () => getSkills()
         });
     }
-    
+
+    const useGetCodingBlockStatus = (shouldDo: boolean, serial: string, interval: number) => {
+        return useQuery({
+            queryKey: ['coding-block-status', serial],
+            queryFn: () => getCodingBlockStatus(serial),
+            enabled: shouldDo,
+            refetchInterval: interval,
+            staleTime: interval,
+            retry: false,
+        })
+    }
+
     return {
         useGetActions,
         useGetExpressions,
         useGetExtendedActions,
-        useGetSkills
+        useGetSkills,
+        useGetCodingBlockStatus
     }
 }

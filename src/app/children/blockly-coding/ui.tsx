@@ -12,6 +12,7 @@ import { Button } from '@/components/ui/button';
 import 'blockly/blocks';
 import 'blockly/javascript'; // Or the generator of your choice
 import { pythonHttp } from '@/utils/http';
+import { useGetSelectOptions } from '@/features/block-coding/hooks';
 
 type BlocklyUIProps = {
     robotModelId: string,
@@ -26,6 +27,7 @@ type BlocklyUIProps = {
 }
 
 export default function BlocklyUI({ robotModelId, serial, hasAllData, data }: BlocklyUIProps) {
+    const { useGetCodingBlockStatus } = useGetSelectOptions(robotModelId)
     const blocklyRef = useRef<HTMLDivElement>(null)
     const workspaceRef = useRef<Blockly.WorkspaceSvg>(undefined)
     const [wsHelper, setWsHelper] = useState<Operations>()
@@ -33,6 +35,9 @@ export default function BlocklyUI({ robotModelId, serial, hasAllData, data }: Bl
     const [definedModels, setDefinedModel] = useState(new Set<string>())
     const [isRunning, setIsRunning] = useState(false)
     const [showRobot, setShowRobot] = useState(false)
+    const INTERVAL = 5000
+    const codingBlockStatusQuery = useGetCodingBlockStatus(isRunning, serial, INTERVAL)
+
     const key = 'AlphaCode'
     const executeCode = (code: string, resultKey: string) => {
         setIsRunning(true)
@@ -60,7 +65,6 @@ export default function BlocklyUI({ robotModelId, serial, hasAllData, data }: Bl
             setShowRobot(false)
         }
         finally {
-            setIsRunning(false)
         }
     }
 
@@ -111,6 +115,22 @@ export default function BlocklyUI({ robotModelId, serial, hasAllData, data }: Bl
         const gen = buildCodeGeneratorForModelId(robotModelId, serial)
         setCodeGenerator(gen)
     }, [serial])
+
+    useEffect(() => {
+        if(codingBlockStatusQuery.isError){
+            toast.error('❌ Lỗi khi lấy trạng thái thực thi mã từ robot');
+            setIsRunning(false);
+            return;
+        }
+        if (!codingBlockStatusQuery.data) return;
+        const success = codingBlockStatusQuery.data.success
+        if(!success){
+            setIsRunning(false);
+            return;
+        }
+        const isRunningStatus = codingBlockStatusQuery.data.isRunning;
+        if(!isRunningStatus) setIsRunning(false);
+    }, [codingBlockStatusQuery])
 
     const handleRun = () => {
         if (!codeGenerator || !wsHelper) return;

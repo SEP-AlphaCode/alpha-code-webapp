@@ -4,7 +4,7 @@ import { Expression } from "@/types/expression";
 import { ExtendedActionResponse } from "@/types/extended-action";
 import { PagedResult } from "@/types/page-result";
 import { SkillResponse } from "@/types/skill";
-import { activitiesHttp } from "@/utils/http";
+import { activitiesHttp, pythonHttp } from "@/utils/http";
 
 export const getSelectOptions = (robotModelId: string) => {
     const params = {
@@ -80,8 +80,14 @@ export const getSelectOptions = (robotModelId: string) => {
         const response = await activitiesHttp.get<SkillResponse>("/skills", { params, signal })
         return response.data
     }
+
+    const getCodingBlockStatus = async (serial: string, signal?: AbortSignal): Promise<{ success: boolean, isRunning: boolean }> => {
+        const response = await pythonHttp.get<{ success: boolean, isRunning: boolean }>("/robot/coding-block/" + serial, { signal })
+        return response.data
+    }
+
     return {
-        getActions, getExpressions, getExtendedActions, getSkills, params
+        getActions, getExpressions, getExtendedActions, getSkills, params, getCodingBlockStatus
     }
 }
 
