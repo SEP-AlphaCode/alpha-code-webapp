@@ -44,3 +44,15 @@ export const getSubscriptionById = async (id: string) => {
   const response = await paymentsHttp.get(`/subscription-plans/${id}`)
   return response.data
 }
+
+export const getUserSubscriptionDashboard = async (accountId: string, signal?: AbortSignal) => {
+  try {
+    const response = await paymentsHttp.get(`/subscriptions/dashboard/${accountId}`, {
+      signal,
+    });
+    return response.data;
+  } catch (error) {
+    console.error("API Error in getUserSubscriptionDashboard:", error);
+    throw error;
+  }
+};
