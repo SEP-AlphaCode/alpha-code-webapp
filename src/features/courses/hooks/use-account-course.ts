@@ -60,6 +60,15 @@ export function useDeleteAccountCourse() {
 	})
 }
 
+export const useGetAccountCourseByCourseAndAccount = (courseId: string, accountId: string) => {
+	return useQuery<AccountCourse | null>({
+		queryKey: ['account-course-by-course-and-account', courseId, accountId],
+		queryFn: ({ signal }) => accountCourseApi.getAccountCourseByCourseAndAccount(courseId, accountId, signal),
+		enabled: !!courseId && !!accountId,
+		staleTime: STALE_TIME,
+		refetchOnWindowFocus: false,
+	})
+}
 const accountCourseHooks = {
  	useGetAccountCoursesByAccount,
  	useGetAccountCourseById,

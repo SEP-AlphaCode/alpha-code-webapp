@@ -81,3 +81,20 @@ export const updateSectionOrder = async (courseId: string, sections: Array<{ id:
         throw error;
     }
 };
+
+//Get setion with accountId and courseId
+export const getSectionByAccountIdAndCourseId = async (courseId: string, accountId: string, signal?: AbortSignal) => {
+    try {
+        const response = await coursesHttp.get<Section[]>(`/sections/with-account-lessons`, {
+            params: {
+                courseId,
+                accountId,
+            },
+            signal
+        });
+        return response.data;
+    } catch (error) {
+        console.error("API Error in getSectionByAccountIdAndCourseId:", error);
+        throw error;
+    }
+};

@@ -21,6 +21,17 @@ export function useSection(courseId: string, sectionId: string) {
   })
 }
 
+export function useGetSectionByAccountIdAndCourseId(
+  accountId: string,
+  courseId: string
+) {
+  return useQuery({
+    queryKey: ['section-by-account-and-course', accountId, courseId],
+    queryFn: ({ signal }) =>
+    sectionApi.getSectionByAccountIdAndCourseId(accountId, courseId, signal),
+    enabled: !!accountId && !!courseId,
+  })  
+}
 export function useCreateSection(courseId: string, courseSlug?: string) {
   const queryClient = useQueryClient()
 

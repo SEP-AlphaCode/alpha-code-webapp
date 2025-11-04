@@ -71,29 +71,29 @@ export interface Course {
     levelText?: string; // Added field for level text
 }
 
-export interface AccountCourse {
-    accountId: string;
-    completed: boolean;
-    completedLesson: number;
-    courseId: string;
-    id: string;
-    lastAccessed: string; // or Date if you plan to parse it
-    progressPercent: number;
-    purchaseDate: string; // or Date if you plan to parse it
-    status: number;
-    statusText: string;
-    totalLesson: number;
-    slug: string,
-    imageUrl: string,
-    name: string
-}
+// export interface AccountCourse {
+//     accountId: string;
+//     completed: boolean;
+//     completedLesson: number;
+//     courseId: string;
+//     id: string;
+//     lastAccessed: string; // or Date if you plan to parse it
+//     progressPercent: number;
+//     purchaseDate: string; // or Date if you plan to parse it
+//     status: number;
+//     statusText: string;
+//     totalLesson: number;
+//     slug: string,
+//     imageUrl: string,
+//     name: string
+// }
 
-export interface AccountLesson {
-    duration: number;
-    id: string;
-    status: number;
-    title: string;
-}
+// export interface AccountLesson {
+//     duration: number;
+//     id: string;
+//     status: number;
+//     title: string;
+// }
 
 export function mapDifficulty(d: number) {
     switch (d) {

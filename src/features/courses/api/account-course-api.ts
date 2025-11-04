@@ -30,7 +30,26 @@ export const getAccountCoursesByAccount = async (
 		throw error;
 	}
 };
-
+// Get account courses by courseId and accountId
+export const getAccountCourseByCourseAndAccount = async (
+	courseId: string,	
+	accountId: string,
+	signal?: AbortSignal
+) => {
+	try {
+		const response = await coursesHttp.get<AccountCourse | null>(`/account-courses/get-by-account-and-course`, {
+			params: {
+				courseId,
+				accountId,
+			},
+			signal,
+		});
+		return response.data;
+	} catch (error) {
+		console.error('API Error in getAccountCourseByCourseAndAccount:', error);
+		throw error;
+	}
+}
 // Get account course by id
 export const getAccountCourseById = async (id: string, signal?: AbortSignal) => {
 	try {
