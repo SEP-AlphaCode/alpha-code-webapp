@@ -10,6 +10,7 @@ export type Bundle = {
   statusText: string
   createdDate: string
   lastUpdated: string
+  courseIds?: string[]
 }
 
 // Kiểu dữ liệu khi tạo/cập nhật bundle
