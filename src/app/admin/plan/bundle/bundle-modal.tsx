@@ -111,36 +111,38 @@ export function CreateBundleModal({
 
   // 🧾 Submit
   const onSubmit = async (data: BundleModal & { courseIds?: string[] }) => {
-  try {
-    let bundleId: string
+    try {
+      let bundleId: string
 
-    if (isEditMode && editBundle) {
-      const updated = await updateBundleMutation.mutateAsync({ id: editBundle.id, data })
-      bundleId = updated.id
-      toast.success("Cập nhật bundle thành công!")
-    } else {
-      const created = await createBundleMutation.mutateAsync(data)
-      bundleId = created.id
-      toast.success("Tạo bundle mới thành công!")
+      if (isEditMode && editBundle) {
+        const updated = await updateBundleMutation.mutateAsync(
+          { id: editBundle.id, data } as { id: string; data: BundleModal }
+        )
+        bundleId = updated.id
+        toast.success("Cập nhật bundle thành công!")
+      } else {
+        const created = await createBundleMutation.mutateAsync(data as BundleModal)
+        bundleId = created.id
+        toast.success("Tạo bundle mới thành công!")
+      }
+
+      // 🔗 Gắn course vào bundle nếu có
+      if (data.courseIds && data.courseIds.length > 0) {
+        await assignCoursesMutation.mutateAsync({
+          bundleId,
+          courseIds: data.courseIds,
+        } as { bundleId: string; courseIds: string[] })
+      }
+
+      reset()
+      onClose()
+      onSuccess?.()
+    } catch (error: any) {
+      const errorMessage =
+        error?.response?.data?.message || "Lỗi khi tạo/cập nhật bundle. Vui lòng thử lại."
+      toast.error(errorMessage)
     }
-
-    // 🔗 Gắn course vào bundle nếu có
-    if (data.courseIds && data.courseIds.length > 0) {
-      await assignCoursesMutation.mutateAsync({
-        bundleId: bundleId, // chỉ 1 bundleId
-        courseIds: data.courseIds,
-      })
-    }
-
-    reset()
-    onClose()
-    onSuccess?.()
-  } catch (error: any) {
-    const errorMessage =
-      error?.response?.data?.message || "Lỗi khi tạo/cập nhật bundle. Vui lòng thử lại."
-    toast.error(errorMessage)
   }
-}
 
   const handleClose = () => {
     reset()
