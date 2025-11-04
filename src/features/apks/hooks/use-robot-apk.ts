@@ -38,9 +38,10 @@ export const useFilePath = (apkId?: string, accountId?: string) =>
     queryKey: ["robot-apk-file-path", apkId, accountId],
     queryFn: () => getFilePath(apkId!, accountId!),
     enabled: !!apkId && !!accountId,
-    retry: (failureCount, error: any) => {
+    retry: (failureCount, error: unknown) => {
       // Không retry nếu là lỗi 403/404 (không có quyền/chưa mua license)
-      if (error?.response?.status === 403 || error?.response?.status === 404) {
+      const axiosError = error as { response?: { status?: number } };
+      if (axiosError?.response?.status === 403 || axiosError?.response?.status === 404) {
         return false;
       }
       // Chỉ retry tối đa 2 lần cho các lỗi khác

@@ -26,3 +26,16 @@ export const validateLicenseKey = async (accountId: string, licenseKey: string):
         throw error;
     }
 }
+
+export const getUserLicenseInfo = async (accountId: string, signal?: AbortSignal) => {
+    try {
+        const response = await paymentsHttp.get(`/license-keys/user-license-info/${accountId}`, {
+            signal,
+        })
+        return response.data
+    }
+    catch (error) {
+        console.error("API Error in getUserLicenseInfo:", error);
+        throw error;
+    }
+}
