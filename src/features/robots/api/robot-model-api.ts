@@ -15,7 +15,7 @@ export const getRobotModelById = async (id: string) => {
   return response.data;
 };
 
-export const createRobotModel = async (robotModelData: Omit<RobotModel, 'id' | 'createdDate' | 'lastUpdate' | 'status' | 'statusText'>) => {
+export const createRobotModel = async (robotModelData: Omit<RobotModel, 'id' | 'createdDate' | 'lastUpdated' | 'status' | 'statusText'>) => {
   try {
     const response = await robotsHttp.post('/robot-models', robotModelData);
     return response.data;
@@ -53,7 +53,7 @@ export const deleteRobotModel = async (id: string) => {
 
 export const changeRobotModelStatus = async (id: string, status: number) => {
   try {
-    const response = await robotsHttp.patch(`/robot-models/${id}/change-status`, { status });
+    const response = await robotsHttp.patch(`/robot-models/${id}/change-status`, status );
     return response.data;
   } catch (error) {
     throw error;

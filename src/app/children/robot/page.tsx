@@ -10,7 +10,7 @@ import { RobotDetails } from "@/components/parent/robot/robot-details";
 import { ProgrammingSection } from "@/components/parent/robot/programming-section";
 import { EntertainmentSection } from "@/components/parent/robot/entertainment-section";
 import { ThingsToTrySection } from "@/components/parent/robot/things-to-try-section";
-import { RobotModal } from "@/app/admin/robots/robot-modal";
+import { RobotModal } from "@/app/admin/robot-models/robot-modal";
 
 // Prompts
 const thingsToTryPrompts = [

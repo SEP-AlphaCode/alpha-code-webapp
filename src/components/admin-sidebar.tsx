@@ -81,7 +81,6 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
     title: "Hoạt động",
     url: "/admin",
     icon: SquareTerminal,
-    isActive: true,
     items: [
       { title: "Hành động", url: "/admin/activities/actions" },
       { title: "Điệu nhảy", url: "/admin/activities/dances" },
@@ -114,7 +113,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
     url: "#",
     icon: Bot,
     items: [
-      { title: "Danh sách Robot", url: "/admin/robots" },
+      { title: "Phiên bản Robot", url: "/admin/robot-models" },
       { title: "APK", url: "/admin/apks" },
     ],
   },
