@@ -1,7 +1,8 @@
 "use client"
-import React, { useEffect, useMemo } from 'react'
+import React, { useEffect, useMemo, useState } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import { useGetSectionByAccountIdAndCourseSlug } from '@/features/courses/hooks/use-section'
+import { useCreateAccountLesson } from '@/features/courses/hooks/use-account-lessons'
 import { getUserIdFromToken } from '@/utils/tokenUtils'
 import LoadingState from '@/components/loading-state'
 import { BookOpen, Pencil, FileText, GraduationCap, BookMarked, Calculator, Star, Trophy, Check, Clock, Video, Bot, Play, ArrowLeft } from 'lucide-react'
@@ -10,6 +11,7 @@ export default function LearningPageClient() {
   const params = useParams() as { slug?: string }
   const router = useRouter()
   const slug = params.slug || ''
+  const [processingLessonId, setProcessingLessonId] = useState<string | null>(null)
 
   // Try to infer logged-in account id from access token
   const accessToken = typeof window !== 'undefined' ? sessionStorage.getItem('accessToken') || '' : ''
@@ -21,6 +23,9 @@ export default function LearningPageClient() {
     accountId || '',
     slug || ''
   )
+
+  // Hook to create account lesson
+  const createAccountLesson = useCreateAccountLesson()
 
   // Determine whether account has this course based on sectionsData
   const isEnrolled = useMemo(() => {
@@ -40,6 +45,36 @@ export default function LearningPageClient() {
       return total + completed
     }, 0) || 0
   }, [sectionsData])
+
+  // Handle lesson click - Check if account lesson exists, create if not, then navigate
+  const handleLessonClick = async (lessonId: string, accountLessonId: string | null) => {
+    if (!accountId) return
+
+    try {
+      setProcessingLessonId(lessonId)
+
+      // If account lesson doesn't exist (id is null), create it first
+      if (!accountLessonId) {
+        const newAccountLesson = await createAccountLesson.mutateAsync({
+          accountId: accountId,
+          lessonId: lessonId,
+          status: 1, // Set status to "In Progress"
+        })
+        
+        // Navigate with the newly created accountLessonId
+        router.push(`/parent/courses/learning/${slug}/lesson/${lessonId}`)
+      } else {
+        // Account lesson already exists, navigate with existing id
+        router.push(`/parent/courses/learning/${slug}/lesson/${lessonId}`)
+      }
+    } catch (error) {
+      console.error('Error handling lesson click:', error)
+      // Still navigate even if creation fails
+      router.push(`/parent/courses/learning/${slug}/lesson/${lessonId}`)
+    } finally {
+      setProcessingLessonId(null)
+    }
+  }
 
   // Redirect logic: if not logged in or got error (not enrolled) -> go to course detail
   useEffect(() => {
@@ -177,18 +212,21 @@ export default function LearningPageClient() {
                       const lesson = accountLesson.lesson
                       const isCompleted = accountLesson.status === 2
                       const isInProgress = accountLesson.status === 1
+                      const isProcessing = processingLessonId === lesson.id
                       
                       return (
                         <div 
                           key={lesson.id} 
                           className={`rounded-2xl p-4 cursor-pointer transition-all hover:scale-[1.02] ${
-                            isCompleted 
+                            isProcessing
+                              ? 'opacity-60 cursor-wait'
+                              : isCompleted 
                               ? 'bg-gradient-to-r from-green-50 to-emerald-50 border-2 border-green-200 hover:border-green-300' 
                               : isInProgress 
                               ? 'bg-gradient-to-r from-yellow-50 to-orange-50 border-2 border-yellow-200 hover:border-yellow-300' 
                               : 'bg-gray-50 border-2 border-gray-200 hover:border-blue-300 hover:bg-blue-50'
                           }`}
-                          onClick={() => router.push(`/parent/courses/learning/${slug}/lesson/${lesson.id}`)}
+                          onClick={() => !isProcessing && handleLessonClick(lesson.id, accountLesson.id)}
                         >
                           <div className="flex items-center gap-3">
                             {/* Large Status Icon */}
@@ -234,14 +272,24 @@ export default function LearningPageClient() {
 
                             {/* Large Action Button */}
                             <div className="flex-shrink-0">
-                              <button className={`px-6 py-3 rounded-2xl font-bold text-base transition-all shadow-md hover:shadow-lg flex items-center gap-2 ${
-                                isCompleted 
-                                  ? 'bg-green-500 text-white hover:bg-green-600' 
-                                  : isInProgress 
-                                  ? 'bg-yellow-400 text-gray-800 hover:bg-yellow-500' 
-                                  : 'bg-blue-500 text-white hover:bg-blue-600'
-                              }`}>
-                                {isCompleted ? (
+                              <button 
+                                disabled={isProcessing}
+                                className={`px-6 py-3 rounded-2xl font-bold text-base transition-all shadow-md hover:shadow-lg flex items-center gap-2 ${
+                                  isProcessing
+                                    ? 'bg-gray-400 text-white cursor-wait'
+                                    : isCompleted 
+                                    ? 'bg-green-500 text-white hover:bg-green-600' 
+                                    : isInProgress 
+                                    ? 'bg-yellow-400 text-gray-800 hover:bg-yellow-500' 
+                                    : 'bg-blue-500 text-white hover:bg-blue-600'
+                                }`}
+                              >
+                                {isProcessing ? (
+                                  <>
+                                    <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                                    Đang tải...
+                                  </>
+                                ) : isCompleted ? (
                                   <>
                                     <Check className="w-5 h-5" />
                                     Học lại

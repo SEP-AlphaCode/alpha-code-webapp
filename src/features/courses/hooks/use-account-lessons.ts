@@ -29,8 +29,12 @@ export function useCreateAccountLesson() {
   return useMutation({
     mutationFn: (data: Partial<AccountLesson>) => accountLessonsApi.createAccountLesson(data),
     onSuccess: () => {
+      // Invalidate account lessons queries
       queryClient.invalidateQueries({ queryKey: ['account-lessons'] })
       queryClient.invalidateQueries({ queryKey: ['account-lesson'] })
+      // Invalidate section queries that include account lessons
+      queryClient.invalidateQueries({ queryKey: ['section-by-account-and-slug'] })
+      queryClient.invalidateQueries({ queryKey: ['section-by-account-and-course'] })
     },
   })
 }
@@ -40,8 +44,12 @@ export function useMarkAccountLessonComplete() {
   return useMutation({
     mutationFn: (accountLessonId: string) => accountLessonsApi.markAccountLessonComplete(accountLessonId),
     onSuccess: () => {
+      // Invalidate account lessons queries
       queryClient.invalidateQueries({ queryKey: ['account-lessons'] })
       queryClient.invalidateQueries({ queryKey: ['account-lesson'] })
+      // Invalidate section queries that include account lessons
+      queryClient.invalidateQueries({ queryKey: ['section-by-account-and-slug'] })
+      queryClient.invalidateQueries({ queryKey: ['section-by-account-and-course'] })
     },
   })
 }
