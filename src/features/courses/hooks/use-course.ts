@@ -1,4 +1,4 @@
-import { AccountCourse, Category, Course, Lesson } from "@/types/courses";
+import { Category, Course, Lesson } from "@/types/courses";
 import { PagedResult } from "@/types/page-result";
 import { useQuery, UseQueryOptions, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useRouter } from 'next/navigation';

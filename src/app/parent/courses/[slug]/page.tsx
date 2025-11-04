@@ -54,7 +54,7 @@ export default function CoursePage() {
   };
 
   const handleLessonClick = (lessonId: string) => {
-    router.push(`/parent/courses/${slug}/lesson/${lessonId}`); // Navigate to lesson detail page
+    router.push(`/parent/courses/learning/${slug}/lesson/${lessonId}`); // Navigate to lesson detail page
   };
 
   const handleRegisterClick = () => {
