@@ -6,8 +6,8 @@ import { Bundle } from "@/types/bundle"
 // POST /api/v1/course-bundles
 // -----------------------------
 export interface CourseBundleAssignRequest {
-  courseId: string[]    // danh sách ID khóa học cần gán
-  bundleIds: string     // ID bundle nhận khóa học
+  bundleId: string
+  courseIds: string[]
 }
 
 // -----------------------------

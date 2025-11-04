@@ -28,7 +28,7 @@ export default function BundlesPage() {
   const [viewBundle, setViewBundle] = useState<Bundle | null>(null)
 
   // 🧠 Hooks
-  const { useGetPagedBundles, useDeleteBundle } = useBundle()
+  const { useGetNoneDeletedBundles, useDeleteBundle } = useBundle()
   const deleteBundleMutation = useDeleteBundle()
 
   // 🕒 Debounce search
@@ -45,7 +45,7 @@ export default function BundlesPage() {
     isLoading,
     error,
     refetch,
-  } = useGetPagedBundles(page, size, debouncedSearchTerm)
+  } = useGetNoneDeletedBundles(page, size, debouncedSearchTerm)
 
   const bundles = data?.data || []
 

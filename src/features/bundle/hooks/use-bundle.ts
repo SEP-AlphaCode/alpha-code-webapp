@@ -1,6 +1,6 @@
 import {
   getPagedBundles,
-  getNoneDeletedBundleById,
+  getNoneDeletedBundles, // sửa import
   getActiveBundleById,
   createBundle,
   updateBundle,
@@ -33,12 +33,11 @@ export const useBundle = () => {
       retryDelay: 1000,
     })
 
-  // 🧩 Lấy bundle chưa bị xóa theo id
-  const useGetNoneDeletedBundleById = (id: string) =>
+  // 🧩 Lấy bundle chưa bị xóa (none deleted)
+  const useGetNoneDeletedBundles = (page: number, size: number, search?: string) =>
     useQuery({
-      queryKey: ["bundle-none-deleted", id],
-      queryFn: () => getNoneDeletedBundleById(id),
-      enabled: !!id,
+      queryKey: ["bundles-none-deleted", page, size, search],
+      queryFn: () => getNoneDeletedBundles(page, size, search),
     })
 
   // ⚡ Lấy bundle đang hoạt động theo id
@@ -55,6 +54,7 @@ export const useBundle = () => {
       mutationFn: createBundle,
       onSuccess: () => {
         queryClient.invalidateQueries({ queryKey: ["bundles-paged"] })
+        queryClient.invalidateQueries({ queryKey: ["bundles-none-deleted"] }) // thêm invalidate
       },
     })
 
@@ -64,7 +64,7 @@ export const useBundle = () => {
       mutationFn: ({ id, data }: { id: string; data: BundleModal }) => updateBundle(id, data),
       onSuccess: () => {
         queryClient.invalidateQueries({ queryKey: ["bundles-paged"] })
-        queryClient.invalidateQueries({ queryKey: ["bundle-none-deleted"] })
+        queryClient.invalidateQueries({ queryKey: ["bundles-none-deleted"] })
       },
     })
 
@@ -75,6 +75,7 @@ export const useBundle = () => {
         patchBundle(id, data),
       onSuccess: () => {
         queryClient.invalidateQueries({ queryKey: ["bundles-paged"] })
+        queryClient.invalidateQueries({ queryKey: ["bundles-none-deleted"] })
       },
     })
 
@@ -84,13 +85,13 @@ export const useBundle = () => {
       mutationFn: deleteBundle,
       onSuccess: () => {
         queryClient.invalidateQueries({ queryKey: ["bundles-paged"] })
-        queryClient.invalidateQueries({ queryKey: ["bundle-none-deleted"] })
+        queryClient.invalidateQueries({ queryKey: ["bundles-none-deleted"] })
       },
     })
 
   return {
     useGetPagedBundles,
-    useGetNoneDeletedBundleById,
+    useGetNoneDeletedBundles,
     useGetActiveBundleById,
     useCreateBundle,
     useUpdateBundle,

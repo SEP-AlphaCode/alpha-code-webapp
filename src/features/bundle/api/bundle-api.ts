@@ -16,9 +16,19 @@ export const getPagedBundles = async (
   return response.data
 }
 
-// 🧩 Lấy bundle chưa bị xóa theo id
-export const getNoneDeletedBundleById = async (id: string): Promise<Bundle> => {
-  const response = await coursesHttp.get<Bundle>(`/bundles/none-deleted/${id}`)
+// 🧩 Lấy bundle chưa bị xóa theo trang
+export const getNoneDeletedBundles = async (
+  page: number,
+  size: number,
+  search?: string
+): Promise<PagedResult<Bundle>> => {
+  const params: Record<string, any> = { page, size }
+  if (search) params.search = search
+
+  const response = await coursesHttp.get<PagedResult<Bundle>>(
+    "/bundles/get-none-delete",
+    { params }
+  )
   return response.data
 }
 
@@ -73,7 +83,7 @@ export const patchBundle = async (
   return response.data
 }
 
-// 🗑️ Xóa bundle (set status = 0 hoặc xóa cứng tùy backend)
+// 🗑️ Xóa bundle
 export const deleteBundle = async (id: string): Promise<void> => {
   await coursesHttp.delete(`/bundles/${id}`)
 }
