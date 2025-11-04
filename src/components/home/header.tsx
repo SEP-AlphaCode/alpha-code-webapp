@@ -20,7 +20,10 @@ import {
   QrCode,     // Mã QR
   CreditCard, // Thẻ Osmo (dùng icon thẻ tín dụng)
   Bookmark,
-  Joystick,   // Dấu đánh dấu
+  Joystick,
+  Activity,
+  Bot,
+  SquareCode,   // Dấu đánh dấu
 } from "lucide-react";
 
 import { useAuth } from "@/features/auth/hooks/use-auth";
@@ -53,14 +56,19 @@ const parentNavigationItems = [
   { name: "Bảng điều khiển", href: "/parent", icon: LayoutDashboard },
   { name: "Robot", href: "/parent/robot", icon: ToyBrick },
   { name: "Joystick", href: "parent/joystick", icon: Joystick },
-  { name: "Hoạt động", href: "/parent/activities", icon: Target },
+  { name: "Hoạt động", href: "/parent/activities", icon: Activity },
   { name: "Âm nhạc", href: "/parent/music", icon: Music },
+  { name: "Qr Codes", href: "/children/qr-codes", icon: QrCode },
 ];
 
 // Navigation items cho Child (Ví dụ)
 const childNavigationItems = [
   { name: "Bảng điều khiển của tôi", href: "/children", icon: LayoutDashboard },
-  { name: "Lập trình của tôi", href: "/children/programming", icon: Code },
+  { name: "Hoạt động", href: "/children/activities", icon: Activity },
+  { name: "Điều khiển", href: "/children/joystick", icon: Joystick },
+  { name: "Qr Codes", href: "/children/qr-codes", icon: QrCode },
+  { name: "Robot", href: "/children/robot", icon: Bot },
+  { name: "Lập trình", href: "/children/blockly-coding", icon: SquareCode },
 ];
 
 

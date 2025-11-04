@@ -1,4 +1,4 @@
-'use client'
+"use client"
 import { useLessonById } from '@/features/courses/hooks/use-lesson'
 import { useParams, useRouter } from 'next/navigation'
 import React, { useEffect, useState, useRef } from 'react'
@@ -9,25 +9,29 @@ import { Badge } from '@/components/ui/badge'
 import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator } from '@/components/ui/breadcrumb'
 import { Play, Pause, RotateCcw, Clock, BookOpen, Bot, Video, CheckCircle, ArrowLeft } from 'lucide-react'
 
-export default function LessonDetailPage() {
+export default function LessonDetailPageLearning() {
   const router = useRouter()
-  const { courseSlug, lessonId } = useParams<{ courseSlug: string; lessonId: string }>()
+  const { slug, lessonId } = useParams<{ slug: string; lessonId: string }>()
   const videoRef = useRef<HTMLVideoElement>(null)
   
   // Video states
   const [isVideoLoading, setIsVideoLoading] = useState(false)
   const [hasVideoError, setHasVideoError] = useState(false)
   const [videoProgress, setVideoProgress] = useState(0)
+  // Persistent lesson progress (stored locally when no backend available)
+  const [storedProgress, setStoredProgress] = useState<number>(0)
+  const [isCompleted, setIsCompleted] = useState<boolean>(false)
   const [playbackSpeed, setPlaybackSpeed] = useState(1)
   const [isPlaying, setIsPlaying] = useState(false)
   
   // Get lesson detail by ID
-  const { data: lessonData, isLoading, error } = useLessonById(lessonId)
+  const { data: lessonData, isLoading, error } = useLessonById(lessonId || '')
 
   useEffect(() => {
-    console.log('Lesson data:', lessonData)
-    console.log('Loading:', isLoading)
-    console.log('Error:', error)
+    // Debug logs (can be removed later)
+    // console.log('Lesson data:', lessonData)
+    // console.log('Loading:', isLoading)
+    // console.log('Error:', error)
   }, [lessonData, isLoading, error])
 
   // Video event handlers
@@ -46,7 +50,7 @@ export default function LessonDetailPage() {
   }
 
   const handleVideoTimeUpdate = () => {
-    if (videoRef.current) {
+    if (videoRef.current && videoRef.current.duration > 0) {
       const progress = (videoRef.current.currentTime / videoRef.current.duration) * 100
       setVideoProgress(progress)
     }
@@ -55,7 +59,16 @@ export default function LessonDetailPage() {
   const handleVideoEnded = () => {
     setVideoProgress(100)
     setIsPlaying(false)
-    // Có thể thêm logic đánh dấu hoàn thành bài học ở đây
+    // Mark lesson as completed when video ends
+    setStoredProgress(100)
+    setIsCompleted(true)
+    if (lessonId) {
+      try {
+        sessionStorage.setItem(`lesson-progress:${lessonId}`, JSON.stringify({ percent: 100, completed: true }))
+      } catch (e) {
+        // ignore storage errors
+      }
+    }
   }
 
   const handlePlayPause = () => {
@@ -74,6 +87,55 @@ export default function LessonDetailPage() {
       videoRef.current.playbackRate = speed
       setPlaybackSpeed(speed)
     }
+  }
+
+  // Load stored progress on mount (if any)
+  useEffect(() => {
+    if (!lessonId) return
+    try {
+      const raw = sessionStorage.getItem(`lesson-progress:${lessonId}`)
+      if (raw) {
+        const parsed = JSON.parse(raw)
+        if (typeof parsed.percent === 'number') setStoredProgress(parsed.percent)
+        if (typeof parsed.completed === 'boolean') setIsCompleted(parsed.completed)
+      }
+    } catch (e) {
+      // ignore parse errors
+    }
+  }, [lessonId])
+
+  // Sync stored progress to sessionStorage whenever it changes
+  useEffect(() => {
+    if (!lessonId) return
+    try {
+      sessionStorage.setItem(`lesson-progress:${lessonId}`, JSON.stringify({ percent: storedProgress, completed: isCompleted }))
+    } catch (e) {
+      // ignore
+    }
+  }, [lessonId, storedProgress, isCompleted])
+
+  // When video progress updates, sync to storedProgress (if video exists)
+  useEffect(() => {
+    if (!lessonData || !lessonData.videoUrl) return
+    // update stored progress with video progress
+    setStoredProgress(Math.max(storedProgress, Math.round(videoProgress)))
+    if (videoProgress >= 80) {
+      setIsCompleted(true)
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [videoProgress, lessonData?.videoUrl])
+
+  const markCompleted = () => {
+    setStoredProgress(100)
+    setIsCompleted(true)
+  }
+
+  const resetProgress = () => {
+    setStoredProgress(0)
+    setIsCompleted(false)
+    try {
+      if (lessonId) sessionStorage.removeItem(`lesson-progress:${lessonId}`)
+    } catch (e) {}
   }
 
   if (isLoading) {
@@ -190,7 +252,7 @@ export default function LessonDetailPage() {
             <BreadcrumbList>
               <BreadcrumbItem>
                 <BreadcrumbLink 
-                  onClick={() => router.push('/teacher/courses')}
+                  onClick={() => router.push('/parent/courses')}
                   className="cursor-pointer"
                 >
                   Khóa học
@@ -199,10 +261,10 @@ export default function LessonDetailPage() {
               <BreadcrumbSeparator />
               <BreadcrumbItem>
                 <BreadcrumbLink 
-                  onClick={() => router.back()}
+                  onClick={() => router.push(`/parent/courses/learning/${slug}`)}
                   className="cursor-pointer"
                 >
-                  {courseSlug}
+                  Khóa học
                 </BreadcrumbLink>
               </BreadcrumbItem>
               <BreadcrumbSeparator />
@@ -215,7 +277,7 @@ export default function LessonDetailPage() {
           {/* Back Button */}
           <Button
             variant="outline"
-            onClick={() => router.back()}
+            onClick={() => router.push(`/parent/courses/learning/${slug}`)}
             className="mb-6"
           >
             <ArrowLeft className="w-4 h-4 mr-2" />
@@ -261,73 +323,63 @@ export default function LessonDetailPage() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Video Player Section */}
           <div className="lg:col-span-2 space-y-6">
-            <Card>
-              <CardContent className="p-0">
-                {/* Video Container */}
-                <div className="aspect-video bg-gradient-to-br from-slate-900 to-slate-800 relative rounded-t-lg overflow-hidden">
-                  {lessonData.videoUrl ? (
-                    <>
-                      {/* Video Loading Overlay */}
-                      {isVideoLoading && (
-                        <div className="absolute inset-0 flex items-center justify-center bg-black/80 backdrop-blur-sm z-10">
-                          <div className="flex flex-col items-center">
-                            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mb-4"></div>
-                            <div className="text-white text-sm font-medium">Đang tải video...</div>
-                          </div>
+            {lessonData.videoUrl && (
+              <Card>
+                <CardContent className="p-0">
+                  {/* Video Container */}
+                  <div className="aspect-video bg-gradient-to-br from-slate-900 to-slate-800 relative rounded-t-lg overflow-hidden">
+                    {/* Video Loading Overlay */}
+                    {isVideoLoading && (
+                      <div className="absolute inset-0 flex items-center justify-center bg-black/80 backdrop-blur-sm z-10">
+                        <div className="flex flex-col items-center">
+                          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mb-4"></div>
+                          <div className="text-white text-sm font-medium">Đang tải video...</div>
                         </div>
-                      )}
-                      
-                      {/* Video Error Overlay */}
-                      {hasVideoError && (
-                        <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/80 backdrop-blur-sm z-10">
-                          <div className="text-destructive text-6xl mb-4">⚠️</div>
-                          <div className="text-white text-lg font-medium mb-2">Không thể tải video</div>
-                          <div className="text-white/80 text-sm mb-4">Vui lòng thử lại sau</div>
-                          <Button 
-                            variant="outline"
-                            onClick={() => {
-                              setHasVideoError(false)
-                              if (videoRef.current) {
-                                videoRef.current.load()
-                              }
-                            }}
-                          >
-                            <RotateCcw className="w-4 h-4 mr-2" />
-                            Thử lại
-                          </Button>
-                        </div>
-                      )}
+                      </div>
+                    )}
 
-                      <video 
-                        ref={videoRef}
-                        className="w-full h-full object-cover"
-                        controls
-                        preload="metadata"
-                        onLoadStart={handleVideoLoadStart}
-                        onCanPlay={handleVideoCanPlay}
-                        onError={handleVideoError}
-                        onTimeUpdate={handleVideoTimeUpdate}
-                        onEnded={handleVideoEnded}
-                        onPlay={() => setIsPlaying(true)}
-                        onPause={() => setIsPlaying(false)}
-                      >
-                        <source src={lessonData.videoUrl} type="video/mp4" />
-                        <source src={lessonData.videoUrl} type="video/webm" />
-                        <source src={lessonData.videoUrl} type="video/ogg" />
-                        Trình duyệt của bạn không hỗ trợ video player.
-                      </video>
-                    </>
-                  ) : (
-                    <div className="absolute inset-0 flex flex-col items-center justify-center">
-                      <Video className="w-16 h-16 text-slate-400 mb-4" />
-                      <div className="text-white text-lg font-medium mb-2">Chưa có video cho bài học này</div>
-                      <div className="text-white/80 text-sm">Video sẽ được cập nhật sớm</div>
-                    </div>
-                  )}
-                </div>
+                    {/* Video Error Overlay */}
+                    {hasVideoError && (
+                      <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/80 backdrop-blur-sm z-10">
+                        <div className="text-destructive text-6xl mb-4">⚠️</div>
+                        <div className="text-white text-lg font-medium mb-2">Không thể tải video</div>
+                        <div className="text-white/80 text-sm mb-4">Vui lòng thử lại sau</div>
+                        <Button 
+                          variant="outline"
+                          onClick={() => {
+                            setHasVideoError(false)
+                            if (videoRef.current) {
+                              videoRef.current.load()
+                            }
+                          }}
+                        >
+                          <RotateCcw className="w-4 h-4 mr-2" />
+                          Thử lại
+                        </Button>
+                      </div>
+                    )}
 
-                {/* Video Controls */}
-                {lessonData.videoUrl && (
+                    <video 
+                      ref={videoRef}
+                      className="w-full h-full object-cover"
+                      controls
+                      preload="metadata"
+                      onLoadStart={handleVideoLoadStart}
+                      onCanPlay={handleVideoCanPlay}
+                      onError={handleVideoError}
+                      onTimeUpdate={handleVideoTimeUpdate}
+                      onEnded={handleVideoEnded}
+                      onPlay={() => setIsPlaying(true)}
+                      onPause={() => setIsPlaying(false)}
+                    >
+                      <source src={lessonData.videoUrl} type="video/mp4" />
+                      <source src={lessonData.videoUrl} type="video/webm" />
+                      <source src={lessonData.videoUrl} type="video/ogg" />
+                      Trình duyệt của bạn không hỗ trợ video player.
+                    </video>
+                  </div>
+
+                  {/* Video Controls */}
                   <div className="p-4 bg-card border-t">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-4">
@@ -368,9 +420,9 @@ export default function LessonDetailPage() {
                       </div>
                     </div>
                   </div>
-                )}
-              </CardContent>
-            </Card>
+                </CardContent>
+              </Card>
+            )}
 
             {/* Lesson Content */}
             <Card>
@@ -382,8 +434,8 @@ export default function LessonDetailPage() {
               </CardHeader>
               <CardContent>
                 <div className="prose max-w-none">
-                  <p className="text-muted-foreground leading-relaxed">
-                    {lessonData.content}
+                  <p className="text-muted-foreground leading-relaxed"
+                    dangerouslySetInnerHTML={{ __html: lessonData.content }}>
                   </p>
                 </div>
 
@@ -461,56 +513,57 @@ export default function LessonDetailPage() {
               </CardContent>
             </Card>
 
-            {/* Progress Card */}
-            {lessonData.videoUrl && (
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <CheckCircle className="w-5 h-5" />
-                    Tiến độ học tập
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-6">
-                  <div className="space-y-3">
-                    <div className="flex justify-between items-center">
-                      <span className="text-sm font-medium text-muted-foreground">Hoàn thành:</span>
-                      <span className="text-sm font-bold text-foreground">{Math.round(videoProgress)}%</span>
-                    </div>
-                    <Progress value={videoProgress} className="h-4 progress-enhanced" />
-                    
-                    {/* Video Progress Info */}
-                    <div className="flex justify-between items-center text-xs text-muted-foreground pt-2">
-                      <span>
-                        {videoRef.current
-                          ? `${Math.floor((videoRef.current.currentTime || 0) / 60)}:${Math.floor((videoRef.current.currentTime || 0) % 60)
-                              .toString()
-                              .padStart(2, "0")}`
-                          : "0:00"}{" "}
-                        / {formatDuration(lessonData.duration)}
-                      </span>
-                    </div>
+            {/* Progress Card (persistent) */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <CheckCircle className="w-5 h-5" />
+                  Tiến độ bài học
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="flex justify-between items-center">
+                  <span className="text-sm font-medium text-muted-foreground">Hoàn thành:</span>
+                  <span className="text-sm font-bold text-foreground">{Math.round(storedProgress)}%</span>
+                </div>
+
+                <Progress value={storedProgress} className="h-4 progress-enhanced" />
+
+                {/* If video exists, show video time info */}
+                {lessonData.videoUrl && (
+                  <div className="flex justify-between items-center text-xs text-muted-foreground pt-2">
+                    <span>
+                      {videoRef.current
+                        ? `${Math.floor((videoRef.current.currentTime || 0) / 60)}:${Math.floor((videoRef.current.currentTime || 0) % 60)
+                            .toString()
+                            .padStart(2, "0")}`
+                        : "0:00"}{" "}/ {formatDuration(lessonData.duration)}
+                    </span>
                   </div>
-                  
-                  <Button 
+                )}
+
+                <div className="flex flex-col gap-2">
+                  <Button
                     className="w-full"
-                    variant={videoProgress >= 80 ? "default" : "outline"}
-                    onClick={() => {
-                      console.log('Lesson completed!')
-                    }}
-                    disabled={videoProgress < 80}
+                    variant={isCompleted || storedProgress >= 80 ? "default" : "outline"}
+                    onClick={() => markCompleted()}
                   >
-                    {videoProgress >= 80 ? (
+                    {isCompleted || storedProgress >= 80 ? (
                       <>
                         <CheckCircle className="w-4 h-4 mr-2" />
-                        Hoàn thành bài học
+                        Đã hoàn thành
                       </>
                     ) : (
-                      'Xem thêm để hoàn thành'
+                      'Đánh dấu đã hoàn thành'
                     )}
                   </Button>
-                </CardContent>
-              </Card>
-            )}
+
+                  <Button className="w-full" variant="ghost" onClick={() => resetProgress()}>
+                    Đặt lại tiến độ
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
           </div>
         </div>
       </div>

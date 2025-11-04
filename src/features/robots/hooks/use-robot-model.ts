@@ -28,7 +28,7 @@ export const useRobotModel = () => {
     };
 
     const useCreateRobotModel = () => {
-        return useMutation<RobotModel, Error, Omit<RobotModel, 'id' | 'createdDate' | 'lastUpdate' | 'status' | 'statusText'>>({
+        return useMutation<RobotModel, Error, Omit<RobotModel, 'id' | 'createdDate' | 'lastUpdated' | 'status' | 'statusText'>>({
             mutationFn: createRobotModel,
             onSuccess: () => {
                 queryClient.invalidateQueries({ queryKey: ["robot-models"] });

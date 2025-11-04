@@ -297,14 +297,30 @@ function ApkItem({
           >
             Chi tiết
           </Button>
-          <Button
-            className="flex-1 bg-rose-600 hover:bg-rose-700 text-white"
-            disabled={fileLoading || !filePath}
-            onClick={handleDownload}
-          >
-            <Download className="w-4 h-4 mr-2" />
-            {fileLoading ? "..." : filePath ? "Tải xuống" : "Đăng nhập để tải"}
-          </Button>
+          {fileLoading ? (
+            <Button
+              className="flex-1 bg-rose-600 hover:bg-rose-700 text-white"
+              disabled
+            >
+              <Download className="w-4 h-4 mr-2" />
+              ...
+            </Button>
+          ) : filePath ? (
+            <Button
+              className="flex-1 bg-rose-600 hover:bg-rose-700 text-white"
+              onClick={handleDownload}
+            >
+              <Download className="w-4 h-4 mr-2" />
+              Tải xuống
+            </Button>
+          ) : (
+            <Link href="/license-key" className="flex-1">
+              <Button className="w-full bg-amber-600 hover:bg-amber-700 text-white">
+                <Package className="w-4 h-4 mr-2" />
+                Mua license
+              </Button>
+            </Link>
+          )}
         </div>
       </div>
     </div>

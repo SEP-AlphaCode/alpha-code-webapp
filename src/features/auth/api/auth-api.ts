@@ -171,3 +171,45 @@ export const switchProfile = async (
     throw error;
   }
 };
+
+export const registerAccount = async (accountData: {
+  username: string;
+  password: string;
+  email: string;
+  fullName: string;
+  phone: string;
+  gender: number;
+  avatarFile?: File;
+}): Promise<void> => {
+  try {
+    // Server expects multipart/form-data when an avatar file is included.
+    // Build FormData for the request and let axios set the appropriate headers/boundary.
+    const form = new FormData();
+    form.append('username', accountData.username);
+    form.append('password', accountData.password);
+    form.append('email', accountData.email);
+    form.append('fullName', accountData.fullName);
+    form.append('phone', accountData.phone);
+    form.append('gender', String(accountData.gender));
+    if (accountData.avatarFile) {
+      form.append('avatarFile', accountData.avatarFile, accountData.avatarFile.name);
+    }
+
+    const response = await usersHttp.post('/auth/register', form, {
+      // Let axios set the proper multipart boundary header; some backends require multipart/form-data
+      headers: { 'Content-Type': 'multipart/form-data' }
+    });
+
+    return response.data;
+  } catch (error) {
+    // Normalize server error format. The server returns a common format like:
+    // { success: false, error: '...', message: '...', timestamp: '...', status: 415 }
+    if (axios.isAxiosError(error) && error.response && error.response.data) {
+      const data = error.response.data as unknown;
+      // Prefer explicit message, then generic error, then status text
+      const msg = (data as { message?: string; error?: string }).message || (data as { error?: string }).error || error.response.statusText || 'Request failed';
+      throw new Error(msg);
+    }
+    throw error;
+  }
+};

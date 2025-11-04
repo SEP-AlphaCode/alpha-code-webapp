@@ -21,8 +21,8 @@ export default function MyCoursePage() {
   const total = paged?.total_count ?? 0
   const totalPages = Math.max(1, Math.ceil(total / size))
 
-  const handleOpenLearning = (courseId: string) => {
-    router.push(`/parent/courses/learning/${courseId}`)
+  const handleOpenLearning = (courseSlug: string) => {
+    router.push(`/parent/courses/learning/${courseSlug}`)
   }
 
   if (!accountId) {
@@ -71,7 +71,7 @@ export default function MyCoursePage() {
                     <h3 className="text-base font-semibold text-slate-900 mb-2 line-clamp-2">{c.name}</h3>
                     <div className="flex items-center justify-between mt-auto">
                       <div className="text-sm text-gray-500">{c.totalLesson} bài</div>
-                      <Button onClick={() => handleOpenLearning(c.courseId)} className="ml-2">Bắt đầu học</Button>
+                      <Button onClick={() => handleOpenLearning(c.slug)} className="ml-2">Bắt đầu học</Button>
                     </div>
                   </div>
                 </div>

@@ -8,8 +8,7 @@ import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { AccountData } from "@/types/account";
 import { RobotSelector } from "../parent/robot-selector";
 import Image from "next/image";
-import ReactNode = React.ReactNode;
-
+  
 type NavItem = { name: string; href: string; icon: React.ReactNode };
 
 interface ChildrenHeaderProps {

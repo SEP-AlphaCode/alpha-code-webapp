@@ -17,7 +17,7 @@ import { useRobot } from "@/features/robots/hooks/use-robot";
 import { useRobotInfo } from "@/features/robots/hooks/use-robot-info";
 import { getUserIdFromToken } from "@/utils/tokenUtils";
 import { useRobotStore } from "@/hooks/use-robot-store";
-import { RobotModal } from "@/app/admin/robots/robot-modal";
+import { RobotModal } from "@/app/admin/robot-models/robot-modal";
 import { Battery, Zap, WifiOff, Wifi } from "lucide-react";
 
 interface RobotSelectorProps {

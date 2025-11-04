@@ -1,3 +1,5 @@
+import { LucideIcon } from "lucide-react";
+
 export interface Robot {
   name: string;
   status: "online" | "offline";
@@ -9,5 +11,5 @@ export interface Robot {
 export interface NavigationItem {
   name: string;
   href: string;
-  icon: string;
+  icon: LucideIcon | string;
 }

@@ -30,12 +30,23 @@ export const usePagedRobotApks = (
 
 /**
  * 🧩 Lấy đường dẫn file APK
+ * - Chỉ retry tối đa 2 lần
+ * - Không retry nếu lỗi 403/404 (không có quyền hoặc chưa mua license)
  */
 export const useFilePath = (apkId?: string, accountId?: string) =>
   useQuery<string, Error>({
     queryKey: ["robot-apk-file-path", apkId, accountId],
     queryFn: () => getFilePath(apkId!, accountId!),
     enabled: !!apkId && !!accountId,
+    retry: (failureCount, error: any) => {
+      // Không retry nếu là lỗi 403/404 (không có quyền/chưa mua license)
+      if (error?.response?.status === 403 || error?.response?.status === 404) {
+        return false;
+      }
+      // Chỉ retry tối đa 2 lần cho các lỗi khác
+      return failureCount < 2;
+    },
+    retryDelay: 1000, // Đợi 1 giây trước mỗi lần retry
   });
 
 /**

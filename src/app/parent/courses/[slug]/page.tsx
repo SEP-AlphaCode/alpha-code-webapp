@@ -98,7 +98,7 @@ export default function CoursePage() {
       await mutateAsyncFn({ accountId, courseId: courseData!.id });
       setIsDialogOpen(false);
       // Use replace to avoid keeping the dialog route in history
-      router.replace(`/parent/courses/learning/${courseData!.id}`);
+      router.replace(`/parent/courses/learning/${courseData!.slug}`);
     } catch (err) {
       console.error('Failed to assign course to account', err);
       setIsDialogOpen(false);

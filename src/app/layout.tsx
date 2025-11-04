@@ -42,6 +42,8 @@ export default function RootLayout({
             <Toaster
               position="top-right" // top-left, top-center, bottom-left...
               richColors
+              expand
+              closeButton
             />
         </Provider>
       </body>

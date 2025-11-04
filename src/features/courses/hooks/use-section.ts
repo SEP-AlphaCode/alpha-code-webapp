@@ -21,6 +21,30 @@ export function useSection(courseId: string, sectionId: string) {
   })
 }
 
+export function useGetSectionByAccountIdAndCourseId(
+  accountId: string,
+  courseId: string
+) {
+  return useQuery({
+    queryKey: ['section-by-account-and-course', accountId, courseId],
+    queryFn: ({ signal }) =>
+    sectionApi.getSectionByAccountIdAndCourseId(accountId, courseId, signal),
+    enabled: !!accountId && !!courseId,
+  })  
+}
+
+export function useGetSectionByAccountIdAndCourseSlug(
+  accountId: string,
+  slug: string
+) {
+  return useQuery({
+    queryKey: ['section-by-account-and-slug', accountId, slug],
+    queryFn: ({ signal }) =>
+    sectionApi.getSectionByAccountIdAndCourseSlug(slug, accountId, signal),
+    enabled: !!accountId && !!slug,
+  })  
+}
+
 export function useCreateSection(courseId: string, courseSlug?: string) {
   const queryClient = useQueryClient()
 

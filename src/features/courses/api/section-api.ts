@@ -81,3 +81,37 @@ export const updateSectionOrder = async (courseId: string, sections: Array<{ id:
         throw error;
     }
 };
+
+//Get setion with accountId and courseId
+export const getSectionByAccountIdAndCourseId = async (courseId: string, accountId: string, signal?: AbortSignal) => {
+    try {
+        const response = await coursesHttp.get<Section[]>(`/sections/with-account-lessons`, {
+            params: {
+                courseId,
+                accountId,
+            },
+            signal
+        });
+        return response.data;
+    } catch (error) {
+        console.error("API Error in getSectionByAccountIdAndCourseId:", error);
+        throw error;
+    }
+};
+
+//Get section with accountId and courseSlug
+export const getSectionByAccountIdAndCourseSlug = async (slug: string, accountId: string, signal?: AbortSignal) => {
+    try {
+        const response = await coursesHttp.get<Section[]>(`/sections/with-account-lessons/by-slug`, {
+            params: {
+                slug,
+                accountId,
+            },
+            signal
+        });
+        return response.data;
+    } catch (error) {
+        console.error("API Error in getSectionByAccountIdAndCourseSlug:", error);
+        throw error;
+    }
+};
