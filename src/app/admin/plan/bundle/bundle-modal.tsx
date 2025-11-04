@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useEffect } from "react"
 import { useForm } from "react-hook-form"
 import dynamic from "next/dynamic"
 import {
@@ -20,6 +20,7 @@ import { Bundle, BundleModal } from "@/types/bundle"
 import { Course } from "@/types/courses"
 import { toast } from "sonner"
 import { useCourse } from "@/features/courses/hooks/use-course"
+import { PagedResult } from "@/types/page-result"
 import "react-quill-new/dist/quill.snow.css"
 
 const ReactQuill = dynamic(() => import("react-quill-new"), { ssr: false })
@@ -57,7 +58,7 @@ export function CreateBundleModal({
     setValue,
     watch,
     formState: { errors, isSubmitting },
-  } = useForm<BundleModal & { courseIds?: string[] }>({
+  } = useForm<BundleModal & { courseIds: string[] }>({
     defaultValues: {
       id: "",
       name: "",
@@ -71,11 +72,16 @@ export function CreateBundleModal({
     },
   })
 
-  const selectedCourseIds = watch("courseIds") || []
+  const selectedCourseIds = watch("courseIds")
 
   // 🔄 Load tất cả course
   const { useGetCourses } = useCourse()
-  const coursesQuery = useGetCourses(1, 1000) // giả sử lấy tối đa 1000 course để hiển thị
+  const coursesQuery = useGetCourses(1, 1000) as {
+    data?: PagedResult<Course>
+    isLoading: boolean
+    isError: boolean
+    refetch: () => void
+  }
 
   // 🔄 Reset form khi chuyển giữa edit / create
   useEffect(() => {
@@ -89,7 +95,7 @@ export function CreateBundleModal({
         status: editBundle.status,
         coverImage: editBundle.coverImage,
         image: null,
-        courseIds: [], // Nếu edit bundle có thể fetch các course hiện tại
+        courseIds: [],
       })
     } else {
       reset({
@@ -110,36 +116,37 @@ export function CreateBundleModal({
   const currentImage = watch("coverImage")
 
   // 🧾 Submit
-  const onSubmit = async (data: BundleModal & { courseIds?: string[] }) => {
+  const onSubmit = async (data: BundleModal & { courseIds: string[] }) => {
     try {
       let bundleId: string
 
       if (isEditMode && editBundle) {
-        const updated = await updateBundleMutation.mutateAsync(
-          { id: editBundle.id, data } as { id: string; data: BundleModal }
-        )
+        const updated: Bundle = await updateBundleMutation.mutateAsync({
+          id: editBundle.id,
+          data,
+        })
         bundleId = updated.id
         toast.success("Cập nhật bundle thành công!")
       } else {
-        const created = await createBundleMutation.mutateAsync(data as BundleModal)
+        const created: Bundle = await createBundleMutation.mutateAsync(data)
         bundleId = created.id
         toast.success("Tạo bundle mới thành công!")
       }
 
       // 🔗 Gắn course vào bundle nếu có
-      if (data.courseIds && data.courseIds.length > 0) {
+      if (data.courseIds.length > 0) {
         await assignCoursesMutation.mutateAsync({
           bundleId,
           courseIds: data.courseIds,
-        } as { bundleId: string; courseIds: string[] })
+        })
       }
 
       reset()
       onClose()
       onSuccess?.()
-    } catch (error: any) {
+    } catch (error) {
       const errorMessage =
-        error?.response?.data?.message || "Lỗi khi tạo/cập nhật bundle. Vui lòng thử lại."
+        (error as { message?: string }).message || "Lỗi khi tạo/cập nhật bundle. Vui lòng thử lại."
       toast.error(errorMessage)
     }
   }
@@ -179,8 +186,8 @@ export function CreateBundleModal({
             {isOpen && (
               <ReactQuill
                 theme="snow"
-                value={watch("description") || ""}
-                onChange={(val) => setValue("description", val)}
+                value={watch("description")}
+                onChange={(val: string) => setValue("description", val)}
                 placeholder="Nhập mô tả bundle..."
                 className="bg-white rounded-md"
               />
@@ -211,9 +218,9 @@ export function CreateBundleModal({
           {/* Ảnh */}
           <div className="space-y-2">
             <Label htmlFor="image">Ảnh đại diện *</Label>
-            {currentImage && (
+            {currentImage && typeof currentImage === "string" && (
               <img
-                src={currentImage as string}
+                src={currentImage}
                 alt="cover"
                 className="w-32 h-32 rounded-md object-cover mb-2 border"
               />
@@ -222,7 +229,7 @@ export function CreateBundleModal({
               id="image"
               type="file"
               accept="image/*"
-              onChange={(e) => setValue("image", e.target.files?.[0] || null)}
+              onChange={(e) => setValue("image", e.target.files?.[0] ?? null)}
             />
           </div>
 
@@ -242,7 +249,7 @@ export function CreateBundleModal({
             </select>
           </div>
 
-          {/* Chọn khóa học dạng thẻ */}
+          {/* Chọn khóa học */}
           <div className="space-y-2">
             <Label>Khóa học trong Bundle</Label>
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 max-h-64 overflow-y-auto p-1 border rounded-md">
@@ -251,15 +258,13 @@ export function CreateBundleModal({
                 return (
                   <div
                     key={course.id}
-                    className={`cursor-pointer border rounded-md p-2 flex flex-col items-center transition-all ${isSelected ? "border-blue-500 bg-blue-100" : "border-gray-200 hover:border-gray-400"
-                      }`}
+                    className={`cursor-pointer border rounded-md p-2 flex flex-col items-center transition-all ${
+                      isSelected ? "border-blue-500 bg-blue-100" : "border-gray-200 hover:border-gray-400"
+                    }`}
                     onClick={() => {
-                      let newSelected = [...selectedCourseIds]
-                      if (isSelected) {
-                        newSelected = newSelected.filter((id) => id !== course.id)
-                      } else {
-                        newSelected.push(course.id)
-                      }
+                      const newSelected = isSelected
+                        ? selectedCourseIds.filter((id) => id !== course.id)
+                        : [...selectedCourseIds, course.id]
                       setValue("courseIds", newSelected)
                     }}
                   >
