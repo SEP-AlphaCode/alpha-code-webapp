@@ -1,6 +1,6 @@
 "use client";
 
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -19,91 +19,69 @@ import {
   Package
 } from 'lucide-react';
 import Link from 'next/link';
+import { useGetLearningDashboard } from '@/features/courses/hooks/use-account-course';
+import { getUserInfoFromToken } from '@/utils/tokenUtils';
+import LoadingState from '@/components/loading-state';
+import { useSubscription } from '@/features/subscription/hooks/use-subscription';
+import { useGetUserLicenseInfo } from '@/features/license-key/hooks/use-license-key';
+import { AvailableCourse, EnrolledCourse, RecentActivity } from '@/types/dashboard';
 
-// Mock data - Thay thế bằng API thực sau
-const MOCK_DATA = {
-  // Khóa học đã mua (enrolled courses)
-  enrolledCourses: [
-    {
-      id: '1',
-      name: 'Lập trình cơ bản với Alpha Mini',
-      imageUrl: '/course-1.jpg',
-      progressPercent: 75,
-      completedLesson: 15,
-      totalLesson: 20,
-      lastAccessed: '2025-11-03T10:30:00',
-      slug: 'lap-trinh-co-ban'
-    },
-    {
-      id: '2',
-      name: 'Điều khiển Robot nâng cao',
-      imageUrl: '/course-2.jpg',
-      progressPercent: 40,
-      completedLesson: 8,
-      totalLesson: 20,
-      lastAccessed: '2025-11-02T14:20:00',
-      slug: 'dieu-khien-nang-cao'
-    }
-  ],
-  // Khóa học chưa mua (available courses)
-  availableCourses: [
-    {
-      id: '3',
-      name: 'Lập trình AI cho Robot',
-      imageUrl: '/course-3.jpg',
-      totalLesson: 25,
-      slug: 'lap-trinh-ai',
-      price: 500000,
-      description: 'Học cách lập trình AI cơ bản cho robot Alpha Mini'
-    },
-    {
-      id: '4',
-      name: 'Xử lý hình ảnh với Robot',
-      imageUrl: '/course-4.jpg',
-      totalLesson: 18,
-      slug: 'xu-ly-hinh-anh',
-      price: 450000,
-      description: 'Khám phá khả năng nhận diện và xử lý hình ảnh'
-    }
-  ],
-  subscription: {
-    planName: 'Gói Premium',
-    endDate: '2026-01-15T00:00:00',
-    status: 'active'
-  },
-  stats: {
-    totalCourses: 3,
-    completedCourses: 0,
-    inProgressCourses: 2,
-    totalLessonsCompleted: 23,
-    learningHoursThisWeek: 12
-  },
-  recentActivities: [
-    {
-      courseName: 'Lập trình cơ bản với Alpha Mini',
-      lessonName: 'Bài 15: Điều khiển LED',
-      completedAt: '2025-11-03T10:30:00'
-    },
-    {
-      courseName: 'Điều khiển Robot nâng cao',
-      lessonName: 'Bài 8: Cảm biến khoảng cách',
-      completedAt: '2025-11-02T14:20:00'
-    }
-  ],
-  license: {
-    hasPurchased: true, // true = đã mua, false = chưa mua
-    purchaseDate: '2025-01-15T00:00:00'
-    // Không có expiryDate vì license là trọn đời
-  }
-};
+
 
 export default function ParentDashboard() {
-  const { enrolledCourses, availableCourses, subscription, stats, recentActivities, license } = MOCK_DATA;
+  const [accountId, setAccountId] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const accessToken = sessionStorage.getItem("accessToken");
+    if (accessToken) {
+      const userInfo = getUserInfoFromToken(accessToken);
+      setAccountId(userInfo?.id || null);
+    }
+  }, []);
+
+  const { data: dashboardData, isLoading: isLoadingDashboard, error: dashboardError } = useGetLearningDashboard(accountId || '');
+  const { useGetUserSubscriptionDashboard } = useSubscription();
+  const { data: subscriptionData, isLoading: isLoadingSubscription } = useGetUserSubscriptionDashboard(accountId || '');
+  const { data: licenseData, isLoading: isLoadingLicense } = useGetUserLicenseInfo(accountId || '');
+
+  // Extract data from API responses
+  const enrolledCourses = dashboardData?.enrolledCourses || [];
+  const availableCourses = dashboardData?.availableCourses || [];
+  const stats = dashboardData?.stats || { totalCourses: 0, completedCourses: 0, inProgressCourses: 0, totalLessonsCompleted: 0, learningHoursThisWeek: 0 };
+  const recentActivities = dashboardData?.recentActivities || [];
+
+  // Subscription data
+  const subscription = subscriptionData || { planName: '', endDate: '', status: 0 };
+  
+  // License data
+  const license = licenseData || { hasPurchased: false, purchaseDate: null };
 
   // Tính số ngày còn lại của subscription
   const daysRemaining = subscription.endDate 
     ? Math.ceil((new Date(subscription.endDate).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24))
     : 0;
+
+  const isLoading = isLoadingDashboard || isLoadingSubscription || isLoadingLicense;
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <LoadingState />
+      </div>
+    );
+  }
+
+  if (dashboardError) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-center">
+          <p className="text-red-600 mb-4">Không thể tải dữ liệu dashboard</p>
+          <Button onClick={() => window.location.reload()}>Thử lại</Button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6 p-4 md:p-8">
@@ -183,11 +161,17 @@ export default function ParentDashboard() {
                 <span className="text-gray-400">Chưa mua</span>
               )}
             </div>
-            <p className="text-xs text-gray-500 mt-1">
-              {license.hasPurchased
-                ? 'Sử dụng trọn đời'
-                : 'Mua license để kích hoạt'}
-            </p>
+            {license.hasPurchased ? (
+              <p className="text-xs text-gray-500 mt-1">
+                Sử dụng trọn đời
+              </p>
+            ) : (
+              <Button size="sm" className="w-full mt-3 bg-blue-600 hover:bg-blue-700 text-white" asChild>
+                <Link href="/license-key">
+                  Mua license ngay
+                </Link>
+              </Button>
+            )}
           </CardContent>
         </Card>
       </div>
@@ -212,7 +196,7 @@ export default function ParentDashboard() {
               </div>
             </CardHeader>
             <CardContent className="space-y-4">
-              {enrolledCourses.map((course) => (
+              {enrolledCourses.map((course: EnrolledCourse) => (
                 <div key={course.id} className="border rounded-lg p-4 hover:shadow-md transition-shadow">
                   <div className="flex gap-4">
                     <div className="w-20 h-20 bg-gray-200 rounded-lg flex items-center justify-center flex-shrink-0">
@@ -232,11 +216,12 @@ export default function ParentDashboard() {
                         <Progress value={course.progressPercent} className="h-2" />
                       </div>
                       <div className="mt-3 flex items-center justify-between">
-                        {course.lastAccessed && (
-                          <span className="text-xs text-gray-500">
-                            Học lần cuối: {new Date(course.lastAccessed).toLocaleDateString('vi-VN')}
-                          </span>
-                        )}
+                        <span className="text-xs text-gray-500">
+                          {course.lastAccessed 
+                            ? `Học lần cuối: ${new Date(course.lastAccessed).toLocaleDateString('vi-VN')}`
+                            : ' '
+                          }
+                        </span>
                         <Button size="sm" asChild className="bg-blue-600 hover:bg-blue-700 text-white">
                           <Link href={`/parent/courses/${course.slug}`}>
                             <PlayCircle className="w-4 h-4 mr-1" />
@@ -279,7 +264,7 @@ export default function ParentDashboard() {
                 </div>
               </CardHeader>
               <CardContent className="space-y-3">
-                {availableCourses.slice(0, 3).map((course) => (
+                {availableCourses.slice(0, 3).map((course: AvailableCourse) => (
                   <div key={course.id} className="border rounded-lg p-4 hover:shadow-md transition-shadow">
                     <div className="flex gap-3">
                       <div className="w-16 h-16 bg-gray-200 rounded flex items-center justify-center flex-shrink-0">
@@ -289,7 +274,10 @@ export default function ParentDashboard() {
                         <h4 className="font-semibold text-gray-900">{course.name}</h4>
                         <p className="text-xs text-gray-500 mt-1">{course.totalLesson} bài học</p>
                         {course.description && (
-                          <p className="text-xs text-gray-600 mt-1 line-clamp-2">{course.description}</p>
+                          <div 
+                            className="text-xs text-gray-600 mt-1 line-clamp-2"
+                            dangerouslySetInnerHTML={{ __html: course.description }}
+                          />
                         )}
                         <div className="flex items-center justify-between mt-3">
                           <span className="text-sm font-bold text-blue-600">
@@ -317,7 +305,7 @@ export default function ParentDashboard() {
             </CardHeader>
             <CardContent>
               <div className="space-y-3">
-                {recentActivities.map((activity, index) => (
+                {recentActivities.map((activity: RecentActivity, index: number) => (
                   <div key={index} className="flex gap-3 p-3 rounded-lg hover:bg-gray-50">
                     <div className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center flex-shrink-0">
                       <CheckCircle2 className="w-5 h-5 text-green-600" />
@@ -344,35 +332,51 @@ export default function ParentDashboard() {
               <CardTitle className="text-base">Gói đăng ký</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="font-semibold text-gray-900">{subscription.planName}</p>
-                  <Badge variant={subscription.status === 'active' ? 'default' : 'secondary'} className="mt-1">
-                    {subscription.status === 'active' ? 'Đang hoạt động' : 'Hết hạn'}
-                  </Badge>
+              {subscription.status === 0 ? (
+                // Chưa có subscription
+                <div className="text-center py-4">
+                  <p className="text-gray-500 mb-3">Bạn chưa có gói đăng ký</p>
+                  <Button size="sm" className="w-full bg-blue-600 hover:bg-blue-700 text-white" asChild>
+                    <Link href="/subscription-plan">
+                      Đăng ký ngay
+                    </Link>
+                  </Button>
                 </div>
-              </div>
-              
-              <div className="pt-3 border-t space-y-2">
-                <div className="flex items-center justify-between text-sm">
-                  <span className="text-gray-600 flex items-center gap-2">
-                    <Calendar className="w-4 h-4" />
-                    Hết hạn
-                  </span>
-                  <span className="font-medium">
-                    {new Date(subscription.endDate).toLocaleDateString('vi-VN')}
-                  </span>
-                </div>
-                <p className="text-xs text-gray-500">
-                  Còn {daysRemaining} ngày
-                </p>
-              </div>
+              ) : (
+                <>
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="font-semibold text-gray-900">{subscription.planName}</p>
+                      <Badge variant={subscription.status === 1 ? 'default' : 'secondary'} className="mt-1">
+                        {subscription.status === 1 ? 'Đang hoạt động' : 'Đã hết hạn'}
+                      </Badge>
+                    </div>
+                  </div>
+                  
+                  <div className="pt-3 border-t space-y-2">
+                    <div className="flex items-center justify-between text-sm">
+                      <span className="text-gray-600 flex items-center gap-2">
+                        <Calendar className="w-4 h-4" />
+                        Hết hạn
+                      </span>
+                      <span className="font-medium">
+                        {new Date(subscription.endDate).toLocaleDateString('vi-VN')}
+                      </span>
+                    </div>
+                    {subscription.status === 1 && (
+                      <p className="text-xs text-gray-500">
+                        Còn {daysRemaining} ngày
+                      </p>
+                    )}
+                  </div>
 
-              <Button variant="outline" size="sm" className="w-full" asChild>
-                <Link href="/subscription-plan">
-                  Gia hạn hoặc nâng cấp
-                </Link>
-              </Button>
+                  <Button variant="outline" size="sm" className="w-full" asChild>
+                    <Link href="/subscription-plan">
+                      {subscription.status === 1 ? 'Gia hạn hoặc nâng cấp' : 'Gia hạn ngay'}
+                    </Link>
+                  </Button>
+                </>
+              )}
             </CardContent>
           </Card>
 

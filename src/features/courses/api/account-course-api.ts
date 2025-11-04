@@ -75,3 +75,14 @@ export const deleteAccountCourse = async (id: string) => {
 	}
 };
 
+// Get learning dashboard for account
+export const getLearningDashboard = async (accountId: string, signal?: AbortSignal) => {
+	try {
+		const response = await coursesHttp.get(`/account-courses/learning-dashboard/${accountId}`, { signal });
+		return response.data;
+	} catch (error) {
+		console.error('API Error in getLearningDashboard:', error);
+		throw error;
+	}
+};
+

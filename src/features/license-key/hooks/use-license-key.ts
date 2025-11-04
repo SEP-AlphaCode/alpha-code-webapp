@@ -1,6 +1,6 @@
 import { useEffect } from 'react'
 import { useQuery } from '@tanstack/react-query'
-import { getLicenseKey, validateLicenseKey } from '@/features/license-key/api/license-key-api'
+import { getLicenseKey, validateLicenseKey, getUserLicenseInfo } from '@/features/license-key/api/license-key-api'
 import { getUserIdFromToken } from '@/utils/tokenUtils'
 
 /**
@@ -59,5 +59,15 @@ export const useValidateLicenseKey = (accountId?: string, licenseKey?: string) =
   })
   return query
 
+}
+
+export const useGetUserLicenseInfo = (accountId: string) => {
+  return useQuery({
+    queryKey: ['user-license-info', accountId],
+    queryFn: ({ signal }) => getUserLicenseInfo(accountId, signal),
+    enabled: !!accountId,
+    staleTime: 1000 * 60 * 5, // 5 minutes
+    refetchOnWindowFocus: true,
+  })
 }
 

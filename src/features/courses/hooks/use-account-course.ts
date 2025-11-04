@@ -60,12 +60,23 @@ export function useDeleteAccountCourse() {
 	})
 }
 
+export const useGetLearningDashboard = (accountId: string) => {
+	return useQuery({
+		queryKey: ['learning-dashboard', accountId],
+		queryFn: ({ signal }) => accountCourseApi.getLearningDashboard(accountId, signal),
+		enabled: !!accountId,
+		staleTime: 5 * 60 * 1000, // 5 minutes
+		refetchOnWindowFocus: true, // Refresh when user comes back to page
+	})
+}
+
 const accountCourseHooks = {
  	useGetAccountCoursesByAccount,
  	useGetAccountCourseById,
  	useCreateAccountCourse,
  	useCreateAccountCoursesFromBundle,
  	useDeleteAccountCourse,
+	useGetLearningDashboard,
 }
 
 export default accountCourseHooks
