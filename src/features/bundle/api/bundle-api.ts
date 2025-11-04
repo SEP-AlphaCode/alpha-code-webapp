@@ -1,8 +1,10 @@
+// File: bundle-api.ts
+
 import { Bundle, BundleModal } from "@/types/bundle"
 import { PagedResult } from "@/types/page-result"
 import { coursesHttp } from "@/utils/http"
 
-// 🧭 Lấy danh sách bundle có phân trang
+/** 🧭 Lấy danh sách bundle có phân trang */
 export const getPagedBundles = async (
   page: number,
   size: number,
@@ -16,55 +18,71 @@ export const getPagedBundles = async (
   return response.data
 }
 
-// 🧩 Lấy bundle chưa bị xóa theo id
+/** 🧩 Lấy bundle chưa bị xóa theo id */
 export const getNoneDeletedBundleById = async (id: string): Promise<Bundle> => {
   const response = await coursesHttp.get<Bundle>(`/bundles/none-deleted/${id}`)
   return response.data
 }
 
-// ⚡ Lấy bundle đang hoạt động theo id
+/** ⚡ Lấy bundle đang hoạt động theo id */
 export const getActiveBundleById = async (id: string): Promise<Bundle> => {
   const response = await coursesHttp.get<Bundle>(`/bundles/active/${id}`)
   return response.data
 }
 
-// ✨ Tạo bundle mới
-export const createBundle = async (bundleData: BundleModal): Promise<Bundle> => {
+/* -------------------------------------------------------------------------- */
+/* 🧰 Helper: auto convert BundleModal -> FormData nếu có file upload          */
+/* -------------------------------------------------------------------------- */
+const convertToFormData = (data: BundleModal): FormData => {
   const formData = new FormData()
-  formData.append("name", bundleData.name)
-  formData.append("description", bundleData.description)
-  formData.append("price", bundleData.price.toString())
-  if (bundleData.discountPrice !== undefined)
-    formData.append("discountPrice", bundleData.discountPrice.toString())
-  if (bundleData.image) formData.append("coverImage", bundleData.image)
+  formData.append("name", data.name)
+  formData.append("description", data.description ?? "")
+  formData.append("price", data.price.toString())
 
-  const response = await coursesHttp.post<Bundle>("/bundles", formData, {
+  if (data.discountPrice !== undefined && data.discountPrice !== null)
+    formData.append("discountPrice", data.discountPrice.toString())
+
+  if (data.status !== undefined)
+    formData.append("status", data.status.toString())
+
+  // ✅ Sử dụng coverImage làm tên trường và key trong FormData
+  if (data.coverImage instanceof File) { // <-- SỬA: Dùng coverImage
+    formData.append("coverImage", data.coverImage) // <-- SỬA: Dùng coverImage
+  }
+
+  return formData
+}
+
+/* -------------------------------------------------------------------------- */
+/* ✨ Tạo bundle mới (tự nhận BundleModal hoặc FormData đều được)              */
+/* -------------------------------------------------------------------------- */
+export const createBundle = async (bundleData: BundleModal | FormData): Promise<Bundle> => {
+  const payload = bundleData instanceof FormData ? bundleData : convertToFormData(bundleData)
+
+  const response = await coursesHttp.post<Bundle>("/bundles", payload, {
     headers: { "Content-Type": "multipart/form-data" },
   })
   return response.data
 }
 
-// 🛠️ Cập nhật bundle
-export const updateBundle = async (id: string, bundleData: BundleModal): Promise<Bundle> => {
-  const formData = new FormData()
-  formData.append("id", id)
-  formData.append("name", bundleData.name)
-  formData.append("description", bundleData.description)
-  formData.append("price", bundleData.price.toString())
-  if (bundleData.discountPrice !== undefined)
-    formData.append("discountPrice", bundleData.discountPrice.toString())
-  if (bundleData.status !== undefined)
-    formData.append("status", bundleData.status.toString())
-  if (bundleData.coverImage) formData.append("coverImage", bundleData.coverImage)
-  if (bundleData.image) formData.append("image", bundleData.image)
+/* -------------------------------------------------------------------------- */
+/* 🛠️ Cập nhật bundle (PUT multipart/form-data)                               */
+/* -------------------------------------------------------------------------- */
+export const updateBundle = async (
+  id: string,
+  bundleData: BundleModal | FormData
+): Promise<Bundle> => {
+  const payload = bundleData instanceof FormData ? bundleData : convertToFormData(bundleData)
 
-  const response = await coursesHttp.put<Bundle>(`/bundles/${id}`, formData, {
+  const response = await coursesHttp.put<Bundle>(`/bundles/${id}`, payload, {
     headers: { "Content-Type": "multipart/form-data" },
   })
   return response.data
 }
 
-// 🔧 Cập nhật một phần bundle
+/* -------------------------------------------------------------------------- */
+/* 🔧 Cập nhật một phần bundle (PATCH JSON)                                   */
+/* -------------------------------------------------------------------------- */
 export const patchBundle = async (
   id: string,
   partialData: Partial<BundleModal>
@@ -73,7 +91,9 @@ export const patchBundle = async (
   return response.data
 }
 
-// 🗑️ Xóa bundle (set status = 0 hoặc xóa cứng tùy backend)
+/* -------------------------------------------------------------------------- */
+/* 🗑️ Xóa bundle                                                              */
+/* -------------------------------------------------------------------------- */
 export const deleteBundle = async (id: string): Promise<void> => {
   await coursesHttp.delete(`/bundles/${id}`)
 }

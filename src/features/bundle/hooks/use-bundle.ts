@@ -1,3 +1,5 @@
+// File: use-bundle.ts
+
 import {
   getPagedBundles,
   getNoneDeletedBundleById,
@@ -10,6 +12,37 @@ import {
 import { BundleModal } from "@/types/bundle"
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
 
+/* -------------------------------------------------------------------------- */
+/* 🔧 Helper: convert sang FormData nếu có image                              */
+/* -------------------------------------------------------------------------- */
+const convertToFormData = (data: BundleModal): FormData | BundleModal => {
+  if (data.coverImage instanceof File || data.coverImage instanceof FileList) { // <-- SỬA: Dùng coverImage
+    const formData = new FormData()
+    formData.append("name", data.name)
+    formData.append("description", data.description ?? "")
+    formData.append("price", String(data.price))
+
+    if (data.discountPrice !== undefined)
+      formData.append("discountPrice", String(data.discountPrice))
+
+    if (data.status !== undefined)
+      formData.append("status", String(data.status))
+
+    // 🖼️ hỗ trợ cả FileList
+    if (data.coverImage instanceof FileList && data.coverImage.length > 0) // <-- SỬA: Dùng coverImage
+      formData.append("coverImage", data.coverImage[0])
+    else if (data.coverImage instanceof File) // <-- SỬA: Dùng coverImage
+      formData.append("coverImage", data.coverImage)
+
+    return formData
+  }
+
+  return data
+}
+
+/* -------------------------------------------------------------------------- */
+/* 🧩 Hook quản lý bundle                                                     */
+/* -------------------------------------------------------------------------- */
 export const useBundle = () => {
   const queryClient = useQueryClient()
 
@@ -20,7 +53,6 @@ export const useBundle = () => {
       queryFn: async ({ queryKey }) => {
         const controller = new AbortController()
         setTimeout(() => controller.abort(), 10000)
-
         const [, currentPage, currentSize, searchValue] = queryKey
         return await getPagedBundles(
           currentPage as number,
@@ -52,7 +84,10 @@ export const useBundle = () => {
   // ➕ Tạo bundle mới
   const useCreateBundle = () =>
     useMutation({
-      mutationFn: createBundle,
+      mutationFn: async (data: BundleModal) => {
+        const payload = convertToFormData(data)
+        return await createBundle(payload)
+      },
       onSuccess: () => {
         queryClient.invalidateQueries({ queryKey: ["bundles-paged"] })
       },
@@ -61,17 +96,20 @@ export const useBundle = () => {
   // ✏️ Cập nhật bundle
   const useUpdateBundle = () =>
     useMutation({
-      mutationFn: ({ id, data }: { id: string; data: BundleModal }) => updateBundle(id, data),
+      mutationFn: async ({ id, data }: { id: string; data: BundleModal }) => {
+        const payload = convertToFormData(data)
+        return await updateBundle(id, payload)
+      },
       onSuccess: () => {
         queryClient.invalidateQueries({ queryKey: ["bundles-paged"] })
         queryClient.invalidateQueries({ queryKey: ["bundle-none-deleted"] })
       },
     })
 
-  // 🔧 Patch bundle
+  // 🔧 Patch bundle (cập nhật 1 phần)
   const usePatchBundle = () =>
     useMutation({
-      mutationFn: ({ id, data }: { id: string; data: Partial<BundleModal> }) =>
+      mutationFn: async ({ id, data }: { id: string; data: Partial<BundleModal> }) =>
         patchBundle(id, data),
       onSuccess: () => {
         queryClient.invalidateQueries({ queryKey: ["bundles-paged"] })

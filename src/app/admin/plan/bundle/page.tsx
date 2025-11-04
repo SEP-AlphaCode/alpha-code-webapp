@@ -4,7 +4,7 @@ import { createColumns } from "./columns"
 import { DataTable } from "@/components/ui/data-table"
 import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
-import { CreateBundleModal } from "./bundle-modal"
+import { BundleModal } from "./bundle-modal"
 import { DeleteBundleModal } from "./delete-bundle-modal"
 import { ViewBundleModal } from "./view-bundle-modal"
 import { Bundle } from "@/types/bundle"
@@ -137,7 +137,7 @@ export default function BundlesPage() {
         total={data?.total_count || 0}
       />
 
-      <CreateBundleModal
+      <BundleModal
         isOpen={isCreateModalOpen}
         onClose={() => setIsCreateModalOpen(false)}
         editBundle={editBundle}

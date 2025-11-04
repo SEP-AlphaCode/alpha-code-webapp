@@ -1,267 +1,248 @@
 "use client"
 
-import { useEffect } from "react"
+import { useEffect, useState } from "react"
 import { useForm } from "react-hook-form"
-import dynamic from "next/dynamic"
 import {
   Dialog,
   DialogContent,
-  DialogDescription,
-  DialogFooter,
   DialogHeader,
   DialogTitle,
+  DialogFooter,
 } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { useBundle } from "@/features/bundle/hooks/use-bundle"
-import { Bundle, BundleModal } from "@/types/bundle"
+import { Textarea } from "@/components/ui/textarea"
+import Image from "next/image"
 import { toast } from "sonner"
-import "react-quill-new/dist/quill.snow.css"
+import type { BundleModal } from "@/types/bundle"
+import { useBundle } from "@/features/bundle/hooks/use-bundle"
+import { useCourse } from "@/features/courses/hooks"
+import { useAssignCoursesToBundle } from "@/features/bundle/hooks/use-course-bundle"
 
-const ReactQuill = dynamic(() => import("react-quill-new"), { ssr: false })
-
-interface CreateBundleModalProps {
+interface BundleModalProps {
   isOpen: boolean
   onClose: () => void
-  editBundle?: Bundle | null
-  mode?: "create" | "edit"
   onSuccess?: () => void
+  editBundle?: BundleModal | null
+  mode: "create" | "edit"
 }
 
-const STATUS_MAP = [
-  { value: 1, label: "Đang hoạt động" },
-  { value: 0, label: "Không hoạt động" },
-]
-
-export function CreateBundleModal({
+export function BundleModal({
   isOpen,
   onClose,
-  editBundle = null,
-  mode = "create",
   onSuccess,
-}: CreateBundleModalProps) {
+  editBundle,
+  mode,
+}: BundleModalProps) {
+  const { register, handleSubmit, reset, setValue, watch } = useForm<BundleModal>()
   const { useCreateBundle, useUpdateBundle } = useBundle()
-  const createBundleMutation = useCreateBundle()
-  const updateBundleMutation = useUpdateBundle()
-  const isEditMode = mode === "edit" && !!editBundle
+  const { mutateAsync: createBundle } = useCreateBundle()
+  const { mutateAsync: updateBundle } = useUpdateBundle()
+  const { data: courses, isLoading: loadingCourses } = useCourse().useGetCourses(1, 100)
+  const { mutateAsync: assignCourses } = useAssignCoursesToBundle()
 
-  const {
-    register,
-    handleSubmit,
-    reset,
-    setValue,
-    watch,
-    formState: { errors, isSubmitting },
-  } = useForm<BundleModal>({
-    defaultValues: {
-      id: "",
-      name: "",
-      description: "",
-      price: 0,
-      discountPrice: 0,
-      status: 1,
-      coverImage: null,
-      image: null,
-    },
-  })
+  const [previewImage, setPreviewImage] = useState<string | null>(null)
+  const [selectedCourses, setSelectedCourses] = useState<string[]>([])
+  const imageFile = watch("coverImage") // <-- SỬA: Dùng coverImage
 
-  // 🔄 Reset form khi chuyển giữa edit / create
+  /* -------------------------------------------------------------------------- */
+  /* 🧹 Reset form khi mở modal                                                 */
+  /* -------------------------------------------------------------------------- */
   useEffect(() => {
-    if (isEditMode && editBundle) {
-      reset({
-        id: editBundle.id,
-        name: editBundle.name,
-        description: editBundle.description,
-        price: editBundle.price,
-        discountPrice: editBundle.discountPrice,
-        status: editBundle.status,
-        coverImage: editBundle.coverImage,
-        image: null,
-      })
-    } else {
-      reset({
-        id: "",
-        name: "",
-        description: "",
-        price: 0,
-        discountPrice: 0,
-        status: 1,
-        coverImage: null,
-        image: null,
-      })
+    if (isOpen) {
+      if (mode === "edit" && editBundle) {
+        reset(editBundle)
+        setPreviewImage(typeof editBundle.coverImage === "string" ? editBundle.coverImage : null)
+      } else {
+        reset({
+          name: "",
+          description: "",
+          price: 0,
+          discountPrice: undefined,
+          coverImage: null, // <-- SỬA: Dùng coverImage
+        })
+        setPreviewImage(null)
+        setSelectedCourses([])
+      }
     }
-  }, [isEditMode, editBundle, reset])
+  }, [isOpen, editBundle, mode, reset])
 
-  const status = watch("status")
-  const currentImage = watch("coverImage")
+  /* -------------------------------------------------------------------------- */
+  /* 🖼️ Preview ảnh                                                            */
+  /* -------------------------------------------------------------------------- */
+  useEffect(() => {
+    if (imageFile && imageFile instanceof FileList && imageFile.length > 0) {
+      const file = imageFile[0]
+      setPreviewImage(URL.createObjectURL(file))
+    }
+  }, [imageFile])
 
-  // 🧾 Submit
+  const handleCourseSelect = (id: string) => {
+    setSelectedCourses((prev) =>
+      prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]
+    )
+  }
+
+  /* -------------------------------------------------------------------------- */
+  /* 💾 Submit form                                                             */
+  /* -------------------------------------------------------------------------- */
   const onSubmit = async (data: BundleModal) => {
     try {
-      if (isEditMode && editBundle) {
-        await updateBundleMutation.mutateAsync({ id: editBundle.id, data })
-        toast.success("Cập nhật bundle thành công!")
+      let savedBundleId: string
+      let payloadToSubmit: BundleModal | Partial<BundleModal> = data
+
+      if (mode === "edit" && editBundle?.id) {
+        // ⚠️ Xử lý chế độ CHỈNH SỬA: Loại bỏ trường 'coverImage' nếu không có file mới
+        const isNewFileSelected = data.coverImage && (data.coverImage instanceof File || (data.coverImage instanceof FileList && data.coverImage.length > 0));
+
+        if (!isNewFileSelected) {
+          // Sử dụng spread syntax để loại bỏ trường 'coverImage'
+          const { coverImage, ...rest } = data
+          payloadToSubmit = rest as Partial<BundleModal>
+        }
+        
+        const updated = await updateBundle({ id: editBundle.id, data: payloadToSubmit as BundleModal })
+        savedBundleId = updated.id
+        toast.success("Cập nhật bundle thành công ✅")
       } else {
-        await createBundleMutation.mutateAsync(data)
-        toast.success("Tạo bundle mới thành công!")
+        const created = await createBundle(data)
+        savedBundleId = created.id
+        toast.success("Tạo bundle thành công 🎉")
       }
 
-      reset()
-      onClose()
+      // 🧩 Gắn khóa học nếu có
+      if (selectedCourses.length > 0) {
+        await assignCourses({
+          bundleIds: savedBundleId,
+          courseId: selectedCourses,
+        })
+        toast.success("Đã gắn khóa học vào bundle ✅")
+      }
+
       onSuccess?.()
-    } catch (error: unknown) {
-      const errorMessage = error && typeof error === 'object' && 'response' in error
-        ? (error as { response?: { data?: { message?: string } } }).response?.data?.message
-        : undefined;
-      toast.error(errorMessage || "Lỗi khi xóa bundle. Vui lòng thử lại.")
+      onClose()
+    } catch (err) {
+      console.error("Error saving bundle:", err)
+      toast.error("Không thể lưu bundle. Vui lòng thử lại ❌")
     }
   }
 
-  const handleClose = () => {
-    reset()
-    onClose()
-  }
-
+  /* -------------------------------------------------------------------------- */
+  /* 🧱 Giao diện                                                               */
+  /* -------------------------------------------------------------------------- */
   return (
-    <Dialog open={isOpen} onOpenChange={handleClose}>
-      <DialogContent className="sm:max-w-[600px]">
+    <Dialog open={isOpen} onOpenChange={onClose}>
+      <DialogContent className="max-w-3xl">
         <DialogHeader>
-          <DialogTitle>
-            {isEditMode ? "Chỉnh sửa Bundle" : "Tạo Bundle mới"}
+          <DialogTitle className="text-xl font-semibold">
+            {mode === "edit" ? "Chỉnh sửa bundle" : "Tạo bundle mới"}
           </DialogTitle>
-          <DialogDescription>
-            {isEditMode
-              ? "Cập nhật thông tin gói học hiện tại."
-              : "Nhập thông tin để tạo gói học mới."}
-          </DialogDescription>
         </DialogHeader>
 
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-          {/* Tên Bundle */}
-          <div className="space-y-2">
-            <Label htmlFor="name">Tên Bundle *</Label>
-            <Input
-              id="name"
-              {...register("name", {
-                required: "Vui lòng nhập tên bundle",
-                minLength: { value: 2, message: "Tên phải có ít nhất 2 ký tự" },
-              })}
-              placeholder="Nhập tên bundle"
-              className={errors.name ? "border-red-500" : ""}
-            />
-            {errors.name && (
-              <p className="text-sm text-red-500">{errors.name.message}</p>
-            )}
-          </div>
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+          {/* === FORM CHÍNH === */}
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-4">
+              <div>
+                <Label>Tên bundle</Label>
+                <Input {...register("name", { required: true })} placeholder="Nhập tên bundle" />
+              </div>
 
-          {/* Mô tả */}
-          <div className="space-y-2">
-            <Label htmlFor="description">Mô tả</Label>
-            {isOpen && (
-              <ReactQuill
-                theme="snow"
-                value={watch("description") || ""}
-                onChange={(val) => setValue("description", val)}
-                placeholder="Nhập mô tả bundle..."
-                className="bg-white rounded-md"
+              <div>
+                <Label>Mô tả</Label>
+                <Textarea {...register("description")} rows={4} placeholder="Mô tả chi tiết..." />
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <Label>Giá (VND)</Label>
+                  <Input
+                    type="number"
+                    {...register("price", { required: true, valueAsNumber: true })}
+                    placeholder="0"
+                  />
+                </div>
+                <div>
+                  <Label>Giá giảm (VND)</Label>
+                  <Input
+                    type="number"
+                    {...register("discountPrice", { valueAsNumber: true })}
+                    placeholder="0"
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* === ẢNH COVER === */}
+            <div className="space-y-3">
+              <Label>Ảnh bìa</Label>
+              {previewImage ? (
+                <Image
+                  src={previewImage}
+                  alt="Preview"
+                  width={400}
+                  height={240}
+                  className="rounded-md object-cover w-full h-[200px] border"
+                />
+              ) : (
+                <div className="border rounded-md flex items-center justify-center h-[200px] text-gray-400">
+                  Chưa chọn ảnh
+                </div>
+              )}
+              <Input
+                type="file"
+                accept="image/*"
+                {...register("coverImage")} // <-- SỬA: Dùng coverImage
+                onChange={(e) => {
+                  const file = e.target.files?.[0]
+                  if (file) setPreviewImage(URL.createObjectURL(file))
+                  setValue("coverImage", e.target.files ?? null) // <-- SỬA: Dùng coverImage
+                }}
               />
-            )}
+            </div>
           </div>
 
-          {/* Giá */}
-          <div className="space-y-2">
-            <Label htmlFor="price">Giá gốc (VNĐ) *</Label>
-            <Input
-              id="price"
-              type="number"
-              {...register("price", {
-                required: "Vui lòng nhập giá",
-                min: { value: 0, message: "Giá không được âm" },
-                valueAsNumber: true,
-              })}
-              placeholder="Nhập giá gốc"
-              className={errors.price ? "border-red-500" : ""}
-            />
-            {errors.price && (
-              <p className="text-sm text-red-500">{errors.price.message}</p>
-            )}
+          {/* === CHỌN KHÓA HỌC === */}
+          <div className="border-t pt-4">
+            <Label className="font-semibold text-gray-700 mb-2 block">
+              Chọn khóa học để gắn vào bundle
+            </Label>
+            <div className="max-h-60 overflow-y-auto border rounded-md p-3 space-y-2">
+              {loadingCourses ? (
+                <p className="text-sm text-gray-400">Đang tải danh sách khóa học...</p>
+              ) : courses?.data?.length ? (
+                courses.data.map((course) => (
+                  <label
+                    key={course.id}
+                    className="flex items-center gap-3 cursor-pointer hover:bg-gray-50 p-2 rounded"
+                  >
+                    <input
+                      type="checkbox"
+                      checked={selectedCourses.includes(course.id)}
+                      onChange={() => handleCourseSelect(course.id)}
+                    />
+                    {course.imageUrl && (
+                      <img
+                        src={course.imageUrl}
+                        alt={course.name}
+                        className="w-10 h-10 rounded object-cover border"
+                      />
+                    )}
+                    <span className="text-sm font-medium text-gray-800">{course.name}</span>
+                  </label>
+                ))
+              ) : (
+                <p className="text-sm text-gray-400">Không có khóa học nào khả dụng.</p>
+              )}
+            </div>
           </div>
 
-          {/* Giá giảm */}
-          <div className="space-y-2">
-            <Label htmlFor="discountPrice">Giá giảm (VNĐ)</Label>
-            <Input
-              id="discountPrice"
-              type="number"
-              {...register("discountPrice", {
-                min: { value: 0, message: "Không được âm" },
-                valueAsNumber: true,
-              })}
-              placeholder="Nhập giá giảm (nếu có)"
-              className={errors.discountPrice ? "border-red-500" : ""}
-            />
-            {errors.discountPrice && (
-              <p className="text-sm text-red-500">
-                {errors.discountPrice.message}
-              </p>
-            )}
-          </div>
-
-          {/* Ảnh */}
-          <div className="space-y-2">
-            <Label htmlFor="image">Ảnh đại diện *</Label>
-            {currentImage && (
-              <img
-                src={currentImage}
-                alt="cover"
-                className="w-32 h-32 rounded-md object-cover mb-2 border"
-              />
-            )}
-            <Input
-              id="image"
-              type="file"
-              accept="image/*"
-              onChange={(e) =>
-                setValue("image", e.target.files?.[0] || null)
-              }
-            />
-          </div>
-
-          {/* Trạng thái */}
-          <div className="space-y-2">
-            <Label htmlFor="status">Trạng thái *</Label>
-            <select
-              id="status"
-              {...register("status", { valueAsNumber: true })}
-              className="w-full border rounded-md p-2"
-            >
-              {STATUS_MAP.map((s) => (
-                <option key={s.value} value={s.value}>
-                  {s.label}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          <DialogFooter>
-            <Button
-              type="button"
-              variant="outline"
-              onClick={handleClose}
-              disabled={isSubmitting}
-            >
-              Đóng
+          <DialogFooter className="pt-4">
+            <Button type="button" variant="outline" onClick={onClose}>
+              Hủy
             </Button>
-            <Button type="submit" disabled={isSubmitting}>
-              {isSubmitting
-                ? isEditMode
-                  ? "Đang cập nhật..."
-                  : "Đang tạo..."
-                : isEditMode
-                ? "Cập nhật"
-                : "Tạo mới"}
-            </Button>
+            <Button type="submit">{mode === "edit" ? "Cập nhật" : "Tạo mới"}</Button>
           </DialogFooter>
         </form>
       </DialogContent>
