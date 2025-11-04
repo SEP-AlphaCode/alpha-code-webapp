@@ -46,7 +46,7 @@ export default function BundleCatalogPage() {
 
   const handleViewDetail = (bundle: Bundle) => {
     // Chuyển hướng đến trang chi tiết Bundle
-    router.push(`/bundles/${bundle.id}`);
+    router.push(`/bundle/${bundle.id}`);
   };
 
   return (
@@ -136,7 +136,7 @@ export default function BundleCatalogPage() {
                     <div className="text-sm text-muted-foreground mb-4 line-clamp-3" dangerouslySetInnerHTML={{ __html: bundle.description || "Chưa có mô tả chi tiết." }} />
 
                     <div className="grid grid-cols-2 gap-2">
-                      <Link href={`/bundles/${bundle.id}`} className="inline-block">
+                      <Link href={`/bundle/${bundle.id}`} className="inline-block">
                         <Button variant="outline" className="w-full">Chi tiết</Button>
                       </Link>
                       
