@@ -38,10 +38,10 @@ export function useAssignCoursesToBundle() {
       toast.success("Đã gắn khóa học vào bundle thành công 🎉")
       // Làm mới danh sách khóa học trong bundle
       queryClient.invalidateQueries({
-        queryKey: courseBundleKeys.list(variables.bundleIds),
+        queryKey: courseBundleKeys.list(variables.bundleId),
       })
     },
-    onError: (err: any) => {
+    onError: (err: unknown) => {
       console.error("Attach course error:", err)
       toast.error("Không thể gắn khóa học vào bundle ❌")
     },
@@ -60,7 +60,7 @@ export function useDeleteCourseBundle(bundleId: string) {
         queryKey: courseBundleKeys.list(bundleId),
       })
     },
-    onError: (err: any) => {
+    onError: (err: unknown) => {
       console.error("Delete course-bundle error:", err)
       toast.error("Không thể xóa khóa học khỏi bundle ❌")
     },

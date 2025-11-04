@@ -22,7 +22,7 @@ export const getNoneDeletedBundles = async (
   size: number,
   search?: string
 ): Promise<PagedResult<Bundle>> => {
-  const params: Record<string, any> = { page, size }
+  const params: Record<string, unknown> = { page, size }
   if (search) params.search = search
 
   const response = await coursesHttp.get<PagedResult<Bundle>>(
