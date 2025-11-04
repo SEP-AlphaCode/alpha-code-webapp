@@ -24,10 +24,7 @@ import Image from 'next/image'
 import { useGetLearningDashboard } from '@/features/courses/hooks/use-account-course'
 import { getUserInfoFromToken } from '@/utils/tokenUtils'
 import LoadingState from '@/components/loading-state'
-import { Achievement, ChildCourse } from '@/types/dashboard'
-
-// Interfaces cho data
-
+import { Achievement, ChildCourse, RecentActivity } from '@/types/dashboard'
 
 export default function ChildrenDashboard() {
   const [accountId, setAccountId] = useState<string | null>(null);
@@ -300,7 +297,7 @@ export default function ChildrenDashboard() {
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-3">
-                {recentActivities.map((activity: any, index: number) => (
+                {recentActivities.map((activity: RecentActivity, index: number) => (
                   <div
                     key={index}
                     className="flex items-start gap-3 p-3 bg-gradient-to-r from-green-50 to-emerald-50 rounded-xl border border-green-200 hover:shadow-md transition-all"
