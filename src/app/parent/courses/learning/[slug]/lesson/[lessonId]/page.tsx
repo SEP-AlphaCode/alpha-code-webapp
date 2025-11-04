@@ -11,7 +11,7 @@ import { Play, Pause, RotateCcw, Clock, BookOpen, Bot, Video, CheckCircle, Arrow
 
 export default function LessonDetailPageLearning() {
   const router = useRouter()
-  const { courseId, lessonId } = useParams<{ courseId: string; lessonId: string }>()
+  const { slug, lessonId } = useParams<{ slug: string; lessonId: string }>()
   const videoRef = useRef<HTMLVideoElement>(null)
   
   // Video states
@@ -261,7 +261,7 @@ export default function LessonDetailPageLearning() {
               <BreadcrumbSeparator />
               <BreadcrumbItem>
                 <BreadcrumbLink 
-                  onClick={() => router.push(`/parent/courses/learning/${courseId}`)}
+                  onClick={() => router.push(`/parent/courses/learning/${slug}`)}
                   className="cursor-pointer"
                 >
                   Khóa học
@@ -277,7 +277,7 @@ export default function LessonDetailPageLearning() {
           {/* Back Button */}
           <Button
             variant="outline"
-            onClick={() => router.push(`/parent/courses/learning/${courseId}`)}
+            onClick={() => router.push(`/parent/courses/learning/${slug}`)}
             className="mb-6"
           >
             <ArrowLeft className="w-4 h-4 mr-2" />

@@ -10,16 +10,6 @@ export type Category = {
     countCourses?: number
 }
 
-export interface Section {
-    id: string; // uuid
-    courseId: string; // uuid
-    title: string; // varchar(255)
-    orderNumber: number; // int4
-    createdDate?: string; // timestamp
-    lastUpdated?: string; // timestamp
-    lessons?: Lesson[];
-}
-
 export interface Lesson {
     id: string; // uuid
     sectionId: string; // uuid
@@ -39,15 +29,27 @@ export interface Lesson {
     lastUpdated?: string; // timestamp
 }
 
-export interface Section{
+export interface AccountLesson {
+    id: string | null; // uuid - nullable if not started yet
+    accountId: string; // uuid
+    lessonId: string; // uuid
+    status: number; // 0: not started, 1: in progress, 2: completed
+    completedAt: string | null; // timestamp - nullable
+    lesson: Lesson; // nested lesson object
+    statusText: string; // "CHƯA BẮT ĐẦU", "ĐANG HỌC", "ĐÃ HOÀN THÀNH"
+}
+
+export interface Section {
     id: string; // uuid
     courseId: string; // uuid
     title: string; // varchar(255)
     orderNumber: number; // int4
-    lessons?: Lesson[];
-    createdAt: string; // timestamp
-    lastUpdated?: string; // timestamp
+    createdDate?: string | null; // timestamp - nullable
+    lastUpdated?: string | null; // timestamp - nullable
     status: number; // int4
+    statusText?: string; // status text
+    lessons?: Lesson[]; // for non-account specific queries
+    accountLessons?: AccountLesson[]; // for account-specific queries with progress
 }
 
 export interface Course {

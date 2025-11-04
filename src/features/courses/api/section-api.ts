@@ -98,3 +98,20 @@ export const getSectionByAccountIdAndCourseId = async (courseId: string, account
         throw error;
     }
 };
+
+//Get section with accountId and courseSlug
+export const getSectionByAccountIdAndCourseSlug = async (slug: string, accountId: string, signal?: AbortSignal) => {
+    try {
+        const response = await coursesHttp.get<Section[]>(`/sections/with-account-lessons/by-slug`, {
+            params: {
+                slug,
+                accountId,
+            },
+            signal
+        });
+        return response.data;
+    } catch (error) {
+        console.error("API Error in getSectionByAccountIdAndCourseSlug:", error);
+        throw error;
+    }
+};

@@ -31,8 +31,8 @@ function CourseCard({ course }: CourseCardProps) {
             const accountCourse = await getAccountCourseByCourseAndAccount(course.id, accountId)
 
             if (accountCourse) {
-                // Already enrolled/purchased -> go to learning page
-                router.push(`/parent/courses/learning/${course.id}`)
+                // Already enrolled/purchased -> go to learning page with slug
+                router.push(`/parent/courses/learning/${course.slug}`)
             } else {
                 // Not enrolled -> go to course detail
                 router.push(`/parent/courses/${course.slug}`)
