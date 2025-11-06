@@ -5,7 +5,7 @@ import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import type { RobotActionUI } from "@/types/robot-ui";
-import { RobotPaginationDots } from "./robot-pagination.dots";
+import { RobotScrollablePagination } from "./robot-pagination.dots";
 import ErrorState from "@/components/error-state"; // 👈 thêm import
 
 interface RobotActionTabProps {
@@ -135,7 +135,7 @@ export function RobotActionTab({
           </div>
 
           {/* Pagination dots */}
-          <RobotPaginationDots
+          <RobotScrollablePagination
             totalPages={totalPages}
             currentPage={currentPage - 1} // dots index từ 0
             setCurrentPage={(p) => setCurrentPage(p + 1)}
