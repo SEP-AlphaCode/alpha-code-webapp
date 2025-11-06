@@ -76,8 +76,8 @@ export default function ChatbotWidget() {
 
       setMessages((prev) => [...prev, assistantMessage]);
       setHasError(false);
-    } catch (error: any) {
-      if (error.name === "AbortError" || error.name === "CanceledError") {
+    } catch (error) {
+      if (error instanceof Error && (error.name === "AbortError" || error.name === "CanceledError")) {
         // Request was cancelled, do nothing
         return;
       }
