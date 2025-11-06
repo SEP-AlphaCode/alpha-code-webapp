@@ -148,7 +148,7 @@ export default function SubscriptionPlansPage() {
                       <Button
                         className={`rounded-xl px-6 py-2 font-semibold text-base border border-[color:var(--chart-2)] transition 
                         ${plan.isCurrent ? "bg-[color:var(--muted)] text-[color:var(--chart-2)] cursor-not-allowed" :
-                            "bg-[color:var(--chart-2)] text-white hover:bg-[color:var(--chart-1)] hover:text-[color:var(--chart-2)]"}`}
+                            "bg-[color:var(--chart-2)] text-white hover:bg-white hover:text-[color:var(--chart-2)]"}`}
                         disabled={plan.isCurrent}
                         onClick={() => handleRegister(String(plan.id))}
                       >
