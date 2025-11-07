@@ -1,5 +1,5 @@
 "use client"
-import { useLessonById } from '@/features/courses/hooks/use-lesson'
+import { useGetAccountLessonById, useMarkAccountLessonComplete } from '@/features/courses/hooks/use-account-lessons'
 import { useParams, useRouter } from 'next/navigation'
 import React, { useEffect, useState, useRef } from 'react'
 import { Progress } from '@/components/ui/progress'
@@ -11,7 +11,7 @@ import { Play, Pause, RotateCcw, Clock, BookOpen, Bot, Video, CheckCircle, Arrow
 
 export default function LessonDetailPageLearning() {
   const router = useRouter()
-  const { slug, lessonId } = useParams<{ slug: string; lessonId: string }>()
+  const { slug, accountLessonId } = useParams<{ slug: string; accountLessonId: string }>()
   const videoRef = useRef<HTMLVideoElement>(null)
   
   // Video states
@@ -24,14 +24,14 @@ export default function LessonDetailPageLearning() {
   const [playbackSpeed, setPlaybackSpeed] = useState(1)
   const [isPlaying, setIsPlaying] = useState(false)
   
-  // Get lesson detail by ID
-  const { data: lessonData, isLoading, error } = useLessonById(lessonId || '')
+  // Get account lesson detail by account lesson ID
+  const { data: accountLessonData, isLoading, error } = useGetAccountLessonById(accountLessonId || '')
+  const markComplete = useMarkAccountLessonComplete()
+  
+  // Extract lesson data from account lesson
+  const lessonData = accountLessonData?.lesson
 
   useEffect(() => {
-    // Debug logs (can be removed later)
-    // console.log('Lesson data:', lessonData)
-    // console.log('Loading:', isLoading)
-    // console.log('Error:', error)
   }, [lessonData, isLoading, error])
 
   // Video event handlers
@@ -62,9 +62,11 @@ export default function LessonDetailPageLearning() {
     // Mark lesson as completed when video ends
     setStoredProgress(100)
     setIsCompleted(true)
-    if (lessonId) {
+    // Mark complete via API
+    if (accountLessonId) {
+      markComplete.mutate(accountLessonId)
       try {
-        sessionStorage.setItem(`lesson-progress:${lessonId}`, JSON.stringify({ percent: 100, completed: true }))
+        sessionStorage.setItem(`lesson-progress:${accountLessonId}`, JSON.stringify({ percent: 100, completed: true }))
       } catch (e) {
         // ignore storage errors
       }
@@ -89,30 +91,39 @@ export default function LessonDetailPageLearning() {
     }
   }
 
-  // Load stored progress on mount (if any)
+  // Load stored progress on mount (if any) and check backend status
   useEffect(() => {
-    if (!lessonId) return
-    try {
-      const raw = sessionStorage.getItem(`lesson-progress:${lessonId}`)
-      if (raw) {
-        const parsed = JSON.parse(raw)
-        if (typeof parsed.percent === 'number') setStoredProgress(parsed.percent)
-        if (typeof parsed.completed === 'boolean') setIsCompleted(parsed.completed)
+    if (!accountLessonId) return
+    
+    // Check backend completion status first
+    if (accountLessonData?.status === 2) {
+      // Status 2 = completed from backend
+      setStoredProgress(100)
+      setIsCompleted(true)
+    } else {
+      // Load from localStorage if backend says not completed
+      try {
+        const raw = sessionStorage.getItem(`lesson-progress:${accountLessonId}`)
+        if (raw) {
+          const parsed = JSON.parse(raw)
+          if (typeof parsed.percent === 'number') setStoredProgress(parsed.percent)
+          if (typeof parsed.completed === 'boolean') setIsCompleted(parsed.completed)
+        }
+      } catch (e) {
+        // ignore parse errors
       }
-    } catch (e) {
-      // ignore parse errors
     }
-  }, [lessonId])
+  }, [accountLessonId, accountLessonData?.status])
 
   // Sync stored progress to sessionStorage whenever it changes
   useEffect(() => {
-    if (!lessonId) return
+    if (!accountLessonId) return
     try {
-      sessionStorage.setItem(`lesson-progress:${lessonId}`, JSON.stringify({ percent: storedProgress, completed: isCompleted }))
+      sessionStorage.setItem(`lesson-progress:${accountLessonId}`, JSON.stringify({ percent: storedProgress, completed: isCompleted }))
     } catch (e) {
       // ignore
     }
-  }, [lessonId, storedProgress, isCompleted])
+  }, [accountLessonId, storedProgress, isCompleted])
 
   // When video progress updates, sync to storedProgress (if video exists)
   useEffect(() => {
@@ -128,13 +139,17 @@ export default function LessonDetailPageLearning() {
   const markCompleted = () => {
     setStoredProgress(100)
     setIsCompleted(true)
+    // Mark complete via API
+    if (accountLessonId) {
+      markComplete.mutate(accountLessonId)
+    }
   }
 
   const resetProgress = () => {
     setStoredProgress(0)
     setIsCompleted(false)
     try {
-      if (lessonId) sessionStorage.removeItem(`lesson-progress:${lessonId}`)
+      if (accountLessonId) sessionStorage.removeItem(`lesson-progress:${accountLessonId}`)
     } catch (e) {}
   }
 
@@ -487,7 +502,13 @@ export default function LessonDetailPageLearning() {
                   <Badge variant="secondary">{lessonData.typeText}</Badge>
                 </div>
                 <div className="flex justify-between items-center">
-                  <span className="text-muted-foreground">Trạng thái:</span>
+                  <span className="text-muted-foreground">Tiến độ của bạn:</span>
+                  <Badge variant={getStatusVariant(accountLessonData?.status || 0)}>
+                    {accountLessonData?.statusText || 'Chưa bắt đầu'}
+                  </Badge>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-muted-foreground">Trạng thái bài học:</span>
                   <Badge variant={getStatusVariant(lessonData.status)}>
                     {lessonData.statusText}
                   </Badge>
