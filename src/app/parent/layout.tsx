@@ -49,7 +49,7 @@ export default function UserLayout({ children }: UserLayoutProps) {
     { name: "Activities", href: "/parent/activities", icon: Activity },
     { name: "Music", href: "/parent/music", icon: Music },
     { name: "Mã QR", href: "/parent/qr-codes", icon: QrCode },
-    { name: "Courses", href: "/parent/courses", icon: BookPlus },
+    { name: "My Courses", href: "/parent/courses/mycourse", icon: BookPlus },
   ];
 
   const isActiveRoute = (href: string) => {

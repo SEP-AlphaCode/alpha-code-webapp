@@ -162,6 +162,7 @@ export function Header({ currentSection, onNavigate }: HeaderProps) {
                 <button onClick={() => onNavigate?.(3)} className="hover:text-blue-600 transition-colors">Giới thiệu</button>
                 <button onClick={() => onNavigate?.(4)} className="hover:text-blue-600 transition-colors">Liên hệ</button>
                 <Link href="/resources" className="hover:text-blue-600 transition-colors">Tài nguyên</Link>
+                <Link href="/course" className="hover:text-blue-600 transition-colors">Khóa học</Link>
               </>
             ) : (
               <>
@@ -170,6 +171,8 @@ export function Header({ currentSection, onNavigate }: HeaderProps) {
                 <Link href="/#about" className="hover:text-blue-600 transition-colors">Giới thiệu</Link>
                 <Link href="/#contact" className="hover:text-blue-600 transition-colors">Liên hệ</Link>
                 <Link href="/resources" className="hover:text-blue-600 transition-colors">Tài nguyên</Link>
+                <Link href="/course" className="hover:text-blue-600 transition-colors">Khóa học</Link>
+
               </>
             )}
           </nav>

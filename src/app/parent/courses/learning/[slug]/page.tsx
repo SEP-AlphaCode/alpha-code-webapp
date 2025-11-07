@@ -47,7 +47,7 @@ export default function LearningPageClient() {
   }, [sectionsData])
 
   // Handle lesson click - Check if account lesson exists, create if not, then navigate
-  const handleLessonClick = async (lessonId: string, accountLessonId: string | null) => {
+  const handleLessonClick = async (lessonId: string, accountLessonId: string | null, lessonType: number) => {
     if (!accountId) return
 
     try {
@@ -61,16 +61,29 @@ export default function LearningPageClient() {
           status: 1, // Set status to "In Progress"
         })
         
-        // Navigate with the newly created accountLessonId
-        router.push(`/parent/courses/learning/${slug}/lesson/${lessonId}`)
+        // Navigate based on lesson type
+        // Type 1: Bài học (lesson) -> /lesson/[accountLessonId]
+        // Type 2: Bài kiểm tra (quiz/test) -> /quiz/[accountLessonId]
+        const route = lessonType === 2 
+          ? `/parent/courses/learning/${slug}/quiz/${newAccountLesson.id}`
+          : `/parent/courses/learning/${slug}/lesson/${newAccountLesson.id}`
+        
+        router.push(route)
       } else {
-        // Account lesson already exists, navigate with existing id
-        router.push(`/parent/courses/learning/${slug}/lesson/${lessonId}`)
+        // Account lesson already exists, navigate with existing id based on type
+        const route = lessonType === 2 
+          ? `/parent/courses/learning/${slug}/quiz/${accountLessonId}`
+          : `/parent/courses/learning/${slug}/lesson/${accountLessonId}`
+        
+        router.push(route)
       }
     } catch (error) {
       console.error('Error handling lesson click:', error)
-      // Still navigate even if creation fails
-      router.push(`/parent/courses/learning/${slug}/lesson/${lessonId}`)
+      // Still navigate even if creation fails - try with accountLessonId or lessonId
+      const route = lessonType === 2 
+        ? `/parent/courses/learning/${slug}/quiz/${accountLessonId || lessonId}`
+        : `/parent/courses/learning/${slug}/lesson/${accountLessonId || lessonId}`
+      router.push(route)
     } finally {
       setProcessingLessonId(null)
     }
@@ -119,7 +132,7 @@ export default function LearningPageClient() {
         {/* Simple Header */}
         <div className="mb-6">
           <button
-            onClick={() => router.push('/parent/courses')}
+            onClick={() => router.push('/parent/courses/mycourse')}
             className="mb-4 px-4 py-2 bg-white rounded-full shadow-md hover:shadow-lg transition-all text-gray-700 font-medium flex items-center gap-2"
           >
             <ArrowLeft className="w-4 h-4" />
@@ -226,7 +239,7 @@ export default function LearningPageClient() {
                               ? 'bg-gradient-to-r from-yellow-50 to-orange-50 border-2 border-yellow-200 hover:border-yellow-300' 
                               : 'bg-gray-50 border-2 border-gray-200 hover:border-blue-300 hover:bg-blue-50'
                           }`}
-                          onClick={() => !isProcessing && handleLessonClick(lesson.id, accountLesson.id)}
+                          onClick={() => !isProcessing && handleLessonClick(lesson.id, accountLesson.id, lesson.type)}
                         >
                           <div className="flex items-center gap-3">
                             {/* Large Status Icon */}
@@ -251,6 +264,19 @@ export default function LearningPageClient() {
                               </h4>
                               
                               <div className="flex items-center gap-2 flex-wrap">
+                                {/* Lesson Type Badge */}
+                                {lesson.type === 2 ? (
+                                  <span className="inline-flex items-center gap-1 text-sm px-2 py-1 bg-orange-100 text-orange-700 rounded-lg font-medium">
+                                    <FileText className="w-3 h-3" />
+                                    Bài kiểm tra
+                                  </span>
+                                ) : (
+                                  <span className="inline-flex items-center gap-1 text-sm px-2 py-1 bg-green-100 text-green-700 rounded-lg font-medium">
+                                    <BookOpen className="w-3 h-3" />
+                                    Bài học
+                                  </span>
+                                )}
+                                
                                 {lesson.videoUrl && (
                                   <span className="inline-flex items-center gap-1 text-sm px-2 py-1 bg-blue-100 text-blue-700 rounded-lg font-medium">
                                     <Video className="w-3 h-3" />

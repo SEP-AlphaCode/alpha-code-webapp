@@ -6,6 +6,6 @@ export type AccountLesson = {
     completedAt?: string // timestamp
     lessonId: string
     status: number // int4
-    typeStatus: string
+    statusText: string
     lesson: Lesson
 }
