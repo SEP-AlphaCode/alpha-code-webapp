@@ -31,6 +31,14 @@ export const useLogin = () => {
         
         toast.success(`Chào mừng ${accountData.fullName}!`);
         
+        // Check for redirect parameter from URL
+        const urlParams = typeof window !== 'undefined' ? new URLSearchParams(window.location.search) : null;
+        const redirectUrl = urlParams?.get('redirect');
+        if (redirectUrl) {
+          router.push(redirectUrl);
+          return;
+        }
+        
         const roleNameLower = accountData.roleName.toLowerCase();
         if (roleNameLower === 'admin') {
           router.push('/admin');
@@ -50,6 +58,13 @@ export const useLogin = () => {
       // TH2: User - cần xử lý profile
       if (data.requiresProfile) {
         console.log('🔍 Debug - Login response with requiresProfile:', data);
+        
+        // Lưu redirect URL nếu có
+        const urlParams = typeof window !== 'undefined' ? new URLSearchParams(window.location.search) : null;
+        const redirectUrl = urlParams?.get('redirect');
+        if (redirectUrl) {
+          sessionStorage.setItem('pendingRedirect', redirectUrl);
+        }
         
         // Lưu accountId để dùng khi tạo profile
         // Backend có thể trả về accountId (camelCase) hoặc accountid (lowercase)
@@ -145,6 +160,14 @@ export const useGoogleLogin = () => {
 
         toast.success(`Chào mừng ${accountData.fullName}!`);
 
+        // Check for redirect parameter from URL
+        const urlParams = typeof window !== 'undefined' ? new URLSearchParams(window.location.search) : null;
+        const redirectUrl = urlParams?.get('redirect');
+        if (redirectUrl) {
+          router.push(redirectUrl);
+          return;
+        }
+
         const roleNameLower = accountData.roleName.toLowerCase();
         if (roleNameLower === 'admin') {
           router.push('/admin');
@@ -164,6 +187,13 @@ export const useGoogleLogin = () => {
       // TH2: User - cần xử lý profile
       if (data.requiresProfile) {
         console.log('🔍 Debug - Google Login response with requiresProfile:', data);
+
+        // Lưu redirect URL nếu có
+        const urlParams = typeof window !== 'undefined' ? new URLSearchParams(window.location.search) : null;
+        const redirectUrl = urlParams?.get('redirect');
+        if (redirectUrl) {
+          sessionStorage.setItem('pendingRedirect', redirectUrl);
+        }
 
         // Lưu accountId để dùng khi tạo profile
         let accountIdToSave = data.accountId;
