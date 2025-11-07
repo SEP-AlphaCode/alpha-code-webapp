@@ -323,7 +323,7 @@ export default function ChatbotWidget() {
                 </Button>
               </div>
               <p className="text-xs text-gray-500 text-center mt-2">
-                Powered by AlphaCode AI ✨
+                Powered by AlphaCode
               </p>
             </div>
           </>
