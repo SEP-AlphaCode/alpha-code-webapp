@@ -3,6 +3,8 @@ import { cn } from "@/lib/utils";
 import { Course, mapDifficulty, formatTimespan, formatPrice } from "@/types/courses";
 import { useRouter } from 'next/navigation'
 import React from 'react'
+import { getUserIdFromToken } from '@/utils/tokenUtils'
+import { getAccountCourseByCourseAndAccount } from '@/features/courses/api/account-course-api'
 
 interface PublicCourseGridProps {
     courses: Course[];
@@ -15,9 +17,31 @@ interface PublicCourseCardProps {
 function PublicCourseCard({ course }: PublicCourseCardProps) {
     const router = useRouter()
 
-    const handleCourseClick = () => {
-        // Always go to public course detail page
-        router.push(`/course/${course.slug}`)
+    const handleCourseClick = async () => {
+        const accessToken = typeof window !== 'undefined' ? sessionStorage.getItem('accessToken') || '' : ''
+        const accountId = accessToken ? getUserIdFromToken(accessToken) : null
+
+        // If not logged in -> go to public course detail page
+        if (!accountId) {
+            router.push(`/course/${course.slug}`)
+            return
+        }
+
+        try {
+            const accountCourse = await getAccountCourseByCourseAndAccount(course.id, accountId)
+
+            if (accountCourse) {
+                // Already enrolled/purchased -> go to learning page with slug
+                router.push(`/parent/courses/learning/${course.slug}`)
+            } else {
+                // Not enrolled -> go to public course detail page
+                router.push(`/course/${course.slug}`)
+            }
+        } catch (error) {
+            console.error('Error checking enrollment:', error)
+            // On error, go to public course detail page (safe fallback)
+            router.push(`/course/${course.slug}`)
+        }
     }
 
     const diff = mapDifficulty(course.level)

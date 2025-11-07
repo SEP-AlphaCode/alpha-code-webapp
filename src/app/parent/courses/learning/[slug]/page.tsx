@@ -119,7 +119,7 @@ export default function LearningPageClient() {
         {/* Simple Header */}
         <div className="mb-6">
           <button
-            onClick={() => router.push('/parent/courses')}
+            onClick={() => router.push('/parent/courses/mycourse')}
             className="mb-4 px-4 py-2 bg-white rounded-full shadow-md hover:shadow-lg transition-all text-gray-700 font-medium flex items-center gap-2"
           >
             <ArrowLeft className="w-4 h-4" />
