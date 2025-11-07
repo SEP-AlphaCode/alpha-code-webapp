@@ -28,6 +28,7 @@ import { Expression } from '@/types/expression';
 import { Skill } from '@/types/skill';
 import { ExtendedAction } from '@/types/extended-action';
 import { getUserInfoFromToken } from '@/utils/tokenUtils';
+import { useRobotStore } from '@/hooks/use-robot-store';
 
 type ButtonName = 'A' | 'B' | 'X' | 'Y';
 
@@ -205,7 +206,7 @@ export default function JoystickConfigurationModal({
 
     setIsSaving(true);
     const accountId = getCurrentUserAccountId();
-    
+
     if (!accountId) {
       toast.error('Không thể lấy thông tin tài khoản. Vui lòng đăng nhập lại!');
       setIsSaving(false);
@@ -214,7 +215,7 @@ export default function JoystickConfigurationModal({
 
     try {
       const configs = Object.values(buttonConfigs).filter(Boolean) as ButtonConfig[];
-      
+
       if (configs.length === 0) {
         console.warn('No actions assigned to buttons');
         setIsSaving(false);
@@ -230,11 +231,11 @@ export default function JoystickConfigurationModal({
         }
       }
 
-      const robotId = '7754417e-e9a4-48e4-8f72-164a612403e0';
-      
+      const { selectedRobot } = useRobotStore()
+
       for (const config of configs) {
         console.log('🎮 Processing config:', config);
-        
+
         // Map action type to correct backend type
         const getBackendType = (actionType: ActionType): string => {
           switch (actionType) {
@@ -251,34 +252,34 @@ export default function JoystickConfigurationModal({
               return 'action';
           }
         };
-        
+
         const joystickData: Omit<Joystick, 'id' | 'createdDate' | 'lastUpdate'> = {
           accountId: accountId,
-          robotId: robotId,
+          robotId: selectedRobot?.id || '',
           buttonCode: config.buttonCode.toString(),
           type: getBackendType(config.actionType),
           status: 1,
-          
+
           // Action fields
           actionId: config.actionType === 'action' ? config.actionId : null,
           actionCode: config.actionType === 'action' ? config.actionCode : null,
           actionName: config.actionType === 'action' ? config.actionName : null,
-          
+
           // Dance fields
           danceId: config.actionType === 'dance' ? config.actionId : null,
           danceCode: config.actionType === 'dance' ? config.actionCode : null,
           danceName: config.actionType === 'dance' ? config.actionName : null,
-          
+
           // Expression fields
           expressionId: config.actionType === 'expression' ? config.actionId : null,
           expressionCode: config.actionType === 'expression' ? config.actionCode : null,
           expressionName: config.actionType === 'expression' ? config.actionName : null,
-          
+
           // Extended action fields
           extendedActionId: config.actionType === 'extendedaction' ? config.actionId : null,
           extendedActionCode: config.actionType === 'extendedaction' ? config.actionCode : null,
           extendedActionName: config.actionType === 'extendedaction' ? config.actionName : null,
-          
+
           // Skill fields
           skillId: config.actionType === 'skill' ? config.actionId : null,
           skillCode: config.actionType === 'skill' ? config.actionCode : null,
@@ -292,7 +293,7 @@ export default function JoystickConfigurationModal({
             return joystick.buttonCode === buttonCodeToCompare;
           }
         );
-        
+
         if (existingConfig) {
           await updateJoystickMutation.mutateAsync({ id: existingConfig.id, joystickData });
         } else {
@@ -305,15 +306,15 @@ export default function JoystickConfigurationModal({
       onClose();
     } catch (error) {
       let errorMessage = 'Có lỗi xảy ra khi lưu cấu hình!';
-      
+
       if (error && typeof error === 'object' && 'response' in error) {
-        const axiosError = error as { 
-          response?: { 
+        const axiosError = error as {
+          response?: {
             status?: number;
             data?: { message?: string };
-          } 
+          }
         };
-        
+
         if (axiosError.response?.status === 400) {
           errorMessage = 'Dữ liệu không hợp lệ. Vui lòng kiểm tra lại thông tin!';
         } else if (axiosError.response?.status === 401) {
@@ -331,7 +332,7 @@ export default function JoystickConfigurationModal({
           errorMessage = axiosError.response.data.message;
         }
       }
-      
+
       toast.error(errorMessage);
     } finally {
       setIsSaving(false);
@@ -341,32 +342,32 @@ export default function JoystickConfigurationModal({
   const renderActionGrid = (items: (Action | Dance | Expression | Skill | ExtendedAction)[], type: ActionType) => (
     <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 max-h-[400px] overflow-y-auto scrollbar-hide p-2">
       {items.map((item) => (
-        <Card 
-          key={item.id} 
+        <Card
+          key={item.id}
           className="cursor-pointer hover:shadow-lg transition-all duration-200 border-2 hover:border-blue-400 hover:scale-105 group min-h-[100px] flex flex-col items-center justify-center p-4"
           onClick={() => handleAssignAction(item, type)}
         >
           <div className="max-w-[70vh] flex flex-col items-center gap-3 text-center">
             {/* Icon from API field */}
             <div className="text-3xl flex items-center justify-center">
-              {type === 'expression' 
-                ? (item as Expression).imageUrl 
-                  ? <Image 
-                      src={(item as Expression).imageUrl} 
-                      alt={item.name}
-                      width={48}
-                      height={48}
-                      className="w-12 h-12 object-cover rounded-full"
-                    />
+              {type === 'expression'
+                ? (item as Expression).imageUrl
+                  ? <Image
+                    src={(item as Expression).imageUrl}
+                    alt={item.name}
+                    width={48}
+                    height={48}
+                    className="w-12 h-12 object-cover rounded-full"
+                  />
                   : '😊'
                 : type === 'skill'
-                ? (item as Skill).icon || '🎯'
-                : type === 'extendedaction' 
-                ? (item as ExtendedAction).icon || '⚡'
-                : (item as Action).icon || (type === 'action' ? '🎯' : '')
+                  ? (item as Skill).icon || '🎯'
+                  : type === 'extendedaction'
+                    ? (item as ExtendedAction).icon || '⚡'
+                    : (item as Action).icon || (type === 'action' ? '🎯' : '')
               }
             </div>
-            
+
             <div className="text-sm font-bold text-gray-800 group-hover:text-blue-600 transition-colors line-clamp-2">
               {item.name}
             </div>
@@ -416,7 +417,7 @@ export default function JoystickConfigurationModal({
             <div className="flex items-center justify-between">
               <div>
                 <h3 className="text-lg font-bold text-gray-800 flex items-center gap-3">
-                  Chọn hành động cho nút: 
+                  Chọn hành động cho nút:
                   <div className="flex items-center justify-center bg-blue-50 px-3 py-2 rounded-lg border border-blue-200">
                     <div className={`w-8 h-8 rounded-full flex items-center justify-center text-white text-lg font-bold ${buttonLabels[selectedButton].color} shadow-sm`}>
                       {selectedButton}
@@ -424,8 +425,8 @@ export default function JoystickConfigurationModal({
                   </div>
                 </h3>
               </div>
-              <Button 
-                onClick={handleSaveConfiguration} 
+              <Button
+                onClick={handleSaveConfiguration}
                 disabled={isSaving}
                 className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg font-semibold shadow-lg hover:shadow-xl transition-all duration-200"
               >
@@ -434,121 +435,118 @@ export default function JoystickConfigurationModal({
               </Button>
             </div>
 
-          {/* Middle Row - Button Selection (Horizontal Layout) */}
-          <div className="space-y-3">
-            <div className="flex items-center gap-2">
-              <div className="p-2 bg-purple-100 rounded-lg">
-                <Gamepad2 className="w-4 h-4 text-purple-600" />
+            {/* Middle Row - Button Selection (Horizontal Layout) */}
+            <div className="space-y-3">
+              <div className="flex items-center gap-2">
+                <div className="p-2 bg-purple-100 rounded-lg">
+                  <Gamepad2 className="w-4 h-4 text-purple-600" />
+                </div>
+                <h3 className="text-lg font-bold text-gray-800">Chọn nút</h3>
               </div>
-              <h3 className="text-lg font-bold text-gray-800">Chọn nút</h3>
-            </div>
-            
-            <div className="flex justify-center gap-6">
-              {(Object.keys(buttonLabels) as ButtonName[]).map((button) => {
-                const buttonInfo = buttonLabels[button];
-                const isSelected = selectedButton === button;
-                const isAssigned = buttonConfigs[button];
-                
-                return (
-                  <div
-                    key={button}
-                    className={`relative flex flex-col items-center cursor-pointer transition-all duration-200 hover:scale-110 ${
-                      isSelected ? 'scale-110' : ''
-                    }`}
-                    onClick={() => setSelectedButton(button)}
-                  >
-                    <div className={`w-16 h-16 rounded-full flex items-center justify-center text-white text-xl font-bold ${buttonInfo.color} shadow-lg transition-all duration-200 ${
-                      isSelected
-                        ? 'ring-4 ring-blue-400 shadow-xl'
-                        : 'hover:shadow-xl'
-                    }`}>
-                      {button}
-                    </div>
-                    
-                    {/* Assignment indicator */}
-                    {isAssigned && (
-                      <div className="absolute -top-1 -right-1 w-5 h-5 bg-green-500 rounded-full border-2 border-white flex items-center justify-center">
-                        <span className="text-white text-xs">✓</span>
+
+              <div className="flex justify-center gap-6">
+                {(Object.keys(buttonLabels) as ButtonName[]).map((button) => {
+                  const buttonInfo = buttonLabels[button];
+                  const isSelected = selectedButton === button;
+                  const isAssigned = buttonConfigs[button];
+
+                  return (
+                    <div
+                      key={button}
+                      className={`relative flex flex-col items-center cursor-pointer transition-all duration-200 hover:scale-110 ${isSelected ? 'scale-110' : ''
+                        }`}
+                      onClick={() => setSelectedButton(button)}
+                    >
+                      <div className={`w-16 h-16 rounded-full flex items-center justify-center text-white text-xl font-bold ${buttonInfo.color} shadow-lg transition-all duration-200 ${isSelected
+                          ? 'ring-4 ring-blue-400 shadow-xl'
+                          : 'hover:shadow-xl'
+                        }`}>
+                        {button}
                       </div>
-                    )}
-                  </div>
-                );
-              })}
+
+                      {/* Assignment indicator */}
+                      {isAssigned && (
+                        <div className="absolute -top-1 -right-1 w-5 h-5 bg-green-500 rounded-full border-2 border-white flex items-center justify-center">
+                          <span className="text-white text-xs">✓</span>
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+
+              {/* Show assigned action for selected button */}
+              {buttonConfigs[selectedButton] && (
+                <div className="bg-blue-50 p-4 rounded-lg border border-blue-200 text-center">
+                  <div className="text-sm text-gray-600 mb-1">Hành động đã gán:</div>
+                  <div className="font-semibold text-blue-700">{buttonConfigs[selectedButton]?.actionName}</div>
+                  <div className="text-xs text-gray-500 mt-1 uppercase tracking-wide">{buttonConfigs[selectedButton]?.actionType}</div>
+                </div>
+              )}
             </div>
 
-            {/* Show assigned action for selected button */}
-            {buttonConfigs[selectedButton] && (
-              <div className="bg-blue-50 p-4 rounded-lg border border-blue-200 text-center">
-                <div className="text-sm text-gray-600 mb-1">Hành động đã gán:</div>
-                <div className="font-semibold text-blue-700">{buttonConfigs[selectedButton]?.actionName}</div>
-                <div className="text-xs text-gray-500 mt-1 uppercase tracking-wide">{buttonConfigs[selectedButton]?.actionType}</div>
+            {/* Bottom Row - Action Selection */}
+            <div className="space-y-4">
+              {/* Search */}
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
+                <Input
+                  placeholder="Tìm kiếm hành động..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="pl-10 py-2 text-sm border-2 border-gray-200 rounded-lg focus:border-blue-400 transition-colors"
+                />
               </div>
-            )}
+
+              {/* Enhanced Tabs */}
+              <div className="w-full">
+                <div className="flex bg-gray-100 rounded-lg p-1 shadow-inner">
+                  {[
+                    { key: 'action', label: 'Hành động', icon: '🎯', count: actions.length },
+                    { key: 'dance', label: 'Điệu nhảy', icon: '💃', count: dances.length },
+                    { key: 'expression', label: 'Biểu cảm', icon: '😊', count: expressions.length },
+                    { key: 'skill', label: 'Kỹ năng', icon: '🎯', count: skills.length },
+                    { key: 'extendedaction', label: 'Hành động mở rộng', icon: '⚡', count: extendedActions.length },
+                  ].map((tab) => (
+                    <button
+                      key={tab.key}
+                      onClick={() => setActiveTab(tab.key as ActionType)}
+                      className={`flex-1 px-4 py-2 rounded-lg font-semibold text-sm transition-all duration-200 flex items-center justify-center gap-2 ${activeTab === tab.key
+                          ? 'bg-white text-blue-600 shadow-md ring-1 ring-blue-200'
+                          : 'text-gray-600 hover:text-gray-800 hover:bg-gray-50'
+                        }`}
+                    >
+                      <span className="text-base">{tab.icon}</span>
+                      <span>{tab.label}</span>
+                      <Badge variant="outline" className="text-xs px-2 py-0">
+                        {tab.count}
+                      </Badge>
+                    </button>
+                  ))}
+                </div>
+
+                <div className="mt-4">
+                  {items.length > 0 ? (
+                    renderActionGrid(items, type)
+                  ) : (
+                    <div className="text-center py-12">
+                      <div className="text-5xl mb-4">🔍</div>
+                      <h3 className="text-lg font-semibold text-gray-600 mb-2">
+                        Không tìm thấy {
+                          activeTab === 'action' ? 'hành động' :
+                            activeTab === 'dance' ? 'điệu nhảy' :
+                              activeTab === 'expression' ? 'biểu cảm' :
+                                activeTab === 'skill' ? 'kỹ năng' :
+                                  'hành động mở rộng'
+                        } nào
+                      </h3>
+                      <p className="text-gray-500 text-sm">Thử thay đổi từ khóa tìm kiếm</p>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
           </div>
-
-          {/* Bottom Row - Action Selection */}
-          <div className="space-y-4">
-            {/* Search */}
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
-              <Input
-                placeholder="Tìm kiếm hành động..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10 py-2 text-sm border-2 border-gray-200 rounded-lg focus:border-blue-400 transition-colors"
-              />
-            </div>
-
-            {/* Enhanced Tabs */}
-            <div className="w-full">
-              <div className="flex bg-gray-100 rounded-lg p-1 shadow-inner">
-                {[
-                  { key: 'action', label: 'Hành động', icon: '🎯', count: actions.length },
-                  { key: 'dance', label: 'Điệu nhảy', icon: '💃', count: dances.length },
-                  { key: 'expression', label: 'Biểu cảm', icon: '😊', count: expressions.length },
-                  { key: 'skill', label: 'Kỹ năng', icon: '🎯', count: skills.length },
-                  { key: 'extendedaction', label: 'Hành động mở rộng', icon: '⚡', count: extendedActions.length },
-                ].map((tab) => (
-                  <button
-                    key={tab.key}
-                    onClick={() => setActiveTab(tab.key as ActionType)}
-                    className={`flex-1 px-4 py-2 rounded-lg font-semibold text-sm transition-all duration-200 flex items-center justify-center gap-2 ${
-                      activeTab === tab.key
-                        ? 'bg-white text-blue-600 shadow-md ring-1 ring-blue-200'
-                        : 'text-gray-600 hover:text-gray-800 hover:bg-gray-50'
-                    }`}
-                  >
-                    <span className="text-base">{tab.icon}</span>
-                    <span>{tab.label}</span>
-                    <Badge variant="outline" className="text-xs px-2 py-0">
-                      {tab.count}
-                    </Badge>
-                  </button>
-                ))}
-              </div>
-
-              <div className="mt-4">
-                {items.length > 0 ? (
-                  renderActionGrid(items, type)
-                ) : (
-                  <div className="text-center py-12">
-                    <div className="text-5xl mb-4">🔍</div>
-                    <h3 className="text-lg font-semibold text-gray-600 mb-2">
-                      Không tìm thấy {
-                        activeTab === 'action' ? 'hành động' : 
-                        activeTab === 'dance' ? 'điệu nhảy' : 
-                        activeTab === 'expression' ? 'biểu cảm' :
-                        activeTab === 'skill' ? 'kỹ năng' :
-                        'hành động mở rộng'
-                      } nào
-                    </h3>
-                    <p className="text-gray-500 text-sm">Thử thay đổi từ khóa tìm kiếm</p>
-                  </div>
-                )}
-              </div>
-            </div>
-          </div>
-        </div>
         </div>
       </DialogContent>
     </Dialog>
