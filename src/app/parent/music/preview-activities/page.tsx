@@ -27,48 +27,49 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
+import { useRobotStore } from "@/hooks/use-robot-store"
 
 const getErrorMessage = (error: unknown): string => {
   console.error('Full error object:', error); // Debug log
-  
+
   if (error && typeof error === 'object' && 'response' in error) {
-    const httpError = error as { 
-      response: { 
-        status: number; 
-        data?: { 
-          message?: string; 
+    const httpError = error as {
+      response: {
+        status: number;
+        data?: {
+          message?: string;
           error?: string;
           details?: string;
-        } 
+        }
       };
       message?: string;
     }
-    
+
     const errorData = httpError.response?.data;
     const serverMessage = errorData?.message || errorData?.error || errorData?.details;
-    
+
     switch (httpError.response.status) {
-      case 400: 
+      case 400:
         return serverMessage || 'Dữ liệu không hợp lệ!'
-      case 401: 
+      case 401:
         return 'Bạn cần đăng nhập lại!'
-      case 403: 
+      case 403:
         return 'Không có quyền lưu hoạt động!'
       case 409:
         return serverMessage || 'Tên hoạt động đã tồn tại! Vui lòng chọn tên khác.'
       case 422:
         return serverMessage || 'Dữ liệu không đúng định dạng!'
-      case 500: 
+      case 500:
         return serverMessage || 'Lỗi server! Vui lòng thử lại sau.'
-      default: 
+      default:
         return serverMessage || 'Có lỗi xảy ra khi lưu hoạt động!'
     }
   }
-  
+
   if (error && typeof error === 'object' && 'message' in error) {
     return (error as { message: string }).message;
   }
-  
+
   return 'Có lỗi xảy ra khi lưu hoạt động!'
 }
 
@@ -81,14 +82,17 @@ export default function PreviewActivitiesPage() {
   const [activityName, setActivityName] = useState<string>("")
   const searchParams = useSearchParams()
   const router = useRouter()
-  
+
+  const { selectedRobot } = useRobotStore()
+
+
   // Sử dụng hook để tạo activity (tắt toast tự động)
   const createActivityMutation = useCreateActivity({ showToast: false })
 
   useEffect(() => {
     console.log("Loading preview activity data from sessionStorage");
     const sessionDataKey = searchParams.get('sessionKey') || 'preview_activity_data'
-    console.log( sessionDataKey);
+    console.log(sessionDataKey);
 
     try {
       const sessionData = sessionStorage.getItem(sessionDataKey)
@@ -123,7 +127,7 @@ export default function PreviewActivitiesPage() {
 
     // Validation chi tiết cho tên activity
     const trimmedName = activityName.trim()
-    
+
     if (trimmedName.length < 3) {
       toast.error("Tên hoạt động phải có ít nhất 3 ký tự!")
       return
@@ -161,12 +165,12 @@ export default function PreviewActivitiesPage() {
         status: 1,
         type: "dance_with_music",
         statusText: "ACTIVE",
-        robotModelId: "6e4e14b3-b073-4491-ab2a-2bf315b3259f"
+        robotModelId: selectedRobot?.robotModelId || "" ,
       }
 
       // Sử dụng hook mutation để tạo activity
       await createActivityMutation.mutateAsync(activityData)
-      
+
       toast.success(`✅ Hoạt động "${trimmedName}" đã được lưu thành công!`)
 
       const sessionDataKey = searchParams.get('sessionKey') || 'preview_activity_data'
@@ -181,7 +185,7 @@ export default function PreviewActivitiesPage() {
     } catch (error: unknown) {
       console.error('Error saving activity:', error)
       const errorMessage = getErrorMessage(error)
-      
+
       // Hiển thị thông báo lỗi chi tiết qua toast
       toast.error(errorMessage)
     }

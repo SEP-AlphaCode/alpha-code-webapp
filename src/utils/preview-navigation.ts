@@ -40,7 +40,7 @@ export function navigateToPreviewActivities(
       sessionKey: sessionKey
     })
 
-    router.push(`/${role}/music/previewactivities?${searchParams.toString()}`)
+    router.push(`/${role}/music/preview-activities?${searchParams.toString()}`)
 
     console.log('✅ Navigated to preview with sessionStorage:', {
       sessionKey,

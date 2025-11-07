@@ -298,7 +298,7 @@ export function RobotSelector({ className = "" }: RobotSelectorProps) {
           </button>
         </DropdownMenuTrigger>
 
-        <DropdownMenuContent className="w-80" side="bottom" align="end" sideOffset={8} forceMount>
+        <DropdownMenuContent className="w-96" side="bottom" align="end" sideOffset={8} forceMount>
           <DropdownMenuLabel className="font-semibold text-base mb-2">
             {isMultiMode ? "Chọn nhiều Robot" : "Chọn Robot"}
           </DropdownMenuLabel>
@@ -312,31 +312,34 @@ export function RobotSelector({ className = "" }: RobotSelectorProps) {
                   onClick={() => handleRobotSelect(robot.serialNumber)}
                   className={`flex items-center gap-3 py-2 px-2 rounded-lg cursor-pointer ${isSelected ? "bg-blue-50" : ""}`}
                 >
-                  <Avatar className="h-9 w-9 rounded-none overflow-hidden">
+                  <Avatar className="h-9 w-9 rounded-none overflow-hidden flex-shrink-0">
                     <AvatarImage src={robot.avatar} alt={robot.name} />
                     <AvatarFallback>
                       <Image src={imageFallback} alt={robot.name} width={36} height={36} />
                     </AvatarFallback>
                   </Avatar>
 
-                  <div className="flex flex-col flex-1">
-                    <div className="flex flex-row items-center gap-2">
-                      <span className="font-medium text-gray-900 text-sm">{robot.name}</span>
-                      {robot.status === "online" && <span className="text-xs px-2 py-0.5 rounded bg-green-100 text-green-600 flex items-center gap-1"><Wifi size={12} />Online</span>}
-                      {robot.status === "charging" && <span className="text-xs px-2 py-0.5 rounded bg-yellow-100 text-yellow-600 flex items-center gap-1"><Zap size={12} />Charging</span>}
-                      {robot.status === "offline" && <span className="text-xs px-2 py-0.5 rounded bg-gray-200 text-gray-600 flex items-center gap-1"><WifiOff size={12} />Offline</span>}
+                  <div className="flex flex-col flex-1 min-w-0">
+                    <div className="flex flex-row items-center justify-between gap-2">
+                      <span className="font-medium text-gray-900 text-sm truncate">{robot.name}</span>
+                      <div className="flex-shrink-0">
+                        {robot.status === "online" && <span className="text-xs px-2 py-0.5 rounded bg-green-100 text-green-600 flex items-center gap-1"><Wifi size={12} />Online</span>}
+                        {robot.status === "charging" && <span className="text-xs px-2 py-0.5 rounded bg-yellow-100 text-yellow-600 flex items-center gap-1"><Zap size={12} />Charging</span>}
+                        {robot.status === "offline" && <span className="text-xs px-2 py-0.5 rounded bg-gray-200 text-gray-600 flex items-center gap-1"><WifiOff size={12} />Offline</span>}
+                      </div>
                     </div>
-                    <span className="text-xs text-gray-400 mt-1">{robot.serialNumber}</span>
+                    <div className="flex flex-row items-center justify-between gap-2 mt-1">
+                      <span className="text-xs text-gray-400 truncate font-mono">{robot.serialNumber}</span>
+                      {robot.status !== "offline" && robot.battery != null && (
+                        <div className="flex items-center gap-1 text-xs text-gray-500 flex-shrink-0">
+                          <Battery size={12} />
+                          <span>{robot.battery}%</span>
+                        </div>
+                      )}
+                    </div>
                   </div>
 
-                  {robot.status !== "offline" && robot.battery != null && (
-                    <div className="flex items-center gap-1 text-xs text-gray-500">
-                      <Battery size={12} />
-                      <span>{robot.battery}%</span>
-                    </div>
-                  )}
-
-                  {isSelected && <span className="ml-2 text-blue-600 font-bold">✓</span>}
+                  {isSelected && <span className="ml-2 text-blue-600 font-bold flex-shrink-0">✓</span>}
                 </DropdownMenuItem>
               );
             })}
