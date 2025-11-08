@@ -20,6 +20,7 @@ import Image from "next/image";
 export default function ChatbotWidget() {
   const [isOpen, setIsOpen] = useState(false);
   const [isMinimized, setIsMinimized] = useState(false);
+  const [position, setPosition] = useState<'bottom-right' | 'bottom-left' | 'top-right' | 'top-left'>('bottom-right');
   const [messages, setMessages] = useState<ChatMessage[]>([
     {
       role: "assistant",
@@ -32,6 +33,44 @@ export default function ChatbotWidget() {
   const [hasError, setHasError] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const abortControllerRef = useRef<AbortController | null>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  // Load saved position from localStorage
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const savedPosition = localStorage.getItem('chatbot-position');
+      if (savedPosition && ['bottom-right', 'bottom-left', 'top-right', 'top-left'].includes(savedPosition)) {
+        setPosition(savedPosition as 'bottom-right' | 'bottom-left' | 'top-right' | 'top-left');
+      }
+    }
+  }, []);
+
+  // Save position to localStorage when changed
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('chatbot-position', position);
+    }
+  }, [position]);
+
+  const cyclePosition = () => {
+    const positions: Array<'bottom-right' | 'bottom-left' | 'top-right' | 'top-left'> = ['bottom-right', 'bottom-left', 'top-left', 'top-right'];
+    const currentIndex = positions.indexOf(position);
+    const nextIndex = (currentIndex + 1) % positions.length;
+    setPosition(positions[nextIndex]);
+  };
+
+  const getPositionClasses = () => {
+    switch (position) {
+      case 'bottom-right':
+        return 'bottom-6 right-6';
+      case 'bottom-left':
+        return 'bottom-6 left-6';
+      case 'top-right':
+        return 'top-6 right-6';
+      case 'top-left':
+        return 'top-6 left-6';
+    }
+  };
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -120,28 +159,38 @@ export default function ChatbotWidget() {
 
   if (!isOpen) {
     return (
-      <div className="fixed bottom-6 right-6 z-50">
-        <Button
-          onClick={toggleOpen}
-          className="w-20 h-20 rounded-full bg-blue-600 hover:bg-blue-700 shadow-2xl group relative overflow-hidden"
-        >
-          <div className="absolute inset-0 bg-white opacity-0 group-hover:opacity-10 transition-opacity" />
-          <div className="relative w-12 h-12">
-            <Image
-              src="/img_item_robot.webp"
-              alt="Robot Assistant"
-              fill
-              className="object-contain group-hover:scale-110 transition-transform"
-            />
+      <div className={`fixed z-50 ${getPositionClasses()}`}>
+        <div className="relative">
+          <Button
+            onClick={toggleOpen}
+            onContextMenu={(e) => {
+              e.preventDefault();
+              cyclePosition();
+            }}
+            className="w-20 h-20 rounded-full bg-blue-600 hover:bg-blue-700 shadow-2xl group relative overflow-hidden"
+          >
+            <div className="absolute inset-0 bg-white opacity-0 group-hover:opacity-10 transition-opacity" />
+            <div className="relative w-12 h-12">
+              <Image
+                src="/img_item_robot.webp"
+                alt="Robot Assistant"
+                fill
+                className="object-contain group-hover:scale-110 transition-transform"
+              />
+            </div>
+          </Button>
+          <div className="absolute -top-2 -right-2 w-6 h-6 bg-green-500 rounded-full border-4 border-white shadow-lg animate-pulse" />
+          {/* Position indicator hint */}
+          <div className="absolute -bottom-8 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity bg-gray-900 text-white text-xs px-2 py-1 rounded whitespace-nowrap pointer-events-none">
+            Chuột phải để đổi vị trí
           </div>
-        </Button>
-        <div className="absolute -top-2 -right-2 w-6 h-6 bg-green-500 rounded-full border-4 border-white shadow-lg animate-pulse" />
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="fixed bottom-6 right-6 z-50">
+    <div className={`fixed z-50 ${getPositionClasses()}`}>
       <Card
         className={`w-[400px] shadow-2xl border-0 rounded-3xl overflow-hidden transition-all duration-300 ${
           isMinimized ? "h-[70px]" : "h-[600px]"
@@ -307,6 +356,7 @@ export default function ChatbotWidget() {
             <div className="p-4 bg-white border-t border-gray-200">
               <div className="flex items-center gap-2">
                 <Input
+                  ref={inputRef}
                   value={inputValue}
                   onChange={(e) => setInputValue(e.target.value)}
                   onKeyPress={handleKeyPress}
