@@ -77,6 +77,7 @@ export default function JoystickConfigurationModal({
   // React Query mutations
   const createJoystickMutation = useCreateJoystick();
   const updateJoystickMutation = useUpdateJoystick();
+  const { selectedRobot } = useRobotStore();
 
   const { data: actionsData } = useGetPagedActions(1, 100, searchTerm);
   const { data: dancesData } = useGetPagedDances(1, 100, searchTerm);
@@ -231,7 +232,6 @@ export default function JoystickConfigurationModal({
         }
       }
 
-      const { selectedRobot } = useRobotStore()
 
       for (const config of configs) {
         console.log('🎮 Processing config:', config);
@@ -458,8 +458,8 @@ export default function JoystickConfigurationModal({
                       onClick={() => setSelectedButton(button)}
                     >
                       <div className={`w-16 h-16 rounded-full flex items-center justify-center text-white text-xl font-bold ${buttonInfo.color} shadow-lg transition-all duration-200 ${isSelected
-                          ? 'ring-4 ring-blue-400 shadow-xl'
-                          : 'hover:shadow-xl'
+                        ? 'ring-4 ring-blue-400 shadow-xl'
+                        : 'hover:shadow-xl'
                         }`}>
                         {button}
                       </div>
@@ -512,8 +512,8 @@ export default function JoystickConfigurationModal({
                       key={tab.key}
                       onClick={() => setActiveTab(tab.key as ActionType)}
                       className={`flex-1 px-4 py-2 rounded-lg font-semibold text-sm transition-all duration-200 flex items-center justify-center gap-2 ${activeTab === tab.key
-                          ? 'bg-white text-blue-600 shadow-md ring-1 ring-blue-200'
-                          : 'text-gray-600 hover:text-gray-800 hover:bg-gray-50'
+                        ? 'bg-white text-blue-600 shadow-md ring-1 ring-blue-200'
+                        : 'text-gray-600 hover:text-gray-800 hover:bg-gray-50'
                         }`}
                     >
                       <span className="text-base">{tab.icon}</span>

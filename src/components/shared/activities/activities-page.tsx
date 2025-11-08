@@ -342,7 +342,7 @@ export default function ActivitiesPage() {
             </DialogHeader>
             <div className="space-y-4 pt-4">
               <p className="text-gray-600">
-                Bạn có chắc chắn muốn xóa hoạt động <span className="font-semibold text-gray-900">"{activityToDelete?.name}"</span> không?
+                Bạn có chắc chắn muốn xóa hoạt động <span className="font-semibold text-gray-900">&quot;{activityToDelete?.name}&quot;</span> không?
               </p>
               <p className="text-sm text-red-600">
                 Hành động này không thể hoàn tác.
