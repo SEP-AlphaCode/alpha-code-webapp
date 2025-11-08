@@ -54,6 +54,8 @@ export default function ActivitiesPage() {
   const [filterType, setFilterType] = useState<string>("all")
   const [filterStatus, setFilterStatus] = useState<string>("1")
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false)
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false)
+  const [activityToDelete, setActivityToDelete] = useState<ActivityType | null>(null)
   const [currentPage, setCurrentPage] = useState(1)
   const [perPage, setPerPage] = useState(12)
   const [accountId, setAccountId] = useState<string>('');
@@ -122,6 +124,22 @@ export default function ActivitiesPage() {
     const serial = Array.isArray(robotSerial) ? robotSerial[0] : robotSerial; if (!serial) return;
     startActivity(serial, 'stop_all_actions', {});
   }, [selectedRobotSerial, startActivity])
+
+  const handleDeleteClick = useCallback((activity: ActivityType) => {
+    setActivityToDelete(activity)
+    setIsDeleteModalOpen(true)
+  }, [])
+
+  const handleDeleteConfirm = useCallback(() => {
+    if (activityToDelete) {
+      deleteActivityMutation.mutate(activityToDelete.id, {
+        onSuccess: () => {
+          setIsDeleteModalOpen(false)
+          setActivityToDelete(null)
+        }
+      })
+    }
+  }, [activityToDelete, deleteActivityMutation])
 
   if (renderCount.current > 100) { return <div>Error: Too many re-renders. Please check console for details.</div>; }
 
@@ -257,7 +275,7 @@ export default function ActivitiesPage() {
                         <DropdownMenuContent align="end">
                           <DropdownMenuItem onSelect={() => { /* view */ }}>Xem</DropdownMenuItem>
                           <DropdownMenuItem onSelect={() => { /* edit */ }}>Chỉnh sửa</DropdownMenuItem>
-                          <DropdownMenuItem onSelect={() => { if (!confirm('Bạn có chắc muốn xóa hoạt động này?')) return; deleteActivityMutation.mutate(activity.id); }} data-variant="destructive">Xóa</DropdownMenuItem>
+                          <DropdownMenuItem onSelect={() => handleDeleteClick(activity)} className="text-red-600 focus:text-red-600">Xóa</DropdownMenuItem>
                         </DropdownMenuContent>
                       </DropdownMenu>
                     </div>
@@ -315,6 +333,51 @@ export default function ActivitiesPage() {
             <Card className="text-center border-0 shadow-md"><CardContent className="p-6"><div className="w-12 h-12 bg-orange-100 rounded-full flex items-center justify-center mx-auto mb-4"><Clock className="w-6 h-6 text-orange-600" /></div><h3 className="text-2xl font-bold text-gray-900">{pagination?.total_count || 0}</h3><p className="text-gray-600">Tổng số</p></CardContent></Card>
           </div>
         </div>
+
+        {/* Delete Confirmation Modal */}
+        <Dialog open={isDeleteModalOpen} onOpenChange={setIsDeleteModalOpen}>
+          <DialogContent className="max-w-md">
+            <DialogHeader>
+              <DialogTitle>Xác nhận xóa hoạt động</DialogTitle>
+            </DialogHeader>
+            <div className="space-y-4 pt-4">
+              <p className="text-gray-600">
+                Bạn có chắc chắn muốn xóa hoạt động <span className="font-semibold text-gray-900">"{activityToDelete?.name}"</span> không?
+              </p>
+              <p className="text-sm text-red-600">
+                Hành động này không thể hoàn tác.
+              </p>
+              <div className="flex gap-3 pt-4">
+                <Button
+                  onClick={() => {
+                    setIsDeleteModalOpen(false)
+                    setActivityToDelete(null)
+                  }}
+                  variant="outline"
+                  className="flex-1"
+                  disabled={deleteActivityMutation.isPending}
+                >
+                  Hủy
+                </Button>
+                <Button
+                  onClick={handleDeleteConfirm}
+                  variant="destructive"
+                  className="flex-1"
+                  disabled={deleteActivityMutation.isPending}
+                >
+                  {deleteActivityMutation.isPending ? (
+                    <>
+                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                      Đang xóa...
+                    </>
+                  ) : (
+                    'Xóa'
+                  )}
+                </Button>
+              </div>
+            </div>
+          </DialogContent>
+        </Dialog>
       </div>
     </ProtectLicense>
   )
