@@ -367,12 +367,12 @@ export default function CourseDetailPage() {
           <CardTitle>Thông tin khóa học</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
             {/* Danh mục */}
             <div className="space-y-2">
               <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Danh mục</p>
               <div className="flex items-center gap-2">
-                <Badge variant="outline" className="text-sm font-semibold">
+                <Badge variant="outline" className="text-sm font-semibold break-words whitespace-normal">
                   {course.categoryName || 'N/A'}
                 </Badge>
               </div>
