@@ -74,7 +74,7 @@ export default function ApkList({
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center min-h-[400px]">
+      <div className="bg-white rounded-lg border border-gray-200 shadow-sm flex items-center justify-center min-h-[400px]">
         <LoadingState />
       </div>
     );
@@ -82,7 +82,7 @@ export default function ApkList({
 
   if (error) {
     return (
-      <div className="bg-white rounded-lg border border-red-200 p-6">
+      <div className="bg-white rounded-lg border border-red-200 p-6 shadow-sm">
         <div className="flex items-center gap-3 text-red-700">
           <AlertCircle className="w-5 h-5" />
           <div>
@@ -231,7 +231,7 @@ function ApkItem({
   accountId?: string;
   onViewDetail: () => void;
 }) {
-  const { data: filePath, isLoading: fileLoading } = useFilePath(apk.id, accountId);
+  const { data: filePath, isLoading: fileLoading } = useFilePath(apk.id, accountId, apk.isRequireLicense);
 
   const createdDate = apk.createdDate ? new Date(apk.createdDate) : null;
 
@@ -240,7 +240,7 @@ function ApkItem({
       // Tạo link ẩn với download attribute để force download file ZIP trực tiếp
       const link = document.createElement('a');
       link.href = filePath;
-      link.download = `apk-${apk.robotModelName || 'robot'}-v${apk.version}.zip`;
+      link.download = `${apk.name || apk.robotModelName || 'robot'}-v${apk.version}.zip`;
       // Không dùng target='_blank' để tránh mở tab mới, download trực tiếp
       document.body.appendChild(link);
       link.click();
@@ -260,7 +260,8 @@ function ApkItem({
                 {apk.robotModelName || "Unknown Model"}
               </Badge>
             </div>
-            <h3 className="text-lg font-bold text-gray-900">Phiên bản {apk.version}</h3>
+            <h3 className="text-lg font-bold text-gray-900">{apk.name || `Phiên bản ${apk.version}`}</h3>
+            {apk.name && <p className="text-sm text-gray-600 mt-1">v{apk.version}</p>}
           </div>
         </div>
 
@@ -313,13 +314,21 @@ function ApkItem({
               <Download className="w-4 h-4 mr-2" />
               Tải xuống
             </Button>
-          ) : (
+          ) : apk.isRequireLicense ? (
             <Link href="/license-key" className="flex-1">
               <Button className="w-full bg-amber-600 hover:bg-amber-700 text-white">
                 <Package className="w-4 h-4 mr-2" />
                 Mua license
               </Button>
             </Link>
+          ) : (
+            <Button
+              className="flex-1 bg-gray-400 text-white cursor-not-allowed"
+              disabled
+            >
+              <Download className="w-4 h-4 mr-2" />
+              Không khả dụng
+            </Button>
           )}
         </div>
       </div>

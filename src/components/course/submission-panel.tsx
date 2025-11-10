@@ -464,10 +464,10 @@ export function SubmissionPanel({ accountLessonId, onSubmissionSuccess }: Submis
                   <p className="font-semibold mb-1">Hướng dẫn:</p>
                   <ul className="space-y-1 text-xs">
                     <li>1. Nhập serial robot của bạn</li>
-                    <li>2. Nhấn "Bắt đầu ghi log" để bắt đầu</li>
+                    <li>2. Nhấn &quot;Bắt đầu ghi log&quot; để bắt đầu</li>
                     <li>3. Thực hiện các thao tác với robot</li>
-                    <li>4. Nhấn "Dừng ghi log" khi hoàn thành</li>
-                    <li>5. Kiểm tra log và nhấn "Nộp bài"</li>
+                    <li>4. Nhấn &quot;Dừng ghi log&quot; khi hoàn thành</li>
+                    <li>5. Kiểm tra log và nhấn &quot;Nộp bài&quot;</li>
                   </ul>
                 </AlertDescription>
               </Alert>

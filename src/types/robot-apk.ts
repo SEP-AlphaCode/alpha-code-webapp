@@ -1,6 +1,7 @@
 
 export interface RobotApk {
   id: string;
+  name: string;
   version: string;
   description: string;
   robotModelId: string;
@@ -15,6 +16,7 @@ export interface RobotApk {
  * DTO cho tạo mới Robot APK (POST)
  */
 export interface CreateRobotApkDto {
+  name: string;
   version: string;
   description: string;
   robotModelId: string;
@@ -26,6 +28,7 @@ export interface CreateRobotApkDto {
  * DTO cho cập nhật Robot APK (PUT)
  */
 export interface UpdateRobotApkDto {
+  name?: string;
   version?: string;
   description?: string;
   robotModelId?: string;

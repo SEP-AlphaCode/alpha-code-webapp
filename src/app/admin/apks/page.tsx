@@ -43,7 +43,7 @@ export default function AdminApksPage() {
 
   if (isLoading) {
     return (
-      <div className="container mx-auto py-10 flex justify-center">
+      <div className="container mx-auto py-10 min-h-[calc(100vh-200px)] flex items-center justify-center">
         <LoadingGif />
       </div>
     )
