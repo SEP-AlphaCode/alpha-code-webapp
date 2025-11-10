@@ -10,6 +10,8 @@ export function useNewestSubmission(accountLessonId: string) {
     queryFn: ({ signal }) => 
       submissionApi.getNewestSubmissionByAccountLessonId(accountLessonId, signal),
     enabled: !!accountLessonId,
+    retry: false, // Don't retry on 404/400 errors (submission might not exist yet)
+    throwOnError: false, // Don't throw error, just return undefined
   })
 }
 

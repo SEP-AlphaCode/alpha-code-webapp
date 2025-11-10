@@ -9,7 +9,7 @@ export const createSubmission = async (data: {
   status?: number
 }) => {
   try {
-    const response = await coursesHttp.post<Submisstion>('/api/v1/submissions', data)
+    const response = await coursesHttp.post<Submisstion>('/submissions', data)
     return response.data
   } catch (error) {
     console.error('API Error in createSubmission:', error)
@@ -24,7 +24,7 @@ export const getNewestSubmissionByAccountLessonId = async (
 ) => {
   try {
     const response = await coursesHttp.get<Submisstion>(
-      `/api/v1/submissions/by-account-lesson-id/${accountLessonId}`,
+      `/submissions/by-account-lesson-id/${accountLessonId}`,
       { signal }
     )
     return response.data
@@ -44,7 +44,7 @@ export const reviewSubmission = async (
 ) => {
   try {
     const response = await coursesHttp.put<Submisstion>(
-      `/api/v1/submissions/${submissionId}/review`,
+      `/submissions/${submissionId}/review`,
       data
     )
     return response.data

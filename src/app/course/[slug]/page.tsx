@@ -32,6 +32,13 @@ export default function CourseHomePage() {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isLoginDialogOpen, setIsLoginDialogOpen] = useState(false);
 
+  // Helper function to format duration in seconds to mm:ss
+  const formatDuration = (seconds: number): string => {
+    const minutes = Math.floor(seconds / 60);
+    const remainingSeconds = seconds % 60;
+    return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
+  };
+
   const { data: courseData, isLoading: isCourseLoading } = useCourse().useGetCourseBySlug(slug);
 
   const { data: sectionsData, isLoading: isSectionsLoading, error: sectionsError } = useSections(
@@ -311,7 +318,7 @@ export default function CourseHomePage() {
                               </div>
                               <div>
                                 <h4 className="text-gray-900 font-medium">{lesson.title}</h4>
-                                <p className="text-sm text-gray-500">{lesson.duration} phút</p>
+                                <p className="text-sm text-gray-500">{formatDuration(lesson.duration)}</p>
                               </div>
                             </div>
                             <div className="flex items-center gap-2">

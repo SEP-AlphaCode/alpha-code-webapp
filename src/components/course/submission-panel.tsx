@@ -21,6 +21,7 @@ import { useCreateSubmission, useNewestSubmission } from '@/features/courses/hoo
 import { toast } from 'sonner'
 import { useSendRobotCommand } from '@/features/users/hooks/use-websocket'
 import { WebSocketCommand } from '@/types/websocket'
+import { useRobotStore } from '@/hooks/use-robot-store'
 
 interface SubmissionPanelProps {
   accountLessonId: string
@@ -44,7 +45,6 @@ export function SubmissionPanel({ accountLessonId, onSubmissionSuccess }: Submis
   // Robot log submission states
   const [isRecording, setIsRecording] = useState(false)
   const [robotLogs, setRobotLogs] = useState<RobotLog[]>([])
-  const [robotSerial, setRobotSerial] = useState<string>('')
   const [recordingDuration, setRecordingDuration] = useState(0)
   const recordingIntervalRef = useRef<NodeJS.Timeout | null>(null)
   
@@ -52,6 +52,10 @@ export function SubmissionPanel({ accountLessonId, onSubmissionSuccess }: Submis
   const createSubmission = useCreateSubmission()
   const { data: latestSubmission } = useNewestSubmission(accountLessonId)
   const sendCommand = useSendRobotCommand()
+  
+  // Get selected robot from Redux store
+  const { selectedRobotSerial, selectedRobot } = useRobotStore()
+  const robotSerial = Array.isArray(selectedRobotSerial) ? selectedRobotSerial[0] : selectedRobotSerial
 
   // Cleanup on unmount
   useEffect(() => {
@@ -138,7 +142,7 @@ export function SubmissionPanel({ accountLessonId, onSubmissionSuccess }: Submis
   // Start recording robot logs
   const handleStartRecording = () => {
     if (!robotSerial) {
-      toast.error('Vui lòng nhập serial robot')
+      toast.error('Vui lòng chọn robot từ header trước')
       return
     }
 
@@ -151,10 +155,12 @@ export function SubmissionPanel({ accountLessonId, onSubmissionSuccess }: Submis
       setRecordingDuration((prev) => prev + 1)
     }, 1000)
 
-    // Send command to robot to start activity monitoring
+    // Send command to robot to start submission recording
     const command: WebSocketCommand = {
-      type: 'start-log-recording',
-      data: { accountLessonId }
+      type: 'submission_start',
+      data: {
+        account_lesson_id: accountLessonId
+      }
     }
 
     sendCommand.mutate(
@@ -181,19 +187,38 @@ export function SubmissionPanel({ accountLessonId, onSubmissionSuccess }: Submis
       recordingIntervalRef.current = null
     }
 
-    // Send command to robot to stop activity monitoring
+    // Send command to robot to stop submission recording
     if (robotSerial) {
       const command: WebSocketCommand = {
-        type: 'stop-log-recording',
-        data: {}
+        type: 'submission_end',
+        data: {
+          account_lesson_id: accountLessonId
+        }
       }
-      sendCommand.mutate({ serial: robotSerial, command })
+      sendCommand.mutate(
+        { serial: robotSerial, command },
+        {
+          onSuccess: () => {
+            toast.success('Đã dừng ghi log và nộp bài thành công!')
+            
+            // Reset states
+            setRobotLogs([])
+            setRecordingDuration(0)
+            
+            // Call success callback
+            onSubmissionSuccess?.()
+          },
+          onError: () => {
+            toast.error('Có lỗi khi dừng ghi log. Vui lòng thử lại.')
+          }
+        }
+      )
     }
 
     // Stop listening
     stopListeningToRobotLogs()
 
-    toast.info(`Đã dừng ghi log. Thời gian: ${formatDuration(recordingDuration)}`)
+    toast.info(`Thời gian ghi: ${formatDuration(recordingDuration)}`)
   }
 
   // Start listening to robot logs via WebSocket
@@ -221,37 +246,6 @@ export function SubmissionPanel({ accountLessonId, onSubmissionSuccess }: Submis
   // Stop listening to robot logs
   const stopListeningToRobotLogs = () => {
     // TODO: Close WebSocket connection
-  }
-
-  // Handle robot log submission
-  const handleRobotLogSubmit = async () => {
-    if (robotLogs.length === 0) {
-      toast.error('Chưa có log nào được ghi lại. Vui lòng ghi log trước khi nộp bài.')
-      return
-    }
-
-    try {
-      // Convert logs to JSON string
-      const logData = JSON.stringify(robotLogs)
-
-      // Create submission with log data
-      await createSubmission.mutateAsync({
-        accountLessonId,
-        logData,
-        status: 0 // Pending review
-      })
-
-      toast.success('Nộp bài thành công! Đang chờ giáo viên chấm điểm.')
-      
-      // Reset states
-      setRobotLogs([])
-      setRecordingDuration(0)
-      
-      onSubmissionSuccess?.()
-    } catch (error) {
-      console.error('Error submitting robot log:', error)
-      toast.error('Có lỗi xảy ra khi nộp bài. Vui lòng thử lại.')
-    }
   }
 
   // Format duration
@@ -388,17 +382,28 @@ export function SubmissionPanel({ accountLessonId, onSubmissionSuccess }: Submis
           {/* Robot Log Submission Tab */}
           <TabsContent value="robot" className="space-y-4">
             <div className="space-y-4">
-              {/* Robot Serial Input */}
+              {/* Robot Status Display */}
               <div className="space-y-2">
-                <label className="text-sm font-medium">Serial Robot</label>
-                <input
-                  type="text"
-                  placeholder="Nhập serial robot (VD: ROBOT123)"
-                  value={robotSerial}
-                  onChange={(e) => setRobotSerial(e.target.value)}
-                  disabled={isRecording}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                />
+                <label className="text-sm font-medium">Robot đã chọn</label>
+                {robotSerial ? (
+                  <div className="flex items-center gap-2 p-3 border border-gray-300 rounded-lg bg-gray-50">
+                    <Circle className={`w-3 h-3 ${selectedRobot?.status === 'online' ? 'text-green-500 fill-green-500' : 'text-gray-400 fill-gray-400'}`} />
+                    <div className="flex-1">
+                      <p className="font-semibold">{selectedRobot?.name || robotSerial}</p>
+                      <p className="text-xs text-gray-500">Serial: {robotSerial}</p>
+                    </div>
+                    <Badge variant={selectedRobot?.status === 'online' ? 'default' : 'secondary'}>
+                      {selectedRobot?.status === 'online' ? 'Online' : 'Offline'}
+                    </Badge>
+                  </div>
+                ) : (
+                  <Alert className="bg-yellow-50 border-yellow-200">
+                    <AlertCircle className="h-4 w-4 text-yellow-600" />
+                    <AlertDescription className="text-yellow-800">
+                      Vui lòng chọn robot từ header trước khi ghi log
+                    </AlertDescription>
+                  </Alert>
+                )}
               </div>
 
               {/* Recording Controls */}
@@ -463,34 +468,13 @@ export function SubmissionPanel({ accountLessonId, onSubmissionSuccess }: Submis
                 <AlertDescription className="text-sm">
                   <p className="font-semibold mb-1">Hướng dẫn:</p>
                   <ul className="space-y-1 text-xs">
-                    <li>1. Nhập serial robot của bạn</li>
+                    <li>1. Chọn robot từ header (góc phải màn hình)</li>
                     <li>2. Nhấn &quot;Bắt đầu ghi log&quot; để bắt đầu</li>
                     <li>3. Thực hiện các thao tác với robot</li>
-                    <li>4. Nhấn &quot;Dừng ghi log&quot; khi hoàn thành</li>
-                    <li>5. Kiểm tra log và nhấn &quot;Nộp bài&quot;</li>
+                    <li>4. Nhấn &quot;Dừng ghi log&quot; - Bài sẽ tự động được nộp</li>
                   </ul>
                 </AlertDescription>
               </Alert>
-
-              {/* Submit Button */}
-              <Button
-                onClick={handleRobotLogSubmit}
-                disabled={robotLogs.length === 0 || isRecording || createSubmission.isPending}
-                className="w-full"
-                size="lg"
-              >
-                {createSubmission.isPending ? (
-                  <>
-                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                    Đang nộp bài...
-                  </>
-                ) : (
-                  <>
-                    <CheckCircle className="w-4 h-4 mr-2" />
-                    Nộp bài log robot
-                  </>
-                )}
-              </Button>
             </div>
           </TabsContent>
         </Tabs>
