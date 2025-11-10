@@ -159,15 +159,21 @@ export function useUpdateCourse(id: string, courseSlug?: string) {
       status?: number
       requireLicense: boolean
     }) => courseApi.updateCourse(id, data),
-    onSuccess: () => {
+    onSuccess: async (updatedCourse) => {
       // Invalidate all course-related queries
-      queryClient.invalidateQueries({ queryKey: ['staff', 'courses'] })
-      queryClient.invalidateQueries({ queryKey: ['staff', 'course'] }) // This will match both ID and slug
-      queryClient.invalidateQueries({ queryKey: ['courses'] })
-      queryClient.invalidateQueries({ queryKey: ['course'] })
-      queryClient.invalidateQueries({ queryKey: ['sections'] })
-      // Redirect to detail page if slug provided, otherwise to list
-      if (courseSlug) {
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: ['staff', 'courses'] }),
+        queryClient.invalidateQueries({ queryKey: ['staff', 'course'] }),
+        queryClient.invalidateQueries({ queryKey: ['courses'] }),
+        queryClient.invalidateQueries({ queryKey: ['course'] }),
+        queryClient.invalidateQueries({ queryKey: ['sections'] })
+      ])
+      
+      // Redirect using the NEW slug from the updated course response
+      // This handles the case where the course name (and thus slug) was changed
+      if (updatedCourse?.slug) {
+        router.push(`/staff/courses/${updatedCourse.slug}`)
+      } else if (courseSlug) {
         router.push(`/staff/courses/${courseSlug}`)
       } else {
         router.push('/staff/courses')
