@@ -8,6 +8,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge'
 import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator } from '@/components/ui/breadcrumb'
 import { Clock, BookOpen, FileText, CheckCircle, ArrowLeft, AlertCircle, Trophy, Target } from 'lucide-react'
+import { SubmissionPanel } from '@/components/course/submission-panel'
 
 export default function QuizPageLearning() {
   const router = useRouter()
@@ -255,48 +256,51 @@ export default function QuizPageLearning() {
 
             {/* Quiz Questions (when started) */}
             {isStarted && !isSubmitted && (
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <FileText className="w-5 h-5" />
-                    Nội dung bài kiểm tra
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="pt-6 space-y-6">
-                  <div className="prose max-w-none">
-                    <div 
-                      className="text-muted-foreground leading-relaxed"
-                      dangerouslySetInnerHTML={{ __html: lessonData.content }}
-                    />
-                  </div>
-
-                  {/* Solution/Answer Area */}
-                  {lessonData.solution && (
-                    <div className="space-y-4">
-                      <h3 className="text-lg font-semibold">Khu vực trả lời</h3>
-                      <textarea 
-                        className="w-full min-h-[200px] p-4 border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:outline-none"
-                        placeholder="Nhập câu trả lời của bạn vào đây..."
+              <>
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <FileText className="w-5 h-5" />
+                      Nội dung bài kiểm tra
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="pt-6 space-y-6">
+                    <div className="prose max-w-none">
+                      <div 
+                        className="text-muted-foreground leading-relaxed"
+                        dangerouslySetInnerHTML={{ __html: lessonData.content }}
                       />
                     </div>
-                  )}
 
-                  <div className="flex justify-end gap-4 pt-4">
-                    <Button 
-                      variant="outline"
-                      onClick={() => setIsStarted(false)}
-                    >
-                      Hủy
-                    </Button>
-                    <Button 
-                      onClick={handleSubmitQuiz}
-                    >
-                      <CheckCircle className="w-4 h-4 mr-2" />
-                      Nộp bài
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
+                    {/* Solution/Answer Area */}
+                    {lessonData.solution && (
+                      <div className="space-y-4">
+                        <h3 className="text-lg font-semibold">Khu vực trả lời</h3>
+                        <textarea 
+                          className="w-full min-h-[200px] p-4 border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:outline-none"
+                          placeholder="Nhập câu trả lời của bạn vào đây..."
+                        />
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+
+                {/* Submission Panel */}
+                <SubmissionPanel 
+                  accountLessonId={accountLessonId}
+                  onSubmissionSuccess={handleSubmitQuiz}
+                />
+
+                <div className="flex justify-end gap-4">
+                  <Button 
+                    variant="outline"
+                    onClick={() => setIsStarted(false)}
+                  >
+                    <ArrowLeft className="w-4 h-4 mr-2" />
+                    Quay lại
+                  </Button>
+                </div>
+              </>
             )}
 
             {/* Quiz Results (when submitted) */}
