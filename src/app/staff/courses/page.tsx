@@ -186,17 +186,17 @@ export default function CoursesPage() {
             </Select>
           </div>
 
-          <div className="rounded-md border">
+          <div className="rounded-md border overflow-x-auto">
             <Table>
               <TableHeader>
                 <TableRow>
                   <TableHead className="w-[80px]">Ảnh</TableHead>
-                  <TableHead>Tên khóa học</TableHead>
-                  <TableHead>Danh mục</TableHead>
-                  <TableHead>Thông tin</TableHead>
-                  <TableHead>Giá</TableHead>
-                  <TableHead>Trạng thái</TableHead>
-                  <TableHead className="text-right">Thao tác</TableHead>
+                  <TableHead className="min-w-[200px]">Tên khóa học</TableHead>
+                  <TableHead className="min-w-[120px]">Danh mục</TableHead>
+                  <TableHead className="min-w-[180px]">Thông tin</TableHead>
+                  <TableHead className="min-w-[100px]">Giá</TableHead>
+                  <TableHead className="min-w-[100px]">Trạng thái</TableHead>
+                  <TableHead className="text-right min-w-[80px]">Thao tác</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -231,21 +231,21 @@ export default function CoursesPage() {
                           )}
                         </div>
                       </TableCell>
-                      <TableCell className="font-medium max-w-xs">
-                        <div>
-                          <p className="font-medium">{course.name}</p>
+                      <TableCell className="font-medium">
+                        <div className="max-w-[250px]">
+                          <p className="font-medium truncate">{course.name}</p>
                           <div 
-                            className="text-sm text-muted-foreground truncate"
+                            className="text-sm text-muted-foreground line-clamp-2"
                             dangerouslySetInnerHTML={{ __html: course.description }}
                           />
                         </div>
                       </TableCell>
                       <TableCell>
-                        <Badge variant="outline">{course.categoryName|| 'N/A'}</Badge>
+                        <Badge variant="outline" className="whitespace-nowrap">{course.categoryName|| 'N/A'}</Badge>
                       </TableCell>
                       <TableCell>
-                        <div className="space-y-1 min-w-[160px]">
-                          <div className="flex items-center gap-2">
+                        <div className="space-y-1">
+                          <div className="flex items-center gap-2 flex-wrap">
                             <Badge className={levelMap[course.level]?.color}>
                               {levelMap[course.level]?.text}
                             </Badge>
@@ -255,7 +255,7 @@ export default function CoursesPage() {
                               </Badge>
                             )}
                           </div>
-                          <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                          <div className="flex items-center gap-2 text-sm text-muted-foreground whitespace-nowrap">
                             <span>{course.sectionCount || 0} phần</span>
                             <span>•</span>
                             <span>{course.totalLessons} bài</span>
@@ -264,13 +264,13 @@ export default function CoursesPage() {
                           </div>
                         </div>
                       </TableCell>
-                      <TableCell className="font-medium">
+                      <TableCell className="font-medium whitespace-nowrap">
                         {formatPrice(course.price)}
                       </TableCell>
                       <TableCell>
                         <Badge 
                           variant={course.status === 1 ? "default" : "secondary"}
-                          className={course.status === 1 ? "bg-green-500/10 text-green-700 border-green-500/20" : "bg-gray-500/10 text-gray-700 border-gray-500/20"}
+                          className={`whitespace-nowrap ${course.status === 1 ? "bg-green-500/10 text-green-700 border-green-500/20" : "bg-gray-500/10 text-gray-700 border-gray-500/20"}`}
                         >
                           {course.statusText  }
                         </Badge>
