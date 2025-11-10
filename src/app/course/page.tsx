@@ -90,7 +90,7 @@ export default function CourseHomePage() {
       <div className="bg-white border-b border-gray-200">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
           {loadingCategories ? (
-            <div className="text-center py-4">
+            <div className="bg-white rounded-xl shadow-sm border border-gray-200 py-8">
               <LoadingState message="Đang tải danh mục..." />
             </div>
           ) : (
@@ -116,7 +116,7 @@ export default function CourseHomePage() {
       {/* Courses Section */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {loadingCourses ? (
-          <div className="py-12 text-center">
+          <div className="bg-white rounded-xl shadow-sm border border-gray-200 py-12">
             <LoadingState message="Đang tải các khóa học..." />
           </div>
         ) : (

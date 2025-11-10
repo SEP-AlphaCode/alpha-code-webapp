@@ -251,7 +251,7 @@ export default function CourseHomePage() {
 
           <div className="divide-y divide-gray-100">
             {isSectionsLoading && (
-              <div className="p-6">
+              <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-8 m-4">
                 <LoadingState message="Đang tải chương học..." />
               </div>
             )}
