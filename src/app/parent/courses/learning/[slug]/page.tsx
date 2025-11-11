@@ -128,100 +128,89 @@ export default function LearningPageClient() {
   const progressPercent = totalLessons > 0 ? Math.round((completedLessons / totalLessons) * 100) : 0
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-yellow-50 via-orange-50 to-pink-50">
-      <div className="max-w-6xl mx-auto px-4 py-6">
-        {/* Simple Header */}
-        <div className="mb-6">
+    <div className="min-h-screen bg-gray-50">
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Header */}
+        <div className="mb-8">
           <button
             onClick={() => router.push('/parent/courses/mycourse')}
-            className="mb-4 px-4 py-2 bg-white rounded-full shadow-md hover:shadow-lg transition-all text-gray-700 font-medium flex items-center gap-2"
+            className="mb-6 inline-flex items-center gap-2 text-gray-600 hover:text-gray-900 font-medium transition-colors"
           >
-            <ArrowLeft className="w-4 h-4" />
-            Quay lại
+            <ArrowLeft className="w-5 h-5" />
+            Quay lại khóa học của tôi
           </button>
           
-          <h1 className="text-3xl md:text-4xl font-bold text-gray-800 mb-3 flex items-center gap-3">
-            <GraduationCap className="w-10 h-10 text-blue-600" />
-            Bài học của bạn
-          </h1>
-
-          {/* Simple Progress Bar */}
-          <div className="bg-white rounded-2xl p-5 shadow-lg">
-            <div className="flex items-center justify-between mb-3">
-              <div className="flex items-center gap-3">
-                <div className="w-12 h-12 rounded-full bg-yellow-100 flex items-center justify-center">
-                  <Star className="w-7 h-7 text-yellow-500 fill-yellow-500" />
-                </div>
-                <div>
-                  <p className="text-lg font-bold text-gray-800">Đã học được {completedLessons}/{totalLessons} bài</p>
-                  <p className="text-sm text-gray-600 flex items-center gap-1">
-                    Cố lên nào! 
-                    <Trophy className="w-4 h-4 text-orange-500" />
-                  </p>
-                </div>
+          <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-200">
+            <div className="flex items-center gap-4 mb-4">
+              <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center">
+                <GraduationCap className="w-7 h-7 text-white" />
               </div>
-              <div className="text-4xl font-bold text-yellow-500">
-                {progressPercent}%
+              <div>
+                <h1 className="text-2xl md:text-3xl font-bold text-gray-900">Nội dung khóa học</h1>
+                <p className="text-sm text-gray-600">Theo dõi tiến độ học tập của bạn</p>
               </div>
             </div>
-            
-            {/* Fun Progress Bar */}
-            <div className="relative w-full h-6 bg-gray-200 rounded-full overflow-hidden">
-              <div 
-                className="absolute top-0 left-0 h-full bg-gradient-to-r from-yellow-400 via-orange-400 to-pink-400 rounded-full transition-all duration-700 ease-out flex items-center justify-end pr-2"
-                style={{ width: `${progressPercent}%` }}
-              >
-                {progressPercent > 10 && <Star className="w-4 h-4 text-white fill-white" />}
+
+            {/* Progress Bar */}
+            <div className="bg-gray-50 rounded-xl p-4">
+              <div className="flex items-center justify-between mb-2">
+                <div className="flex items-center gap-2">
+                  <Trophy className="w-5 h-5 text-blue-600" />
+                  <span className="text-sm font-semibold text-gray-700">
+                    Đã hoàn thành {completedLessons}/{totalLessons} bài học
+                  </span>
+                </div>
+                <span className="text-xl font-bold text-blue-600">
+                  {progressPercent}%
+                </span>
+              </div>
+              
+              <div className="relative w-full h-3 bg-gray-200 rounded-full overflow-hidden">
+                <div 
+                  className="absolute top-0 left-0 h-full bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 rounded-full transition-all duration-500"
+                  style={{ width: `${progressPercent}%` }}
+                />
               </div>
             </div>
           </div>
         </div>
 
-        {/* Sections List - Kid Friendly */}
-        <div className="space-y-5">
+        {/* Sections List */}
+        <div className="space-y-6">
           {Array.isArray(sectionsData) && sectionsData.length === 0 && (
-            <div className="bg-white rounded-3xl p-12 text-center shadow-lg">
-              <div className="text-7xl mb-4">📚</div>
-              <h3 className="text-2xl font-bold text-gray-800 mb-2">Chưa có bài học nào</h3>
-              <p className="text-gray-600 text-lg">Bài học sẽ sớm có thôi! 🎉</p>
+            <div className="bg-white rounded-2xl p-12 text-center shadow-sm border border-gray-200">
+              <BookOpen className="w-16 h-16 text-gray-400 mx-auto mb-4" />
+              <h3 className="text-xl font-bold text-gray-900 mb-2">Chưa có bài học nào</h3>
+              <p className="text-gray-600">Nội dung khóa học đang được cập nhật</p>
             </div>
           )}
 
           {Array.isArray(sectionsData) && sectionsData.map((section, sIndex) => {
             const sectionCompleted = section.accountLessons?.filter(al => al.status === 2)?.length || 0
             const sectionTotal = section.accountLessons?.length || 0
-            
-            // Icon array for sections
-            const sectionIcons = [
-              <BookOpen key="book" className="w-8 h-8 text-blue-600" />,
-              <Pencil key="pencil" className="w-8 h-8 text-purple-600" />,
-              <FileText key="file" className="w-8 h-8 text-pink-600" />,
-              <GraduationCap key="grad" className="w-8 h-8 text-indigo-600" />,
-              <BookMarked key="bookmark" className="w-8 h-8 text-orange-600" />,
-              <Calculator key="calc" className="w-8 h-8 text-green-600" />
-            ]
 
             return (
-              <div key={section.id} className="bg-white rounded-3xl shadow-lg overflow-hidden">
-                {/* Section Header - Simple & Fun */}
-                <div className="bg-gradient-to-r from-blue-100 via-purple-100 to-pink-100 p-4">
-                  <div className="flex items-center gap-3">
-                    <div className="w-14 h-14 rounded-2xl bg-white flex items-center justify-center shadow-md">
-                      {sectionIcons[sIndex % 6]}
-                    </div>
-                    <div className="flex-1">
-                      <h3 className="text-xl font-bold text-gray-800 mb-1">{section.title}</h3>
-                      <p className="text-sm text-gray-700">
-                        <span className="font-semibold">{sectionTotal}</span> bài học • 
-                        <span className="font-semibold text-green-600"> {sectionCompleted}</span> đã hoàn thành
-                      </p>
+              <div key={section.id} className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
+                {/* Section Header */}
+                <div className="bg-gradient-to-r from-gray-50 to-blue-50 px-6 py-4 border-b border-gray-200">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center">
+                        <span className="text-lg font-bold text-white">{sIndex + 1}</span>
+                      </div>
+                      <div>
+                        <h3 className="text-lg font-bold text-gray-900">{section.title}</h3>
+                        <p className="text-sm text-gray-600">
+                          {sectionTotal} bài học • {sectionCompleted} đã hoàn thành
+                        </p>
+                      </div>
                     </div>
                   </div>
                 </div>
 
-                {/* Lessons List - Large & Easy to Read */}
+                {/* Lessons List */}
                 {Array.isArray(section.accountLessons) && section.accountLessons.length > 0 && (
-                  <div className="p-3 space-y-2">
+                  <div className="divide-y divide-gray-100">
                     {section.accountLessons.map((accountLesson, lIndex) => {
                       const lesson = accountLesson.lesson
                       const isCompleted = accountLesson.status === 2
@@ -231,104 +220,116 @@ export default function LearningPageClient() {
                       return (
                         <div 
                           key={lesson.id} 
-                          className={`rounded-2xl p-4 cursor-pointer transition-all hover:scale-[1.02] ${
-                            isProcessing
-                              ? 'opacity-60 cursor-wait'
-                              : isCompleted 
-                              ? 'bg-gradient-to-r from-green-50 to-emerald-50 border-2 border-green-200 hover:border-green-300' 
-                              : isInProgress 
-                              ? 'bg-gradient-to-r from-yellow-50 to-orange-50 border-2 border-yellow-200 hover:border-yellow-300' 
-                              : 'bg-gray-50 border-2 border-gray-200 hover:border-blue-300 hover:bg-blue-50'
+                          className={`px-6 py-4 hover:bg-gray-50 cursor-pointer transition-all ${
+                            isProcessing ? 'opacity-60 cursor-wait' : ''
                           }`}
                           onClick={() => !isProcessing && handleLessonClick(lesson.id, accountLesson.id, lesson.type)}
                         >
-                          <div className="flex items-center gap-3">
-                            {/* Large Status Icon */}
-                            <div className={`w-14 h-14 rounded-2xl flex items-center justify-center shadow-md ${
+                          <div className="flex items-center gap-4">
+                            {/* Status Icon */}
+                            <div className={`w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0 ${
                               isCompleted 
-                                ? 'bg-green-500 text-white' 
+                                ? 'bg-green-100 text-green-600' 
                                 : isInProgress 
-                                ? 'bg-yellow-400 text-white' 
-                                : 'bg-white text-gray-700 border-2 border-gray-300'
+                                ? 'bg-blue-100 text-blue-600' 
+                                : 'bg-gray-100 text-gray-600'
                             }`}>
                               {isCompleted ? (
-                                <Check className="w-8 h-8" />
+                                <Check className="w-6 h-6" />
                               ) : (
-                                <span className="text-2xl font-bold">{lIndex + 1}</span>
+                                <span className="text-lg font-bold">{lIndex + 1}</span>
                               )}
                             </div>
 
-                            {/* Lesson Info - Large Text */}
-                            <div className="flex-1">
-                              <h4 className="text-lg font-bold text-gray-800 mb-1">
+                            {/* Lesson Info */}
+                            <div className="flex-1 min-w-0">
+                              <h4 className="text-base font-semibold text-gray-900 mb-1 truncate">
                                 {lesson.title}
                               </h4>
                               
                               <div className="flex items-center gap-2 flex-wrap">
                                 {/* Lesson Type Badge */}
                                 {lesson.type === 3 ? (
-                                  <span className="inline-flex items-center gap-1 text-sm px-2 py-1 bg-purple-100 text-purple-700 rounded-lg font-medium">
+                                  <span className="inline-flex items-center gap-1 text-xs px-2 py-1 bg-purple-100 text-purple-700 rounded-md font-medium">
                                     <FileText className="w-3 h-3" />
                                     Bài kiểm tra
                                   </span>
                                 ) : lesson.type === 2 ? (
-                                  <span className="inline-flex items-center gap-1 text-sm px-2 py-1 bg-blue-100 text-blue-700 rounded-lg font-medium">
+                                  <span className="inline-flex items-center gap-1 text-xs px-2 py-1 bg-blue-100 text-blue-700 rounded-md font-medium">
                                     <Video className="w-3 h-3" />
                                     Video
                                   </span>
                                 ) : (
-                                  <span className="inline-flex items-center gap-1 text-sm px-2 py-1 bg-green-100 text-green-700 rounded-lg font-medium">
+                                  <span className="inline-flex items-center gap-1 text-xs px-2 py-1 bg-green-100 text-green-700 rounded-md font-medium">
                                     <BookOpen className="w-3 h-3" />
                                     Bài học
                                   </span>
                                 )}
                                 
+                                {/* Submission Status Badge (for quizzes) */}
+                                {accountLesson.submissionStatusText && (
+                                  <span className={`inline-flex items-center gap-1 text-xs px-2 py-1 rounded-md font-medium ${
+                                    accountLesson.submissionStatusText.includes('ĐẠT') && !accountLesson.submissionStatusText.includes('KHÔNG')
+                                      ? 'bg-green-100 text-green-700' 
+                                      : accountLesson.submissionStatusText.includes('KHÔNG ĐẠT')
+                                      ? 'bg-red-100 text-red-700'
+                                      : accountLesson.submissionStatusText.includes('THỦ CÔNG')
+                                      ? 'bg-orange-100 text-orange-700'
+                                      : 'bg-gray-100 text-gray-700'
+                                  }`}>
+                                    {accountLesson.submissionStatusText.includes('ĐẠT') && !accountLesson.submissionStatusText.includes('KHÔNG') && (
+                                      <Check className="w-3 h-3" />
+                                    )}
+                                    {accountLesson.submissionStatusText}
+                                  </span>
+                                )}
+                                
                                 {lesson.videoUrl && lesson.type !== 2 && (
-                                  <span className="inline-flex items-center gap-1 text-sm px-2 py-1 bg-blue-100 text-blue-700 rounded-lg font-medium">
+                                  <span className="inline-flex items-center gap-1 text-xs px-2 py-1 bg-blue-100 text-blue-700 rounded-md font-medium">
                                     <Video className="w-3 h-3" />
-                                    Có video
+                                    Video
                                   </span>
                                 )}
                                 {lesson.requireRobot && (
-                                  <span className="inline-flex items-center gap-1 text-sm px-2 py-1 bg-purple-100 text-purple-700 rounded-lg font-medium">
+                                  <span className="inline-flex items-center gap-1 text-xs px-2 py-1 bg-purple-100 text-purple-700 rounded-md font-medium">
                                     <Bot className="w-3 h-3" />
-                                    Cần robot
+                                    Robot
                                   </span>
                                 )}
-                                <span className="text-sm text-gray-600 font-medium flex items-center gap-1">
+                                <span className="text-xs text-gray-500 flex items-center gap-1">
                                   <Clock className="w-3 h-3" />
                                   {Math.floor(lesson.duration / 60)} phút
                                 </span>
                               </div>
                             </div>
 
-                            {/* Large Action Button */}
+                            {/* Action Button */}
                             <div className="flex-shrink-0">
                               <button 
                                 disabled={isProcessing}
-                                className={`px-6 py-3 rounded-2xl font-bold text-base transition-all shadow-md hover:shadow-lg flex items-center gap-2 ${
+                                className={`px-4 py-2 rounded-lg font-semibold text-sm transition-all flex items-center gap-2 ${
                                   isProcessing
-                                    ? 'bg-gray-400 text-white cursor-wait'
+                                    ? 'bg-gray-300 text-gray-600 cursor-wait'
                                     : isCompleted 
                                     ? 'bg-green-500 text-white hover:bg-green-600' 
                                     : isInProgress 
-                                    ? 'bg-yellow-400 text-gray-800 hover:bg-yellow-500' 
-                                    : 'bg-blue-500 text-white hover:bg-blue-600'
+                                    ? 'bg-yellow-500 text-white hover:bg-yellow-600' 
+                                    : 'bg-blue-600 text-white hover:bg-blue-700'
                                 }`}
                               >
                                 {isProcessing ? (
                                   <>
-                                    <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                                    <div className="w-4 h-4 border-2 border-gray-600 border-t-transparent rounded-full animate-spin" />
                                     Đang tải...
                                   </>
                                 ) : isCompleted ? (
                                   <>
-                                    <Check className="w-5 h-5" />
+                                    <Check className="w-4 h-4" />
                                     Học lại
                                   </>
                                 ) : (
                                   <>
-                                    <Play className="w-5 h-5" />
+                                    <Play className="w-4 h-4" />
                                     {isInProgress ? 'Tiếp tục' : 'Bắt đầu'}
                                   </>
                                 )}

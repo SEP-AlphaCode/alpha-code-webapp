@@ -474,115 +474,116 @@ export default function LessonDetailPageLearning() {
 
           {/* Sidebar */}
           <div className="lg:col-span-1 space-y-6">
-            {/* Lesson Info Card */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <BookOpen className="w-5 h-5" />
-                  Thông tin bài học
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="flex justify-between items-center">
-                  <span className="text-muted-foreground flex items-center gap-2">
-                    <Clock className="w-4 h-4" />
-                    Thời lượng:
-                  </span>
-                  <Badge variant="outline">{formatDuration(lessonData.duration)}</Badge>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-muted-foreground flex items-center gap-2">
-                    <BookOpen className="w-4 h-4" />
-                    Thứ tự:
-                  </span>
-                  <Badge variant="outline">Bài {lessonData.orderNumber}</Badge>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-muted-foreground">Loại bài:</span>
-                  <Badge variant="secondary">{lessonData.typeText}</Badge>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-muted-foreground">Tiến độ của bạn:</span>
-                  <Badge variant={getStatusVariant(accountLessonData?.status || 0)}>
-                    {accountLessonData?.statusText || 'Chưa bắt đầu'}
-                  </Badge>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-muted-foreground">Trạng thái bài học:</span>
-                  <Badge variant={getStatusVariant(lessonData.status)}>
-                    {lessonData.statusText}
-                  </Badge>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-muted-foreground flex items-center gap-2">
-                    <Bot className="w-4 h-4" />
-                    Robot:
-                  </span>
-                  <Badge variant={lessonData.requireRobot ? "destructive" : "default"}>
-                    {lessonData.requireRobot ? "Yêu cầu" : "Không cần"}
-                  </Badge>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-muted-foreground flex items-center gap-2">
-                    <Video className="w-4 h-4" />
-                    Video:
-                  </span>
-                  <Badge variant={lessonData.videoUrl ? "default" : "secondary"}>
-                    {lessonData.videoUrl ? "Có sẵn" : "Chưa có"}
-                  </Badge>
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Progress Card (persistent) */}
-            <Card>
-              <CardHeader>
+            {/* Progress Card - Different display based on lesson type */}
+            <Card className="border border-gray-200 shadow-sm">
+              <CardHeader className="border-b border-gray-200">
                 <CardTitle className="flex items-center gap-2">
                   <CheckCircle className="w-5 h-5" />
                   Tiến độ bài học
                 </CardTitle>
               </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="flex justify-between items-center">
-                  <span className="text-sm font-medium text-muted-foreground">Hoàn thành:</span>
-                  <span className="text-sm font-bold text-foreground">{Math.round(storedProgress)}%</span>
-                </div>
-
-                <Progress value={storedProgress} className="h-4 progress-enhanced" />
-
-                {/* If video exists, show video time info */}
-                {lessonData.videoUrl && (
-                  <div className="flex justify-between items-center text-xs text-muted-foreground pt-2">
-                    <span>
-                      {videoRef.current
-                        ? `${Math.floor((videoRef.current.currentTime || 0) / 60)}:${Math.floor((videoRef.current.currentTime || 0) % 60)
-                            .toString()
-                            .padStart(2, "0")}`
-                        : "0:00"}{" "}/ {formatDuration(lessonData.duration)}
-                    </span>
-                  </div>
-                )}
-
-                <div className="flex flex-col gap-2">
-                  <Button
-                    className="w-full"
-                    variant={isCompleted || storedProgress >= 80 ? "default" : "outline"}
-                    onClick={() => markCompleted()}
-                  >
-                    {isCompleted || storedProgress >= 80 ? (
+              <CardContent className="space-y-4 pt-6">
+                {/* Type 2 (Video): Show progress bar based on video time */}
+                {lessonData.type === 2 && lessonData.videoUrl ? (
+                  <>
+                    {!isCompleted && (
                       <>
-                        <CheckCircle className="w-4 h-4 mr-2" />
-                        Đã hoàn thành
-                      </>
-                    ) : (
-                      'Đánh dấu đã hoàn thành'
-                    )}
-                  </Button>
+                        <div className="bg-gray-50 rounded-xl p-4 border border-gray-200">
+                          <div className="flex justify-between items-center mb-3">
+                            <span className="text-sm font-semibold text-gray-700">Hoàn thành:</span>
+                            <span className="text-2xl font-bold text-gray-900">
+                              {Math.round(storedProgress)}%
+                            </span>
+                          </div>
 
-                  <Button className="w-full" variant="ghost" onClick={() => resetProgress()}>
-                    Đặt lại tiến độ
-                  </Button>
-                </div>
+                          <div className="relative">
+                            <Progress value={storedProgress} className="h-4" />
+                          </div>
+                        </div>
+
+                        {/* Video time info */}
+                        <div className="bg-white rounded-lg p-3 border border-gray-200">
+                          <div className="flex items-center justify-between text-sm">
+                            <span className="flex items-center gap-2 text-gray-600 font-medium">
+                              <Video className="w-4 h-4" />
+                              Thời gian xem:
+                            </span>
+                            <span className="font-semibold text-gray-900">
+                              {videoRef.current
+                                ? `${Math.floor((videoRef.current.currentTime || 0) / 60)}:${Math.floor((videoRef.current.currentTime || 0) % 60)
+                                    .toString()
+                                    .padStart(2, "0")}`
+                                : "0:00"}{" "}
+                              / {formatDuration(lessonData.duration)}
+                            </span>
+                          </div>
+                        </div>
+                      </>
+                    )}
+
+                    <div className="flex flex-col gap-2 pt-2">
+                      {isCompleted || storedProgress >= 80 ? (
+                        <Button
+                          className="w-full h-12 bg-green-500 hover:bg-green-600 text-white font-bold shadow-md"
+                          onClick={() => markCompleted()}
+                        >
+                          <CheckCircle className="w-5 h-5 mr-2" />
+                          Đã hoàn thành
+                        </Button>
+                      ) : (
+                        <Button
+                          className="w-full h-12 bg-blue-600 hover:bg-blue-700 text-white font-bold shadow-md"
+                          onClick={() => markCompleted()}
+                          disabled={storedProgress < 80}
+                        >
+                          <CheckCircle className="w-5 h-5 mr-2" />
+                          Đánh dấu đã hoàn thành
+                        </Button>
+                      )}
+                    </div>
+                  </>
+                ) : (
+                  /* Type 1 (Lesson): Only show completion button */
+                  <>
+                    <div className="bg-gray-50 rounded-xl p-6 text-center border border-gray-200">
+                      <div className="mb-4">
+                        {isCompleted ? (
+                          <div className="w-20 h-20 mx-auto rounded-full bg-green-100 flex items-center justify-center">
+                            <CheckCircle className="w-10 h-10 text-green-600" />
+                          </div>
+                        ) : (
+                          <div className="w-20 h-20 mx-auto rounded-full bg-gray-200 flex items-center justify-center">
+                            <BookOpen className="w-10 h-10 text-gray-400" />
+                          </div>
+                        )}
+                      </div>
+                      <p className="text-base font-semibold text-gray-900 mb-2">
+                        {isCompleted ? 'Bạn đã hoàn thành bài học này! 🎉' : 'Đọc xong nội dung bài học?'}
+                      </p>
+                      <p className="text-sm text-gray-600">
+                        {isCompleted ? 'Bạn có thể xem lại bất cứ lúc nào' : 'Đánh dấu hoàn thành khi bạn đã học xong'}
+                      </p>
+                    </div>
+
+                    {isCompleted ? (
+                      <Button
+                        className="w-full h-12 bg-green-500 hover:bg-green-600 text-white font-bold shadow-md"
+                        onClick={() => markCompleted()}
+                      >
+                        <CheckCircle className="w-5 h-5 mr-2" />
+                        Đã hoàn thành
+                      </Button>
+                    ) : (
+                      <Button
+                        className="w-full h-12 bg-blue-600 hover:bg-blue-700 text-white font-bold shadow-md"
+                        onClick={() => markCompleted()}
+                      >
+                        <CheckCircle className="w-5 h-5 mr-2" />
+                        Đánh dấu đã hoàn thành
+                      </Button>
+                    )}
+                  </>
+                )}
               </CardContent>
             </Card>
           </div>

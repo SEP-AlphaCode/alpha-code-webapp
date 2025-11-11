@@ -1,3 +1,5 @@
+import { AccountLesson } from "./account-lessons"
+
 export type Category = {
     id: string,
     name: string,
@@ -27,16 +29,6 @@ export interface Lesson {
     statusText?: string;
     createdDate: string; // timestamp
     lastUpdated?: string; // timestamp
-}
-
-export interface AccountLesson {
-    id: string | null; // uuid - nullable if not started yet
-    accountId: string; // uuid
-    lessonId: string; // uuid
-    status: number; // 0: not started, 1: in progress, 2: completed
-    completedAt: string | null; // timestamp - nullable
-    lesson: Lesson; // nested lesson object
-    statusText: string; // "CHƯA BẮT ĐẦU", "ĐANG HỌC", "ĐÃ HOÀN THÀNH"
 }
 
 export interface Section {
