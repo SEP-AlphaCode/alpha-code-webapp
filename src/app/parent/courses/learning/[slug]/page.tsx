@@ -63,15 +63,16 @@ export default function LearningPageClient() {
         
         // Navigate based on lesson type
         // Type 1: Bài học (lesson) -> /lesson/[accountLessonId]
-        // Type 2: Bài kiểm tra (quiz/test) -> /quiz/[accountLessonId]
-        const route = lessonType === 2 
+        // Type 2: Video (video) -> /lesson/[accountLessonId]
+        // Type 3: Bài kiểm tra (quiz/test) -> /quiz/[accountLessonId]
+        const route = lessonType === 3 
           ? `/parent/courses/learning/${slug}/quiz/${newAccountLesson.id}`
           : `/parent/courses/learning/${slug}/lesson/${newAccountLesson.id}`
         
         router.push(route)
       } else {
         // Account lesson already exists, navigate with existing id based on type
-        const route = lessonType === 2 
+        const route = lessonType === 3 
           ? `/parent/courses/learning/${slug}/quiz/${accountLessonId}`
           : `/parent/courses/learning/${slug}/lesson/${accountLessonId}`
         
@@ -80,7 +81,7 @@ export default function LearningPageClient() {
     } catch (error) {
       console.error('Error handling lesson click:', error)
       // Still navigate even if creation fails - try with accountLessonId or lessonId
-      const route = lessonType === 2 
+      const route = lessonType === 3 
         ? `/parent/courses/learning/${slug}/quiz/${accountLessonId || lessonId}`
         : `/parent/courses/learning/${slug}/lesson/${accountLessonId || lessonId}`
       router.push(route)
@@ -265,10 +266,15 @@ export default function LearningPageClient() {
                               
                               <div className="flex items-center gap-2 flex-wrap">
                                 {/* Lesson Type Badge */}
-                                {lesson.type === 2 ? (
-                                  <span className="inline-flex items-center gap-1 text-sm px-2 py-1 bg-orange-100 text-orange-700 rounded-lg font-medium">
+                                {lesson.type === 3 ? (
+                                  <span className="inline-flex items-center gap-1 text-sm px-2 py-1 bg-purple-100 text-purple-700 rounded-lg font-medium">
                                     <FileText className="w-3 h-3" />
                                     Bài kiểm tra
+                                  </span>
+                                ) : lesson.type === 2 ? (
+                                  <span className="inline-flex items-center gap-1 text-sm px-2 py-1 bg-blue-100 text-blue-700 rounded-lg font-medium">
+                                    <Video className="w-3 h-3" />
+                                    Video
                                   </span>
                                 ) : (
                                   <span className="inline-flex items-center gap-1 text-sm px-2 py-1 bg-green-100 text-green-700 rounded-lg font-medium">
@@ -277,7 +283,7 @@ export default function LearningPageClient() {
                                   </span>
                                 )}
                                 
-                                {lesson.videoUrl && (
+                                {lesson.videoUrl && lesson.type !== 2 && (
                                   <span className="inline-flex items-center gap-1 text-sm px-2 py-1 bg-blue-100 text-blue-700 rounded-lg font-medium">
                                     <Video className="w-3 h-3" />
                                     Có video
