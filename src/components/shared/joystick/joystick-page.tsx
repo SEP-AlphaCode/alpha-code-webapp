@@ -217,11 +217,16 @@ export default function JoystickPage() {
         <div className="max-w-5xl mx-auto">
           <header className="flex items-center justify-between mb-6">
             <div>
-              <h1 className="text-3xl md:text-4xl font-extrabold text-gray-900">🎮 Controller Studio</h1>
-              <p className="text-sm text-gray-600">Simulator • Interactive preview • Map buttons to robot actions</p>
+              <h1 className="text-3xl md:text-4xl font-extrabold text-gray-900">🎮 Trung Tâm Điều Khiển</h1>
+              <p className="text-sm text-gray-600">Mô phỏng • Xem trước tương tác • Gán nút cho hành động robot</p>
             </div>
             <div className="flex items-center gap-4">
-              <Button onClick={() => setIsConfigModalOpen(true)} variant="ghost" className="bg-gradient-to-r from-blue-600 to-blue-700 text-white hover:from-blue-700 hover:to-blue-800 shadow-lg">⚙️ Cấu hình Joystick</Button>
+              <Button 
+                onClick={() => setIsConfigModalOpen(true)} 
+                className="bg-gradient-to-r from-blue-600 to-blue-700 text-white hover:from-blue-700 hover:to-blue-800 hover:text-white shadow-lg"
+              >
+                ⚙️ Cấu hình Joystick
+              </Button>
             </div>
           </header>
 
@@ -230,14 +235,14 @@ export default function JoystickPage() {
             <div className="relative z-10 mx-auto bg-gradient-to-br from-gray-100 via-gray-50 to-white rounded-[2.5rem] border border-gray-300 shadow-2xl p-8">
               <div className="flex flex-col lg:flex-row items-center gap-8 lg:gap-12">
                 <div className="flex flex-col items-center gap-6 w-full lg:w-1/3">
-                  <Badge variant="secondary" className="mb-2 bg-gray-200 text-gray-700">Left Stick</Badge>
+                  <Badge variant="secondary" className="mb-2 bg-gray-200 text-gray-700">Cần điều khiển trái</Badge>
                   <div ref={leftJoystickRef as React.RefObject<HTMLDivElement>} onPointerDown={handlePointerDown} className="relative w-28 h-28 rounded-full bg-gradient-to-br from-gray-200 to-gray-300 border-4 border-gray-400 flex items-center justify-center shadow-inner cursor-grab active:cursor-grabbing" style={{ touchAction: 'none' }}>
                     <motion.div className="absolute w-6 h-6 bg-gradient-to-br from-blue-500 to-blue-600 rounded-full shadow-lg border-2 border-white" animate={{ x: leftJoystick.x * 32, y: leftJoystick.y * 32 }} transition={{ type: 'spring', stiffness: 300, damping: 30 }} />
                     <div className="absolute inset-2 rounded-full border border-gray-300 opacity-50" />
                   </div>
                   <div className="text-xs text-gray-500 text-center">({(leftJoystick.x * 100).toFixed(1)}, {(leftJoystick.y * 100).toFixed(1)})</div>
                   <div className="mt-4">
-                    <Badge variant="secondary" className="bg-gray-200 text-gray-700">D-Pad</Badge>
+                    <Badge variant="secondary" className="bg-gray-200 text-gray-700">Phím hướng</Badge>
                     <div className="mt-3 grid grid-cols-3 gap-1 w-24 h-24">
                       <div />
                       <Button variant={buttons.up ? 'default' : 'outline'} size="sm" className="h-8 w-8 p-0 rounded-sm text-sm font-bold" onClick={() => handleDPadButtonPress('up')}>↑</Button>
@@ -254,13 +259,13 @@ export default function JoystickPage() {
 
                 <div className="flex flex-col items-center gap-6 w-full lg:w-1/3">
                   <div className="w-full max-w-xs">
-                    <div className="text-center mb-2"><Badge variant="outline" className="text-xs">🎥 Robot Camera{selectedRobot && (<span className="ml-1">• {selectedRobot.name}</span>)}</Badge></div>
+                    <div className="text-center mb-2"><Badge variant="outline" className="text-xs">🎥 Camera Robot{selectedRobot && (<span className="ml-1">• {selectedRobot.name}</span>)}</Badge></div>
                     <RobotVideoStream robotSerial={robotSerial} className="w-full h-48 rounded-xl border-2 border-gray-300 shadow-lg" />
                   </div>
                   <div className="flex flex-col items-center gap-2">
                     <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-purple-600 rounded-2xl flex items-center justify-center shadow-lg"><span className="text-2xl text-white font-bold">🤖</span></div>
                     <div className="text-sm font-semibold text-gray-700">Alpha Mini</div>
-                    <div className="text-xs text-gray-500">Controller Interface</div>
+                    <div className="text-xs text-gray-500">Giao diện điều khiển</div>
                   </div>
                   <div className="flex gap-3">
                     <Button variant={buttons.SELECT ? 'default' : 'outline'} size="sm" onClick={() => handleButtonPress('SELECT')} className="px-3 py-1 text-xs font-semibold">SELECT</Button>
@@ -269,7 +274,7 @@ export default function JoystickPage() {
                 </div>
 
                 <div className="flex flex-col items-center gap-6 w-full lg:w-1/3">
-                  <Badge variant="secondary" className="mb-2 bg-gray-200 text-gray-700">Action Buttons</Badge>
+                  <Badge variant="secondary" className="mb-2 bg-gray-200 text-gray-700">Nút hành động</Badge>
                   <div className="relative w-32 h-32">
                     <motion.button className="absolute top-0 left-1/2 -translate-x-1/2 w-12 h-12 rounded-full bg-gradient-to-br from-green-400 to-green-500 text-white font-bold text-lg shadow-lg border-2 border-white flex items-center justify-center" whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.95 }} animate={{ scale: buttons.Y ? 0.95 : 1 }} onClick={() => handleActionButtonPress('Y')}>Y</motion.button>
                     <motion.button className="absolute top-1/2 left-0 -translate-y-1/2 w-12 h-12 rounded-full bg-gradient-to-br from-blue-400 to-blue-500 text-white font-bold text-lg shadow-lg border-2 border-white flex items-center justify-center" whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.95 }} animate={{ scale: buttons.X ? 0.95 : 1 }} onClick={() => handleActionButtonPress('X')}>X</motion.button>
@@ -294,7 +299,7 @@ export default function JoystickPage() {
                 <div className="text-xs text-gray-600">Left: ({(leftJoystick.x * 100).toFixed(1)}, {(leftJoystick.y * 100).toFixed(1)})</div>
               </div>
               <div>
-                <h4 className="text-sm font-semibold text-gray-800 mb-2">🎛️ Buttons</h4>
+                <h4 className="text-sm font-semibold text-gray-800 mb-2">🎛️ Các nút</h4>
                 <div className="flex flex-wrap gap-2">
                   {Object.entries(buttons).map(([btn, pressed]) => (
                     <Badge key={btn} variant={pressed ? 'default' : 'outline'} className={`px-3 py-1 ${pressed ? 'bg-blue-500 text-white' : 'bg-gray-100 text-gray-700'}`}>{btn}</Badge>
@@ -302,7 +307,7 @@ export default function JoystickPage() {
                 </div>
               </div>
               <div>
-                <h4 className="text-sm font-semibold text-gray-800 mb-2">🎯 Mapped Actions</h4>
+                <h4 className="text-sm font-semibold text-gray-800 mb-2">🎯 Hành động đã gán</h4>
                 <div className="text-xs text-gray-600 space-y-1">
                   <div>🟡 A: {actionDescriptions.A?.name || 'Chưa cấu hình'}</div>
                   <div>🔴 B: {actionDescriptions.B?.name || 'Chưa cấu hình'}</div>
@@ -311,12 +316,12 @@ export default function JoystickPage() {
                 </div>
               </div>
               <div>
-                <h4 className="text-sm font-semibold text-gray-800 mb-2">📋 Instructions</h4>
+                <h4 className="text-sm font-semibold text-gray-800 mb-2">📋 Hướng dẫn</h4>
                 <div className="text-xs text-gray-600 space-y-1">
-                  <div>• Kéo/nhấn joystick để di chuyển</div>
-                  <div>• Nhấn ABXY để gửi lệnh đến robot</div>
+                  <div>• Kéo/nhấn cần để di chuyển</div>
+                  <div>• Nhấn ABXY để thực hiện hành động</div>
                   <div>• Chọn robot trước khi điều khiển</div>
-                  <div>• Mở cấu hình để map nút</div>
+                  <div>• Mở cấu hình để gán nút</div>
                 </div>
               </div>
             </div>
