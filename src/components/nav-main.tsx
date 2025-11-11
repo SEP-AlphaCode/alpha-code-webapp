@@ -38,18 +38,22 @@ export function NavMain({
   const pathname = usePathname()
   const [openItems, setOpenItems] = useState<Record<string, boolean>>({})
 
-  // Tự động mở section chứa trang hiện tại
+  // Tự động mở section chứa trang hiện tại khi lần đầu mount
   useEffect(() => {
     const newOpenItems: Record<string, boolean> = {}
     items.forEach((item, index) => {
       const key = `${item.url}-${index}`
       // Kiểm tra nếu URL hiện tại nằm trong sub-items
-      const isCurrentlyActive = item.items?.some(subItem => pathname === subItem.url)
+      const isCurrentlyActive = item.items?.some(subItem => pathname.startsWith(subItem.url))
       if (isCurrentlyActive) {
         newOpenItems[key] = true
       }
     })
-    setOpenItems(newOpenItems)
+    // Chỉ set state nếu có thay đổi cần thiết
+    setOpenItems(prev => {
+      const hasChanges = Object.keys(newOpenItems).some(key => prev[key] !== newOpenItems[key])
+      return hasChanges ? { ...prev, ...newOpenItems } : prev
+    })
   }, [pathname, items])
 
   const handleOpenChange = (key: string, open: boolean) => {

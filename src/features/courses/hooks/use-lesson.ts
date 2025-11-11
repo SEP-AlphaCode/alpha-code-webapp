@@ -107,25 +107,17 @@ export function useUpdateLesson(courseId: string, lessonId: string, sectionId?: 
       status: number
     }) => lessonApi.updateLesson(lessonId, data),
     onSuccess: async () => {
-      // Invalidate queries - the target page will refetch them automatically
-      await queryClient.invalidateQueries({ 
-        queryKey: ['lessons', courseId]
-      })
-      await queryClient.invalidateQueries({ 
-        queryKey: ['lesson', lessonId]
-      })
-      await queryClient.invalidateQueries({ 
-        queryKey: ['sections', courseId]
-      })
-      await queryClient.invalidateQueries({ 
-        queryKey: ['staff', 'course']
-      })
-      await queryClient.invalidateQueries({ 
-        queryKey: ['course']
-      })
+      // Invalidate queries to refresh data
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: ['lessons'] }),
+        queryClient.invalidateQueries({ queryKey: ['lesson'] }),
+        queryClient.invalidateQueries({ queryKey: ['sections'] }),
+        queryClient.invalidateQueries({ queryKey: ['staff', 'course'] }),
+        queryClient.invalidateQueries({ queryKey: ['course'] })
+      ])
       
-      // Navigate - the course detail page will refetch invalidated queries
-      router.push(`/staff/courses/${courseId}`)
+      // Navigate to lessons list instead of course detail to avoid navigation loop
+      router.push(`/staff/lessons`)
     },
   })
 }

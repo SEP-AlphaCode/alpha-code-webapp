@@ -117,9 +117,11 @@ export default function LessonDetailPage() {
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div className="flex items-center gap-2">
-          <Button variant="outline" size="icon" onClick={() => router.back()}>
-            <ArrowLeft className="h-4 w-4" />
-          </Button>
+          <Link href="/staff/lessons">
+            <Button variant="outline" size="icon">
+              <ArrowLeft className="h-4 w-4" />
+            </Button>
+          </Link>
           <div>
             <h1 className="text-3xl font-bold tracking-tight">{lesson.title}</h1>
             <div className="flex items-center gap-3 mt-2">

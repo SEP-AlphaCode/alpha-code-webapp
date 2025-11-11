@@ -255,7 +255,7 @@ export default function EditLessonPage() {
       />
       {/* Header */}
       <div className="flex items-center gap-4">
-        <Link href={`/staff/lessons/${lessonSlug}`}>
+        <Link href="/staff/lessons">
           <Button variant="outline" size="icon">
             <ArrowLeft className="h-4 w-4" />
           </Button>

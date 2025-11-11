@@ -241,7 +241,7 @@ export default function CoursesPage() {
                         </div>
                       </TableCell>
                       <TableCell>
-                        <Badge variant="outline" className="whitespace-nowrap">{course.categoryName|| 'N/A'}</Badge>
+                        <Badge variant="outline" className="break-words whitespace-normal max-w-[150px]">{course.categoryName|| 'N/A'}</Badge>
                       </TableCell>
                       <TableCell>
                         <div className="space-y-1">
