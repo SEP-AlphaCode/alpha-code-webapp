@@ -116,8 +116,8 @@ export function useUpdateLesson(courseId: string, lessonId: string, sectionId?: 
         queryClient.invalidateQueries({ queryKey: ['course'] })
       ])
       
-      // Navigate to lessons list instead of course detail to avoid navigation loop
-      router.push(`/staff/lessons`)
+      // Navigate back to previous page for better UX
+      router.back()
     },
   })
 }
