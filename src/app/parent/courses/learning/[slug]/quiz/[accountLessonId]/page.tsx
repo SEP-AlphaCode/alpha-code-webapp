@@ -39,9 +39,9 @@ export default function QuizPageLearning() {
   const handleSubmitQuiz = () => {
     setIsSubmitted(true)
     
-    if (accountLessonId) {
-      markComplete.mutate(accountLessonId)
-    }
+    // if (accountLessonId) {
+    //   markComplete.mutate(accountLessonId)
+    // }
   }
 
   const handleRetryQuiz = () => {
