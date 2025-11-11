@@ -221,7 +221,7 @@ export default function CourseHomePage() {
                 </div>
                 <div className="p-6">
                   <div className="text-center mb-4">
-                    <span className="text-3xl font-bold text-orange-500">
+                    <span className="text-3xl font-bold text-blue-500">
                       {courseData?.price ? `${courseData.price} VND` : 'Miễn phí'}
                     </span>
                   </div>
@@ -402,7 +402,7 @@ export default function CourseHomePage() {
               <Button onClick={() => setIsDialogOpen(false)} className="bg-gray-300 hover:bg-gray-400" disabled={createMutation.status === 'pending'}>
                 Hủy
               </Button>
-              <Button onClick={handleConfirmRegister} className="bg-orange-500 text-white hover:bg-orange-600" disabled={createMutation.status === 'pending'}>
+              <Button onClick={handleConfirmRegister} className="bg-blue-500 text-white hover:bg-blue-700" disabled={createMutation.status === 'pending'}>
                 {createMutation.status === 'pending' ? 'Đang xử lý...' : 'Xác nhận'}
               </Button>
             </DialogFooter>

@@ -65,7 +65,7 @@ export default function CourseHomePage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <div className="text-center mb-8">
             <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
-              Khóa học <span className="text-orange-500">Alpha Code</span>
+              Khóa học <span className="text-blue-500">Alpha Code</span>
             </h1>
             <p className="text-lg text-gray-600 max-w-2xl mx-auto">
               Học lập trình robot từ cơ bản đến nâng cao với những khóa học chất lượng
