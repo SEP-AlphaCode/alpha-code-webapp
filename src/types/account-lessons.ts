@@ -7,5 +7,7 @@ export type AccountLesson = {
     lessonId: string
     status: number // int4
     statusText: string
-    lesson: Lesson
+    submissionStatus?: number | null // submission status code
+    submissionStatusText?: string | null // submission status text
+    lesson: Lesson  
 }

@@ -160,7 +160,8 @@ export function SubmissionPanel({ accountLessonId, onSubmissionSuccess }: Submis
       type: 'submission_start',
       data: {
         account_lesson_id: accountLessonId
-      }
+      },
+      lang: 'vi'
     }
 
     sendCommand.mutate(
@@ -194,6 +195,7 @@ export function SubmissionPanel({ accountLessonId, onSubmissionSuccess }: Submis
         data: {
           account_lesson_id: accountLessonId
         }
+        , lang: 'vi'
       }
       sendCommand.mutate(
         { serial: robotSerial, command },

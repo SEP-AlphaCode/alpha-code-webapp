@@ -32,6 +32,7 @@ export function useRobotCommand(
         command: {
           type: string;
           data: { code: string };
+          lang: "vi";
         };
         active_clients: number;
       };
@@ -59,7 +60,7 @@ export function useRobotCommand(
     const body = {
       type: command,
       data: {},
-      lang: "en"
+      lang: "vi"
     };
 
     try {
