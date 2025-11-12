@@ -1,6 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
 import { Client, IMessage } from '@stomp/stompjs';
-import SockJS from 'sockjs-client';
 import { Notification } from '@/types/notification';
 import { toast } from 'sonner';
 import { userServiceSocketUrl } from '@/app/constants/constants';
@@ -24,10 +23,11 @@ export const useNotificationWebSocket = ({
     }
 
     console.log('🔌 Initializing WebSocket connection for accountId:', accountId);
+    console.log('🔗 WebSocket URL:', userServiceSocketUrl);
 
-    // Initialize STOMP client
+    // Initialize STOMP client with native WebSocket
     const client = new Client({
-      webSocketFactory: () => new SockJS(`${userServiceSocketUrl}`) as WebSocket,
+      brokerURL: userServiceSocketUrl, // Dùng native WebSocket (wss://)
       debug: (str: string) => {
         console.log('STOMP Debug:', str);
       },
