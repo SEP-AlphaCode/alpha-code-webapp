@@ -29,7 +29,7 @@ export const getNotifications = async (params: {
   status?: number;
 }): Promise<PagedNotifications> => {
   const response = await usersHttp.get<BackendPagedResponse>('/notifications', { params });
-  
+
   // ✅ Transform backend response to frontend format
   return {
     content: response.data.data || [],
@@ -51,6 +51,19 @@ export const markNotificationAsRead = async (id: string): Promise<Notification> 
   const response = await usersHttp.patch<Notification>(`/notifications/${id}/read`);
   return response.data;
 };
+
+// PATCH /api/v1/notifications/read-all - Mark all notifications as read
+export const markAllNotificationsAsRead = async (
+  accountId: string
+): Promise<{ message: string; count: number }> => {
+  const response = await usersHttp.patch<{ message: string; count: number }>(
+    `/notifications/read-all`,
+    null, // body là null
+    { params: { accountId } } // query param
+  );
+  return response.data;
+};
+
 
 // DELETE /api/v1/notifications/{id} - Delete notification
 export const deleteNotification = async (id: string): Promise<{ message: string }> => {

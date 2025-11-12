@@ -1,7 +1,8 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { 
   getNotifications, 
-  markNotificationAsRead, 
+  markNotificationAsRead,
+  markAllNotificationsAsRead,
   deleteNotification 
 } from '../api/notification-api';
 import { toast } from 'sonner';
@@ -35,6 +36,27 @@ export const useMarkNotificationAsRead = () => {
         error && typeof error === 'object' && 'message' in error
           ? (error as { message: string }).message
           : 'Không thể đánh dấu đã đọc';
+      toast.error(errorMessage);
+    },
+  });
+};
+
+// Hook to mark all notifications as read
+export const useMarkAllNotificationsAsRead = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (accountId: string) => markAllNotificationsAsRead(accountId),
+    onSuccess: (data) => {
+      toast.success(`Đã đánh dấu ${data.count} thông báo là đã đọc`);
+      // Invalidate notifications to refetch
+      queryClient.invalidateQueries({ queryKey: ['notifications'] });
+    },
+    onError: (error: unknown) => {
+      const errorMessage =
+        error && typeof error === 'object' && 'message' in error
+          ? (error as { message: string }).message
+          : 'Không thể đánh dấu tất cả đã đọc';
       toast.error(errorMessage);
     },
   });

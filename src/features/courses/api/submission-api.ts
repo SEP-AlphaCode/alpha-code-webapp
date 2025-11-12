@@ -1,4 +1,4 @@
-import { Submisstion } from '@/types/submission'
+import { Submission } from '@/types/submission'
 import { coursesHttp } from '@/utils/http'
 
 // Create a new submission
@@ -9,7 +9,7 @@ export const createSubmission = async (data: {
   status?: number
 }) => {
   try {
-    const response = await coursesHttp.post<Submisstion>('/submissions', data)
+    const response = await coursesHttp.post<Submission>('/submissions', data)
     return response.data
   } catch (error) {
     console.error('API Error in createSubmission:', error)
@@ -23,7 +23,7 @@ export const getNewestSubmissionByAccountLessonId = async (
   signal?: AbortSignal
 ) => {
   try {
-    const response = await coursesHttp.get<Submisstion>(
+    const response = await coursesHttp.get<Submission>(
       `/submissions/by-account-lesson-id/${accountLessonId}`,
       { signal }
     )
@@ -43,7 +43,7 @@ export const reviewSubmission = async (
   }
 ) => {
   try {
-    const response = await coursesHttp.put<Submisstion>(
+    const response = await coursesHttp.put<Submission>(
       `/submissions/${submissionId}/review`,
       data
     )

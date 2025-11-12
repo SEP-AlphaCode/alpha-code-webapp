@@ -75,6 +75,7 @@ export function NotificationBell({ accountId }: NotificationBellProps) {
       <PopoverContent className="w-96 p-0" align="end">
         <NotificationList
           notifications={notificationsData?.content || []}
+          accountId={accountId || undefined}
           onClose={() => setIsOpen(false)}
         />
       </PopoverContent>
