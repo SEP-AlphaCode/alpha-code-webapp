@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useCallback } from "react";
 import { Bell } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -28,13 +28,25 @@ export function NotificationBell({ accountId }: NotificationBellProps) {
     status: undefined, // Get both read and unread
   });
 
+  // ✅ Refetch khi mở popup để có data mới nhất
+  const handleOpenChange = useCallback((open: boolean) => {
+    setIsOpen(open);
+    if (open) {
+      console.log("📂 Opening notifications popup, refetching...");
+      refetch();
+    }
+  }, [refetch]);
+
+  // ✅ Memoize callback để tránh re-render vô tận
+  const handleNewNotification = useCallback(() => {
+    console.log("🔔 New notification arrived, refetching list...");
+    refetch(); // Refetch để lấy notification mới nhất
+  }, [refetch]);
+
   // Setup WebSocket to receive real-time notifications
   useNotificationWebSocket({
     accountId,
-    onNotificationReceived: () => {
-      // Refetch notifications when new one arrives
-      refetch();
-    },
+    onNotificationReceived: handleNewNotification,
   });
 
   // Count unread notifications
@@ -47,7 +59,7 @@ export function NotificationBell({ accountId }: NotificationBellProps) {
   }
 
   return (
-    <Popover open={isOpen} onOpenChange={setIsOpen}>
+    <Popover open={isOpen} onOpenChange={handleOpenChange}>
       <PopoverTrigger asChild>
         <Button variant="ghost" size="icon" className="relative">
           <Bell className="w-5 h-5" />

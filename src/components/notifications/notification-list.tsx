@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import Image from "next/image";
 import { Notification } from "@/types/notification";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { NotificationItem } from "./notification-item";
@@ -13,8 +14,15 @@ interface NotificationListProps {
 export function NotificationList({ notifications, onClose }: NotificationListProps) {
   if (notifications.length === 0) {
     return (
-      <div className="p-8 text-center">
-        <p className="text-gray-500">Không có thông báo nào</p>
+      <div className="flex flex-col items-center justify-center p-12 text-center">
+        <Image
+          src="/ic_msg_default.webp"
+          alt="No notifications"
+          width={120}
+          height={120}
+          className="mb-4 opacity-50"
+        />
+        <p className="text-sm text-gray-500">Bạn chưa có thông báo nào</p>
       </div>
     );
   }
