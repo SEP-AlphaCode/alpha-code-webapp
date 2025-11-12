@@ -1,6 +1,18 @@
 import { Notification } from '@/types/notification';
 import { usersHttp } from '@/utils/http';
 
+// ✅ Backend response format
+export interface BackendPagedResponse {
+  data: Notification[];
+  page: number;
+  total_count: number;
+  per_page: number;
+  total_pages: number;
+  has_next: boolean;
+  has_previous: boolean;
+}
+
+// ✅ Frontend format (transform để dễ sử dụng)
 export interface PagedNotifications {
   content: Notification[];
   totalPages: number;
@@ -16,8 +28,16 @@ export const getNotifications = async (params: {
   accountId?: string;
   status?: number;
 }): Promise<PagedNotifications> => {
-  const response = await usersHttp.get<PagedNotifications>('/notifications', { params });
-  return response.data;
+  const response = await usersHttp.get<BackendPagedResponse>('/notifications', { params });
+  
+  // ✅ Transform backend response to frontend format
+  return {
+    content: response.data.data || [],
+    totalPages: response.data.total_pages || 0,
+    totalElements: response.data.total_count || 0,
+    size: response.data.per_page || 20,
+    number: response.data.page || 1,
+  };
 };
 
 // GET /api/v1/notifications/{id} - Get notification by id
