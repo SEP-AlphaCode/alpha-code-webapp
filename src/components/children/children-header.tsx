@@ -8,6 +8,7 @@ import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { AccountData } from "@/types/account";
 import { RobotSelector } from "../parent/robot-selector";
 import Image from "next/image";
+import { NotificationBell } from "@/components/notifications/notification-bell";
   
 type NavItem = { name: string; href: string; icon: React.ReactNode };
 
@@ -82,8 +83,9 @@ export function ChildrenHeader({
           </Link>
         </div>
 
-        {/* Right side - Empty for cleaner look */}
-        <div>
+        {/* Right side - Notifications and Robot Selector */}
+        <div className="flex items-center space-x-2 sm:space-x-4">
+          <NotificationBell accountId={accountData?.id || null} />
           <RobotSelector/>
         </div>
       </div>

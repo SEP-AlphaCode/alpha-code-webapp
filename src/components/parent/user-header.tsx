@@ -12,6 +12,7 @@ import { RobotSelector } from "./robot-selector";
 import { UserSidebar } from "./user-sidebar";
 import { AccountData } from "@/types/account";
 import { NavigationItem } from "@/types/user";
+import { NotificationBell } from "@/components/notifications/notification-bell";
 
 interface UserHeaderProps {
   onToggleSidebar: () => void;
@@ -77,12 +78,7 @@ export function UserHeader({
         {/* Right Actions */}
         <div className="flex items-center space-x-2 sm:space-x-4">
           {/* Notifications */}
-          {/* <Button variant="ghost" size="icon" className="relative">
-            <Bell className="w-5 h-5" />
-            <span className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 rounded-full border-2 border-white flex items-center justify-center">
-              <span className="text-xs font-medium text-white">3</span>
-            </span>
-          </Button> */}
+          <NotificationBell accountId={accountData?.id || null} />
 
           {/* Robot Selector Dropdown */}
           <RobotSelector/>
