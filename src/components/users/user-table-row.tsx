@@ -13,6 +13,7 @@ interface UserInfo {
   statusText: string;
   genderText: string;
   createdDate: string;
+  bannedReason?: string | null;
 }
 
 interface UserTableRowProps {
@@ -88,7 +89,7 @@ export default function UserTableRow({
             {user.statusNumber === 1 ? (
               <>
                 <UserX className="h-4 w-4" />
-                <span>Deactivate</span>
+                <span>Ban</span>
               </>
             ) : (
               <>

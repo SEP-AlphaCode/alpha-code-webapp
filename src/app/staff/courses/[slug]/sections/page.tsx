@@ -115,7 +115,7 @@ export default function CourseSectionsPage() {
           orderNumber: s.orderNumber
         }))
       )
-      toast.success('Đã cập nhật thứ tự chương')
+      toast.success('Đã cập nhật thứ tự phần')
       
       // Delay clearing dragged state to let animation finish
       setTimeout(() => {
@@ -123,7 +123,7 @@ export default function CourseSectionsPage() {
         refetchSections()
       }, 200)
     } catch (error) {
-      toast.error('Lỗi khi cập nhật thứ tự chương')
+      toast.error('Lỗi khi cập nhật thứ tự phần')
       console.error('Error updating section order:', error)
       setDraggedIndex(null)
     }
@@ -157,10 +157,10 @@ export default function CourseSectionsPage() {
           orderNumber: s.orderNumber
         }))
       )
-      toast.success('Đã cập nhật thứ tự chương')
+      toast.success('Đã cập nhật thứ tự phần')
       refetchSections()
     } catch (error) {
-      toast.error('Lỗi khi cập nhật thứ tự chương')
+      toast.error('Lỗi khi cập nhật thứ tự phần')
       console.error('Error updating section order:', error)
     }
   }
@@ -183,14 +183,14 @@ export default function CourseSectionsPage() {
       await deleteSectionMutation.mutateAsync(deletingSectionId)
       setDeletingSectionId(null)
       setDeletingSectionName("")
-      toast.success('Đã xóa chương thành công')
+      toast.success('Đã xóa phần thành công')
       // No need to manually refetch - the mutation already invalidates queries
     } catch (error: unknown) {
       const errorMessage = error && typeof error === 'object' && 'response' in error
-        ? (error as { response?: { data?: { message?: string } } }).response?.data?.message || 'Lỗi khi xóa chương'
+        ? (error as { response?: { data?: { message?: string } } }).response?.data?.message || 'Lỗi khi xóa phần'
         : error && typeof error === 'object' && 'message' in error
         ? (error as { message: string }).message
-        : 'Lỗi khi xóa chương'
+        : 'Lỗi khi xóa phần'
       toast.error(errorMessage)
       console.error('Error deleting section:', error)
     }
@@ -215,12 +215,12 @@ export default function CourseSectionsPage() {
         <div className="flex-1">
           <h1 className="text-3xl font-bold tracking-tight">{course?.name}</h1>
           <p className="text-muted-foreground">
-            Quản lý các chương học
+            Quản lý các phần học
           </p>
         </div>
         <Button onClick={() => setIsCreateModalOpen(true)}>
           <Plus className="mr-2 h-4 w-4" />
-          Thêm chương mới
+          Thêm phần mới
         </Button>
       </div>
 
@@ -236,8 +236,8 @@ export default function CourseSectionsPage() {
               <p className="font-medium">{course?.categoryName || '-'}</p>
             </div>
             <div>
-              <p className="text-sm text-muted-foreground">Tổng số chương</p>
-              <p className="font-medium">{sections.length} chương</p>
+              <p className="text-sm text-muted-foreground">Tổng số phần</p>
+              <p className="font-medium">{sections.length} phần</p>
             </div>
             <div>
               <p className="text-sm text-muted-foreground">Tổng số bài học</p>
@@ -254,9 +254,9 @@ export default function CourseSectionsPage() {
       {/* Sections List */}
       <Card>
         <CardHeader>
-          <CardTitle>Danh sách chương</CardTitle>
+          <CardTitle>Danh sách phần</CardTitle>
           <CardDescription>
-            {sections.length} chương trong khóa học này
+            {sections.length} phần trong khóa học này
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -265,7 +265,7 @@ export default function CourseSectionsPage() {
               <TableHeader>
                 <TableRow>
                   <TableHead className="w-[50px]">STT</TableHead>
-                  <TableHead>Tên chương</TableHead>
+                  <TableHead>Tên phần</TableHead>
                   <TableHead>Số bài học</TableHead>
                   <TableHead className="text-right">Thao tác</TableHead>
                 </TableRow>
@@ -274,7 +274,7 @@ export default function CourseSectionsPage() {
                 {sections.length === 0 ? (
                   <TableRow>
                     <TableCell colSpan={4} className="text-center py-8 text-muted-foreground">
-                      Chưa có chương nào. Hãy tạo chương đầu tiên!
+                      Chưa có phần nào. Hãy tạo phần đầu tiên!
                     </TableCell>
                   </TableRow>
                 ) : (
@@ -397,7 +397,7 @@ export default function CourseSectionsPage() {
         onOpenChange={setIsCreateModalOpen}
         onSuccess={() => {
           refetchSections()
-          toast.success('Đã tạo chương mới thành công')
+          toast.success('Đã tạo phần mới thành công')
         }}
       />
 
@@ -415,7 +415,7 @@ export default function CourseSectionsPage() {
         }}
         onSuccess={() => {
           refetchSections()
-          toast.success('Đã cập nhật chương thành công')
+          toast.success('Đã cập nhật phần thành công')
         }}
       />
     </div>

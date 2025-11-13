@@ -37,20 +37,32 @@ export const blockControls = (ws: Blockly.WorkspaceSvg): Operations => {
             const startTimeVarName = '_' + (uuid.v4()).replaceAll('-', '_')
             const nowVarName = '_' + (uuid.v4()).replaceAll('-', '_')
             const listVar = 'pending_call_' + (uuid.v4()).replaceAll('-', '_')
-            let mainFn = `function main() {
-var ${listVar} = []
-try{
-${main}
-return {
-result: ${listVar}
+            let mainFn = `
+function main() {
+    var ${listVar} = []
+    try{
+        ${main}
+        return {
+            result: ${listVar}
+        }
+    }
+    catch(e) {
+        console.log('Error in main function', e);
+        if(e.message.includes('Time exceeded')) {
+            return {
+            error: "Thời gian thực thi vượt quá giới hạn. Vui lòng kiểm tra lại các vòng lặp trong chương trình."
+            }
+        }
+        if(e.message.includes('Maximum call stack size exceeded')) {
+            return {
+            error: "Chương trình của bạn có thể đã bị lặp vô hạn. Vui lòng kiểm tra lại các vòng lặp trong chương trình."
+            }
+        }
+        return {
+            error: String(e)
+        }
+    }
 }
-}
-catch(e) {
-console.log('Error in main function', e);
-return {
-error: e.message
-}
-}}
 
 return main()`
             mainFn = mainFn.replaceAll('<LIST_VAR>', listVar)
@@ -59,9 +71,9 @@ return main()`
             const checkFnName = injected.checkFnName
             const loopCheck = `let ${startTimeVarName} = Date.now(), ${nowVarName} = ${startTimeVarName}
 function ${checkFnName}() {
-${nowVarName} = Date.now()
-//console.log('Checking loop time', ${nowVarName} - ${startTimeVarName})
-if(${nowVarName} - ${startTimeVarName} >= 0.25 * 1000) throw Error("Time exceeded")
+    ${nowVarName} = Date.now()
+    //console.log('Checking loop time', ${nowVarName} - ${startTimeVarName})
+    if(${nowVarName} - ${startTimeVarName} >= 0.25 * 1000) throw Error("Time exceeded")
 }`
             return { code: loopCheck + '\n' + mainFn, listVar }
         }
@@ -158,13 +170,14 @@ if(${nowVarName} - ${startTimeVarName} >= 0.25 * 1000) throw Error("Time exceede
 
     const setUpUI = () => {
         registerFieldColour()
-        Blockly.setLocale(Vi as unknown as { [key: string]: string })
+        // Blockly.setLocale(Vi as unknown as { [key: string]: string })
         Blockly.utils.colour.setHsvSaturation(1) // 0 (inclusive) to 1 (exclusive), defaulting to 0.45
         Blockly.utils.colour.setHsvValue(0.75) // 0 (inclusive) to 1 (exclusive), defaulting to 0.65
-        
         // Make blocks bigger and easier for children to see
-        Blockly.Blocks.HEIGHT = 24
-        Blockly.Blocks.WIDTH_ = 160
+        // ws.addChangeListener((e) => {
+        //     console.log(e)
+        // })
+
         if (!Blockly.Extensions.isRegistered('flag_with_text_extension')) {
             Blockly.Extensions.register('flag_with_text_extension',
                 function () {

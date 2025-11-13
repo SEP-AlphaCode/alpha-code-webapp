@@ -1,5 +1,4 @@
-import { cn } from "@/lib/utils";
-import { Course, mapDifficulty, formatTimespan, formatPrice, AccountCourse } from "@/types/courses";
+import { AccountCourse } from "@/types/account-course";
 import { BookOpen, Clock, TrendingUp } from "lucide-react";
 import Link from "next/link";
 

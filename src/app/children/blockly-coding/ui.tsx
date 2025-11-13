@@ -11,6 +11,7 @@ import { Play, Square, Save, RotateCcw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import 'blockly/blocks';
 import 'blockly/javascript'; // Or the generator of your choice
+import { pythonHttp } from '@/utils/http';
 
 type BlocklyUIProps = {
     robotModelId: string,
@@ -33,16 +34,19 @@ export default function BlocklyUI({ robotModelId, serial, hasAllData, data }: Bl
     const [isRunning, setIsRunning] = useState(false)
     const [showRobot, setShowRobot] = useState(false)
     const key = 'AlphaCode'
-    
     const executeCode = (code: string, resultKey: string) => {
         setIsRunning(true)
         setShowRobot(true)
-        
+
         toast.success('🎉 Đang chạy chương trình...')
         try {
             // Use Function constructor to create an async function
+            console.log(code);
+
             const fn = new Function(code)
             const x = fn()
+            console.log(x);
+
             if (x.error) {
                 toast.error(x.error)
                 setShowRobot(false)
@@ -52,7 +56,7 @@ export default function BlocklyUI({ robotModelId, serial, hasAllData, data }: Bl
             }
         }
         catch (e) {
-            toast.error('❌ Lỗi khi chạy mã')
+            toast.error('❌ Lỗi khi chạy mã. Điều này xảy ra do mã không hợp lệ hoặc lỗi logic trong khối.')
             setShowRobot(false)
         }
         finally {
@@ -119,9 +123,20 @@ export default function BlocklyUI({ robotModelId, serial, hasAllData, data }: Bl
     }
 
     const handleStop = () => {
-        setIsRunning(false);
-        setShowRobot(false);
-        toast.info('⏸️ Đã dừng thực thi');
+        const f = async () => {
+            setIsRunning(false);
+            setShowRobot(false);
+            toast.info('⏸️ Đã dừng thực thi');
+            await pythonHttp.post(`/websocket/command/${serial}`, {
+                type: 'stop_all_actions'
+            }, {
+                headers: {
+                    Accept: "application/json",
+                    "Content-Type": "application/json",
+                },
+            });
+        }
+        f()
     }
 
     const handleSave = () => {
@@ -129,6 +144,9 @@ export default function BlocklyUI({ robotModelId, serial, hasAllData, data }: Bl
         const blockData = wsHelper.serialize();
         localStorage.setItem(key + '.' + robotModelId, JSON.stringify(blockData));
         toast.success("💾 Đã lưu kết quả!");
+        // workspaceRef.current?.getAllBlocks().forEach(b => {
+        //     console.log(b);
+        // })
     }
 
     const handleLoad = () => {
@@ -149,7 +167,7 @@ export default function BlocklyUI({ robotModelId, serial, hasAllData, data }: Bl
     }
 
     return (
-        <div className="h-[calc(100vh-5rem)] flex flex-col overflow-hidden">            
+        <div className="h-[calc(100vh-5rem)] flex flex-col overflow-hidden">
             {/* Main Layout - Full Screen */}
             <div className="flex-1 flex overflow-hidden">
                 {/* Left Sidebar with Robot */}
@@ -159,10 +177,10 @@ export default function BlocklyUI({ robotModelId, serial, hasAllData, data }: Bl
                         <div className="relative mb-6">
                             <div className="absolute inset-0 bg-blue-400 rounded-full blur-3xl opacity-30 animate-pulse"></div>
                             <div className="relative">
-                                <Image 
-                                    src="/running.png" 
-                                    alt="Robot" 
-                                    width={200} 
+                                <Image
+                                    src="/running.png"
+                                    alt="Robot"
+                                    width={200}
                                     height={200}
                                     className="drop-shadow-2xl"
                                     priority

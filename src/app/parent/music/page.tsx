@@ -12,6 +12,7 @@ import MediaPreview from "@/components/parent/music/media-preview"
 import ProTips from "@/components/parent/music/pro-tips"
 import { navigateToPreviewActivities } from "@/utils/preview-navigation"
 import ProtectLicense from "@/components/protect-license"
+import { useRobotStore } from "@/hooks/use-robot-store"
 
 export default function MusicPage() {
   const router = useRouter()
@@ -29,6 +30,10 @@ export default function MusicPage() {
   const [duration, setDuration] = useState<number>(0)
   const audioRef = useRef<HTMLAudioElement>(null)
   const videoRef = useRef<HTMLVideoElement>(null)
+
+  const { selectedRobot } = useRobotStore();
+
+  const robotModelId = selectedRobot?.robotModelId || "";
 
   const handleFileChange = (file: File) => {
     if (file) {
@@ -200,8 +205,15 @@ export default function MusicPage() {
 
     setIsGeneratingPlan(true)
 
+    console.log("Generating dance plan with params:", {
+      fileName: currentFile.name,
+      robotModelId,
+      startTime: startTimeNum,
+      endTime: endTimeNum
+    });
+
     try {
-      const result = await getDancePlan(currentFile, startTimeNum, endTimeNum)
+      const result = await getDancePlan(currentFile, robotModelId, startTimeNum, endTimeNum)
 
       toast.success("Tạo dance plan thành công! Đang chuyển hướng...")
 
@@ -216,8 +228,8 @@ export default function MusicPage() {
         navigateToPreviewActivities(router, {
           dancePlan: result,
           fileName: currentFile.name,
-          timeRange: timeRangeText
-        })
+          timeRange: timeRangeText,
+        }, "parent")
       }, 1000)
     } catch (error: unknown) {
       let errorMessage = 'Có lỗi xảy ra. Vui lòng thử lại!'

@@ -106,8 +106,8 @@ export default function NewCoursePage() {
       return
     }
     
-    if (!formData.price || parseInt(formData.price) < 1) {
-      toast.error("Giá khóa học là bắt buộc và phải lớn hơn 0")
+    if (!formData.price || parseInt(formData.price) < 0) {
+      toast.error("Giá khóa học là bắt buộc và phải lớn hơn hoặc bằng 0")
       return
     }
 

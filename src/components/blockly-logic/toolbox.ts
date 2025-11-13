@@ -614,27 +614,95 @@ export const robotCategory = {
     contents: [
         {
             kind: 'block',
-            type: '.action'
+            type: '.action',
+            inputs: {
+                COUNT: {
+                    shadow: {
+                        type: 'math_number',
+                        fields: {
+                            NUM: 1,
+                        },
+                    },
+                }
+            }
         },
         {
             kind: 'block',
-            type: '.extended_action'
+            type: '.extended_action',
+            inputs: {
+                COUNT: {
+                    shadow: {
+                        type: 'math_number',
+                        fields: {
+                            NUM: 1,
+                        },
+                    },
+                }
+            }
         },
         {
             kind: 'block',
-            type: '.skill_helper'
+            type: '.skill_helper',
+            inputs: {
+                COUNT: {
+                    shadow: {
+                        type: 'math_number',
+                        fields: {
+                            NUM: 1,
+                        },
+                    },
+                }
+            }
         },
         {
             kind: 'block',
-            type: '.expression'
+            type: '.expression',
+            inputs: {
+                COUNT: {
+                    shadow: {
+                        type: 'math_number',
+                        fields: {
+                            NUM: 1,
+                        },
+                    },
+                }
+            }
         },
         {
             kind: 'block',
             type: 'tts',
+            inputs: {
+                TEXT: {
+                    shadow: {
+                        type: 'text',
+                        fields: {
+                            TEXT: 'Tôi là Alpha Mini',
+                        },
+                    },
+                }
+            }
         },
         {
             kind: 'block',
             type: 'set_mouth_led',
+            inputs: {
+                DURATION: {
+                    shadow: {
+                        type: 'math_number',
+                        fields: {
+                            NUM: 1,
+                        },
+                    },
+                },
+                COLOR: {
+                    shadow: {
+                        type: 'inp_color',
+                        fields: {
+                            COLOR: '#ff0000',
+                        }
+                    },
+                }
+            }
         },
         {
             kind: 'block',

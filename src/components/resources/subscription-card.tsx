@@ -31,7 +31,7 @@ export default function SubscriptionCard() {
           {/* Actions */}
           <div className="mt-4 flex gap-3">
             <Link
-              href="/payment"
+              href="/subscription-plan"
               className="px-4 py-2 bg-blue-600 text-white rounded-md text-sm font-medium hover:bg-blue-700 transition"
             >
               Chọn gói ngay

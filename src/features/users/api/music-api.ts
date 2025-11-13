@@ -31,6 +31,7 @@ export const convertAudioToWav = async (params: AudioConvertRequest): Promise<Au
 
 export const getDancePlan = async (
     file: File, 
+    robot_model_id: string,
     start_time?: number, 
     end_time?: number
 ): Promise<DancePlanReposnse> => {
@@ -46,6 +47,8 @@ export const getDancePlan = async (
         if (end_time !== undefined && end_time !== null) {
             formData.append('end_time', end_time.toString());
         }
+
+        formData.append('robot_model_id', robot_model_id);
         
         const response = await pythonHttp.post('/music/upload-music-and-generate-plan', formData, {
             headers: {

@@ -2,8 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { clearAuthData, getTokenPayload, isValidToken, isTokenExpired } from '@/utils/tokenUtils';
-import { getRoleFromToken } from '@/utils/roleUtils';
+import { clearAuthData, getTokenPayload, isValidToken } from '@/utils/tokenUtils';
 
 interface AuthGuardProps {
   children: React.ReactNode;
@@ -30,40 +29,41 @@ export const AuthGuard = ({ children, allowedRoles }: AuthGuardProps) => {
 
         // If no token, redirect to login
         if (!accessToken) {
+          console.log('AuthGuard: No access token found');
           clearAuthData();
           router.push('/login');
           return;
         }
 
-        const accountData = getTokenPayload(accessToken || '');
-        
-        // Quick token validation without network calls first
-        if (isTokenExpired(accessToken)) {
-          // Token is expired, try to refresh with timeout
-          try {
-            const isValid = await Promise.race([
-              isValidToken(accessToken),
-              new Promise<boolean>((_, reject) => 
-                setTimeout(() => reject(new Error('Auth check timeout')), 5000)
-              )
-            ]);
+        // Validate token first (this handles both validation and refresh if needed)
+        try {
+          const isValid = await Promise.race([
+            isValidToken(accessToken),
+            new Promise<boolean>((_, reject) => 
+              setTimeout(() => reject(new Error('Auth check timeout')), 5000)
+            )
+          ]);
 
-            if (!isValid) {
-              clearAuthData();
-              router.push('/login');
-              return;
-            }
-          } catch (error) {
-            // If refresh fails or times out, clear auth and redirect
-            console.error('Token refresh failed or timed out:', error);
+          if (!isValid) {
+            console.log('AuthGuard: Token validation failed');
             clearAuthData();
             router.push('/login');
             return;
           }
+        } catch (error) {
+          console.error('AuthGuard: Token validation error:', error);
+          clearAuthData();
+          router.push('/login');
+          return;
         }
+
+        // Get updated token after refresh (if it was refreshed)
+        const currentToken = sessionStorage.getItem('accessToken') || accessToken;
+        const accountData = getTokenPayload(currentToken);
 
         // If accountData is null (token decode failed), redirect to login
         if (!accountData) {
+          console.log('AuthGuard: Failed to decode token payload');
           clearAuthData();
           router.push('/login');
           return;
@@ -71,54 +71,41 @@ export const AuthGuard = ({ children, allowedRoles }: AuthGuardProps) => {
 
         // Check role-based access
         if (allowedRoles && allowedRoles.length > 0) {
-          // First try to get account data from session storage        
-          if (accountData && accountData.roleName) {
-            const userRole = accountData.roleName.toLowerCase();
-            const hasRequiredRole = allowedRoles.some((role: string) => 
-              role.toLowerCase() === userRole
-            );
+          const userRole = accountData.roleName?.toLowerCase();
+          
+          if (!userRole) {
+            console.log('AuthGuard: No role found in token');
+            clearAuthData();
+            router.push('/login');
+            return;
+          }
+
+          const hasRequiredRole = allowedRoles.some((role: string) => 
+            role.toLowerCase() === userRole
+          );
+          
+          if (!hasRequiredRole) {
+            console.log(`AuthGuard: Role mismatch. User role: ${userRole}, Required: ${allowedRoles.join(', ')}`);
             
-            if (!hasRequiredRole) {
-              // Redirect to appropriate page based on user's role
-              if (userRole === 'admin') {
+            // Redirect to appropriate page based on user's role
+            switch (userRole) {
+              case 'admin':
                 router.push('/admin');
-              } else if (userRole === 'parent' || userRole === 'user') {
+                break;
+              case 'parent':
+              case 'user':
                 router.push('/parent');
-              } else if (userRole === 'staff') {
+                break;
+              case 'staff':
                 router.push('/staff');
-              } else if (userRole === 'children') {
+                break;
+              case 'children':
                 router.push('/children');
-              } else {
+                break;
+              default:
                 router.push('/');
-              }
-              return;
             }
-          } else {
-            // Fallback: try to get role from token directly
-            const roleFromToken = getRoleFromToken(accessToken || '');
-            
-            if (roleFromToken) {
-              const userRole = roleFromToken.toLowerCase();
-              const hasRequiredRole = allowedRoles.some((role: string) => 
-                role.toLowerCase() === userRole
-              );
-              
-              if (!hasRequiredRole) {
-                // Redirect to appropriate page based on user's role
-                if (userRole === 'admin') {
-                  router.push('/admin');
-                } else if (userRole === 'parent' || userRole === 'user') {
-                  router.push('/parent');
-                } else if (userRole === 'staff') {
-                  router.push('/staff');
-                } else if (userRole === 'children') {
-                  router.push('/children');
-                } else {
-                  router.push('/');
-                }
-                return;
-              }
-            }
+            return;
           }
         }
         

@@ -2,7 +2,7 @@
 
 import React from "react";
 import Link from "next/link";
-import { LogOut, UserCircle, Settings } from "lucide-react";
+import { LogOut, UserCircle, Settings, Home as HomeIcon, Home } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -61,7 +61,7 @@ export function UserSidebar({
                   className={`text-xl flex items-center justify-center ${isSidebarOpen ? "mr-3" : "mx-auto"
                     }`}
                 >
-                  {item.icon}
+                  <item.icon />
                 </div>
 
                 {/* Text hiển thị khi mở rộng */}

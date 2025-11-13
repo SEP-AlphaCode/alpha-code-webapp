@@ -8,7 +8,8 @@ import {
   LifeBuoy,
   Send,
   Layers,
-  FileText
+  FileText,
+  Video
 } from "lucide-react"
 
 import { NavMain } from "@/components/nav-main"
@@ -79,6 +80,17 @@ export function StaffSidebar({ ...props }: React.ComponentProps<typeof Sidebar>)
           {
             title: "Bài học",
             url: "/staff/lessons",
+          },
+        ],
+      },
+      {
+        title: "Bài kiểm tra",
+        url: "/staff/video-submissions",
+        icon: Video,
+        items: [
+          {
+            title: "Bài nộp",
+            url: "/staff/video-submissions",
           },
         ],
       },

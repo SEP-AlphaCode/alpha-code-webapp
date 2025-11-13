@@ -10,6 +10,11 @@ export function createColumns(actions: {
 }): ColumnDef<RobotApk>[] {
   return [
     {
+      accessorKey: "name",
+      header: "Tên APK",
+      cell: ({ row }) => <span className="font-medium">{row.original.name}</span>
+    },
+    {
       accessorKey: "robotModelName",
       header: "Model",
       cell: ({ row }) => <span className="font-medium">{row.original.robotModelName}</span>

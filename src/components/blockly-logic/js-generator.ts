@@ -39,13 +39,13 @@ export const buildCodeGeneratorForModelId = (modelId: string, serial: string): J
      */
     function baseRequest(body: string, n: unknown) {
         const unit = `fetch("${callUrl}", {
-headers: { 'Content-Type': 'application/json' },
-method: 'POST', 
-body:JSON.stringify(${body})
+    headers: { 'Content-Type': 'application/json' },
+    method: 'POST', 
+    body:JSON.stringify(${body})
 })
 `
-        return `for(let i=0; i<${n}; i++){ 
-${unit}
+        return `for(let i=0; i < ${n}; i++){ 
+    ${unit}
 }`
     }
     /**
@@ -63,10 +63,14 @@ ${unit}
         // TODO: Assemble javascript into the code variable.
         //Inner function, fetch the ws call
         const body = JSON.stringify({
-            type: block.type.split('.')[1],
-            lang: 'vi',
+            type: 'coding_block',
             data: {
-                code: dropdown_action_name
+                actions: [
+                    {
+                        type: block.type.split('.')[1],
+                        code: dropdown_action_name
+                    }
+                ]
             }
         })
         const comment = `// calling function ${block.type} ${count} time(s)\n`
@@ -85,10 +89,12 @@ ${unit}
         // TODO: Assemble javascript into the code variable.
         //Inner function, fetch the ws call
         const body = JSON.stringify({
-            type: block.type.split('.')[1],
-            lang: 'vi',
+            type: 'coding_block',
             data: {
-                code: dropdown_action_name
+                type: block.type.split('.')[1],
+                data: {
+                    code: dropdown_action_name
+                }
             }
         })
         const comment = `// calling function ${block.type} ${count} time(s)\n`
@@ -101,9 +107,10 @@ ${unit}
         const value_text = alphaCodeGenerator.valueToCode(block, 'TEXT', Order.ATOMIC);
         const dropdown_language = block.getFieldValue('LANGUAGE');
         const body = JSON.stringify({
-            type: 'tts',
-            lang: dropdown_language,
+            type: 'coding_block',
             data: {
+                type: 'tts',
+                lang: dropdown_language,
                 text: value_text
             }
         })
@@ -120,15 +127,19 @@ ${unit}
     }
     alphaCodeGenerator.forBlock['set_mouth_led'] = function (block) {
         const colour_name = alphaCodeGenerator.valueToCode(block, 'COLOR', Order.ATOMIC);
-
         // TODO: change Order.ATOMIC to the correct operator precedence strength
         const value_duration = alphaCodeGenerator.valueToCode(block, 'DURATION', Order.ATOMIC);
+        const val_if_num = Number(value_duration);
+        console.log(value_duration + 10);
         const body = JSON.stringify({
-            type: 'led',
-            color: JSON.parse(colour_name),
-            duration: value_duration
+            type: 'coding_block',
+            data: {
+                type: 'led',
+                color: JSON.parse(colour_name),
+                duration: Object.is(val_if_num, NaN) ? value_duration : val_if_num
+            }
         })
-
+        
         // TODO: Assemble javascript into the code variable.
         const comment = `// setting mouth LED for ${value_duration}(s)\n`
         const inner = baseRequest(body, 1)

@@ -3,7 +3,6 @@
 import React, { useEffect } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
 import { X, Play, Pause, Volume2, FileAudio, FileVideo, Music, Video } from "lucide-react"
 import AudioPreview from "./audio-preview"
 import VideoPreview from "./video-preview"

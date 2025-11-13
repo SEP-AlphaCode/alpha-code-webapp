@@ -167,7 +167,7 @@ export default function CategoryDetailPage() {
                     <TableHead>Tên khóa học</TableHead>
                     <TableHead>Cấp độ</TableHead>
                     <TableHead>Số bài học</TableHead>
-                    <TableHead>Số chương</TableHead>
+                    <TableHead>Số phần</TableHead>
                     <TableHead>Trạng thái</TableHead>
                     <TableHead className="text-right">Thao tác</TableHead>
                   </TableRow>
@@ -197,7 +197,7 @@ export default function CategoryDetailPage() {
                         <TableCell>{course.totalLessons} bài</TableCell>
                         <TableCell>
                           <Badge variant="secondary">
-                            {course.sectionCount} chương
+                            {course.sectionCount} phần
                           </Badge>
                         </TableCell>
                         <TableCell>
@@ -231,7 +231,7 @@ export default function CategoryDetailPage() {
                               <DropdownMenuItem asChild>
                                 <Link href={`/staff/courses/${course.id}/sections`}>
                                   <Layers className="mr-2 h-4 w-4" />
-                                  Quản lý chương
+                                  Quản lý phần
                                 </Link>
                               </DropdownMenuItem>
                               <DropdownMenuSeparator />

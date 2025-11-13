@@ -23,9 +23,13 @@ const formatCategory = (category: number) => {
     case 0:
       return "Không xác định"
     case 1:
-      return "Mở rộng tính năng"
+      return "Osmo"
     case 2:
-      return "Tùy chọn thêm"
+      return "Qr Code"
+    case 3:
+      return "Nhà thông minh"
+    case 4:
+      return "Lập trình Blockly"
     default:
       return "Khác"
   }

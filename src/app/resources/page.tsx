@@ -33,7 +33,7 @@ export default function ResourcesPage() {
                             <a href="#subscription" className="px-4 py-2 rounded-full bg-white border text-sm hover:bg-blue-50 transition">Subscription</a>
                             <a href="#addon" className="px-4 py-2 rounded-full bg-white border text-sm hover:bg-emerald-50 transition">Addon</a>
                             <a href="#course" className="px-4 py-2 rounded-full bg-white border text-sm hover:bg-indigo-50 transition">Khóa học</a>
-                            <a href="#package" className="px-4 py-2 rounded-full bg-white border text-sm hover:bg-violet-50 transition">Bundle</a>
+                            <a href="#bundle" className="px-4 py-2 rounded-full bg-white border text-sm hover:bg-violet-50 transition">Bundle</a>
                         </div>
                     </div>
                 </section>
@@ -116,7 +116,7 @@ export default function ResourcesPage() {
 
 
                     {/* Bundle */}
-                    <section id="package" className="space-y-6 scroll-mt-20">
+                    <section id="bundle" className="space-y-6 scroll-mt-20">
                         <h2 className="text-2xl font-semibold flex items-center gap-3">
                             <span className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-violet-100">📦</span>
                             Gói khóa học trọn bộ (Course Bundle)

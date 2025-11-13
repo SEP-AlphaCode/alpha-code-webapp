@@ -30,7 +30,26 @@ export const getAccountCoursesByAccount = async (
 		throw error;
 	}
 };
-
+// Get account courses by courseId and accountId
+export const getAccountCourseByCourseAndAccount = async (
+	courseId: string,	
+	accountId: string,
+	signal?: AbortSignal
+) => {
+	try {
+		const response = await coursesHttp.get<AccountCourse | null>(`/account-courses/get-by-account-and-course`, {
+			params: {
+				courseId,
+				accountId,
+			},
+			signal,
+		});
+		return response.data;
+	} catch (error) {
+		console.error('API Error in getAccountCourseByCourseAndAccount:', error);
+		throw error;
+	}
+}
 // Get account course by id
 export const getAccountCourseById = async (id: string, signal?: AbortSignal) => {
 	try {
@@ -71,6 +90,17 @@ export const deleteAccountCourse = async (id: string) => {
 		return response.data;
 	} catch (error) {
 		console.error('API Error in deleteAccountCourse:', error);
+		throw error;
+	}
+};
+
+// Get learning dashboard for account
+export const getLearningDashboard = async (accountId: string, signal?: AbortSignal) => {
+	try {
+		const response = await coursesHttp.get(`/account-courses/learning-dashboard/${accountId}`, { signal });
+		return response.data;
+	} catch (error) {
+		console.error('API Error in getLearningDashboard:', error);
 		throw error;
 	}
 };

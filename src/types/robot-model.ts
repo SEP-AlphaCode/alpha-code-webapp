@@ -3,6 +3,7 @@ export type RobotModel = {
   name: string
   firmwareVersion: string
   ctrlVersion: string
+  robotPrompt: string
   createdDate: string
   lastUpdated: string | null
   status: number

@@ -25,9 +25,19 @@ export const useSwitchProfile = () => {
       // Hiển thị toast với tên đầy đủ của người dùng
       toast.success(`Xin Chào ${fullName}!`);
 
+      // Check for pending redirect
+      const pendingRedirect = sessionStorage.getItem('pendingRedirect');
+
       // Xóa dữ liệu tạm thời
       sessionStorage.removeItem('availableProfiles');
       sessionStorage.removeItem('pendingAccountId');
+      sessionStorage.removeItem('pendingRedirect');
+
+      // If there's a pending redirect, go there
+      if (pendingRedirect) {
+        router.push(pendingRedirect);
+        return;
+      }
 
       // Determine redirect based on roleName inside the returned access token
       try {

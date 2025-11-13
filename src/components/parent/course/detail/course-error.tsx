@@ -9,8 +9,8 @@ export function CourseError() {
         <p className="text-slate-600 mb-6">
           Khóa học bạn đang tìm kiếm không tồn tại hoặc đã bị xóa.
         </p>
-        <Link href="/courses" className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
-          ← Quay lại trang trước
+        <Link href="/parent/courses/mycourse" className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
+          ← Về trang My Course
         </Link>
       </div>
     </div>

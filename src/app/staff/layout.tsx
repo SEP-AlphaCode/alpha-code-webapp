@@ -71,6 +71,8 @@ function StaffBreadcrumb() {
         currentPageName = 'Tạo mới'; break;
       case 'edit':
         currentPageName = 'Chỉnh sửa'; break;
+      case 'video-submissions':
+        currentPageName = 'Bài nộp'; break;
       default:
         currentPageName = formatPathToDisplayName(lastSegment);
     }
@@ -144,7 +146,7 @@ export default function StaffLayout({
   children: React.ReactNode
 }) {
   return (
-    <AuthGuard allowedRoles={['staff', 'admin']}>
+    <AuthGuard allowedRoles={['Staff']}>
       <SidebarProvider>
         <StaffSidebar />
         <SidebarInset>

@@ -25,12 +25,12 @@ export const getPagedRobotApks = async (
     }
 };
 
-export const getFilePath = async (apkId: string, accountId: string): Promise<string> => {
+export const getFilePath = async (apkId: string, accountId?: string): Promise<string> => {
     try {
         const response = await robotsHttp.get<string>('/robot-apks/file-path', {
             params: {
                 apkId,
-                accountId
+                ...(accountId && { accountId }) // Chỉ gửi accountId nếu có
             }
         });
         return response.data;

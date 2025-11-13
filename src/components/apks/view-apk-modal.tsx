@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { RobotApk } from "@/types/robot-apk";
 import { Download, Package, Calendar, Info, Key, FileText } from "lucide-react";
 import { useFilePath } from "@/features/apks/hooks/use-robot-apk";
+import Link from "next/link";
 
 interface ViewApkModalProps {
   isOpen: boolean;
@@ -15,7 +16,7 @@ interface ViewApkModalProps {
 }
 
 export function ViewApkModal({ isOpen, onClose, apk, accountId }: ViewApkModalProps) {
-  const { data: filePath, isLoading: fileLoading } = useFilePath(apk?.id, accountId);
+  const { data: filePath, isLoading: fileLoading } = useFilePath(apk?.id, accountId, apk?.isRequireLicense);
 
   if (!apk) return null;
 
@@ -41,7 +42,7 @@ export function ViewApkModal({ isOpen, onClose, apk, accountId }: ViewApkModalPr
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Package className="w-5 h-5 text-rose-600" />
-            Chi tiết APK
+            {apk.name || "Chi tiết APK"}
           </DialogTitle>
         </DialogHeader>
 
@@ -61,7 +62,8 @@ export function ViewApkModal({ isOpen, onClose, apk, accountId }: ViewApkModalPr
                     </Badge>            
                   )}
                 </div>
-                <h3 className="text-2xl font-bold text-gray-900">Phiên bản {apk.version}</h3>
+                <h3 className="text-2xl font-bold text-gray-900">{apk.name}</h3>
+                <p className="text-sm text-gray-600 mt-1">Phiên bản {apk.version}</p>
               </div>
             </div>
           </div>
@@ -151,14 +153,38 @@ export function ViewApkModal({ isOpen, onClose, apk, accountId }: ViewApkModalPr
           <Button variant="outline" onClick={onClose}>
             Đóng
           </Button>
-          <Button
-            className="bg-rose-600 hover:bg-rose-700 text-white"
-            disabled={fileLoading || !filePath}
-            onClick={handleDownload}
-          >
-            <Download className="w-4 h-4 mr-2" />
-            {fileLoading ? "Đang chuẩn bị..." : filePath ? "Tải xuống APK" : "Không thể tải xuống"}
-          </Button>
+          {fileLoading ? (
+            <Button
+              className="bg-rose-600 hover:bg-rose-700 text-white"
+              disabled
+            >
+              <Download className="w-4 h-4 mr-2" />
+              Đang chuẩn bị...
+            </Button>
+          ) : filePath ? (
+            <Button
+              className="bg-rose-600 hover:bg-rose-700 text-white"
+              onClick={handleDownload}
+            >
+              <Download className="w-4 h-4 mr-2" />
+              Tải xuống APK
+            </Button>
+          ) : apk.isRequireLicense ? (
+            <Link href="/license-key">
+              <Button className="bg-amber-600 hover:bg-amber-700 text-white">
+                <Package className="w-4 h-4 mr-2" />
+                Mua license
+              </Button>
+            </Link>
+          ) : (
+            <Button
+              className="bg-gray-400 text-white cursor-not-allowed"
+              disabled
+            >
+              <Download className="w-4 h-4 mr-2" />
+              Không khả dụng
+            </Button>
+          )}
         </DialogFooter>
       </DialogContent>
     </Dialog>

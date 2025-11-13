@@ -55,3 +55,13 @@ export interface CreateAccountRequest {
   gender: number
   roleId: string
 }
+
+export interface RegisterAccount {
+  username: string;
+  password: string;
+  email: string;
+  fullName: string;
+  phone: string
+  gender: number;
+  avatarFile?: File;
+}

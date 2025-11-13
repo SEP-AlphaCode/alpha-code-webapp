@@ -1,3 +1,5 @@
+import { AccountLesson } from "./account-lessons"
+
 export type Category = {
     id: string,
     name: string,
@@ -8,16 +10,6 @@ export type Category = {
     lastUpdated?: string,
     createdDate: string
     countCourses?: number
-}
-
-export interface Section {
-    id: string; // uuid
-    courseId: string; // uuid
-    title: string; // varchar(255)
-    orderNumber: number; // int4
-    createdDate?: string; // timestamp
-    lastUpdated?: string; // timestamp
-    lessons?: Lesson[];
 }
 
 export interface Lesson {
@@ -39,15 +31,17 @@ export interface Lesson {
     lastUpdated?: string; // timestamp
 }
 
-export interface Section{
+export interface Section {
     id: string; // uuid
     courseId: string; // uuid
     title: string; // varchar(255)
     orderNumber: number; // int4
-    lessons?: Lesson[];
-    createdAt: string; // timestamp
-    lastUpdated?: string; // timestamp
+    createdDate?: string | null; // timestamp - nullable
+    lastUpdated?: string | null; // timestamp - nullable
     status: number; // int4
+    statusText?: string; // status text
+    lessons?: Lesson[]; // for non-account specific queries
+    accountLessons?: AccountLesson[]; // for account-specific queries with progress
 }
 
 export interface Course {
@@ -71,29 +65,29 @@ export interface Course {
     levelText?: string; // Added field for level text
 }
 
-export interface AccountCourse {
-    accountId: string;
-    completed: boolean;
-    completedLesson: number;
-    courseId: string;
-    id: string;
-    lastAccessed: string; // or Date if you plan to parse it
-    progressPercent: number;
-    purchaseDate: string; // or Date if you plan to parse it
-    status: number;
-    statusText: string;
-    totalLesson: number;
-    slug: string,
-    imageUrl: string,
-    name: string
-}
+// export interface AccountCourse {
+//     accountId: string;
+//     completed: boolean;
+//     completedLesson: number;
+//     courseId: string;
+//     id: string;
+//     lastAccessed: string; // or Date if you plan to parse it
+//     progressPercent: number;
+//     purchaseDate: string; // or Date if you plan to parse it
+//     status: number;
+//     statusText: string;
+//     totalLesson: number;
+//     slug: string,
+//     imageUrl: string,
+//     name: string
+// }
 
-export interface AccountLesson {
-    duration: number;
-    id: string;
-    status: number;
-    title: string;
-}
+// export interface AccountLesson {
+//     duration: number;
+//     id: string;
+//     status: number;
+//     title: string;
+// }
 
 export function mapDifficulty(d: number) {
     switch (d) {

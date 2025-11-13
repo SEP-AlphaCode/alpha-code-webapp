@@ -55,11 +55,6 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       icon: Users,
     },
     {
-      name: "Mã QR",
-      url: "/admin/qr-codes",
-      icon: QrCode,
-    },
-    {
       name: "Thẻ Osmo",
       url: "/admin/osmo-cards",
       icon: CreditCard,
@@ -86,7 +81,6 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
     title: "Hoạt động",
     url: "/admin",
     icon: SquareTerminal,
-    isActive: true,
     items: [
       { title: "Hành động", url: "/admin/activities/actions" },
       { title: "Điệu nhảy", url: "/admin/activities/dances" },
@@ -96,12 +90,13 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
     ],
   },
   {
-    title: "Plan",
+    title: "Mua thêm",
     url: "#",
     icon: CreditCard,
     items: [
-      { title: "Gói đăng ký", url: "/admin/plan/subscription" },
-      { title: "Tiện ích mở rộng", url: "/admin/plan/addons" },
+      { title: "Subscription", url: "/admin/plan/subscription" },
+      { title: "Addon", url: "/admin/plan/addons" },
+      { title: "Bundle", url: "/admin/plan/bundle" },
     ],
   },
   {
@@ -118,7 +113,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
     url: "#",
     icon: Bot,
     items: [
-      { title: "Danh sách Robot", url: "/admin/robots" },
+      { title: "Phiên bản Robot", url: "/admin/robot-models" },
       { title: "APK", url: "/admin/apks" },
     ],
   },

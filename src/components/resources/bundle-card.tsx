@@ -25,7 +25,7 @@ export default function BundleCard() {
           </ul>
 
           <div className="mt-4 flex flex-wrap gap-2">
-            <Link href="/parent/courses" className="px-4 py-2 bg-violet-600 text-white rounded-md text-sm hover:bg-violet-700 transition">Xem gói học</Link>
+            <Link href="/bundle" className="px-4 py-2 bg-violet-600 text-white rounded-md text-sm hover:bg-violet-700 transition">Xem gói học</Link>
           </div>
         </div>
       </div>

@@ -15,12 +15,12 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Switch } from "@/components/ui/switch"
 import { useSubscription } from "@/features/subscription/hooks/use-subscription"
 import { SubscriptionPlan, SubscriptionPlanModal } from "@/types/subscription"
 import { toast } from "sonner"
 import "react-quill-new/dist/quill.snow.css"
 
-// ✅ Dynamic import ReactQuill (chỉ load khi cần)
 const ReactQuill = dynamic(() => import("react-quill-new"), { ssr: false })
 
 interface CreateSubscriptionModalProps {
@@ -50,35 +50,39 @@ export function CreateSubscriptionModal({
     setValue,
     watch,
     formState: { errors, isSubmitting },
-  } = useForm<SubscriptionPlanModal>({
+  } = useForm<SubscriptionPlanModal & { id?: string }>({
     defaultValues: {
+      id: "",
       name: "",
       description: "",
       price: 0,
       billingCycle: 1,
+      isRecommended : false,
     },
   })
 
-  // 🔁 Load dữ liệu vào form khi mở modal
   useEffect(() => {
     if (isEditMode && editSubscription) {
       reset({
+        id: editSubscription.id,
         name: editSubscription.name,
         description: editSubscription.description,
         price: editSubscription.price,
         billingCycle: editSubscription.billingCycle,
+        isRecommended : editSubscription.isRecommended  ?? false,
       })
     } else {
       reset({
+        id: "",
         name: "",
         description: "",
         price: 0,
         billingCycle: 1,
+        isRecommended : false,
       })
     }
   }, [isEditMode, editSubscription, reset])
 
-  // ✅ Chỉ render ReactQuill khi modal đang mở
   useEffect(() => {
     if (isOpen) {
       const timer = setTimeout(() => setIsQuillReady(true), 50)
@@ -89,21 +93,34 @@ export function CreateSubscriptionModal({
   }, [isOpen])
 
   const billingCycle = watch("billingCycle")
+  const isRecommended  = watch("isRecommended")
 
-  const onSubmit = async (data: SubscriptionPlanModal) => {
+  const onSubmit = async (data: SubscriptionPlanModal & { id?: string }) => {
     try {
+      let response
       if (isEditMode && editSubscription) {
-        await updateSubscriptionMutation.mutateAsync({ id: editSubscription.id, data })
-        toast.success("Cập nhật gói đăng ký thành công!")
+        response = await updateSubscriptionMutation.mutateAsync({
+          id: editSubscription.id,
+          data,
+        })
       } else {
-        await createSubscriptionMutation.mutateAsync(data)
-        toast.success("Tạo gói đăng ký mới thành công!")
+        response = await createSubscriptionMutation.mutateAsync(data)
       }
+
+      toast.success(
+        response?.message ||
+          (isEditMode
+            ? "Cập nhật gói đăng ký thành công!"
+            : "Tạo gói đăng ký mới thành công!")
+      )
+
       reset()
       onClose()
-    } catch (error) {
-      console.error("Error saving subscription:", error)
-      toast.error(isEditMode ? "Cập nhật thất bại" : "Tạo mới thất bại")
+    } catch (error: unknown) {
+      const errorMessage = error && typeof error === 'object' && 'response' in error
+        ? (error as { response?: { data?: { message?: string } } }).response?.data?.message
+        : undefined;
+      toast.error(isEditMode ? errorMessage || "Lỗi khi cập nhật gói đăng ký" : errorMessage || "Lỗi khi tạo gói đăng ký")
     }
   }
 
@@ -127,6 +144,19 @@ export function CreateSubscriptionModal({
         </DialogHeader>
 
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+          {/* ✅ ID (readonly khi edit) */}
+          {isEditMode && (
+            <div className="space-y-2">
+              <Label htmlFor="id">Mã gói</Label>
+              <Input
+                id="id"
+                {...register("id")}
+                disabled
+                className="bg-gray-100 text-gray-600"
+              />
+            </div>
+          )}
+
           {/* Name */}
           <div className="space-y-2">
             <Label htmlFor="name">Tên gói *</Label>
@@ -190,6 +220,19 @@ export function CreateSubscriptionModal({
                 <SelectItem value="12">1 năm</SelectItem>
               </SelectContent>
             </Select>
+          </div>
+
+          {/* Recommended Switch */}
+          <div className="flex items-center space-x-3 pt-2">
+            <Switch
+              id="isRecommended"
+              checked={isRecommended}
+              onCheckedChange={(checked) => setValue("isRecommended", checked)}
+              disabled={isSubmitting}
+            />
+            <Label htmlFor="isRecommended " className="text-sm font-medium cursor-pointer">
+              Gói được đề xuất
+            </Label>
           </div>
 
           <DialogFooter>

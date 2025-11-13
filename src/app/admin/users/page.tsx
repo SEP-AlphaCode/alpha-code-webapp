@@ -1,5 +1,6 @@
 "use client";
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
+import { Pagination } from '@/components/ui/pagination';
 import { useAccount } from '@/features/users/hooks/use-account';
 import { Account } from '@/types/account';
 import { ApiResponse } from '@/types/api-error';
@@ -20,11 +21,15 @@ export default function UserManagement() {
   const [createError, setCreateError] = useState<string>('');
   const [createSuccess, setCreateSuccess] = useState<string>('');
 
+  // Pagination state
+  const [page, setPage] = useState<number>(1);
+  const [perPage, setPerPage] = useState<number>(12);
   const accountHooks = useAccount();
-  const accountsQuery = accountHooks.useGetAllAccounts();
+  const accountsQuery = accountHooks.useGetAllAccounts({ page, per_page: perPage, search: searchTerm, role: filterRole === 'all' ? undefined : filterRole });
   const { data: accountsResponse, isLoading, error, refetch, isFetching } = accountsQuery;
   const deleteAccountMutation = accountHooks.useDeleteAccount();
   const updateAccountMutation = accountHooks.useUpdateAccount();
+  const changeStatusMutation = accountHooks.useChangeAccountStatus();
   const createAccountMutation = accountHooks.useCreateAccount();
 
   // Extract accounts from PagedResult with stable reference
@@ -78,6 +83,11 @@ export default function UserManagement() {
       return matchesSearch && matchesRole;
     });
   }, [users, searchTerm, filterRole]);
+
+  // When search or role filter changes, reset to first page
+  useEffect(() => {
+    setPage(1);
+  }, [searchTerm, filterRole]);
 
   // Get role colors dynamically
   const getRoleColor = (role: string) => {
@@ -143,25 +153,56 @@ export default function UserManagement() {
 
     toast.warning(confirmDelete);
   };
+  // Ban modal state
+  const [banUserId, setBanUserId] = useState<string | null>(null);
+  const [banReason, setBanReason] = useState<string>('');
+
+  const openBanModal = (userId: string) => {
+    setBanUserId(userId);
+    setBanReason('');
+  };
+
+  const closeBanModal = () => {
+    setBanUserId(null);
+    setBanReason('');
+  };
 
   const handleToggleStatus = (userId: string, currentStatus: number) => {
     const userToUpdate = users.find(user => user.id === userId);
     const userName = userToUpdate?.fullName || 'User';
-    const newStatus = currentStatus === 1 ? 0 : 1;
-    const statusText = newStatus === 1 ? 'activated' : 'deactivated';
 
-    updateAccountMutation.mutate({
-      id: userId,
-      accountData: { status: newStatus }
-    }, {
+    if (currentStatus === 1) {
+      // When active -> open ban modal to collect reason
+      openBanModal(userId);
+      return;
+    }
+
+    // Reactivate: call change-status API to set status to 1 and clear bannedReason
+    changeStatusMutation.mutate({ id: userId, status: 1, bannedReason: null }, {
       onSuccess: () => {
-        toast.success(`${userName} has been ${statusText} successfully!`);
+        toast.success(`${userName} has been activated successfully!`);
       },
       onError: (error) => {
-        console.error('❌ Error updating user status:', error);
-        const errorMessage = error instanceof Error
-          ? error.message
-          : 'Failed to update user status';
+        console.error('❌ Error re-activating user:', error);
+        const errorMessage = error instanceof Error ? error.message : 'Failed to activate user';
+        toast.error(`Error: ${errorMessage}`);
+      }
+    });
+  };
+
+  const confirmBan = () => {
+    if (!banUserId) return;
+    const userToUpdate = users.find(u => u.id === banUserId);
+    const userName = userToUpdate?.fullName || 'User';
+
+    changeStatusMutation.mutate({ id: banUserId, status: 2, bannedReason: banReason }, {
+      onSuccess: () => {
+        toast.success(`${userName} has been banned.`);
+        closeBanModal();
+      },
+      onError: (error) => {
+        console.error('❌ Error banning user:', error);
+        const errorMessage = error instanceof Error ? error.message : 'Failed to ban user';
         toast.error(`Error: ${errorMessage}`);
       }
     });
@@ -299,6 +340,21 @@ export default function UserManagement() {
         getStatusColor={getStatusColor}
       />
 
+      {/* Pagination (server-driven) */}
+      {accountsResponse && accountsResponse.total_pages > 1 && (
+        <div className="mt-4">
+          <Pagination
+            currentPage={page}
+            totalPages={accountsResponse.total_pages}
+            onPageChange={(p) => setPage(p)}
+            hasNext={!!accountsResponse.has_next}
+            hasPrevious={!!accountsResponse.has_previous}
+            totalCount={accountsResponse.total_count}
+            perPage={accountsResponse.per_page}
+          />
+        </div>
+      )}
+
       <CreateUserModal
         isOpen={isCreateModalOpen}
         onClose={() => {
@@ -309,6 +365,32 @@ export default function UserManagement() {
         isLoading={createAccountMutation.isPending}
         error={createError}
       />
+
+      {/* Ban modal */}
+      {banUserId && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center">
+          <div className="absolute inset-0 bg-black opacity-40" onClick={closeBanModal} />
+          <div className="relative z-10 w-full max-w-md bg-white rounded shadow-lg p-6">
+            <h3 className="text-lg font-medium mb-2">Ban user</h3>
+            <p className="text-sm text-gray-600 mb-4">Provide a reason for banning this user (shown to admins).</p>
+            <textarea
+              className="w-full border rounded p-2 mb-4"
+              rows={4}
+              value={banReason}
+              onChange={(e) => setBanReason(e.target.value)}
+              placeholder="Reason for ban"
+            />
+            <div className="flex justify-end space-x-2">
+               <button className="px-4 py-2 bg-gray-200 rounded" onClick={closeBanModal}>Cancel</button> 
+               <button 
+                 className="px-4 py-2 bg-red-600 text-white rounded" 
+                 onClick={confirmBan} 
+                 disabled={changeStatusMutation.isPending} 
+               >{changeStatusMutation.isPending ? 'Banning...' : 'Ban user'}</button> 
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

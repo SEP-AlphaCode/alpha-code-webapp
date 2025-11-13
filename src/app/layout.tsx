@@ -5,6 +5,7 @@ import "./globals.css"
 import Provider from "./provider"
 import { PublicEnvScript } from "next-runtime-env"
 import { Toaster } from "sonner"
+import ChatbotWidget from "@/components/chatbot/chatbot-widget"
 
 const inter = Inter({
   variable: "--font-inter",
@@ -39,9 +40,12 @@ export default function RootLayout({
       <body className={`${inter.variable} font-sans antialiased`} suppressHydrationWarning>
         <Provider>
             {children}
+            <ChatbotWidget />
             <Toaster
               position="top-right" // top-left, top-center, bottom-left...
               richColors
+              expand
+              closeButton
             />
         </Provider>
       </body>

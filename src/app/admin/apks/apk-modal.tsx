@@ -24,6 +24,7 @@ const ReactQuillDynamic = dynamic(() => import("react-quill-new"), {
 
   export function ApkModal({ isOpen, onClose, editApk, onSuccess }: { isOpen: boolean, onClose: () => void, editApk: RobotApk | null, onSuccess: () => void }) {
   const isEditMode = !!editApk
+  const [name, setName] = useState("")
   const [version, setVersion] = useState("")
   const [description, setDescription] = useState("")
   const [robotModelId, setRobotModelId] = useState("")
@@ -41,6 +42,7 @@ const ReactQuillDynamic = dynamic(() => import("react-quill-new"), {
   useEffect(() => {
     if (isOpen) {
       if (isEditMode && editApk) {
+        setName(editApk.name || "")
         setVersion(editApk.version || "")
         setDescription(editApk.description || "")
         setRobotModelId(editApk.robotModelId || "")
@@ -48,6 +50,7 @@ const ReactQuillDynamic = dynamic(() => import("react-quill-new"), {
         setStatus(editApk.status ?? 1)
         setFile(undefined)
       } else {
+        setName("")
         setVersion("")
         setDescription("")
         setRobotModelId("")
@@ -59,13 +62,14 @@ const ReactQuillDynamic = dynamic(() => import("react-quill-new"), {
   }, [isOpen, isEditMode, editApk])
 
   const handleSubmit = async () => {
-    if (!version || !robotModelId) return
+    if (!name || !version || !robotModelId) return
 
     if (isEditMode && editApk) {
       try {
         await updateMutation.mutateAsync({
           apkId: editApk.id,
           robotApk: {
+            name,
             version,
             description,
             robotModelId,
@@ -91,6 +95,7 @@ const ReactQuillDynamic = dynamic(() => import("react-quill-new"), {
     try {
       await createMutation.mutateAsync({
         robotApk: {
+          name,
           version,
           description,
           robotModelId,
@@ -121,6 +126,11 @@ const ReactQuillDynamic = dynamic(() => import("react-quill-new"), {
         </DialogHeader>
 
         <div className="grid gap-4 py-2">
+          <div className="grid gap-2">
+            <Label>Tên APK</Label>
+            <Input value={name} onChange={(e) => setName(e.target.value)} placeholder="vd: Ứng dụng điều khiển robot" />
+          </div>
+
           <div className="grid gap-2">
             <Label>Phiên bản</Label>
             <Input value={version} onChange={(e) => setVersion(e.target.value)} placeholder="vd: 1.2.3" />
@@ -204,7 +214,7 @@ const ReactQuillDynamic = dynamic(() => import("react-quill-new"), {
           <Button variant="outline" onClick={onClose} disabled={isLoading}>Hủy</Button>
           <Button 
             onClick={handleSubmit} 
-            disabled={isLoading || (!isEditMode && !file) || !version || !robotModelId}
+            disabled={isLoading || (!isEditMode && !file) || !name || !version || !robotModelId}
           >
             {isLoading 
               ? (isEditMode ? "Đang cập nhật..." : "Đang tải lên...")
