@@ -5,7 +5,7 @@ import { useGetSectionByAccountIdAndCourseSlug } from '@/features/courses/hooks/
 import { useCreateAccountLesson } from '@/features/courses/hooks/use-account-lessons'
 import { getUserIdFromToken } from '@/utils/tokenUtils'
 import LoadingState from '@/components/loading-state'
-import { BookOpen, Pencil, FileText, GraduationCap, BookMarked, Calculator, Star, Trophy, Check, Clock, Video, Bot, Play, ArrowLeft } from 'lucide-react'
+import { BookOpen, Pencil, FileText, GraduationCap, BookMarked, Calculator, Star, Trophy, Check, Clock, Video, Bot, Play, ArrowLeft, Lock } from 'lucide-react'
 
 export default function LearningPageClient() {
   const params = useParams() as { slug?: string }
@@ -142,7 +142,7 @@ export default function LearningPageClient() {
           
           <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-200">
             <div className="flex items-center gap-4 mb-4">
-              <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center">
+              <div className="w-12 h-12 rounded-xl bg-blue-600 flex items-center justify-center">
                 <GraduationCap className="w-7 h-7 text-white" />
               </div>
               <div>
@@ -167,7 +167,7 @@ export default function LearningPageClient() {
               
               <div className="relative w-full h-3 bg-gray-200 rounded-full overflow-hidden">
                 <div 
-                  className="absolute top-0 left-0 h-full bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 rounded-full transition-all duration-500"
+                  className="absolute top-0 left-0 h-full bg-blue-600 rounded-full transition-all duration-500"
                   style={{ width: `${progressPercent}%` }}
                 />
               </div>
@@ -188,19 +188,44 @@ export default function LearningPageClient() {
           {Array.isArray(sectionsData) && sectionsData.map((section, sIndex) => {
             const sectionCompleted = section.accountLessons?.filter(al => al.status === 2)?.length || 0
             const sectionTotal = section.accountLessons?.length || 0
+            
+            // Check if previous section is fully completed (for cross-section locking)
+            const isPreviousSectionCompleted = sIndex === 0 || (() => {
+              const prevSection = sectionsData[sIndex - 1]
+              const prevTotal = prevSection.accountLessons?.length || 0
+              const prevCompleted = prevSection.accountLessons?.filter(al => al.status === 2)?.length || 0
+              return prevTotal > 0 && prevCompleted === prevTotal
+            })()
+            const isSectionLocked = !isPreviousSectionCompleted
 
             return (
-              <div key={section.id} className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
+              <div key={section.id} className={`bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden ${isSectionLocked ? 'opacity-60' : ''}`}>
                 {/* Section Header */}
-                <div className="bg-gradient-to-r from-gray-50 to-blue-50 px-6 py-4 border-b border-gray-200">
+                <div className={`px-6 py-4 border-b border-gray-200 ${isSectionLocked ? 'bg-gray-50' : 'bg-blue-50'}`}>
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center">
-                        <span className="text-lg font-bold text-white">{sIndex + 1}</span>
+                      <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${
+                        isSectionLocked ? 'bg-gray-300' : 'bg-blue-600'
+                      }`}>
+                        {isSectionLocked ? (
+                          <Lock className="w-5 h-5 text-gray-600" />
+                        ) : (
+                          <span className="text-lg font-bold text-white">{sIndex + 1}</span>
+                        )}
                       </div>
                       <div>
-                        <h3 className="text-lg font-bold text-gray-900">{section.title}</h3>
-                        <p className="text-sm text-gray-600">
+                        <div className="flex items-center gap-2">
+                          <h3 className={`text-lg font-bold ${isSectionLocked ? 'text-gray-500' : 'text-gray-900'}`}>
+                            {section.title}
+                          </h3>
+                          {isSectionLocked && (
+                            <span className="inline-flex items-center gap-1 text-xs px-2 py-0.5 bg-gray-200 text-gray-600 rounded-md font-medium">
+                              <Lock className="w-3 h-3" />
+                              Hoàn thành section trước
+                            </span>
+                          )}
+                        </div>
+                        <p className={`text-sm ${isSectionLocked ? 'text-gray-500' : 'text-gray-600'}`}>
                           {sectionTotal} bài học • {sectionCompleted} đã hoàn thành
                         </p>
                       </div>
@@ -217,24 +242,37 @@ export default function LearningPageClient() {
                       const isInProgress = accountLesson.status === 1
                       const isProcessing = processingLessonId === lesson.id
                       
+                      // Check if previous lesson is completed (for locking logic within section)
+                      const isPreviousLessonCompleted = lIndex === 0 || (section.accountLessons && section.accountLessons[lIndex - 1].status === 2)
+                      // Lesson is locked if: section is locked OR previous lesson in same section not completed
+                      const isLocked = isSectionLocked || !isPreviousLessonCompleted
+                      
                       return (
                         <div 
                           key={lesson.id} 
-                          className={`px-6 py-4 hover:bg-gray-50 cursor-pointer transition-all ${
-                            isProcessing ? 'opacity-60 cursor-wait' : ''
+                          className={`px-6 py-4 transition-all ${
+                            isLocked 
+                              ? 'opacity-50 cursor-not-allowed bg-gray-50' 
+                              : isProcessing 
+                              ? 'opacity-60 cursor-wait' 
+                              : 'hover:bg-gray-50 cursor-pointer'
                           }`}
-                          onClick={() => !isProcessing && handleLessonClick(lesson.id, accountLesson.id, lesson.type)}
+                          onClick={() => !isProcessing && !isLocked && handleLessonClick(lesson.id, accountLesson.id, lesson.type)}
                         >
                           <div className="flex items-center gap-4">
                             {/* Status Icon */}
                             <div className={`w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0 ${
-                              isCompleted 
+                              isLocked
+                                ? 'bg-gray-200 text-gray-400'
+                                : isCompleted 
                                 ? 'bg-green-100 text-green-600' 
                                 : isInProgress 
                                 ? 'bg-blue-100 text-blue-600' 
                                 : 'bg-gray-100 text-gray-600'
                             }`}>
-                              {isCompleted ? (
+                              {isLocked ? (
+                                <Lock className="w-5 h-5" />
+                              ) : isCompleted ? (
                                 <Check className="w-6 h-6" />
                               ) : (
                                 <span className="text-lg font-bold">{lIndex + 1}</span>
@@ -243,31 +281,45 @@ export default function LearningPageClient() {
 
                             {/* Lesson Info */}
                             <div className="flex-1 min-w-0">
-                              <h4 className="text-base font-semibold text-gray-900 mb-1 truncate">
-                                {lesson.title}
-                              </h4>
+                              <div className="flex items-center gap-2 mb-1">
+                                <h4 className={`text-base font-semibold truncate ${isLocked ? 'text-gray-400' : 'text-gray-900'}`}>
+                                  {lesson.title}
+                                </h4>
+                                {isLocked && (
+                                  <span className="inline-flex items-center gap-1 text-xs px-2 py-0.5 bg-gray-300 text-gray-600 rounded-md font-medium flex-shrink-0">
+                                    <Lock className="w-3 h-3" />
+                                    Khóa
+                                  </span>
+                                )}
+                              </div>
                               
                               <div className="flex items-center gap-2 flex-wrap">
                                 {/* Lesson Type Badge */}
                                 {lesson.type === 3 ? (
-                                  <span className="inline-flex items-center gap-1 text-xs px-2 py-1 bg-purple-100 text-purple-700 rounded-md font-medium">
+                                  <span className={`inline-flex items-center gap-1 text-xs px-2 py-1 rounded-md font-medium ${
+                                    isLocked ? 'bg-gray-200 text-gray-500' : 'bg-purple-100 text-purple-700'
+                                  }`}>
                                     <FileText className="w-3 h-3" />
                                     Bài kiểm tra
                                   </span>
                                 ) : lesson.type === 2 ? (
-                                  <span className="inline-flex items-center gap-1 text-xs px-2 py-1 bg-blue-100 text-blue-700 rounded-md font-medium">
+                                  <span className={`inline-flex items-center gap-1 text-xs px-2 py-1 rounded-md font-medium ${
+                                    isLocked ? 'bg-gray-200 text-gray-500' : 'bg-blue-100 text-blue-700'
+                                  }`}>
                                     <Video className="w-3 h-3" />
                                     Video
                                   </span>
                                 ) : (
-                                  <span className="inline-flex items-center gap-1 text-xs px-2 py-1 bg-green-100 text-green-700 rounded-md font-medium">
+                                  <span className={`inline-flex items-center gap-1 text-xs px-2 py-1 rounded-md font-medium ${
+                                    isLocked ? 'bg-gray-200 text-gray-500' : 'bg-green-100 text-green-700'
+                                  }`}>
                                     <BookOpen className="w-3 h-3" />
                                     Bài học
                                   </span>
                                 )}
                                 
                                 {/* Submission Status Badge (for quizzes) */}
-                                {accountLesson.submissionStatusText && (
+                                {accountLesson.submissionStatusText && !isLocked && (
                                   <span className={`inline-flex items-center gap-1 text-xs px-2 py-1 rounded-md font-medium ${
                                     accountLesson.submissionStatusText.includes('ĐẠT') && !accountLesson.submissionStatusText.includes('KHÔNG')
                                       ? 'bg-green-100 text-green-700' 
@@ -285,18 +337,22 @@ export default function LearningPageClient() {
                                 )}
                                 
                                 {lesson.videoUrl && lesson.type !== 2 && (
-                                  <span className="inline-flex items-center gap-1 text-xs px-2 py-1 bg-blue-100 text-blue-700 rounded-md font-medium">
+                                  <span className={`inline-flex items-center gap-1 text-xs px-2 py-1 rounded-md font-medium ${
+                                    isLocked ? 'bg-gray-200 text-gray-500' : 'bg-blue-100 text-blue-700'
+                                  }`}>
                                     <Video className="w-3 h-3" />
                                     Video
                                   </span>
                                 )}
                                 {lesson.requireRobot && (
-                                  <span className="inline-flex items-center gap-1 text-xs px-2 py-1 bg-purple-100 text-purple-700 rounded-md font-medium">
+                                  <span className={`inline-flex items-center gap-1 text-xs px-2 py-1 rounded-md font-medium ${
+                                    isLocked ? 'bg-gray-200 text-gray-500' : 'bg-purple-100 text-purple-700'
+                                  }`}>
                                     <Bot className="w-3 h-3" />
                                     Robot
                                   </span>
                                 )}
-                                <span className="text-xs text-gray-500 flex items-center gap-1">
+                                <span className={`text-xs flex items-center gap-1 ${isLocked ? 'text-gray-400' : 'text-gray-500'}`}>
                                   <Clock className="w-3 h-3" />
                                   {Math.floor(lesson.duration / 60)} phút
                                 </span>
@@ -306,9 +362,11 @@ export default function LearningPageClient() {
                             {/* Action Button */}
                             <div className="flex-shrink-0">
                               <button 
-                                disabled={isProcessing}
+                                disabled={isProcessing || isLocked}
                                 className={`px-4 py-2 rounded-lg font-semibold text-sm transition-all flex items-center gap-2 ${
-                                  isProcessing
+                                  isLocked
+                                    ? 'bg-gray-200 text-gray-500 cursor-not-allowed'
+                                    : isProcessing
                                     ? 'bg-gray-300 text-gray-600 cursor-wait'
                                     : isCompleted 
                                     ? 'bg-green-500 text-white hover:bg-green-600' 
@@ -317,7 +375,12 @@ export default function LearningPageClient() {
                                     : 'bg-blue-600 text-white hover:bg-blue-700'
                                 }`}
                               >
-                                {isProcessing ? (
+                                {isLocked ? (
+                                  <>
+                                    <Lock className="w-4 h-4" />
+                                    Bắt đầu
+                                  </>
+                                ) : isProcessing ? (
                                   <>
                                     <div className="w-4 h-4 border-2 border-gray-600 border-t-transparent rounded-full animate-spin" />
                                     Đang tải...
