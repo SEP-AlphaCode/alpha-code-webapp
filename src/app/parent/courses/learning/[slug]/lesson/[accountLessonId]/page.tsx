@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator } from '@/components/ui/breadcrumb'
-import { Play, Pause, RotateCcw, Clock, BookOpen, Bot, Video, CheckCircle, ArrowLeft, List, ChevronDown, ChevronUp } from 'lucide-react'
+import { Play, Pause, RotateCcw, Clock, BookOpen, Bot, Video, CheckCircle, ArrowLeft, List, ChevronDown, ChevronUp, Lock } from 'lucide-react'
 import { getUserIdFromToken } from '@/utils/tokenUtils'
 
 export default function LessonDetailPageLearning() {
@@ -638,36 +638,58 @@ export default function LessonDetailPageLearning() {
               </CardHeader>
               <CardContent className="p-0">
                 <div className="max-h-[600px] overflow-y-auto scrollbar-hide">
-                  {sections?.map((section, sectionIndex) => (
-                    <div key={section.id} className="border-b last:border-b-0">
-                      {/* Section Header */}
-                      <button
-                        onClick={() => toggleSection(section.id)}
-                        className="w-full px-4 py-3 flex items-center justify-between hover:bg-gray-50 transition-colors"
-                      >
-                        <div className="flex items-center gap-2">
-                          <span className="font-semibold text-sm text-gray-900">
-                            {sectionIndex + 1}. {section.title}
-                          </span>
-                        </div>
-                        {expandedSections.has(section.id) ? (
-                          <ChevronUp className="w-4 h-4 text-gray-500" />
-                        ) : (
-                          <ChevronDown className="w-4 h-4 text-gray-500" />
-                        )}
-                      </button>
+                  {sections?.map((section, sectionIndex) => {
+                    // Check if previous section is fully completed (for cross-section locking)
+                    const isPreviousSectionCompleted = sectionIndex === 0 || (() => {
+                      const prevSection = sections[sectionIndex - 1]
+                      const prevTotal = prevSection.accountLessons?.length || 0
+                      const prevCompleted = prevSection.accountLessons?.filter(al => al.status === 2)?.length || 0
+                      return prevTotal > 0 && prevCompleted === prevTotal
+                    })()
+                    const isSectionLocked = !isPreviousSectionCompleted
+                    
+                    return (
+                      <div key={section.id} className="border-b last:border-b-0">
+                        {/* Section Header */}
+                        <button
+                          onClick={() => toggleSection(section.id)}
+                          className={`w-full px-4 py-3 flex items-center justify-between hover:bg-gray-50 transition-colors ${
+                            isSectionLocked ? 'opacity-60' : ''
+                          }`}
+                        >
+                          <div className="flex items-center gap-2">
+                            <span className={`font-semibold text-sm ${isSectionLocked ? 'text-gray-500' : 'text-gray-900'}`}>
+                              {sectionIndex + 1}. {section.title}
+                            </span>
+                            {isSectionLocked && (
+                              <Lock className="w-3 h-3 text-gray-400" />
+                            )}
+                          </div>
+                          {expandedSections.has(section.id) ? (
+                            <ChevronUp className="w-4 h-4 text-gray-500" />
+                          ) : (
+                            <ChevronDown className="w-4 h-4 text-gray-500" />
+                          )}
+                        </button>
 
-                      {/* Lessons List */}
-                      {expandedSections.has(section.id) && (
-                        <div className="bg-gray-50">
-                          {section.accountLessons?.map((lesson, lessonIndex) => {
-                            const isCurrentLesson = lesson.id === accountLessonId
-                            const isLessonCompleted = lesson.status === 3
+                        {/* Lessons List */}
+                        {expandedSections.has(section.id) && (
+                          <div className="bg-gray-50">
+                            {section.accountLessons?.map((lesson, lessonIndex) => {
+                              const isCurrentLesson = lesson.id === accountLessonId
+                              const isLessonCompleted = lesson.status === 3
+                              
+                              // Check if previous lesson is completed
+                              const isPreviousCompleted = lessonIndex === 0 || (section.accountLessons && section.accountLessons[lessonIndex - 1].status === 2)
+                              // Also check if section is locked
+                              const isLocked = isSectionLocked || !isPreviousCompleted
                             
                             return (
                               <button
                                 key={lesson.id}
                                 onClick={() => {
+                                  if (isLocked) return
+                                  
                                   if (lesson.lesson?.type === 3) {
                                     // Quiz
                                     router.push(`/parent/courses/learning/${slug}/quiz/${lesson.id}`)
@@ -676,13 +698,20 @@ export default function LessonDetailPageLearning() {
                                     router.push(`/parent/courses/learning/${slug}/lesson/${lesson.id}`)
                                   }
                                 }}
-                                className={`w-full px-4 py-3 flex items-start gap-3 hover:bg-gray-100 transition-colors text-left ${
-                                  isCurrentLesson ? 'bg-blue-50 border-l-4 border-blue-500' : ''
-                                }`}
+                                className={`w-full px-4 py-3 flex items-start gap-3 transition-colors text-left ${
+                                  isLocked 
+                                    ? 'opacity-50 cursor-not-allowed bg-gray-100' 
+                                    : 'hover:bg-gray-100'
+                                } ${isCurrentLesson ? 'bg-blue-50 border-l-4 border-blue-500' : ''}`}
+                                disabled={isLocked}
                               >
                                 {/* Status Icon */}
                                 <div className="flex-shrink-0 mt-0.5">
-                                  {isLessonCompleted ? (
+                                  {isLocked ? (
+                                    <div className="w-5 h-5 rounded-full bg-gray-100 flex items-center justify-center">
+                                      <Lock className="w-3 h-3 text-gray-400" />
+                                    </div>
+                                  ) : isLessonCompleted ? (
                                     <CheckCircle className="w-5 h-5 text-green-600" />
                                   ) : (
                                     <div className="w-5 h-5 rounded-full border-2 border-gray-300 flex items-center justify-center">
@@ -694,9 +723,18 @@ export default function LessonDetailPageLearning() {
                                 {/* Lesson Info */}
                                 <div className="flex-1 min-w-0">
                                   <div className={`text-sm font-medium mb-1 ${
-                                    isCurrentLesson ? 'text-blue-700' : 'text-gray-900'
+                                    isLocked 
+                                      ? 'text-gray-400' 
+                                      : isCurrentLesson 
+                                      ? 'text-blue-700' 
+                                      : 'text-gray-900'
                                   }`}>
                                     {lesson.lesson?.title}
+                                    {isLocked && (
+                                      <Badge variant="secondary" className="ml-2 text-xs">
+                                        Khóa
+                                      </Badge>
+                                    )}
                                   </div>
                                   <div className="flex items-center gap-2 flex-wrap">
                                     {lesson.lesson?.type === 3 ? (
@@ -718,12 +756,13 @@ export default function LessonDetailPageLearning() {
                                   </div>
                                 </div>
                               </button>
-                            )
-                          })}
-                        </div>
-                      )}
-                    </div>
-                  ))}
+                              )
+                            })}
+                          </div>
+                        )}
+                      </div>
+                    )
+                  })}
                 </div>
               </CardContent>
             </Card>
