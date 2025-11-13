@@ -84,12 +84,12 @@ export function StaffSidebar({ ...props }: React.ComponentProps<typeof Sidebar>)
         ],
       },
       {
-        title: "Chấm bài",
+        title: "Bài kiểm tra",
         url: "/staff/video-submissions",
         icon: Video,
         items: [
           {
-            title: "Video Submissions",
+            title: "Bài nộp",
             url: "/staff/video-submissions",
           },
         ],

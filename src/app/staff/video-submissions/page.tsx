@@ -9,7 +9,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { LoadingState } from '@/components/users';
-import { useVideoSubmissions } from '@/features/submissions/hooks/use-video-submissions';
+import useVideoSubmissions from '@/features/submissions/hooks/use-video-submissions';
 
 export default function VideoSubmissionsPage() {
     const router = useRouter();
@@ -68,8 +68,8 @@ export default function VideoSubmissionsPage() {
 
     if (isLoading) {
         return (
-            <div className="container mx-auto py-8 px-4">
-                <LoadingState message="Đang tải video submissions..." />
+            <div className="flex items-center justify-center min-h-screen">
+                <LoadingState message="Đang tải bài tập đã nộp" />
             </div>
         );
     }
@@ -101,7 +101,7 @@ export default function VideoSubmissionsPage() {
             </div>
 
             {/* Stats Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
                 <Card>
                     <CardHeader className="pb-3">
                         <CardTitle className="text-sm font-medium text-gray-600">
@@ -110,23 +110,12 @@ export default function VideoSubmissionsPage() {
                     </CardHeader>
                     <CardContent>
                         <div className="text-3xl font-bold text-yellow-600">
-                            {getStatusCount(0)}
+                            {getStatusCount(4)}
                         </div>
                     </CardContent>
                 </Card>
                 
-                <Card>
-                    <CardHeader className="pb-3">
-                        <CardTitle className="text-sm font-medium text-gray-600">
-                            Đạt
-                        </CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                        <div className="text-3xl font-bold text-green-600">
-                            {getStatusCount(1)}
-                        </div>
-                    </CardContent>
-                </Card>
+
                 
                 <Card>
                     <CardHeader className="pb-3">
@@ -136,7 +125,7 @@ export default function VideoSubmissionsPage() {
                     </CardHeader>
                     <CardContent>
                         <div className="text-3xl font-bold text-red-600">
-                            {getStatusCount(2)}
+                            {getStatusCount(6)}
                         </div>
                     </CardContent>
                 </Card>
@@ -169,9 +158,8 @@ export default function VideoSubmissionsPage() {
                             </SelectTrigger>
                             <SelectContent>
                                 <SelectItem value="all">Tất cả</SelectItem>
-                                <SelectItem value="0">Chờ chấm</SelectItem>
-                                <SelectItem value="1">Đạt</SelectItem>
-                                <SelectItem value="2">Không đạt</SelectItem>
+                                <SelectItem value="4">Chờ chấm</SelectItem>
+                                <SelectItem value="6">Không đạt</SelectItem>
                             </SelectContent>
                         </Select>
                     </div>
@@ -229,7 +217,7 @@ export default function VideoSubmissionsPage() {
 
                                         <Button
                                             onClick={() => router.push(`/staff/video-submissions/${submission.id}`)}
-                                            className="bg-blue-600 hover:bg-blue-700"
+                                            className="bg-blue-600 hover:bg-blue-700 text-white"
                                         >
                                             <Video className="h-4 w-4 mr-2" />
                                             Xem và chấm điểm

@@ -18,6 +18,8 @@ import {
   Circle
 } from 'lucide-react'
 import { useCreateSubmission, useNewestSubmission } from '@/features/courses/hooks/use-submission'
+import { presignSubmissionUpload } from '@/features/courses/api/submission-api'
+import { uploadFileToPresignedUrl } from '@/features/courses/api/lesson-api'
 import { toast } from 'sonner'
 import { useSendRobotCommand } from '@/features/users/hooks/use-websocket'
 import { WebSocketCommand } from '@/types/websocket'
@@ -99,19 +101,30 @@ export function SubmissionPanel({ accountLessonId, onSubmissionSuccess }: Submis
     }
 
     try {
-      setUploadProgress(10)
-      
-      // TODO: Upload video to storage (Firebase Storage, S3, etc.)
-      // For now, we'll simulate the upload
-      const videoUrl = await simulateVideoUpload(videoFile)
-      
-      setUploadProgress(80)
+      setUploadProgress(5)
 
-      // Create submission with video URL
+      // 1) Request presigned upload URL from backend
+      const presign = await presignSubmissionUpload({
+        filename: videoFile.name,
+        contentType: videoFile.type || 'video/mp4',
+        folder: 'submissions',
+      })
+
+      // 2) Upload file directly to storage using presigned URL
+      await uploadFileToPresignedUrl(
+        presign.uploadUrl,
+        videoFile,
+        videoFile.type,
+        (percent) => setUploadProgress(Math.max(5, Math.min(95, percent)))
+      )
+
+      setUploadProgress(95)
+
+      // 3) Create submission with returned public URL
       await createSubmission.mutateAsync({
         accountLessonId,
-        videoUrl,
-        status: 0 // Pending review
+        videoUrl: presign.publicUrl,
+        status: 0, // Pending review
       })
 
       setUploadProgress(100)
@@ -130,14 +143,7 @@ export function SubmissionPanel({ accountLessonId, onSubmissionSuccess }: Submis
     }
   }
 
-  // Simulate video upload (replace with actual upload logic)
-  const simulateVideoUpload = async (file: File): Promise<string> => {
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        resolve(`https://storage.example.com/videos/${file.name}`)
-      }, 2000)
-    })
-  }
+  // Note: upload handled via presign => uploadFileToPresignedUrl
 
   // Start recording robot logs
   const handleStartRecording = () => {

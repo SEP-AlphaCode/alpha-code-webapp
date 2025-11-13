@@ -71,6 +71,8 @@ function StaffBreadcrumb() {
         currentPageName = 'Tạo mới'; break;
       case 'edit':
         currentPageName = 'Chỉnh sửa'; break;
+      case 'video-submissions':
+        currentPageName = 'Bài nộp'; break;
       default:
         currentPageName = formatPathToDisplayName(lastSegment);
     }

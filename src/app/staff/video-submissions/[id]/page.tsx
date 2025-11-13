@@ -9,8 +9,18 @@ import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { LoadingState, ErrorState } from '@/components/users';
 import { toast } from 'sonner';
-import { useGradeSubmission } from '@/features/submissions/hooks/use-grade-submission';
-import { useVideoSubmission } from '@/features/submissions/hooks/use-video-submission';
+import useVideoSubmission from '@/features/submissions/hooks/use-video-submission';
+import useGradeSubmission from '@/features/submissions/hooks/use-grade-submission';
+import {
+    Dialog,
+    DialogContent,
+    DialogHeader,
+    DialogTitle,
+    DialogFooter,
+    DialogDescription,
+    DialogClose,
+    DialogTrigger,
+} from '@/components/ui/dialog';
 
 interface PageProps {
     params: Promise<{ id: string }>;
@@ -21,14 +31,16 @@ export default function VideoSubmissionDetailPage({ params }: PageProps) {
     const router = useRouter();
     const [comment, setComment] = useState('');
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [showFailModal, setShowFailModal] = useState(false);
 
     const { data: submission, isLoading, error, refetch } = useVideoSubmission(resolvedParams.id);
     const gradeSubmission = useGradeSubmission();
 
-    const handleGrade = async (status: number, statusText: string) => {
+    const handleGrade = async (approved: boolean) => {
         if (!submission) return;
 
-        if (status === 2 && !comment.trim()) {
+        // if rejecting, ensure comment exists
+        if (!approved && !comment.trim()) {
             toast.error('Vui lòng nhập lý do FAIL');
             return;
         }
@@ -37,25 +49,20 @@ export default function VideoSubmissionDetailPage({ params }: PageProps) {
         try {
             await gradeSubmission.mutateAsync({
                 submissionId: submission.id,
-                status,
-                staffComment: comment.trim() || undefined,
+                approved,
+                comment: comment.trim() || undefined,
             });
 
-            toast.success(
-                status === 1 ? 'Đã chấm PASS!' : 'Đã chấm FAIL!'
-            );
-            
+            toast.success(approved ? 'Đã chấm PASS!' : 'Đã chấm FAIL!');
+
+            // refresh data but do not redirect so staff can re-grade if needed
             refetch();
-            
-            // Redirect back after 1.5s
-            setTimeout(() => {
-                router.push('/staff/video-submissions');
-            }, 1500);
         } catch (error) {
             toast.error('Có lỗi xảy ra khi chấm bài');
             console.error(error);
         } finally {
             setIsSubmitting(false);
+            setShowFailModal(false);
         }
     };
 
@@ -75,9 +82,9 @@ export default function VideoSubmissionDetailPage({ params }: PageProps) {
         );
     }
 
-    const isPending = submission.status === 0;
-    const isApproved = submission.status === 1;
-    const isRejected = submission.status === 2;
+    const isPending = submission.status === 4;
+    const isApproved = submission.status === 5;
+    const isRejected = submission.status === 6;
 
     return (
         <div className="container mx-auto py-8 px-4 max-w-6xl">
@@ -165,47 +172,76 @@ export default function VideoSubmissionDetailPage({ params }: PageProps) {
                     )}
 
                     {/* Grading Section - Only for pending submissions */}
-                    {isPending && (
-                        <Card>
-                            <CardHeader>
-                                <CardTitle>Chấm điểm</CardTitle>
-                            </CardHeader>
-                            <CardContent className="space-y-4">
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                                        Nhận xét của staff (tùy chọn)
-                                    </label>
-                                    <Textarea
-                                        placeholder="Nhập nhận xét về bài làm của học viên (bắt buộc nếu chấm FAIL)..."
-                                        value={comment}
-                                        onChange={(e) => setComment(e.target.value)}
-                                        rows={4}
-                                        className="w-full"
-                                    />
-                                </div>
+                    {/* Grading Section - always shown so staff can update grade */}
+                    <Card>
+                        <CardHeader>
+                            <CardTitle>Chấm điểm</CardTitle>
+                        </CardHeader>
+                        <CardContent className="space-y-4">
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-2">
+                                    Nhận xét của staff (tùy chọn)
+                                </label>
+                                <Textarea
+                                    placeholder="Nhập nhận xét về bài làm của học viên (bắt buộc nếu chấm FAIL)..."
+                                    value={comment}
+                                    onChange={(e) => setComment(e.target.value)}
+                                    rows={4}
+                                    className="w-full"
+                                />
+                            </div>
 
-                                <div className="flex gap-3">
+                            <div className="flex gap-3">
+                                <Button
+                                    onClick={() => handleGrade(true)}
+                                    disabled={isSubmitting}
+                                    className="flex-1 bg-green-600 hover:bg-green-700"
+                                >
+                                    <CheckCircle className="h-4 w-4 mr-2" />
+                                    Đạt / Cập nhật
+                                </Button>
+                                <Button
+                                    onClick={() => setShowFailModal(true)}
+                                    disabled={isSubmitting}
+                                    variant="destructive"
+                                    className="flex-1"
+                                >
+                                    <XCircle className="h-4 w-4 mr-2" />
+                                    Không đạt / Cập nhật
+                                </Button>
+                            </div>
+                        </CardContent>
+                    </Card>
+
+                    {/* Fail confirmation modal */}
+                    <Dialog open={showFailModal} onOpenChange={setShowFailModal}>
+                        <DialogContent>
+                            <DialogHeader>
+                                <DialogTitle>Xác nhận Không đạt</DialogTitle>
+                            </DialogHeader>
+                            <div className="py-2">
+                                <label className="block text-sm font-medium text-gray-700 mb-2">Lý do Không đạt (bắt buộc)</label>
+                                <Textarea
+                                    placeholder="Nhập lý do khiến học viên không đạt"
+                                    value={comment}
+                                    onChange={(e) => setComment(e.target.value)}
+                                    rows={5}
+                                />
+                            </div>
+                            <DialogFooter>
+                                <div className="flex gap-2">
+                                    <Button variant="outline" onClick={() => setShowFailModal(false)}>Hủy</Button>
                                     <Button
-                                        onClick={() => handleGrade(1, 'Approved')}
-                                        disabled={isSubmitting}
-                                        className="flex-1 bg-green-600 hover:bg-green-700"
-                                    >
-                                        <CheckCircle className="h-4 w-4 mr-2" />
-                                        Đạt
-                                    </Button>
-                                    <Button
-                                        onClick={() => handleGrade(2, 'Rejected')}
-                                        disabled={isSubmitting}
                                         variant="destructive"
-                                        className="flex-1"
+                                        onClick={() => handleGrade(false)}
+                                        disabled={isSubmitting || !comment.trim()}
                                     >
-                                        <XCircle className="h-4 w-4 mr-2" />
-                                        Không đạt
+                                        Xác nhận Không đạt
                                     </Button>
                                 </div>
-                            </CardContent>
-                        </Card>
-                    )}
+                            </DialogFooter>
+                        </DialogContent>
+                    </Dialog>
 
                     {/* Previous Staff Comment */}
                     {!isPending && submission.staffComment && (

@@ -3,6 +3,7 @@ export interface Notification {
   accountId: string;
   title: string;
   message: string;
+  isRead: boolean;
   type: number;
   status: number;
   createdDate: string;

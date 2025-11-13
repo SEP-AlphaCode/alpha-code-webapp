@@ -51,8 +51,8 @@ export function useReviewSubmission() {
     }: {
       submissionId: string
       data: {
-        status?: number
-        statusText?: string
+        approved?: boolean
+        comment?: string
       }
     }) => submissionApi.reviewSubmission(submissionId, data),
     onSuccess: (data) => {

@@ -3,7 +3,7 @@
 import React from "react";
 import Image from "next/image";
 import { CheckCheck } from "lucide-react";
-import { Notification, NotificationStatus } from "@/types/notification";
+import { Notification } from "@/types/notification";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Button } from "@/components/ui/button";
 import { NotificationItem } from "./notification-item";
@@ -18,9 +18,7 @@ interface NotificationListProps {
 export function NotificationList({ notifications, accountId, onClose }: NotificationListProps) {
   const markAllAsRead = useMarkAllNotificationsAsRead();
   
-  const unreadCount = notifications.filter(
-    (n) => n.status === NotificationStatus.UNREAD
-  ).length;
+  const unreadCount = notifications.filter((n) => !n.isRead).length;
 
   const handleMarkAllAsRead = () => {
     if (accountId && unreadCount > 0) {

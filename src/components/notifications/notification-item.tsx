@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { Notification, NotificationStatus } from "@/types/notification";
+import { Notification } from "@/types/notification";
 import { useMarkNotificationAsRead, useDeleteNotification } from "@/features/notifications/hooks/use-notifications";
 import { formatDistanceToNow } from "date-fns";
 import { vi } from "date-fns/locale";
@@ -18,7 +18,7 @@ export function NotificationItem({ notification, onClose }: NotificationItemProp
   const deleteNotif = useDeleteNotification();
 
   const handleClick = () => {
-    if (notification.status === NotificationStatus.UNREAD) {
+    if (!notification.isRead) {
       markAsRead.mutate(notification.id);
     }
     // You can add navigation logic here if needed
@@ -29,7 +29,7 @@ export function NotificationItem({ notification, onClose }: NotificationItemProp
     deleteNotif.mutate(notification.id);
   };
 
-  const isUnread = notification.status === NotificationStatus.UNREAD;
+  const isUnread = !notification.isRead;
 
   return (
     <div

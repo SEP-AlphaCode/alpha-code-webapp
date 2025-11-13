@@ -1,36 +1,30 @@
-import { useQuery } from '@tanstack/react-query';
-import { apiCoursesUrl } from '@/app/constants/constants';
+import { useQuery } from '@tanstack/react-query'
+import { getFailedSubmissions, getUnReviewedSubmissions } from '../api/staff-submission-api'
+import { StaffSubmissionListItem } from '@/types/staff-submission'
 
-export interface VideoSubmissionListItem {
-    id: string;
-    accountLessonId: string;
-    accountId: string;
-    accountName: string;
-    lessonId: string;
-    lessonTitle: string;
-    videoUrl: string;
-    status: number;
-    statusText: string;
-    createdDate: string;
-    lastUpdated: string;
+// Fetch and combine unreviewed + failed submissions to provide a simple array the UI can use
+export const useVideoSubmissions = (page = 1, size = 100) => {
+  return useQuery<StaffSubmissionListItem[]>({
+    queryKey: ['video-submissions', page, size],
+    queryFn: async () => {
+      // Fetch both lists and merge (dedupe by id)
+      const [unreviewedPaged, failedPaged] = await Promise.all([
+        getUnReviewedSubmissions(page, size),
+        getFailedSubmissions(page, size),
+      ])
+
+  const combined = [...(unreviewedPaged.data || []), ...(failedPaged.data || [])]
+
+      // reduce to unique by id
+      const map = new Map<string, StaffSubmissionListItem>()
+      for (const item of combined) {
+        map.set(item.id, item)
+      }
+
+      return Array.from(map.values())
+    },
+    staleTime: 1000 * 60, // 1 minute
+  })
 }
 
-export const useVideoSubmissions = () => {
-    return useQuery<VideoSubmissionListItem[]>({
-        queryKey: ['video-submissions'],
-        queryFn: async () => {
-            const response = await fetch(`${apiCoursesUrl}/staff/submissions/video`, {
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                credentials: 'include',
-            });
-
-            if (!response.ok) {
-                throw new Error('Failed to fetch video submissions');
-            }
-
-            return response.json();
-        },
-    });
-};
+export default useVideoSubmissions
