@@ -1,13 +1,15 @@
 "use client"
 import { useGetAccountLessonById, useMarkAccountLessonComplete } from '@/features/courses/hooks/use-account-lessons'
+import { useGetSectionByAccountIdAndCourseSlug } from '@/features/courses/hooks/use-section'
 import { useParams, useRouter } from 'next/navigation'
-import React, { useEffect, useState, useRef } from 'react'
+import React, { useEffect, useState, useRef, useMemo } from 'react'
 import { Progress } from '@/components/ui/progress'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator } from '@/components/ui/breadcrumb'
-import { Play, Pause, RotateCcw, Clock, BookOpen, Bot, Video, CheckCircle, ArrowLeft } from 'lucide-react'
+import { Play, Pause, RotateCcw, Clock, BookOpen, Bot, Video, CheckCircle, ArrowLeft, List, ChevronDown, ChevronUp } from 'lucide-react'
+import { getUserIdFromToken } from '@/utils/tokenUtils'
 
 export default function LessonDetailPageLearning() {
   const router = useRouter()
@@ -24,12 +26,52 @@ export default function LessonDetailPageLearning() {
   const [playbackSpeed, setPlaybackSpeed] = useState(1)
   const [isPlaying, setIsPlaying] = useState(false)
   
+  // Sidebar states
+  const [expandedSections, setExpandedSections] = useState<Set<string>>(new Set())
+  
   // Get account lesson detail by account lesson ID
   const { data: accountLessonData, isLoading, error } = useGetAccountLessonById(accountLessonId || '')
   const markComplete = useMarkAccountLessonComplete()
   
   // Extract lesson data from account lesson
   const lessonData = accountLessonData?.lesson
+  
+  // Get user ID from token
+  const accountId = useMemo(() => {
+    if (typeof window !== 'undefined') {
+      const token = sessionStorage.getItem('accessToken')
+      return token ? getUserIdFromToken(token) : null
+    }
+    return null
+  }, [])
+  
+  // Get sections and lessons for sidebar
+  const { data: sections } = useGetSectionByAccountIdAndCourseSlug(accountId || '', slug || '')
+
+  // Auto-expand section containing current lesson
+  useEffect(() => {
+    if (sections && accountLessonId) {
+      const currentSection = sections.find(section => 
+        section.accountLessons?.some(lesson => lesson.id === accountLessonId)
+      )
+      if (currentSection) {
+        setExpandedSections(prev => new Set([...prev, currentSection.id]))
+      }
+    }
+  }, [sections, accountLessonId])
+
+  // Toggle section expand/collapse
+  const toggleSection = (sectionId: string) => {
+    setExpandedSections(prev => {
+      const newSet = new Set(prev)
+      if (newSet.has(sectionId)) {
+        newSet.delete(sectionId)
+      } else {
+        newSet.add(sectionId)
+      }
+      return newSet
+    })
+  }
 
   useEffect(() => {
   }, [lessonData, isLoading, error])
@@ -470,10 +512,7 @@ export default function LessonDetailPageLearning() {
                 )}
               </CardContent>
             </Card>
-          </div>
 
-          {/* Sidebar */}
-          <div className="lg:col-span-1 space-y-6">
             {/* Progress Card - Different display based on lesson type */}
             <Card className="border border-gray-200 shadow-sm">
               <CardHeader className="border-b border-gray-200">
@@ -584,6 +623,108 @@ export default function LessonDetailPageLearning() {
                     )}
                   </>
                 )}
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Sidebar - Course Content Tracking */}
+          <div className="lg:col-span-1 space-y-6">
+            <Card className="sticky top-4">
+              <CardHeader className="pb-3 border-b">
+                <CardTitle className="flex items-center gap-2 text-lg">
+                  <List className="w-5 h-5" />
+                  Nội dung khóa học
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="p-0">
+                <div className="max-h-[600px] overflow-y-auto scrollbar-hide">
+                  {sections?.map((section, sectionIndex) => (
+                    <div key={section.id} className="border-b last:border-b-0">
+                      {/* Section Header */}
+                      <button
+                        onClick={() => toggleSection(section.id)}
+                        className="w-full px-4 py-3 flex items-center justify-between hover:bg-gray-50 transition-colors"
+                      >
+                        <div className="flex items-center gap-2">
+                          <span className="font-semibold text-sm text-gray-900">
+                            {sectionIndex + 1}. {section.title}
+                          </span>
+                        </div>
+                        {expandedSections.has(section.id) ? (
+                          <ChevronUp className="w-4 h-4 text-gray-500" />
+                        ) : (
+                          <ChevronDown className="w-4 h-4 text-gray-500" />
+                        )}
+                      </button>
+
+                      {/* Lessons List */}
+                      {expandedSections.has(section.id) && (
+                        <div className="bg-gray-50">
+                          {section.accountLessons?.map((lesson, lessonIndex) => {
+                            const isCurrentLesson = lesson.id === accountLessonId
+                            const isLessonCompleted = lesson.status === 3
+                            
+                            return (
+                              <button
+                                key={lesson.id}
+                                onClick={() => {
+                                  if (lesson.lesson?.type === 3) {
+                                    // Quiz
+                                    router.push(`/parent/courses/learning/${slug}/quiz/${lesson.id}`)
+                                  } else {
+                                    // Lesson
+                                    router.push(`/parent/courses/learning/${slug}/lesson/${lesson.id}`)
+                                  }
+                                }}
+                                className={`w-full px-4 py-3 flex items-start gap-3 hover:bg-gray-100 transition-colors text-left ${
+                                  isCurrentLesson ? 'bg-blue-50 border-l-4 border-blue-500' : ''
+                                }`}
+                              >
+                                {/* Status Icon */}
+                                <div className="flex-shrink-0 mt-0.5">
+                                  {isLessonCompleted ? (
+                                    <CheckCircle className="w-5 h-5 text-green-600" />
+                                  ) : (
+                                    <div className="w-5 h-5 rounded-full border-2 border-gray-300 flex items-center justify-center">
+                                      <span className="text-xs text-gray-500">{lessonIndex + 1}</span>
+                                    </div>
+                                  )}
+                                </div>
+
+                                {/* Lesson Info */}
+                                <div className="flex-1 min-w-0">
+                                  <div className={`text-sm font-medium mb-1 ${
+                                    isCurrentLesson ? 'text-blue-700' : 'text-gray-900'
+                                  }`}>
+                                    {lesson.lesson?.title}
+                                  </div>
+                                  <div className="flex items-center gap-2 flex-wrap">
+                                    {lesson.lesson?.type === 3 ? (
+                                      <Badge variant="secondary" className="text-xs px-1.5 py-0">
+                                        <CheckCircle className="w-3 h-3 mr-1" />
+                                        Quiz
+                                      </Badge>
+                                    ) : lesson.lesson?.type === 2 ? (
+                                      <Badge variant="secondary" className="text-xs px-1.5 py-0 flex items-center gap-1">
+                                        <Video className="w-3 h-3" />
+                                        {Math.floor((lesson.lesson?.duration || 0) / 60)}m
+                                      </Badge>
+                                    ) : (
+                                      <Badge variant="secondary" className="text-xs px-1.5 py-0 flex items-center gap-1">
+                                        <BookOpen className="w-3 h-3" />
+                                        {Math.floor((lesson.lesson?.duration || 0) / 60)}m
+                                      </Badge>
+                                    )}
+                                  </div>
+                                </div>
+                              </button>
+                            )
+                          })}
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
               </CardContent>
             </Card>
           </div>

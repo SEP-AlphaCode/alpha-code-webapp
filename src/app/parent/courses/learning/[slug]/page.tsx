@@ -142,7 +142,7 @@ export default function LearningPageClient() {
           
           <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-200">
             <div className="flex items-center gap-4 mb-4">
-              <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center">
+              <div className="w-12 h-12 rounded-xl bg-blue-600 flex items-center justify-center">
                 <GraduationCap className="w-7 h-7 text-white" />
               </div>
               <div>
@@ -167,7 +167,7 @@ export default function LearningPageClient() {
               
               <div className="relative w-full h-3 bg-gray-200 rounded-full overflow-hidden">
                 <div 
-                  className="absolute top-0 left-0 h-full bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 rounded-full transition-all duration-500"
+                  className="absolute top-0 left-0 h-full bg-blue-600 rounded-full transition-all duration-500"
                   style={{ width: `${progressPercent}%` }}
                 />
               </div>
@@ -192,10 +192,10 @@ export default function LearningPageClient() {
             return (
               <div key={section.id} className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
                 {/* Section Header */}
-                <div className="bg-gradient-to-r from-gray-50 to-blue-50 px-6 py-4 border-b border-gray-200">
+                <div className="bg-blue-50 px-6 py-4 border-b border-gray-200">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center">
+                      <div className="w-10 h-10 rounded-xl bg-blue-600 flex items-center justify-center">
                         <span className="text-lg font-bold text-white">{sIndex + 1}</span>
                       </div>
                       <div>
