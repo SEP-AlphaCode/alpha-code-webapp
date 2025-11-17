@@ -1,5 +1,5 @@
 "use client"
-import { useGetAccountLessonById, useMarkAccountLessonComplete } from '@/features/courses/hooks/use-account-lessons'
+import { useGetAccountLessonById, useMarkAccountLessonComplete, useCreateAccountLesson } from '@/features/courses/hooks/use-account-lessons'
 import { useGetSectionByAccountIdAndCourseSlug } from '@/features/courses/hooks/use-section'
 import { useParams, useRouter } from 'next/navigation'
 import React, { useEffect, useState, useMemo } from 'react'
@@ -22,10 +22,12 @@ export default function QuizPageLearning() {
   
   // Sidebar states
   const [expandedSections, setExpandedSections] = useState<Set<string>>(new Set())
+  const [processingLessonId, setProcessingLessonId] = useState<string | null>(null)
   
   // Get account lesson detail by account lesson ID
   const { data: accountLessonData, isLoading, error } = useGetAccountLessonById(accountLessonId || '')
   const markComplete = useMarkAccountLessonComplete()
+  const createAccountLesson = useCreateAccountLesson()
   
   // Extract lesson data from account lesson
   const lessonData = accountLessonData?.lesson
@@ -65,6 +67,47 @@ export default function QuizPageLearning() {
       }
       return newSet
     })
+  }
+
+  // Handle lesson click from sidebar
+  const handleLessonClick = async (lessonId: string, targetAccountLessonId: string | null, lessonType: number) => {
+    if (!accountId) return
+
+    try {
+      setProcessingLessonId(lessonId)
+
+      // If account lesson doesn't exist (id is null), create it first
+      if (!targetAccountLessonId) {
+        const newAccountLesson = await createAccountLesson.mutateAsync({
+          accountId: accountId,
+          lessonId: lessonId,
+          status: 1, // Set status to "In Progress"
+        })
+        
+        // Navigate based on lesson type
+        const route = lessonType === 3 
+          ? `/parent/courses/learning/${slug}/quiz/${newAccountLesson.id}`
+          : `/parent/courses/learning/${slug}/lesson/${newAccountLesson.id}`
+        
+        router.push(route)
+      } else {
+        // Account lesson already exists, navigate with existing id based on type
+        const route = lessonType === 3 
+          ? `/parent/courses/learning/${slug}/quiz/${targetAccountLessonId}`
+          : `/parent/courses/learning/${slug}/lesson/${targetAccountLessonId}`
+        
+        router.push(route)
+      }
+    } catch (error) {
+      console.error('Error handling lesson click:', error)
+      // Still navigate even if creation fails
+      const route = lessonType === 3 
+        ? `/parent/courses/learning/${slug}/quiz/${targetAccountLessonId || lessonId}`
+        : `/parent/courses/learning/${slug}/lesson/${targetAccountLessonId || lessonId}`
+      router.push(route)
+    } finally {
+      setProcessingLessonId(null)
+    }
   }
 
   useEffect(() => {
@@ -418,7 +461,8 @@ export default function QuizPageLearning() {
                           <div className="bg-gray-50">
                             {section.accountLessons?.map((lesson, lessonIndex) => {
                               const isCurrentLesson = lesson.id === accountLessonId
-                              const isLessonCompleted = lesson.status === 3
+                              const isLessonCompleted = lesson.status === 2
+                              const isProcessing = processingLessonId === lesson.lesson?.id
                               
                               // Check if previous lesson is completed
                               const isPreviousCompleted = lessonIndex === 0 || (section.accountLessons && section.accountLessons[lessonIndex - 1].status === 2)
@@ -429,67 +473,84 @@ export default function QuizPageLearning() {
                               <button
                                 key={lesson.id}
                                 onClick={() => {
-                                  if (isLocked) return
-                                  
-                                  if (lesson.lesson?.type === 3) {
-                                    // Quiz
-                                    router.push(`/parent/courses/learning/${slug}/quiz/${lesson.id}`)
-                                  } else {
-                                    // Lesson
-                                    router.push(`/parent/courses/learning/${slug}/lesson/${lesson.id}`)
-                                  }
+                                  if (isLocked || isProcessing) return
+                                  handleLessonClick(lesson.lesson?.id || '', lesson.id, lesson.lesson?.type || 1)
                                 }}
-                                className={`w-full px-4 py-3 flex items-start gap-3 transition-colors text-left ${
+                                className={`w-full px-4 py-3 flex items-start gap-3 transition-all text-left relative ${
                                   isLocked 
-                                    ? 'opacity-50 cursor-not-allowed bg-gray-100' 
+                                    ? 'opacity-50 cursor-not-allowed bg-gray-100'
+                                    : isProcessing
+                                    ? 'opacity-60 cursor-wait bg-gray-100'
+                                    : isLessonCompleted
+                                    ? 'bg-gradient-to-r from-green-50 to-emerald-50 hover:from-green-100 hover:to-emerald-100 border-l-4 border-green-500'
                                     : 'hover:bg-gray-100'
-                                } ${isCurrentLesson ? 'bg-blue-50 border-l-4 border-blue-500' : ''}`}
-                                disabled={isLocked}
+                                } ${isCurrentLesson && !isLessonCompleted ? 'bg-blue-50 border-l-4 border-blue-500' : ''}`}
+                                disabled={isLocked || isProcessing}
                               >
+                                {/* Completed Badge Overlay */}
+                                {isLessonCompleted && (
+                                  <div className="absolute top-2 right-2">
+                                    <div className="bg-green-500 text-white text-xs px-2 py-0.5 rounded-full font-semibold flex items-center gap-1">
+                                      <CheckCircle className="w-3 h-3" />
+                                      Hoàn thành
+                                    </div>
+                                  </div>
+                                )}
+
                                 {/* Status Icon */}
                                 <div className="flex-shrink-0 mt-0.5">
                                   {isLocked ? (
-                                    <div className="w-5 h-5 rounded-full bg-gray-100 flex items-center justify-center">
-                                      <Lock className="w-3 h-3 text-gray-400" />
+                                    <div className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center">
+                                      <Lock className="w-4 h-4 text-gray-400" />
                                     </div>
                                   ) : isLessonCompleted ? (
-                                    <CheckCircle className="w-5 h-5 text-green-600" />
+                                    <div className="w-8 h-8 rounded-full bg-gradient-to-br from-green-400 to-emerald-500 flex items-center justify-center shadow-md">
+                                      <CheckCircle className="w-5 h-5 text-white" />
+                                    </div>
                                   ) : (
-                                    <div className="w-5 h-5 rounded-full border-2 border-gray-300 flex items-center justify-center">
-                                      <span className="text-xs text-gray-500">{lessonIndex + 1}</span>
+                                    <div className="w-8 h-8 rounded-full border-2 border-gray-300 bg-white flex items-center justify-center hover:border-blue-400 transition-colors">
+                                      <span className="text-sm font-semibold text-gray-600">{lessonIndex + 1}</span>
                                     </div>
                                   )}
                                 </div>
 
                                 {/* Lesson Info */}
                                 <div className="flex-1 min-w-0">
-                                  <div className={`text-sm font-medium mb-1 ${
+                                  <div className={`text-sm font-semibold mb-1.5 ${
                                     isLocked 
                                       ? 'text-gray-400' 
+                                      : isLessonCompleted
+                                      ? 'text-green-800'
                                       : isCurrentLesson 
                                       ? 'text-blue-700' 
                                       : 'text-gray-900'
                                   }`}>
                                     {lesson.lesson?.title}
                                     {isLocked && (
-                                      <Badge variant="secondary" className="ml-2 text-xs">
+                                      <Badge variant="secondary" className="ml-2 text-xs bg-gray-300">
                                         Khóa
                                       </Badge>
                                     )}
                                   </div>
                                   <div className="flex items-center gap-2 flex-wrap">
                                     {lesson.lesson?.type === 3 ? (
-                                      <Badge variant="secondary" className="text-xs px-1.5 py-0">
+                                      <Badge variant="secondary" className={`text-xs px-2 py-0.5 ${
+                                        isLessonCompleted ? 'bg-green-100 text-green-700' : 'bg-purple-100 text-purple-700'
+                                      }`}>
                                         <CheckCircle className="w-3 h-3 mr-1" />
                                         Quiz
                                       </Badge>
                                     ) : lesson.lesson?.type === 2 ? (
-                                      <Badge variant="secondary" className="text-xs px-1.5 py-0 flex items-center gap-1">
+                                      <Badge variant="secondary" className={`text-xs px-2 py-0.5 flex items-center gap-1 ${
+                                        isLessonCompleted ? 'bg-green-100 text-green-700' : 'bg-blue-100 text-blue-700'
+                                      }`}>
                                         <Video className="w-3 h-3" />
                                         {Math.floor((lesson.lesson?.duration || 0) / 60)}m
                                       </Badge>
                                     ) : (
-                                      <Badge variant="secondary" className="text-xs px-1.5 py-0 flex items-center gap-1">
+                                      <Badge variant="secondary" className={`text-xs px-2 py-0.5 flex items-center gap-1 ${
+                                        isLessonCompleted ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-700'
+                                      }`}>
                                         <BookOpen className="w-3 h-3" />
                                         {Math.floor((lesson.lesson?.duration || 0) / 60)}m
                                       </Badge>

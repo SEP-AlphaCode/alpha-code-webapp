@@ -59,6 +59,7 @@ const parentNavigationItems = [
   { name: "Hoạt động", href: "/parent/activities", icon: Activity },
   { name: "Âm nhạc", href: "/parent/music", icon: Music },
   { name: "Qr Codes", href: "/children/qr-codes", icon: QrCode },
+  { name: "Khoá học của tôi", href: "/parent/courses/mycourse", icon: School },
 ];
 
 // Navigation items cho Child (Ví dụ)

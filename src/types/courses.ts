@@ -148,5 +148,5 @@ export function formatTimespan(seconds: number): string {
 }
 
 export function formatPrice(price: number): string {
-    return price.toLocaleString('vi-VN', { style: 'currency', currency: 'VND' });
+    return price.toLocaleString('vi-VN') + ' VND';
 }

@@ -45,11 +45,11 @@ export default function UserLayout({ children }: UserLayoutProps) {
     { name: "Home", href: "/", icon: Home },
     { name: "Dashboard", href: "/parent", icon: LayoutDashboard },
     { name: "Robots", href: "/parent/robot", icon: Bot },
-    { name: "Joysticks Control", href: "/parent/joystick", icon: Gamepad },
-    { name: "Activities", href: "/parent/activities", icon: Activity },
-    { name: "Music", href: "/parent/music", icon: Music },
+    { name: "Tay Cầm Điều Khiển", href: "/parent/joystick", icon: Gamepad },
+    { name: "Hoạt Động Robot", href: "/parent/activities", icon: Activity },
+    { name: "Âm Nhạc", href: "/parent/music", icon: Music },
     { name: "Mã QR", href: "/parent/qr-codes", icon: QrCode },
-    { name: "My Courses", href: "/parent/courses/mycourse", icon: BookPlus },
+    { name: "Khoá học của tôi", href: "/parent/courses/mycourse", icon: BookPlus },
   ];
 
   const isActiveRoute = (href: string) => {
