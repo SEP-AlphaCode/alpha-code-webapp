@@ -1,5 +1,5 @@
 "use client"
-import { useGetAccountLessonById, useMarkAccountLessonComplete } from '@/features/courses/hooks/use-account-lessons'
+import { useGetAccountLessonById, useMarkAccountLessonComplete, useCreateAccountLesson } from '@/features/courses/hooks/use-account-lessons'
 import { useGetSectionByAccountIdAndCourseSlug } from '@/features/courses/hooks/use-section'
 import { useParams, useRouter } from 'next/navigation'
 import React, { useEffect, useState, useRef, useMemo } from 'react'
@@ -28,10 +28,12 @@ export default function LessonDetailPageLearning() {
   
   // Sidebar states
   const [expandedSections, setExpandedSections] = useState<Set<string>>(new Set())
+  const [processingLessonId, setProcessingLessonId] = useState<string | null>(null)
   
   // Get account lesson detail by account lesson ID
   const { data: accountLessonData, isLoading, error } = useGetAccountLessonById(accountLessonId || '')
   const markComplete = useMarkAccountLessonComplete()
+  const createAccountLesson = useCreateAccountLesson()
   
   // Extract lesson data from account lesson
   const lessonData = accountLessonData?.lesson
@@ -71,6 +73,47 @@ export default function LessonDetailPageLearning() {
       }
       return newSet
     })
+  }
+
+  // Handle lesson click from sidebar
+  const handleLessonClick = async (lessonId: string, targetAccountLessonId: string | null, lessonType: number) => {
+    if (!accountId) return
+
+    try {
+      setProcessingLessonId(lessonId)
+
+      // If account lesson doesn't exist (id is null), create it first
+      if (!targetAccountLessonId) {
+        const newAccountLesson = await createAccountLesson.mutateAsync({
+          accountId: accountId,
+          lessonId: lessonId,
+          status: 1, // Set status to "In Progress"
+        })
+        
+        // Navigate based on lesson type
+        const route = lessonType === 3 
+          ? `/parent/courses/learning/${slug}/quiz/${newAccountLesson.id}`
+          : `/parent/courses/learning/${slug}/lesson/${newAccountLesson.id}`
+        
+        router.push(route)
+      } else {
+        // Account lesson already exists, navigate with existing id based on type
+        const route = lessonType === 3 
+          ? `/parent/courses/learning/${slug}/quiz/${targetAccountLessonId}`
+          : `/parent/courses/learning/${slug}/lesson/${targetAccountLessonId}`
+        
+        router.push(route)
+      }
+    } catch (error) {
+      console.error('Error handling lesson click:', error)
+      // Still navigate even if creation fails
+      const route = lessonType === 3 
+        ? `/parent/courses/learning/${slug}/quiz/${targetAccountLessonId || lessonId}`
+        : `/parent/courses/learning/${slug}/lesson/${targetAccountLessonId || lessonId}`
+      router.push(route)
+    } finally {
+      setProcessingLessonId(null)
+    }
   }
 
   useEffect(() => {
@@ -678,6 +721,7 @@ export default function LessonDetailPageLearning() {
                             {section.accountLessons?.map((lesson, lessonIndex) => {
                               const isCurrentLesson = lesson.id === accountLessonId
                               const isLessonCompleted = lesson.status === 3
+                              const isProcessing = processingLessonId === lesson.lesson?.id
                               
                               // Check if previous lesson is completed
                               const isPreviousCompleted = lessonIndex === 0 || (section.accountLessons && section.accountLessons[lessonIndex - 1].status === 2)
@@ -688,22 +732,17 @@ export default function LessonDetailPageLearning() {
                               <button
                                 key={lesson.id}
                                 onClick={() => {
-                                  if (isLocked) return
-                                  
-                                  if (lesson.lesson?.type === 3) {
-                                    // Quiz
-                                    router.push(`/parent/courses/learning/${slug}/quiz/${lesson.id}`)
-                                  } else {
-                                    // Lesson
-                                    router.push(`/parent/courses/learning/${slug}/lesson/${lesson.id}`)
-                                  }
+                                  if (isLocked || isProcessing) return
+                                  handleLessonClick(lesson.lesson?.id || '', lesson.id, lesson.lesson?.type || 1)
                                 }}
                                 className={`w-full px-4 py-3 flex items-start gap-3 transition-colors text-left ${
                                   isLocked 
-                                    ? 'opacity-50 cursor-not-allowed bg-gray-100' 
+                                    ? 'opacity-50 cursor-not-allowed bg-gray-100'
+                                    : isProcessing
+                                    ? 'opacity-60 cursor-wait bg-gray-100'
                                     : 'hover:bg-gray-100'
                                 } ${isCurrentLesson ? 'bg-blue-50 border-l-4 border-blue-500' : ''}`}
-                                disabled={isLocked}
+                                disabled={isLocked || isProcessing}
                               >
                                 {/* Status Icon */}
                                 <div className="flex-shrink-0 mt-0.5">
