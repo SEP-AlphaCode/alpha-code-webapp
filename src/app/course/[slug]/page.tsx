@@ -23,6 +23,7 @@ import { useCreateAccountCourse } from '@/features/courses/hooks/use-account-cou
 import { AccountCourse } from '@/types/account-course'
 import { Header } from '@/components/home/header'
 import { Footer } from '@/components/home/footer'
+import { formatPrice } from '@/types/courses'
 
 export default function CourseHomePage() {
   const dispatch = useDispatch<AppDispatch>();
@@ -221,8 +222,8 @@ export default function CourseHomePage() {
                 </div>
                 <div className="p-6">
                   <div className="text-center mb-4">
-                    <span className="text-3xl font-bold text-blue-500">
-                      {courseData?.price ? `${courseData.price} VND` : 'Miễn phí'}
+                    <span className="text-3xl font-bold text-blue-600">
+                      {courseData?.price === 0 ? 'Miễn phí' : formatPrice(courseData?.price || 0)}
                     </span>
                   </div>
                   <Button
