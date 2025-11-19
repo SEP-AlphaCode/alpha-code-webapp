@@ -189,7 +189,7 @@ export default function ParentDashboard() {
                 </div>
 
                 <Button variant="ghost" size="sm" asChild>
-                  <Link href="/parent/courses/learning">
+                  <Link href="/parent/courses/my-course">
                     Xem tất cả
                     <ArrowRight className="w-4 h-4 ml-1" />
                   </Link>
