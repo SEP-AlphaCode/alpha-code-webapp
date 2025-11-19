@@ -186,7 +186,9 @@ export default function CoursePage() {
                 <div className="p-6">
                   <div className="text-center mb-4">
                     <span className="text-3xl font-bold text-orange-500">
-                      {courseData?.price ? `${courseData.price} VND` : 'Miễn phí'}
+                      {courseData?.price && courseData.price > 0
+                        ? `${new Intl.NumberFormat('vi-VN').format(courseData.price)} VND`
+                        : 'Miễn phí'}
                     </span>
                   </div>
                   <Button
