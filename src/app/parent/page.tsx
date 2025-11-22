@@ -25,6 +25,7 @@ import LoadingState from '@/components/loading-state';
 import { useSubscription } from '@/features/subscription/hooks/use-subscription';
 import { useGetUserLicenseInfo } from '@/features/license-key/hooks/use-license-key';
 import { AvailableCourse, EnrolledCourse, RecentActivity } from '@/types/dashboard';
+import CourseCard from '@/components/parent/course/course-card';
 
 
 
@@ -198,40 +199,8 @@ export default function ParentDashboard() {
             </CardHeader>
             <CardContent className="space-y-4">
               {enrolledCourses.map((course: EnrolledCourse) => (
-                <div key={course.id} className="border rounded-lg p-4 hover:shadow-md transition-shadow">
-                  <div className="flex gap-4">
-                    <div className="w-20 h-20 bg-gray-200 rounded-lg flex items-center justify-center flex-shrink-0">
-                      <img src={course.imageUrl} alt={course.name} width={80} height={80} className="rounded-lg" />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <h3 className="font-semibold text-gray-900 mb-2">{course.name}</h3>
-                      <div className="space-y-2">
-                        <div className="flex items-center justify-between text-sm">
-                          <span className="text-gray-600">
-                            {course.completedLesson}/{course.totalLesson} bài học
-                          </span>
-                          <span className="font-medium text-blue-600">
-                            {course.progressPercent}%
-                          </span>
-                        </div>
-                        <Progress value={course.progressPercent} className="h-2" />
-                      </div>
-                      <div className="mt-3 flex items-center justify-between">
-                        <span className="text-xs text-gray-500">
-                          {course.lastAccessed
-                            ? `Học lần cuối: ${new Date(course.lastAccessed).toLocaleDateString('vi-VN')}`
-                            : ' '
-                          }
-                        </span>
-                        <Button size="sm" asChild className="bg-blue-600 hover:bg-blue-700 text-white">
-                          <Link href={`/parent/courses/learning/${course.slug}`}>
-                            <PlayCircle className="w-4 h-4 mr-1" />
-                            Tiếp tục
-                          </Link>
-                        </Button>
-                      </div>
-                    </div>
-                  </div>
+                <div key={course.id} className="border rounded-lg p-0 hover:shadow-md transition-shadow">
+                  <CourseCard course={course} variant="compact" />
                 </div>
               ))}
 
@@ -266,32 +235,8 @@ export default function ParentDashboard() {
               </CardHeader>
               <CardContent className="space-y-3">
                 {availableCourses.slice(0, 3).map((course: AvailableCourse) => (
-                  <div key={course.id} className="border rounded-lg p-4 hover:shadow-md transition-shadow">
-                    <div className="flex gap-3">
-                      <div className="w-16 h-16 bg-gray-200 rounded flex items-center justify-center flex-shrink-0">
-                        <img src={course.imageUrl} alt={course.name} width={64} height={64} className="rounded-lg" />
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <h4 className="font-semibold text-gray-900">{course.name}</h4>
-                        <p className="text-xs text-gray-500 mt-1">{course.totalLesson} bài học</p>
-                        {course.description && (
-                          <div
-                            className="text-xs text-gray-600 mt-1 line-clamp-2"
-                            dangerouslySetInnerHTML={{ __html: course.description }}
-                          />
-                        )}
-                        <div className="flex items-center justify-between mt-3">
-                          <span className="text-sm font-bold text-blue-600">
-                            {course.price?.toLocaleString('vi-VN')}đ
-                          </span>
-                          <Button size="sm" variant="outline" asChild>
-                            <Link href={`/parent/courses/${course.slug}`}>
-                              Xem chi tiết
-                            </Link>
-                          </Button>
-                        </div>
-                      </div>
-                    </div>
+                  <div key={course.id} className="border rounded-lg p-0 hover:shadow-md transition-shadow">
+                    <CourseCard course={course} variant="compact" />
                   </div>
                 ))}
               </CardContent>

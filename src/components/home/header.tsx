@@ -55,11 +55,11 @@ const adminNavigationItems = [
 const parentNavigationItems = [
   { name: "Bảng điều khiển", href: "/parent", icon: LayoutDashboard },
   { name: "Robot", href: "/parent/robot", icon: ToyBrick },
-  { name: "Joystick", href: "parent/joystick", icon: Joystick },
+  { name: "Joystick", href: "/parent/joystick", icon: Joystick },
   { name: "Hoạt động", href: "/parent/activities", icon: Activity },
   { name: "Âm nhạc", href: "/parent/music", icon: Music },
   { name: "Qr Codes", href: "/children/qr-codes", icon: QrCode },
-  { name: "Khoá học của tôi", href: "/parent/courses/mycourse", icon: School },
+  { name: "Khoá học của tôi", href: "/parent/courses/my-course", icon: School },
 ];
 
 // Navigation items cho Child (Ví dụ)
@@ -70,6 +70,7 @@ const childNavigationItems = [
   { name: "Qr Codes", href: "/children/qr-codes", icon: QrCode },
   { name: "Robot", href: "/children/robot", icon: Bot },
   { name: "Lập trình", href: "/children/blockly-coding", icon: SquareCode },
+  { name: "Khoá học của tôi", href: "/children/courses/my-course", icon: School },
 ];
 
 

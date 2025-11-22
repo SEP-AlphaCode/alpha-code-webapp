@@ -66,15 +66,15 @@ export default function LearningPageClient() {
         // Type 2: Video (video) -> /lesson/[accountLessonId]
         // Type 3: Bài kiểm tra (quiz/test) -> /quiz/[accountLessonId]
         const route = lessonType === 3 
-          ? `/parent/courses/learning/${slug}/quiz/${newAccountLesson.id}`
-          : `/parent/courses/learning/${slug}/lesson/${newAccountLesson.id}`
+          ? `/children/courses/learning/${slug}/quiz/${newAccountLesson.id}`
+          : `/children/courses/learning/${slug}/lesson/${newAccountLesson.id}`
         
         router.push(route)
       } else {
         // Account lesson already exists, navigate with existing id based on type
         const route = lessonType === 3 
-          ? `/parent/courses/learning/${slug}/quiz/${accountLessonId}`
-          : `/parent/courses/learning/${slug}/lesson/${accountLessonId}`
+          ? `/children/courses/learning/${slug}/quiz/${accountLessonId}`
+          : `/children/courses/learning/${slug}/lesson/${accountLessonId}`
         
         router.push(route)
       }
@@ -82,8 +82,8 @@ export default function LearningPageClient() {
       console.error('Error handling lesson click:', error)
       // Still navigate even if creation fails - try with accountLessonId or lessonId
       const route = lessonType === 3 
-        ? `/parent/courses/learning/${slug}/quiz/${accountLessonId || lessonId}`
-        : `/parent/courses/learning/${slug}/lesson/${accountLessonId || lessonId}`
+        ? `/children/courses/learning/${slug}/quiz/${accountLessonId || lessonId}`
+        : `/children/courses/learning/${slug}/lesson/${accountLessonId || lessonId}`
       router.push(route)
     } finally {
       setProcessingLessonId(null)
@@ -94,13 +94,13 @@ export default function LearningPageClient() {
   useEffect(() => {
     // If we don't have accountId (not logged in), redirect to course detail
     if (!accountId && slug) {
-      router.replace(`/parent/courses/${slug}`)
+      router.replace(`/children/courses/${slug}`)
       return
     }
 
     // If finished loading and got error (likely not enrolled), redirect to detail
     if (!isSectionsLoading && sectionsError) {
-      router.replace(`/parent/courses/${slug}`)
+      router.replace(`/children/courses/${slug}`)
     }
   }, [accountId, isSectionsLoading, sectionsError, slug, router])
 
@@ -133,7 +133,7 @@ export default function LearningPageClient() {
         {/* Header */}
         <div className="mb-8">
           <button
-            onClick={() => router.push('/parent/courses/my-course')}
+            onClick={() => router.push('/children/courses/my-course')}
             className="mb-6 inline-flex items-center gap-2 text-gray-600 hover:text-gray-900 font-medium transition-colors"
           >
             <ArrowLeft className="w-5 h-5" />
@@ -142,7 +142,7 @@ export default function LearningPageClient() {
           
           <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-200">
             <div className="flex items-center gap-4 mb-4">
-              <div className="w-12 h-12 rounded-xl bg-blue-600 flex items-center justify-center">
+              <div className="w-12 h-12 rounded-xl bg-pink-600 flex items-center justify-center">
                 <GraduationCap className="w-7 h-7 text-white" />
               </div>
               <div>
@@ -155,19 +155,19 @@ export default function LearningPageClient() {
             <div className="bg-gray-50 rounded-xl p-4">
               <div className="flex items-center justify-between mb-2">
                 <div className="flex items-center gap-2">
-                  <Trophy className="w-5 h-5 text-blue-600" />
+                  <Trophy className="w-5 h-5 text-pink-600" />
                   <span className="text-sm font-semibold text-gray-700">
                     Đã hoàn thành {completedLessons}/{totalLessons} bài học
                   </span>
                 </div>
-                <span className="text-xl font-bold text-blue-600">
+                <span className="text-xl font-bold text-pink-600">
                   {progressPercent}%
                 </span>
               </div>
               
               <div className="relative w-full h-3 bg-gray-200 rounded-full overflow-hidden">
                 <div 
-                  className="absolute top-0 left-0 h-full bg-blue-600 rounded-full transition-all duration-500"
+                  className="absolute top-0 left-0 h-full bg-pink-600 rounded-full transition-all duration-500"
                   style={{ width: `${progressPercent}%` }}
                 />
               </div>
@@ -201,11 +201,11 @@ export default function LearningPageClient() {
             return (
               <div key={section.id} className={`bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden ${isSectionLocked ? 'opacity-60' : ''}`}>
                 {/* Section Header */}
-                <div className={`px-6 py-4 border-b border-gray-200 ${isSectionLocked ? 'bg-gray-50' : 'bg-blue-50'}`}>
+                <div className={`px-6 py-4 border-b border-gray-200 ${isSectionLocked ? 'bg-gray-50' : 'bg-pink-50'}`}>
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
                       <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${
-                        isSectionLocked ? 'bg-gray-300' : 'bg-blue-600'
+                        isSectionLocked ? 'bg-gray-300' : 'bg-pink-600'
                       }`}>
                         {isSectionLocked ? (
                           <Lock className="w-5 h-5 text-gray-600" />
@@ -246,7 +246,7 @@ export default function LearningPageClient() {
                       const isPreviousLessonCompleted = lIndex === 0 || (section.accountLessons && section.accountLessons[lIndex - 1].status === 2)
                       // Lesson is locked if: section is locked OR previous lesson in same section not completed
                       const isLocked = isSectionLocked || !isPreviousLessonCompleted
-                      
+
                       return (
                         <div 
                           key={lesson.id} 
@@ -267,7 +267,7 @@ export default function LearningPageClient() {
                                 : isCompleted 
                                 ? 'bg-green-100 text-green-600' 
                                 : isInProgress 
-                                ? 'bg-blue-100 text-blue-600' 
+                                ? 'bg-pink-100 text-pink-600' 
                                 : 'bg-gray-100 text-gray-600'
                             }`}>
                               {isLocked ? (
@@ -304,7 +304,7 @@ export default function LearningPageClient() {
                                   </span>
                                 ) : lesson.type === 2 ? (
                                   <span className={`inline-flex items-center gap-1 text-xs px-2 py-1 rounded-md font-medium ${
-                                    isLocked ? 'bg-gray-200 text-gray-500' : 'bg-blue-100 text-blue-700'
+                                    isLocked ? 'bg-gray-200 text-gray-500' : 'bg-pink-100 text-pink-700'
                                   }`}>
                                     <Video className="w-3 h-3" />
                                     Video
@@ -338,7 +338,7 @@ export default function LearningPageClient() {
                                 
                                 {lesson.videoUrl && lesson.type !== 2 && (
                                   <span className={`inline-flex items-center gap-1 text-xs px-2 py-1 rounded-md font-medium ${
-                                    isLocked ? 'bg-gray-200 text-gray-500' : 'bg-blue-100 text-blue-700'
+                                    isLocked ? 'bg-gray-200 text-gray-500' : 'bg-pink-100 text-pink-700'
                                   }`}>
                                     <Video className="w-3 h-3" />
                                     Video
@@ -372,7 +372,7 @@ export default function LearningPageClient() {
                                     ? 'bg-green-500 text-white hover:bg-green-600' 
                                     : isInProgress 
                                     ? 'bg-yellow-500 text-white hover:bg-yellow-600' 
-                                    : 'bg-blue-600 text-white hover:bg-blue-700'
+                                    : 'bg-pink-600 text-white hover:bg-pink-700'
                                 }`}
                               >
                                 {isLocked ? (
@@ -400,13 +400,11 @@ export default function LearningPageClient() {
                             </div>
                           </div>
                         </div>
-                      )
-                    })}
+                      )})}
                   </div>
                 )}
               </div>
-            )
-          })}
+            )})}
         </div>
       </div>
     </div>

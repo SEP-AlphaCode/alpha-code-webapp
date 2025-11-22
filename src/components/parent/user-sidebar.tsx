@@ -15,6 +15,7 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { AccountData } from "@/types/account";
 import { NavigationItem } from "@/types/user";
+import { getUserRoleFromToken } from '@/utils/tokenUtils'
 
 interface UserSidebarProps {
   isSidebarOpen: boolean;
@@ -33,6 +34,16 @@ export function UserSidebar({
   onLogout,
   isLogoutPending = false,
 }: UserSidebarProps) {
+  const getUserRole = () => {
+    if (typeof window !== 'undefined') {
+      const accessToken = sessionStorage.getItem('accessToken')
+      if (accessToken) return getUserRoleFromToken(accessToken)
+    }
+    return null
+  }
+
+  const role = getUserRole()
+  const myCourseHref = role === 'Children' ? '/children/courses/my-course' : '/parent/courses/my-course'
   return (
     <aside
       className={`fixed top-16 left-0 h-[calc(100vh-4rem)] bg-white border-r border-gray-200 transition-all duration-300 ease-in-out z-30 flex flex-col ${isSidebarOpen ? "w-64" : "w-24"
@@ -106,7 +117,7 @@ export function UserSidebar({
               </button>
             </DropdownMenuTrigger>
             {/* Đổi vị trí modal tại đây: side="top" | "bottom" | "left" | "right" */}
-            <DropdownMenuContent className="w-56" side="top" align="center" sideOffset={12} forceMount>
+                <DropdownMenuContent className="w-56" side="top" align="center" sideOffset={12} forceMount>
               <DropdownMenuLabel className="font-normal">
                 <div className="flex flex-col space-y-1">
                   <p className="text-sm font-medium leading-none">{accountData?.fullName || "User"}</p>
@@ -122,7 +133,7 @@ export function UserSidebar({
                   </Link>
                 </DropdownMenuItem>
                 <DropdownMenuItem asChild>
-                  <Link href="/parent/courses/mycourse" className="cursor-pointer">
+                  <Link href={myCourseHref} className="cursor-pointer">
                     <UserCircle className="mr-2 h-4 w-4" />
                     <span>My Course</span>
                   </Link>

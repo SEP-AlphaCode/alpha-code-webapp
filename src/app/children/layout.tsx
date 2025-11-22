@@ -47,7 +47,8 @@ export default function ChildrenLayout({ children }: ChildrenLayoutProps) {
     { name: "Lập Trình", href: "/children/blockly-coding", icon: <Blocks className={iconClass} /> },
     { name: "Hoạt động", href: "/children/activities", icon: <Activity className={iconClass} /> },
     { name: "Điều khiển", href: "/children/joystick", icon: <Joystick className={iconClass} /> },
-    { name: "Qr Codes", href: "/children/qr-codes", icon: <QrCode className={iconClass} /> }
+    { name: "Qr Codes", href: "/children/qr-codes", icon: <QrCode className={iconClass} /> },
+    { name: "Khóa học của bé", href: "/children/courses/my-course", icon: <BookOpen className={iconClass} /> },
   ];
 
   const isActiveRoute = (href: string) => {
