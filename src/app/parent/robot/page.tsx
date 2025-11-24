@@ -69,17 +69,31 @@ export default function UserDashboard() {
   const selectedRobotDetails = filteredRobots.find((robot) => robot.serialNumber === selectedRobotSerial) || null;
 
   // Map store robot fields to the shape expected by RobotDetails (legacy keys)
+  // Create a typed shape for RobotDetails to avoid `any` casts
+  type RobotForDetails = {
+    id: string;
+    name: string;
+    status: "online" | "offline" | "charging" | "busy";
+    battery?: string | null;
+    ctrl_version: string;
+    firmware_version: string;
+    serialNumber: string;
+    robotmodel: string;
+  }
+
+  const sel = selectedRobotDetails as unknown as Record<string, unknown>;
+
   const detailsForRender = selectedRobotDetails
     ? {
         ...selectedRobotDetails,
-        ctrl_version: (selectedRobotDetails as any).ctrlVersion ?? "",
-        firmware_version: (selectedRobotDetails as any).firmwareVersion ?? "",
-        robotmodel: (selectedRobotDetails as any).robotModelName ?? "",
-      }
+        ctrl_version: typeof sel.ctrlVersion === 'string' ? sel.ctrlVersion : (typeof sel.ctrl_version === 'string' ? sel.ctrl_version : ""),
+        firmware_version: typeof sel.firmwareVersion === 'string' ? sel.firmwareVersion : (typeof sel.firmware_version === 'string' ? sel.firmware_version : ""),
+        robotmodel: typeof sel.robotModelName === 'string' ? sel.robotModelName : (typeof sel.robotmodel === 'string' ? sel.robotmodel : ""),
+      } as RobotForDetails
     : null;
 
   return (
-    <div className="space-y-6 sm:space-y-8 lg:space-y-10 p-4 sm:p-6 lg:p-10">
+    <div className="space-y-6 sm:space-y-8 lg:space-y-10 p-4 sm:p-6">
       <RobotPageHeader
         title="Quản lý robot"
         subtitle="Quản lý và tương tác với các robot AlphaMini của bạn"
@@ -121,7 +135,7 @@ export default function UserDashboard() {
 
       {selectedRobotDetails && (
         <RobotDetails
-          robot={detailsForRender as any}
+          robot={detailsForRender as RobotForDetails}
           translations={{
             systemInfo: {
               title: "Thông tin hệ thống",

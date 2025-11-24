@@ -85,7 +85,7 @@ export default function ParentDashboard() {
   }
 
   return (
-    <div className="space-y-6 p-4 md:p-8">
+    <div className="space-y-6 p-10 md:p-8">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>

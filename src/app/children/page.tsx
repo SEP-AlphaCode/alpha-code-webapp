@@ -114,7 +114,7 @@ export default function ChildrenDashboard() {
   }
 
   return (
-    <div className="p-4 md:p-6 space-y-6" suppressHydrationWarning>
+    <div className="p-4 mt-5 md:p-10 space-y-6" suppressHydrationWarning>
       {/* Hero Section - Vui nhộn hơn cho trẻ em */}
       <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-purple-100 via-pink-100 to-yellow-100 border-2 border-purple-300 shadow-lg">
         <div className="absolute inset-0 opacity-10">

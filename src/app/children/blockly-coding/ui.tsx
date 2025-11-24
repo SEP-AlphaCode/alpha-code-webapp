@@ -28,6 +28,10 @@ type BlocklyUIProps = {
 export default function BlocklyUI({ robotModelId, serial, hasAllData, data }: BlocklyUIProps) {
     const blocklyRef = useRef<HTMLDivElement>(null)
     const workspaceRef = useRef<Blockly.WorkspaceSvg>(undefined)
+    const drawerRef = useRef<HTMLDivElement | null>(null)
+    const toolboxOriginalParent = useRef<HTMLElement | null>(null)
+    const toolboxOriginalNextSibling = useRef<ChildNode | null>(null)
+    const [isToolboxOpen, setIsToolboxOpen] = useState(false)
     const [wsHelper, setWsHelper] = useState<Operations>()
     const [codeGenerator, setCodeGenerator] = useState<JavascriptGenerator>()
     const [definedModels, setDefinedModel] = useState(new Set<string>())
@@ -91,12 +95,55 @@ export default function BlocklyUI({ robotModelId, serial, hasAllData, data }: Bl
         setWsHelper(tmp)
         tmp.addStrayScrollbarDestructor?.(blocklyRef.current)
         tmp.setUpUI()
+
+        // Give Blockly a chance to measure and render correctly after mount
+        setTimeout(() => {
+            try {
+                if (workspaceRef.current) Blockly.svgResize(workspaceRef.current)
+            } catch { /* ignore */ }
+        }, 0)
+
         return () => {
             if (!workspaceRef.current) { return; }
             workspaceRef.current.dispose()
             workspaceRef.current = undefined
+            // restore toolbox if necessary
+            try {
+                const tb = document.querySelector('.blocklyToolboxDiv') as HTMLElement | null
+                if (tb && toolboxOriginalParent.current) {
+                    if (toolboxOriginalNextSibling.current) toolboxOriginalParent.current.insertBefore(tb, toolboxOriginalNextSibling.current)
+                    else toolboxOriginalParent.current.appendChild(tb)
+                }
+            } catch { /* ignore */ }
         }
     }, [])
+
+    // Move toolbox DOM into drawer when opening on mobile, restore when closing
+    const openToolboxDrawer = () => {
+        const tb = document.querySelector('.blocklyToolboxDiv') as HTMLElement | null
+        if (!tb || !drawerRef.current) {
+            setIsToolboxOpen(true)
+            return
+        }
+        // store original parent and next sibling so we can restore
+        toolboxOriginalParent.current = tb.parentElement
+        toolboxOriginalNextSibling.current = tb.nextSibling
+        drawerRef.current.appendChild(tb)
+        setIsToolboxOpen(true)
+        // redraw workspace after toolbox moves
+        setTimeout(() => { try { if (workspaceRef.current) Blockly.svgResize(workspaceRef.current) } catch {} }, 50)
+    }
+
+    const closeToolboxDrawer = () => {
+        const tb = document.querySelector('.blocklyToolboxDiv') as HTMLElement | null
+        if (tb && toolboxOriginalParent.current) {
+            if (toolboxOriginalNextSibling.current) toolboxOriginalParent.current.insertBefore(tb, toolboxOriginalNextSibling.current)
+            else toolboxOriginalParent.current.appendChild(tb)
+        }
+        setIsToolboxOpen(false)
+        // redraw workspace after toolbox restores
+        setTimeout(() => { try { if (workspaceRef.current) Blockly.svgResize(workspaceRef.current) } catch {} }, 50)
+    }
 
     useEffect(() => {
         if (!hasAllData) return;
@@ -111,6 +158,17 @@ export default function BlocklyUI({ robotModelId, serial, hasAllData, data }: Bl
         const gen = buildCodeGeneratorForModelId(robotModelId, serial)
         setCodeGenerator(gen)
     }, [serial])
+
+    // Recalc Blockly size on window resize so it stays visible on small screens
+    useEffect(() => {
+        const onResize = () => {
+            try {
+                if (workspaceRef.current) Blockly.svgResize(workspaceRef.current)
+            } catch {}
+        }
+        window.addEventListener('resize', onResize)
+        return () => window.removeEventListener('resize', onResize)
+    }, [])
 
     const handleRun = () => {
         if (!codeGenerator || !wsHelper) return;
@@ -167,21 +225,21 @@ export default function BlocklyUI({ robotModelId, serial, hasAllData, data }: Bl
     }
 
     return (
-        <div className="h-[calc(100vh-5rem)] flex flex-col overflow-hidden">
+    <div className="min-h-screen flex flex-col lg:flex-row overflow-hidden pt-8 lg:pt-0">
             {/* Main Layout - Full Screen */}
-            <div className="flex-1 flex overflow-hidden">
+            <div className="flex-1 flex flex-col lg:flex-row overflow-hidden min-h-0">
                 {/* Left Sidebar with Robot */}
-                <div className="w-80 flex-shrink-0 bg-white border-r-4 border-blue-500 shadow-2xl flex flex-col">
+                <div className="w-full lg:w-80 flex-shrink-0 bg-white border-b-4 lg:border-b-0 lg:border-r-4 border-blue-500 shadow-2xl flex flex-col">
                     {/* Robot Display Area */}
-                    <div className="flex-1 bg-gradient-to-b from-blue-100 to-white p-6 flex flex-col items-center justify-center">
+                    <div className="flex-1 bg-gradient-to-b from-blue-100 to-white p-4 md:p-6 flex flex-col items-center justify-center min-h-0">
                         <div className="relative mb-6">
                             <div className="absolute inset-0 bg-blue-400 rounded-full blur-3xl opacity-30 animate-pulse"></div>
                             <div className="relative">
                                 <Image
                                     src="/running.png"
                                     alt="Robot"
-                                    width={200}
-                                    height={200}
+                                    width={180}
+                                    height={180}
                                     className="drop-shadow-2xl"
                                     priority
                                 />
@@ -199,29 +257,29 @@ export default function BlocklyUI({ robotModelId, serial, hasAllData, data }: Bl
                     </div>
 
                     {/* Control Buttons */}
-                    <div className="bg-gray-900 p-6 space-y-3 border-t-4 border-blue-500">
+                    <div className="bg-gray-900 p-4 md:p-6 space-y-3 border-t-4 border-blue-500">
                         <Button
                             onClick={handleRun}
                             disabled={isRunning}
-                            className="w-full h-16 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white rounded-xl shadow-lg hover:shadow-xl transform hover:scale-[1.02] transition-all duration-200 text-lg font-bold disabled:bg-gray-600 disabled:transform-none disabled:shadow-none"
+                            className="w-full h-12 md:h-16 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white rounded-xl shadow-lg hover:shadow-xl transform hover:scale-[1.02] transition-all duration-200 text-base md:text-lg font-bold disabled:bg-gray-600 disabled:transform-none disabled:shadow-none"
                         >
-                            <Play className="w-7 h-7" />
-                            <span className="text-xl">Chạy Chương Trình</span>
+                            <Play className="w-6 h-6 md:w-7 md:h-7" />
+                            <span className="ml-2 text-sm md:text-xl">Chạy Chương Trình</span>
                         </Button>
 
                         <Button
                             onClick={handleStop}
                             disabled={!isRunning}
-                            className="w-full h-14 bg-gradient-to-r from-gray-700 to-gray-800 hover:from-gray-800 hover:to-gray-900 text-white rounded-xl shadow-lg hover:shadow-xl transform hover:scale-[1.02] transition-all duration-200 text-base font-bold disabled:bg-gray-600 disabled:transform-none disabled:shadow-none"
+                            className="w-full h-10 md:h-14 bg-gradient-to-r from-gray-700 to-gray-800 hover:from-gray-800 hover:to-gray-900 text-white rounded-xl shadow-lg hover:shadow-xl transform hover:scale-[1.02] transition-all duration-200 text-sm md:text-base font-bold disabled:bg-gray-600 disabled:transform-none disabled:shadow-none"
                         >
-                            <Square className="w-6 h-6" />
+                            <Square className="w-5 h-5 md:w-6 md:h-6" />
                             <span>Dừng</span>
                         </Button>
 
                         <div className="grid grid-cols-2 gap-3 mt-4">
                             <Button
                                 onClick={handleSave}
-                                className="h-12 bg-blue-500 hover:bg-blue-600 text-white rounded-xl shadow-md hover:shadow-lg transform hover:scale-105 transition-all duration-200 font-semibold"
+                                className="h-10 md:h-12 bg-blue-500 hover:bg-blue-600 text-white rounded-xl shadow-md hover:shadow-lg transform hover:scale-105 transition-all duration-200 font-semibold text-sm md:text-base"
                             >
                                 <Save className="w-5 h-5" />
                                 <span>Lưu</span>
@@ -229,7 +287,7 @@ export default function BlocklyUI({ robotModelId, serial, hasAllData, data }: Bl
                             <Button
                                 onClick={handleLoad}
                                 disabled={isRunning}
-                                className="h-12 bg-blue-600 hover:bg-blue-700 text-white rounded-xl shadow-md hover:shadow-lg transform hover:scale-105 transition-all duration-200 font-semibold disabled:bg-gray-600 disabled:transform-none"
+                                className="h-10 md:h-12 bg-blue-600 hover:bg-blue-700 text-white rounded-xl shadow-md hover:shadow-lg transform hover:scale-105 transition-all duration-200 font-semibold text-sm md:text-base disabled:bg-gray-600 disabled:transform-none"
                             >
                                 <RotateCcw className="w-5 h-5" />
                                 <span>Tải bản lưu</span>
@@ -239,23 +297,24 @@ export default function BlocklyUI({ robotModelId, serial, hasAllData, data }: Bl
                         <Button
                             onClick={handleClear}
                             disabled={isRunning}
-                            className="w-full h-12 bg-gray-700 hover:bg-gray-800 text-white rounded-xl shadow-md hover:shadow-lg transform hover:scale-105 transition-all duration-200 font-semibold disabled:bg-gray-600 disabled:transform-none"
+                            className="w-full h-10 md:h-12 bg-gray-700 hover:bg-gray-800 text-white rounded-xl shadow-md hover:shadow-lg transform hover:scale-105 transition-all duration-200 font-semibold text-sm md:text-base disabled:bg-gray-600 disabled:transform-none"
                         >
-                            <span className="text-xl mr-2">🗑️</span>
+                            <span className="text-lg mr-2">🗑️</span>
                             <span>Xóa Hết</span>
                         </Button>
                     </div>
                 </div>
 
                 {/* Right Side - Workspace Area */}
-                <div className="flex-1 min-w-0 flex flex-col bg-gray-100 overflow-hidden">
+                <div className="flex-1 min-w-0 flex flex-col bg-gray-100 overflow-hidden min-h-0 pb-24 lg:pb-0">
                     {/* Workspace Container */}
-                    <div className="flex-1 bg-white m-4 rounded-2xl shadow-2xl border-2 border-gray-300 overflow-hidden">
-                        <div className="relative w-full h-full">
+                    <div className="flex-1 bg-white m-4 rounded-2xl shadow-2xl border-2 border-gray-300 overflow-visible">
+                        {/* Ensure a visible height on small screens so Blockly can render */}
+                        <div className="relative w-full h-[60vh] lg:h-full">
                             <div
                                 ref={blocklyRef}
-                                className="absolute inset-0"
-                                style={{ width: "100%", height: "100%" }}
+                                className="absolute inset-0 min-h-0"
+                                style={{ width: "100%", height: "100%", zIndex: 20 }}
                             />
                         </div>
                     </div>
@@ -267,6 +326,24 @@ export default function BlocklyUI({ robotModelId, serial, hasAllData, data }: Bl
                             <p className="text-gray-700 text-sm font-medium">
                                 Kéo khối từ bên trái vào không gian làm việc để bắt đầu lập trình robot của bạn!
                             </p>
+                        </div>
+                    </div>
+                    {/* Mobile bottom quick actions (visible on small screens) */}
+                    <div className="lg:hidden fixed bottom-0 left-0 right-0 z-50 bg-white border-t shadow-md p-2"
+                         style={{ paddingBottom: 'calc(env(safe-area-inset-bottom, 0px) + 8px)' }}>
+                        <div className="max-w-4xl mx-auto flex items-center justify-between px-2">
+                            <Button size="sm" onClick={handleRun} disabled={isRunning} className="flex-1 mx-1">
+                                <Play className="w-5 h-5 mr-2" />
+                                <span className="text-sm">Chạy</span>
+                            </Button>
+                            <Button size="sm" onClick={handleStop} disabled={!isRunning} className="flex-1 mx-1">
+                                <Square className="w-5 h-5 mr-2" />
+                                <span className="text-sm">Dừng</span>
+                            </Button>
+                            <Button size="sm" onClick={handleSave} className="flex-1 mx-1">
+                                <Save className="w-5 h-5 mr-2" />
+                                <span className="text-sm">Lưu</span>
+                            </Button>
                         </div>
                     </div>
                 </div>

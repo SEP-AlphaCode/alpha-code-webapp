@@ -20,14 +20,33 @@ export const deleteQRCode = async (id: string): Promise<void> => {
   await activitiesHttp.delete(`/qr-codes/${id}`);
 };
 
-export const getAllQRCodes = async (): Promise<QRCodesResponse> => {
+export const getAllQRCodes = async ({
+  page = 1,
+  size = 10,
+  status,
+  accountId,
+}: {
+  page?: number;
+  size?: number;
+  status?: number | null;
+  accountId: string;
+}): Promise<QRCodesResponse> => {
   try {
-    const response = await activitiesHttp.get<QRCodesResponse>('/qr-codes');
+    const response = await activitiesHttp.get<QRCodesResponse>('/qr-codes', {
+      params: {
+        page,
+        size,
+        status,
+        accountId,
+      },
+    });
+
     return response.data;
   } catch (error) {
     throw error;
   }
 };
+
 
 export const updateQRCodeStatus = async (id: string, status: string): Promise<QRCodesResponse> => {
   const response = await activitiesHttp.patch(`/qr-codes/${id}/status`, { status });

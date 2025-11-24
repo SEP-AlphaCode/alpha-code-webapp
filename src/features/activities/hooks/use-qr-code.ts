@@ -5,12 +5,25 @@ import { QRCodeRequest, QRCodesResponse } from "@/types/qrcode";
 export const useQRCode = () => {
     const queryClient = useQueryClient();
 
-    const useGetAllQRCodes = () => {
+    const useGetAllQRCodes = (
+        page = 1,
+        size = 10,
+        status: number | null | undefined,
+        accountId: string
+    ) => {
         return useQuery<QRCodesResponse>({
-            queryKey: ["qrcodes"],
-            queryFn: getAllQRCodes
+            queryKey: ["qrcodes", page, size, status, accountId],
+            queryFn: () =>
+                getAllQRCodes({
+                    page,
+                    size,
+                    status,
+                    accountId,
+                }),
+            enabled: !!accountId, // chỉ gọi khi accountId có giá trị
         });
     };
+
 
     const useGetQRCodeById = (id: string) => {
         return useQuery<QRCodesResponse>({

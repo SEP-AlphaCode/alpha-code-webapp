@@ -104,7 +104,7 @@ export function RobotPageHeader({ title, subtitle, onModelSelect, onAddRobot }: 
 
   return (
     <>
-      <header className="sticky top-0 z-10 bg-white/80 backdrop-blur border-b border-gray-200 mb-6 py-3 px-4 sm:py-4 sm:px-6 rounded-xl shadow flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+      <header className="mt-5 sticky top-0 z-10 bg-white/80 backdrop-blur border-b border-gray-200 mb-6 py-3 px-4 sm:py-4 sm:px-6 rounded-xl shadow flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div className="w-full sm:w-auto">
           <h1 className="text-2xl sm:text-3xl font-bold text-blue-900 tracking-tight">{title}</h1>
           <span className="text-sm sm:text-base text-gray-500 font-medium">{subtitle}</span>
