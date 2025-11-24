@@ -36,8 +36,8 @@ export function ChildrenSidebar({
 }: ChildrenSidebarProps) {
   return (
     <aside
-      className={`fixed top-20 left-0 h-[calc(100vh-5rem)] backdrop-blur bg-white/80 border-r border-gray-200 transition-all duration-300 ease-in-out z-30 flex flex-col shadow-sm ${
-        isSidebarOpen ? "w-72" : "w-20"
+      className={`hidden md:fixed md:top-20 md:left-0 md:h-[calc(100vh-5rem)] md:backdrop-blur md:bg-white/80 md:border-r md:border-gray-200 md:transition-all md:duration-300 md:ease-in-out z-30 md:flex md:flex-col md:shadow-sm ${
+        isSidebarOpen ? "md:w-72" : "md:w-20"
       }`}
     >
       {/* Scrollable navigation */}

@@ -114,7 +114,7 @@ export default function ChildrenDashboard() {
   }
 
   return (
-    <div className="p-4 md:p-6 space-y-6" suppressHydrationWarning>
+    <div className="p-4 mt-5 md:p-10 space-y-6" suppressHydrationWarning>
       {/* Hero Section - Vui nhộn hơn cho trẻ em */}
       <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-purple-100 via-pink-100 to-yellow-100 border-2 border-purple-300 shadow-lg">
         <div className="absolute inset-0 opacity-10">
@@ -244,7 +244,12 @@ export default function ChildrenDashboard() {
                   <div key={course.id} className="bg-white border-2 border-purple-200 rounded-2xl p-4 hover:shadow-xl transition-all hover:scale-[1.02]">
                     <div className="flex gap-4">
                       <div className="w-20 h-20 bg-gradient-to-br from-purple-400 to-pink-400 rounded-2xl flex items-center justify-center flex-shrink-0 shadow-lg">
-                        <BookOpen className="w-10 h-10 text-white" />
+                        {course.imageUrl ? (
+                          // eslint-disable-next-line @next/next/no-img-element
+                          <img src={course.imageUrl} alt={course.name} className="w-full h-full object-cover rounded-2xl" />
+                        ) : (
+                          <BookOpen className="w-8 h-8 text-white" />
+                        )}
                       </div>
                       <div className="flex-1 min-w-0">
                         <h3 className="font-black text-gray-900 mb-2 text-lg">{course.name}</h3>

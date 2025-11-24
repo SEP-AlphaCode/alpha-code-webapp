@@ -5,12 +5,12 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
-import { 
-  BookOpen, 
-  GraduationCap, 
-  Clock, 
-  TrendingUp, 
-  Key, 
+import {
+  BookOpen,
+  GraduationCap,
+  Clock,
+  TrendingUp,
+  Key,
   Calendar,
   Download,
   PlayCircle,
@@ -25,6 +25,7 @@ import LoadingState from '@/components/loading-state';
 import { useSubscription } from '@/features/subscription/hooks/use-subscription';
 import { useGetUserLicenseInfo } from '@/features/license-key/hooks/use-license-key';
 import { AvailableCourse, EnrolledCourse, RecentActivity } from '@/types/dashboard';
+import CourseCard from '@/components/parent/course/course-card';
 
 
 
@@ -53,12 +54,12 @@ export default function ParentDashboard() {
 
   // Subscription data
   const subscription = subscriptionData || { planName: '', endDate: '', status: 0 };
-  
+
   // License data
   const license = licenseData || { hasPurchased: false, purchaseDate: null };
 
   // Tính số ngày còn lại của subscription
-  const daysRemaining = subscription.endDate 
+  const daysRemaining = subscription.endDate
     ? Math.ceil((new Date(subscription.endDate).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24))
     : 0;
 
@@ -84,7 +85,7 @@ export default function ParentDashboard() {
   }
 
   return (
-    <div className="space-y-6 p-4 md:p-8">
+    <div className="space-y-6 p-10 md:p-8">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
@@ -187,8 +188,9 @@ export default function ParentDashboard() {
                   <CardTitle>Tiếp tục học</CardTitle>
                   <CardDescription>Các khóa học bạn đang theo học</CardDescription>
                 </div>
+
                 <Button variant="ghost" size="sm" asChild>
-                  <Link href="/parent/courses">
+                  <Link href="/parent/courses/my-course">
                     Xem tất cả
                     <ArrowRight className="w-4 h-4 ml-1" />
                   </Link>
@@ -197,40 +199,8 @@ export default function ParentDashboard() {
             </CardHeader>
             <CardContent className="space-y-4">
               {enrolledCourses.map((course: EnrolledCourse) => (
-                <div key={course.id} className="border rounded-lg p-4 hover:shadow-md transition-shadow">
-                  <div className="flex gap-4">
-                    <div className="w-20 h-20 bg-gray-200 rounded-lg flex items-center justify-center flex-shrink-0">
-                      <GraduationCap className="w-8 h-8 text-gray-400" />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <h3 className="font-semibold text-gray-900 mb-2">{course.name}</h3>
-                      <div className="space-y-2">
-                        <div className="flex items-center justify-between text-sm">
-                          <span className="text-gray-600">
-                            {course.completedLesson}/{course.totalLesson} bài học
-                          </span>
-                          <span className="font-medium text-blue-600">
-                            {course.progressPercent}%
-                          </span>
-                        </div>
-                        <Progress value={course.progressPercent} className="h-2" />
-                      </div>
-                      <div className="mt-3 flex items-center justify-between">
-                        <span className="text-xs text-gray-500">
-                          {course.lastAccessed 
-                            ? `Học lần cuối: ${new Date(course.lastAccessed).toLocaleDateString('vi-VN')}`
-                            : ' '
-                          }
-                        </span>
-                        <Button size="sm" asChild className="bg-blue-600 hover:bg-blue-700 text-white">
-                          <Link href={`/parent/courses/${course.slug}`}>
-                            <PlayCircle className="w-4 h-4 mr-1" />
-                            Tiếp tục
-                          </Link>
-                        </Button>
-                      </div>
-                    </div>
-                  </div>
+                <div key={course.id} className="border rounded-lg p-0 hover:shadow-md transition-shadow">
+                  <CourseCard course={course} variant="compact" />
                 </div>
               ))}
 
@@ -265,32 +235,8 @@ export default function ParentDashboard() {
               </CardHeader>
               <CardContent className="space-y-3">
                 {availableCourses.slice(0, 3).map((course: AvailableCourse) => (
-                  <div key={course.id} className="border rounded-lg p-4 hover:shadow-md transition-shadow">
-                    <div className="flex gap-3">
-                      <div className="w-16 h-16 bg-gray-200 rounded flex items-center justify-center flex-shrink-0">
-                        <BookOpen className="w-6 h-6 text-gray-400" />
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <h4 className="font-semibold text-gray-900">{course.name}</h4>
-                        <p className="text-xs text-gray-500 mt-1">{course.totalLesson} bài học</p>
-                        {course.description && (
-                          <div 
-                            className="text-xs text-gray-600 mt-1 line-clamp-2"
-                            dangerouslySetInnerHTML={{ __html: course.description }}
-                          />
-                        )}
-                        <div className="flex items-center justify-between mt-3">
-                          <span className="text-sm font-bold text-blue-600">
-                            {course.price?.toLocaleString('vi-VN')}đ
-                          </span>
-                          <Button size="sm" variant="outline" asChild>
-                            <Link href={`/parent/courses/${course.slug}`}>
-                              Xem chi tiết
-                            </Link>
-                          </Button>
-                        </div>
-                      </div>
-                    </div>
+                  <div key={course.id} className="border rounded-lg p-0 hover:shadow-md transition-shadow">
+                    <CourseCard course={course} variant="compact" />
                   </div>
                 ))}
               </CardContent>
@@ -352,7 +298,7 @@ export default function ParentDashboard() {
                       </Badge>
                     </div>
                   </div>
-                  
+
                   <div className="pt-3 border-t space-y-2">
                     <div className="flex items-center justify-between text-sm">
                       <span className="text-gray-600 flex items-center gap-2">

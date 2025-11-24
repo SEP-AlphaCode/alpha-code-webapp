@@ -203,15 +203,15 @@ export default function ActivitiesPage() {
         <div className="absolute inset-0 opacity-[0.06] pointer-events-none" style={{ backgroundImage: `linear-gradient(to right, #000 1px, transparent 1px),linear-gradient(to bottom, #000 1px, transparent 1px)`, backgroundSize: '40px 40px' }}></div>
         <div className="absolute inset-0 pointer-events-none overflow-hidden"></div>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 relative z-10">
-          <div className="text-center mb-16">
+          <div className="text-center mb-8 md:mb-16">
             <div className="inline-flex items-center gap-3 px-6 py-3 bg-white backdrop-blur-sm border border-gray-200 text-gray-700 rounded-2xl text-sm font-semibold mb-8 shadow-lg hover:shadow-xl transition-all duration-300">
               <div className="w-8 h-8 bg-gray-600 rounded-lg flex items-center justify-center"><Activity className="w-5 h-5 text-white" /></div>
               Hành động của Alpha Mini
               <Star className="w-5 h-5 text-gray-600" />
             </div>
             <div className="space-y-6">
-              <h1 className="text-6xl md:text-7xl font-bold text-gray-900 mb-6 tracking-tight">Học tập<span className="block text-gray-700 py-2">Trung tâm hoạt động</span></h1>
-              <p className="text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed">Tạo và quản lý các hoạt động học tập tương tác với robot Alpha Mini</p>
+              <h1 className="text-3xl sm:text-4xl md:text-6xl font-bold text-gray-900 mb-4 md:mb-6 tracking-tight">Học tập<span className="block text-gray-700 py-1 text-base md:text-lg">Trung tâm hoạt động</span></h1>
+              <p className="text-base sm:text-lg text-gray-600 max-w-3xl mx-auto leading-relaxed">Tạo và quản lý các hoạt động học tập tương tác với robot Alpha Mini</p>
               <div className="flex flex-wrap justify-center gap-6 mt-8">
                 <div className="flex items-center gap-2 text-gray-600"><div className="w-2 h-2 bg-blue-500 rounded-full"></div><span className="text-sm font-medium">Bài học tương tác</span></div>
                 <div className="flex items-center gap-2 text-gray-600"><div className="w-2 h-2 bg-purple-500 rounded-full"></div><span className="text-sm font-medium">Trò chơi giáo dục</span></div>
@@ -226,10 +226,10 @@ export default function ActivitiesPage() {
               <Input placeholder="Tìm kiếm hoạt động..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="pl-10 pr-10" />
               {searchTerm !== debouncedSearchTerm && (<Loader2 className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4 animate-spin" />)}
             </div>
-            <div className="flex gap-2">
+            <div className="flex flex-wrap gap-2 items-center">
               <PerPageSelector perPage={perPage} onPerPageChange={setPerPage} options={[6, 12, 24, 48]} />
               <Select value={filterType} onValueChange={setFilterType}>
-                <SelectTrigger className="w-40"><Filter className="w-4 h-4 mr-2" /><SelectValue /></SelectTrigger>
+                <SelectTrigger className="w-full sm:w-40"><Filter className="w-4 h-4 mr-2" /><SelectValue /></SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">Tất cả loại</SelectItem>
                   <SelectItem value="dance_with_music">Nhảy với nhạc</SelectItem>
@@ -240,7 +240,7 @@ export default function ActivitiesPage() {
                 </SelectContent>
               </Select>
               <Select value={filterStatus} onValueChange={setFilterStatus}>
-                <SelectTrigger className="w-40"><SelectValue /></SelectTrigger>
+                <SelectTrigger className="w-full sm:w-40"><SelectValue /></SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">Tất cả trạng thái</SelectItem>
                   <SelectItem value="1">Đã xuất bản</SelectItem>
@@ -253,7 +253,7 @@ export default function ActivitiesPage() {
                 <DialogTrigger asChild><Button><Plus className="w-4 h-4 mr-2" />Tạo mới</Button></DialogTrigger>
                 <DialogContent className="max-w-2xl"><DialogHeader><DialogTitle>Tạo hoạt động mới</DialogTitle></DialogHeader><CreateActivityForm /></DialogContent>
               </Dialog>
-              <Button variant="destructive" onClick={handleStopAllActions} disabled={!selectedRobotSerial || isRobotLoading}><Square className="w-4 h-4 mr-2" />Dừng tất cả</Button>
+              <Button variant="destructive" onClick={handleStopAllActions} disabled={!selectedRobotSerial || isRobotLoading} className="flex-shrink-0"><Square className="w-4 h-4 mr-2" />Dừng tất cả</Button>
             </div>
           </div>
 
@@ -265,8 +265,8 @@ export default function ActivitiesPage() {
             <div className="text-center py-16"><Activity className="w-16 h-16 text-gray-400 mx-auto mb-4" /><h3 className="text-lg font-semibold text-gray-900 mb-2">Không tìm thấy hoạt động</h3><p className="text-gray-600 mb-6">Thử thay đổi bộ lọc hoặc tạo hoạt động mới</p><Button onClick={() => setIsCreateModalOpen(true)}><Plus className="w-4 h-4 mr-2" />Tạo hoạt động đầu tiên</Button></div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {filteredActivities.map((activity) => (
-                <Card key={activity.id} className="group hover:shadow-lg transition-all duration-200 border-0 shadow-md">
+                {filteredActivities.map((activity) => (
+                  <Card key={activity.id} className="group hover:shadow-lg transition-all duration-200 border-0 shadow-md h-full">
                   <CardHeader className="pb-3">
                     <div className="flex items-start justify-between">
                       <div className="flex items-center gap-2">{getTypeIcon(activity.type)}<Badge variant="secondary" className={getTypeColor(activity.type)}>{activity.type === "lesson" ? "Bài học" : activity.type === "game" ? "Trò chơi" : activity.type === "exercise" ? "Bài tập" : "Dự án"}</Badge></div>
@@ -287,7 +287,7 @@ export default function ActivitiesPage() {
                         <div className="text-sm text-gray-600">
                           <div className="flex items-center gap-2 mb-2"><div className="w-2 h-2 bg-green-500 rounded-full"></div><span className="font-medium">Hoạt động nhảy múa với AI</span></div>
                           {activity.data.activity.actions && (
-                            <div className="grid grid-cols-2 gap-4 p-3 bg-gray-50 rounded-lg">
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 p-3 bg-gray-50 rounded-lg">
                               <div><span className="text-xs text-gray-500">Số hành động:</span><p className="font-semibold text-lg text-blue-600">{activity.data.activity.actions.length}</p></div>
                               <div><span className="text-xs text-gray-500">Thời lượng:</span><p className="font-semibold text-lg text-green-600">{activity.data.music_info?.duration || Math.max(...activity.data.activity.actions.map((a: ActionActivites) => a.start_time + a.duration)).toFixed(1)}s</p></div>
                             </div>
@@ -307,10 +307,10 @@ export default function ActivitiesPage() {
                       </div>
                       <div className="text-xs text-gray-400">{formatDate(activity.createdDate)}</div>
                     </div>
-                    <div className="flex gap-2 pt-4">
-                      <Button size="sm" className="flex-1" onClick={() => handleStartActivity(activity)} disabled={isRobotLoading || !selectedRobotSerial}>{isRobotLoading ? (<Loader2 className="w-4 h-4 mr-1 animate-spin" />) : (<Play className="w-4 h-4 mr-1" />)}Bắt đầu</Button>
-                      <Button size="sm" variant="outline"><Eye className="w-4 h-4" /></Button>
-                      <Button size="sm" variant="outline"><Edit className="w-4 h-4" /></Button>
+                    <div className="flex flex-wrap gap-2 pt-4">
+                      <Button size="sm" className="flex-1 min-w-[120px]" onClick={() => handleStartActivity(activity)} disabled={isRobotLoading || !selectedRobotSerial}>{isRobotLoading ? (<Loader2 className="w-4 h-4 mr-1 animate-spin" />) : (<Play className="w-4 h-4 mr-1" />)}Bắt đầu</Button>
+                      <Button size="sm" variant="outline" className="flex-shrink-0"><Eye className="w-4 h-4" /></Button>
+                      <Button size="sm" variant="outline" className="flex-shrink-0"><Edit className="w-4 h-4" /></Button>
                     </div>
                     <div className="text-xs text-gray-400 border-t pt-3">Lần cuối cập nhật: {activity.lastUpdate != null? formatDate(activity.lastUpdate) : 'N/A'}</div>
                   </CardContent>

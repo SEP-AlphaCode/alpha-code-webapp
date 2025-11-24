@@ -12,7 +12,7 @@ import { EntertainmentSection } from "@/components/parent/robot/entertainment-se
 import { ThingsToTrySection } from "@/components/parent/robot/things-to-try-section";
 import { RobotModal } from "@/app/admin/robot-models/robot-modal";
 
-// Prompts
+// Prompts (lightweight list used for the ThingsToTry section)
 const thingsToTryPrompts = [
   "Hãy thử cho robot nhảy một điệu nhạc vui nhộn!",
   "Yêu cầu robot kể một câu chuyện cho lớp học.",
@@ -23,94 +23,24 @@ const thingsToTryPrompts = [
   "Yêu cầu robot giải thích một khái niệm khoa học đơn giản."
 ];
 
-interface ExtendedRobot {
-  id: string;
-  name: string;
-  status: "online" | "offline" | "charging" | "busy";
-  battery?: string | null;
-  lastSeen: string;
-  version: string;
-  ctrl_version: string;
-  firmware_version: string;
-  students: number;
-  image: string;
-  serialNumber: string;
-  robotmodel: string | undefined;
-}
-
-// Shuffle helper
-function shuffleArray(array: string[]) {
-  const newArray = [...array];
-  for (let i = newArray.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [newArray[i], newArray[j]] = [newArray[j], newArray[i]];
-  }
-  return newArray;
-}
-
-function extendRobotWithMockData(
-  robot: ReturnType<typeof useRobotStore>["robots"][0],
-  index: number
-): ExtendedRobot {
-  const mockData = [
-    {
-      lastSeen: "2 minutes ago",
-      version: "v2.1.3",
-      students: 6,
-      currentTask: "Teaching Colors",
-      uptime: "4h 23m",
-      ip: "192.168.1.101",
-      temperature: 32,
-      image: "/alpha-mini-2.webp"
-    },
-    {
-      lastSeen: "1 minute ago",
-      version: "v2.1.3",
-      students: 4,
-      currentTask: "Programming Basics",
-      uptime: "3h 45m",
-      ip: "192.168.1.102",
-      temperature: 29,
-      image: "/alpha-mini-2.webp"
-    },
-    {
-      lastSeen: "5 minutes ago",
-      version: "v2.1.2",
-      students: 2,
-      currentTask: "Charging",
-      uptime: "1h 12m",
-      ip: "192.168.1.103",
-      temperature: 26,
-      image: "/alpha-mini-2.webp"
-    }
-  ];
-
-  const mockInfo = mockData[index] || mockData[0];
-  return {
-    id: robot.id,
-    name: robot.name,
-    status: robot.status || "offline",
-    battery: robot.battery || "",
-    ctrl_version: robot.ctrlVersion ?? "",
-    firmware_version: robot.firmwareVersion ?? "",
-    serialNumber: robot.serialNumber,
-    robotmodel: robot.robotModelName ?? "",
-    ...mockInfo
-  };
-}
-
 export default function UserDashboard() {
-  const { robots, selectedRobotSerial, selectRobot, initializeMockData, connectMode } = useRobotStore();
+  const { robots, selectedRobotSerial, selectRobot, connectMode } = useRobotStore();
   const [shuffledPrompts, setShuffledPrompts] = useState<string[]>([]);
   const [selectedModelName, setSelectedModelName] = useState<string>("");
   const [isModalOpen, setIsModalOpen] = useState(false);
 
-  useEffect(() => {
-    initializeMockData();
-  }, []);
+  // lightweight shuffle helper (stable and compact)
+  const shuffle = (arr: string[]) => {
+    const a = [...arr];
+    for (let i = a.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [a[i], a[j]] = [a[j], a[i]];
+    }
+    return a;
+  };
 
   useEffect(() => {
-    setShuffledPrompts(shuffleArray(thingsToTryPrompts));
+    setShuffledPrompts(shuffle(thingsToTryPrompts));
   }, []);
 
   useEffect(() => {
@@ -121,39 +51,59 @@ export default function UserDashboard() {
     }
   }, [connectMode]);
 
-  const handleRefreshPrompts = () => {
-    setShuffledPrompts(shuffleArray(thingsToTryPrompts));
-  };
+  const handleRefreshPrompts = () => setShuffledPrompts(shuffle(thingsToTryPrompts));
 
-  const extendedRobots: ExtendedRobot[] = robots.map((robot, index) =>
-    extendRobotWithMockData(robot, index)
-  );
-
+  // Use real robots from the store. Filter by model name when provided.
   const filteredRobots = selectedModelName
-    ? extendedRobots.filter((r) => r.robotmodel === selectedModelName)
-    : extendedRobots;
+    ? robots.filter((r) => r.robotModelName === selectedModelName)
+    : robots;
 
   useEffect(() => {
     if (!selectedRobotSerial && filteredRobots.length > 0) {
-      selectRobot(filteredRobots[0].serialNumber);
-      sessionStorage.setItem("selectedRobotSerial", filteredRobots[0].serialNumber);
+      const firstSerial = filteredRobots[0].serialNumber || "";
+      selectRobot(firstSerial);
+      if (firstSerial) sessionStorage.setItem("selectedRobotSerial", firstSerial);
     }
   }, [filteredRobots, selectedRobotSerial]);
 
-  const selectedRobotDetails =
-    filteredRobots.find((robot) => robot.serialNumber === selectedRobotSerial) || null;
+  const selectedRobotDetails = filteredRobots.find((robot) => robot.serialNumber === selectedRobotSerial) || null;
+
+  // Map store robot fields to the shape expected by RobotDetails (legacy keys)
+  // Create a typed shape for RobotDetails to avoid `any` casts
+  type RobotForDetails = {
+    id: string;
+    name: string;
+    status: "online" | "offline" | "charging" | "busy";
+    battery?: string | null;
+    ctrl_version: string;
+    firmware_version: string;
+    serialNumber: string;
+    robotmodel: string;
+  }
+
+  const sel = selectedRobotDetails as unknown as Record<string, unknown>;
+
+  const detailsForRender = selectedRobotDetails
+    ? {
+        ...selectedRobotDetails,
+        ctrl_version: typeof sel.ctrlVersion === 'string' ? sel.ctrlVersion : (typeof sel.ctrl_version === 'string' ? sel.ctrl_version : ""),
+        firmware_version: typeof sel.firmwareVersion === 'string' ? sel.firmwareVersion : (typeof sel.firmware_version === 'string' ? sel.firmware_version : ""),
+        robotmodel: typeof sel.robotModelName === 'string' ? sel.robotModelName : (typeof sel.robotmodel === 'string' ? sel.robotmodel : ""),
+      } as RobotForDetails
+    : null;
 
   return (
-    <div className="space-y-10 p-10">
+    <div className="space-y-6 sm:space-y-8 lg:space-y-10 p-4 sm:p-6">
       <RobotPageHeader
         title="Quản lý robot"
         subtitle="Quản lý và tương tác với các robot AlphaMini của bạn"
         onModelSelect={(modelName) => {
           setSelectedModelName(modelName);
-          const filtered = extendedRobots.filter((r) => r.robotmodel === modelName);
+          const filtered = robots.filter((r) => r.robotModelName === modelName);
           if (filtered.length > 0) {
-            selectRobot(filtered[0].serialNumber);
-            sessionStorage.setItem("selectedRobotSerial", filtered[0].serialNumber);
+            const s = filtered[0].serialNumber || "";
+            selectRobot(s);
+            if (s) sessionStorage.setItem("selectedRobotSerial", s);
           } else {
             selectRobot("");
             sessionStorage.removeItem("selectedRobotSerial");
@@ -185,7 +135,7 @@ export default function UserDashboard() {
 
       {selectedRobotDetails && (
         <RobotDetails
-          robot={selectedRobotDetails}
+          robot={detailsForRender as RobotForDetails}
           translations={{
             systemInfo: {
               title: "Thông tin hệ thống",

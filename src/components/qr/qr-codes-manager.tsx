@@ -1,7 +1,7 @@
 "use client"
 
 import React, { useMemo, useState } from "react"
-import { QrCode, Plus, Search, Trash2, Download, Filter, Grid, List, Eye, EyeOff } from "lucide-react"
+import { QrCode, Plus, Search, Trash2, Download, Filter, Grid, List, Eye, EyeOff, ChevronLeft, ChevronRight } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -27,6 +27,7 @@ import { QRCode as QRCodeType, QRCodeRequest } from "@/types/qrcode"
 import Image from "next/image"
 import LoadingState from "@/components/loading-state"
 import ErrorState from "@/components/error-state"
+import { getUserInfoFromToken } from "@/utils/tokenUtils"
 
 function CreateQRCodeModal({ isOpen, onClose, onSubmit, isLoading }: {
   isOpen: boolean
@@ -178,13 +179,36 @@ function ConfirmDialog({ open, title, description, onClose, onConfirm, loading }
 export default function QRCodesManager() {
   const [searchTerm, setSearchTerm] = useState("")
   const [statusFilter, setStatusFilter] = useState<string>("all")
+  const [page, setPage] = useState<number>(1)
+  const [pageSize, setPageSize] = useState<number>(12)
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false)
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid")
   const [hoveredCardId, setHoveredCardId] = useState<string | null>(null)
   const [confirmDelete, setConfirmDelete] = useState<{ id: string; name: string } | null>(null)
 
   const qrCodeHooks = useQRCode()
-  const qrCodesQuery = qrCodeHooks.useGetAllQRCodes()
+  // get accountId from access token stored in sessionStorage (if available)
+  const getCurrentUserAccountId = (): string => {
+    if (typeof window !== 'undefined') {
+      const accessToken = sessionStorage.getItem('accessToken')
+      if (accessToken) {
+        try {
+          // use imported helper (avoid SSR issues by reading sessionStorage only on client)
+          const userInfo = getUserInfoFromToken(accessToken)
+          return (userInfo?.id) || ''
+        } catch (e) {
+          return ''
+        }
+      }
+    }
+    return ''
+  }
+
+  const accountId = getCurrentUserAccountId()
+
+  const statusNumber = statusFilter === 'enabled' ? 1 : statusFilter === 'disabled' ? 0 : undefined
+
+  const qrCodesQuery = qrCodeHooks.useGetAllQRCodes(page, pageSize, statusNumber, accountId)
   const { data: qrCodesResponse, isLoading, error, refetch, isFetching } = qrCodesQuery
   const createQRCodeMutation = qrCodeHooks.useCreateQRCode()
   const deleteQRCodeMutation = qrCodeHooks.useDeleteQRCode()
@@ -371,6 +395,35 @@ export default function QRCodesManager() {
           </div>
         </CardContent>
       </Card>
+
+      {/* Pagination controls (server-side paging) */}
+      {qrCodesResponse && (
+        <div className="flex items-center justify-between">
+          <div className="text-sm text-muted-foreground">
+            Hiển thị {Math.max(0, (qrCodesResponse.page - 1) * qrCodesResponse.per_page + 1)} - {Math.min(qrCodesResponse.page * qrCodesResponse.per_page, qrCodesResponse.total_count)} trên {qrCodesResponse.total_count}
+          </div>
+          <div className="flex items-center gap-2">
+            <Button size="sm" variant="outline" onClick={() => setPage((p) => Math.max(1, p - 1))} disabled={!qrCodesResponse.has_previous}>
+              <ChevronLeft className="h-4 w-4" />
+            </Button>
+            <span className="px-2 text-sm">Trang {qrCodesResponse.page} / {qrCodesResponse.total_pages}</span>
+            <Button size="sm" variant="outline" onClick={() => setPage((p) => Math.min(qrCodesResponse.total_pages, p + 1))} disabled={!qrCodesResponse.has_next}>
+              <ChevronRight className="h-4 w-4" />
+            </Button>
+            <Select value={String(pageSize)} onValueChange={(v: string) => { setPageSize(parseInt(v)); setPage(1); }}>
+              <SelectTrigger className="w-[80px]">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="6">6</SelectItem>
+                <SelectItem value="12">12</SelectItem>
+                <SelectItem value="24">24</SelectItem>
+                <SelectItem value="48">48</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
+      )}
 
       {/* QR Codes Display */}
       <Card>

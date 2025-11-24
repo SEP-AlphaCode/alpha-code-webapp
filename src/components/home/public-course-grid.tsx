@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import React from 'react'
 import { getUserIdFromToken } from '@/utils/tokenUtils'
 import { getAccountCourseByCourseAndAccount } from '@/features/courses/api/account-course-api'
+import { getUserRoleFromToken } from '@/utils/tokenUtils'
 
 interface PublicCourseGridProps {
     courses: Course[];
@@ -20,6 +21,9 @@ function PublicCourseCard({ course }: PublicCourseCardProps) {
     const handleCourseClick = async () => {
         const accessToken = typeof window !== 'undefined' ? sessionStorage.getItem('accessToken') || '' : ''
         const accountId = accessToken ? getUserIdFromToken(accessToken) : null
+        const roleName = accessToken ? (getUserRoleFromToken(accessToken) || '').toLowerCase() : ''
+
+        const roleBasePath = roleName === 'children' || roleName.includes('child') ? '/children/courses' : '/parent/courses'
 
         // If not logged in -> go to public course detail page
         if (!accountId) {
@@ -31,11 +35,12 @@ function PublicCourseCard({ course }: PublicCourseCardProps) {
             const accountCourse = await getAccountCourseByCourseAndAccount(course.id, accountId)
 
             if (accountCourse) {
-                // Already enrolled/purchased -> go to learning page with slug
-                router.push(`/parent/courses/learning/${course.slug}`)
+                // Already enrolled/purchased -> go to learning page under role-specific base
+                router.push(`${roleBasePath}/learning/${course.slug}`)
             } else {
-                // Not enrolled -> go to public course detail page
-                router.push(`/course/${course.slug}`)
+                // Not enrolled -> go to role-specific course detail if logged in, otherwise public detail
+                if (accountId) router.push(`${roleBasePath}/${course.slug}`)
+                else router.push(`/course/${course.slug}`)
             }
         } catch (error) {
             console.error('Error checking enrollment:', error)

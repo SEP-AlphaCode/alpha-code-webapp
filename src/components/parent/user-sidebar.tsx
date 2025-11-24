@@ -2,7 +2,8 @@
 
 import React from "react";
 import Link from "next/link";
-import { LogOut, UserCircle, Settings, Home as HomeIcon, Home } from "lucide-react";
+import { LogOut, UserCircle, Settings, Home as HomeIcon, Home, X } from "lucide-react";
+import { SheetClose } from '@/components/ui/sheet'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -15,6 +16,7 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { AccountData } from "@/types/account";
 import { NavigationItem } from "@/types/user";
+import { getUserRoleFromToken } from '@/utils/tokenUtils'
 
 interface UserSidebarProps {
   isSidebarOpen: boolean;
@@ -32,12 +34,33 @@ export function UserSidebar({
   accountData,
   onLogout,
   isLogoutPending = false,
-}: UserSidebarProps) {
+  mobileMode = false,
+}: UserSidebarProps & { mobileMode?: boolean }) {
+  const getUserRole = () => {
+    if (typeof window !== 'undefined') {
+      const accessToken = sessionStorage.getItem('accessToken')
+      if (accessToken) return getUserRoleFromToken(accessToken)
+    }
+    return null
+  }
+
+  const role = getUserRole()
+  const myCourseHref = role === 'Children' ? '/children/courses/my-course' : '/parent/courses/my-course'
   return (
     <aside
-      className={`fixed top-16 left-0 h-[calc(100vh-4rem)] bg-white border-r border-gray-200 transition-all duration-300 ease-in-out z-30 flex flex-col ${isSidebarOpen ? "w-64" : "w-24"
-        }`}
+      className={`${mobileMode ? 'block' : 'hidden md:fixed'} ${mobileMode ? 'relative' : 'md:top-16 md:left-0 md:h-[calc(100vh-4rem)]'} bg-white md:bg-white md:border-r md:border-gray-200 md:transition-all md:duration-300 md:ease-in-out z-30 ${mobileMode ? 'w-full' : 'md:flex md:flex-col'} ${isSidebarOpen ? (mobileMode ? 'w-full' : 'md:w-64') : (mobileMode ? 'w-full' : 'md:w-24')}`}
     >
+      {/* Close button for mobile sheet */}
+      {mobileMode && (
+        <div className="absolute top-3 right-3 z-40">
+          <SheetClose asChild>
+            <button className="inline-flex items-center justify-center rounded-md bg-white/90 text-gray-700 hover:bg-white p-2 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+              <X className="w-4 h-4" />
+              <span className="sr-only">Close</span>
+            </button>
+          </SheetClose>
+        </div>
+      )}
       {/* Scrollable navigation */}
       <nav
         className={`flex-1 overflow-y-auto overflow-x-hidden
@@ -106,7 +129,7 @@ export function UserSidebar({
               </button>
             </DropdownMenuTrigger>
             {/* Đổi vị trí modal tại đây: side="top" | "bottom" | "left" | "right" */}
-            <DropdownMenuContent className="w-56" side="top" align="center" sideOffset={12} forceMount>
+                <DropdownMenuContent className="w-56" side="top" align="center" sideOffset={12} forceMount>
               <DropdownMenuLabel className="font-normal">
                 <div className="flex flex-col space-y-1">
                   <p className="text-sm font-medium leading-none">{accountData?.fullName || "User"}</p>
@@ -122,7 +145,7 @@ export function UserSidebar({
                   </Link>
                 </DropdownMenuItem>
                 <DropdownMenuItem asChild>
-                  <Link href="/parent/courses/mycourse" className="cursor-pointer">
+                  <Link href={myCourseHref} className="cursor-pointer">
                     <UserCircle className="mr-2 h-4 w-4" />
                     <span>My Course</span>
                   </Link>

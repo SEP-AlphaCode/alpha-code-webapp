@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button'
 import LoadingState from '@/components/loading-state'
 import { useRouter } from 'next/navigation'
 import { BookOpen, TrendingUp, Award, ArrowRight, GraduationCap, ShoppingCart } from 'lucide-react'
+import CourseCard from '@/components/parent/course/course-card'
 
 export default function MyCoursePage() {
   const router = useRouter()
@@ -21,10 +22,6 @@ export default function MyCoursePage() {
   const courses = paged?.data ?? []
   const total = paged?.total_count ?? 0
   const totalPages = Math.max(1, Math.ceil(total / size))
-
-  const handleOpenLearning = (courseSlug: string) => {
-    router.push(`/parent/courses/learning/${courseSlug}`)
-  }
 
   if (!accountId) {
     return (
@@ -225,59 +222,7 @@ export default function MyCoursePage() {
 
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mb-10">
               {courses.map((c) => (
-                <div key={c.id} className="group bg-white hover:shadow-2xl transition-all duration-300 rounded-3xl overflow-hidden flex flex-col border border-gray-200 hover:border-blue-400 hover:-translate-y-1">
-                  <div className="relative overflow-hidden h-52">
-                    {c.imageUrl ? (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img 
-                        src={c.imageUrl} 
-                        alt={c.name} 
-                        className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" 
-                      />
-                    ) : (
-                      <div className="w-full h-full bg-gradient-to-br from-blue-500 via-purple-500 to-pink-500 flex items-center justify-center text-white font-bold text-xl p-6 text-center">
-                        {c.name}
-                      </div>
-                    )}
-                    <div className="absolute top-4 right-4 bg-gradient-to-r from-green-400 to-green-500 text-white text-xs font-bold px-4 py-2 rounded-full shadow-lg">
-                      ✓ Đã đăng ký
-                    </div>
-                  </div>
-
-                  <div className="p-6 flex-1 flex flex-col">
-                    <h3 className="text-base font-bold text-gray-900 mb-4 line-clamp-2 group-hover:text-blue-600 transition-colors leading-snug">
-                      {c.name}
-                    </h3>
-                    
-                    <div className="mt-auto space-y-3">
-                      <div className="flex items-center justify-between text-sm">
-                        <span className="flex items-center gap-2 text-gray-600 font-medium">
-                          <BookOpen className="w-4 h-4" />
-                          {c.totalLesson} bài học
-                        </span>
-                        <span className="text-blue-600 font-bold text-base">
-                          {c.progressPercent || 0}%
-                        </span>
-                      </div>
-                      
-                      {/* Progress bar */}
-                      <div className="w-full bg-gray-200 rounded-full h-2.5 overflow-hidden">
-                        <div 
-                          className="bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 h-2.5 rounded-full transition-all duration-500 shadow-sm"
-                          style={{ width: `${c.progressPercent || 0}%` }}
-                        ></div>
-                      </div>
-
-                      <Button 
-                        onClick={() => handleOpenLearning(c.slug)} 
-                        className="w-full bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-bold py-5 text-sm rounded-2xl shadow-lg hover:shadow-xl transition-all group"
-                      >
-                        {c.progressPercent > 0 ? 'Tiếp tục học' : 'Bắt đầu học'}
-                        <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
-                      </Button>
-                    </div>
-                  </div>
-                </div>
+                <CourseCard key={c.id} course={c} variant="grid" />
               ))}
             </div>
 
