@@ -386,7 +386,7 @@ export default function LessonDetailPageLearning() {
 
             {/* Lesson Header */}
             <div className="space-y-4">
-              <h1 className="text-4xl font-bold text-foreground">
+              <h1 className="text-2xl md:text-3xl lg:text-4xl font-bold text-foreground">
                 {lessonData.title}
               </h1>
             
@@ -441,7 +441,7 @@ export default function LessonDetailPageLearning() {
                       {/* Video Error Overlay */}
                       {hasVideoError && (
                         <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/80 backdrop-blur-sm z-10">
-                          <div className="text-destructive text-6xl mb-4">⚠️</div>
+                  <div className="text-destructive text-5xl md:text-6xl mb-4">⚠️</div>
                           <div className="text-white text-lg font-medium mb-2">Không thể tải video</div>
                           <div className="text-white/80 text-sm mb-4">Vui lòng thử lại sau</div>
                           <Button 
@@ -461,7 +461,7 @@ export default function LessonDetailPageLearning() {
 
                       <video 
                         ref={videoRef}
-                        className="w-full h-full object-cover"
+                        className="w-full h-full object-contain md:object-cover"
                         controls
                         preload="metadata"
                         onLoadStart={handleVideoLoadStart}
@@ -534,10 +534,10 @@ export default function LessonDetailPageLearning() {
                 </CardHeader>
                 <CardContent>
                   <div className="prose max-w-none">
-                    <p className="text-muted-foreground leading-relaxed"
-                      dangerouslySetInnerHTML={{ __html: lessonData.content }}>
-                    </p>
-                  </div>
+                        <p className="text-sm md:text-base text-muted-foreground leading-relaxed"
+                          dangerouslySetInnerHTML={{ __html: lessonData.content }}>
+                        </p>
+                      </div>
 
                   {/* Solution Section */}
                   {lessonData.solution && (
@@ -573,7 +573,7 @@ export default function LessonDetailPageLearning() {
                           <div className="bg-gray-50 rounded-xl p-4 border border-gray-200">
                             <div className="flex justify-between items-center mb-3">
                               <span className="text-sm font-semibold text-gray-700">Hoàn thành:</span>
-                              <span className="text-2xl font-bold text-gray-900">
+                              <span className="text-xl md:text-2xl font-bold text-gray-900">
                                 {Math.round(storedProgress)}%
                               </span>
                             </div>
@@ -627,15 +627,15 @@ export default function LessonDetailPageLearning() {
                   ) : (
                     /* Type 1 (Lesson): Only show completion button */
                     <>
-                      <div className="bg-gray-50 rounded-xl p-6 text-center border border-gray-200">
+                      <div className="bg-gray-50 rounded-xl p-4 md:p-6 text-center border border-gray-200">
                         <div className="mb-4">
                           {isCompleted ? (
-                            <div className="w-20 h-20 mx-auto rounded-full bg-green-100 flex items-center justify-center">
-                              <CheckCircle className="w-10 h-10 text-green-600" />
+                            <div className="w-16 h-16 md:w-20 md:h-20 mx-auto rounded-full bg-green-100 flex items-center justify-center">
+                              <CheckCircle className="w-8 h-8 md:w-10 md:h-10 text-green-600" />
                             </div>
                           ) : (
-                            <div className="w-20 h-20 mx-auto rounded-full bg-gray-200 flex items-center justify-center">
-                              <BookOpen className="w-10 h-10 text-gray-400" />
+                            <div className="w-16 h-16 md:w-20 md:h-20 mx-auto rounded-full bg-gray-200 flex items-center justify-center">
+                              <BookOpen className="w-8 h-8 md:w-10 md:h-10 text-gray-400" />
                             </div>
                           )}
                         </div>
@@ -672,7 +672,7 @@ export default function LessonDetailPageLearning() {
 
             {/* Sidebar - Course Content Tracking */}
             <div className="lg:col-span-1 space-y-6">
-              <Card className="sticky top-4">
+              <Card className="lg:sticky lg:top-4">
                 <CardHeader className="pb-3 border-b">
                   <CardTitle className="flex items-center gap-2 text-lg">
                     <List className="w-5 h-5" />
@@ -680,7 +680,7 @@ export default function LessonDetailPageLearning() {
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="p-0">
-                  <div className="max-h-[600px] overflow-y-auto scrollbar-hide">
+                  <div className="lg:max-h-[600px] overflow-y-auto scrollbar-hide">
                     {sections?.map((section, sectionIndex) => {
                       // Check if previous section is fully completed (for cross-section locking)
                       const isPreviousSectionCompleted = sectionIndex === 0 || (() => {

@@ -104,33 +104,36 @@ export function RobotPageHeader({ title, subtitle, onModelSelect, onAddRobot }: 
 
   return (
     <>
-      <header className="sticky top-0 z-10 bg-white/80 backdrop-blur border-b border-gray-200 mb-6 py-4 px-6 rounded-xl shadow flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold text-blue-900 tracking-tight">{title}</h1>
-          <span className="text-base text-gray-500 font-medium">{subtitle}</span>
+      <header className="sticky top-0 z-10 bg-white/80 backdrop-blur border-b border-gray-200 mb-6 py-3 px-4 sm:py-4 sm:px-6 rounded-xl shadow flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+        <div className="w-full sm:w-auto">
+          <h1 className="text-2xl sm:text-3xl font-bold text-blue-900 tracking-tight">{title}</h1>
+          <span className="text-sm sm:text-base text-gray-500 font-medium">{subtitle}</span>
         </div>
 
-        <div className="flex items-center space-x-4">
+        <div className="w-full sm:w-auto flex flex-wrap items-center gap-2 sm:gap-4 justify-end">
           {/* 🧩 Model dropdown */}
           {connectMode === "multi" && (
-            <Select value={selectedModel} onValueChange={handleModelChange}>
-              <SelectTrigger className="w-[180px]">
-                <SelectValue placeholder="Select Model" />
-              </SelectTrigger>
-              <SelectContent>
-                {modelOptions.map((model) => (
-                  <SelectItem key={model.name ?? "unknown"} value={model.name ?? ""}>
-                    {model.name ?? "Unknown Model"}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            <div className="w-full sm:w-auto">
+              <Select value={selectedModel} onValueChange={handleModelChange}>
+                <SelectTrigger className="w-full sm:w-[180px]">
+                  <SelectValue placeholder="Model" />
+                </SelectTrigger>
+                <SelectContent>
+                  {modelOptions.map((model) => (
+                    <SelectItem key={model.name ?? "unknown"} value={model.name ?? ""}>
+                      {model.name ?? "Unknown Model"}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
           )}
 
           {/* ➕ Add Robot */}
           <Button onClick={onAddRobot} variant="outline" className="gap-2">
             <PlusCircle className="w-4 h-4" />
-            Thêm mới Robot
+            <span className="hidden sm:inline">Thêm mới Robot</span>
+            <span className="sm:hidden">Thêm</span>
           </Button>
 
           {/* 🗑 Delete Selected Robot */}
@@ -141,12 +144,13 @@ export function RobotPageHeader({ title, subtitle, onModelSelect, onAddRobot }: 
             className="gap-2"
           >
             <Trash2 className="w-4 h-4" />
-            {isDeleting ? "Đang xóa..." : "Xóa Robot"}
+            <span className="hidden sm:inline">{isDeleting ? "Đang xóa..." : "Xóa Robot"}</span>
+            <span className="sm:hidden">{isDeleting ? "Đang..." : "Xóa"}</span>
           </Button>
 
           {/* 🔀 Toggle Single / Multi Mode */}
           <div className="flex items-center space-x-3">
-            <Label htmlFor="connect-mode" className="text-sm font-medium text-gray-700 select-none">
+            <Label htmlFor="connect-mode" className="text-sm font-medium text-gray-700 select-none hidden sm:block">
               {connectMode === "single" ? "Single Mode" : "Multi Mode"}
             </Label>
             <Switch

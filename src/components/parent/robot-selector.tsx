@@ -22,9 +22,10 @@ import { Battery, Zap, WifiOff, Wifi } from "lucide-react";
 
 interface RobotSelectorProps {
   className?: string;
+  compact?: boolean; // when true render a compact avatar-only trigger for small headers
 }
 
-export function RobotSelector({ className = "" }: RobotSelectorProps) {
+export function RobotSelector({ className = "", compact = false }: RobotSelectorProps) {
   const [accountId, setAccountId] = useState<string>("");
   const [isModalOpen, setIsModalOpen] = useState(false);
 
@@ -253,17 +254,36 @@ export function RobotSelector({ className = "" }: RobotSelectorProps) {
       : selectedRobots[0]?.avatar ?? "/img_top_alphamini_disconnect.webp";
 
   if (isLoading) {
+    if (compact) {
+      return (
+        <div className={`flex items-center justify-center p-1 rounded-full bg-gray-50 border border-gray-100 ${className}`} title="Đang tải robots...">
+          <div className="h-8 w-8 rounded-full bg-gray-200 animate-pulse" />
+        </div>
+      );
+    }
+
     return (
-      <div className={`flex items-center px-2 py-1 rounded-xl shadow border border-gray-100 bg-gray-50 min-w-[260px] ${className}`}>
+      // Allow shrinking on small screens so header doesn't overflow
+      <div className={`flex items-center px-2 py-1 rounded-xl shadow border border-gray-100 bg-gray-50 min-w-0 sm:min-w-[260px] ${className}`}>
         <div className="text-gray-500 text-sm">Đang tải robots...</div>
       </div>
     );
   }
 
   if (error || displayRobots.length === 0) {
+    if (compact) {
+      return (
+        <div className={`flex items-center justify-center p-1 rounded-full bg-blue-50 border border-blue-100 ${className}`} title="Chưa có robot">
+          <button onClick={() => setIsModalOpen(true)} className="h-8 w-8 rounded-full bg-blue-600 text-white flex items-center justify-center">＋</button>
+          <RobotModal open={isModalOpen} onClose={() => setIsModalOpen(false)} />
+        </div>
+      );
+    }
+
     return (
       <div
-        className={`flex items-center justify-between px-3 py-2 rounded-xl shadow border border-gray-100 bg-blue-50 hover:bg-blue-100 transition-colors min-w-[260px] ${className}`}
+        // Allow shrinking on small screens; keep wider min-width on sm+
+        className={`flex items-center justify-between px-3 py-2 rounded-xl shadow border border-gray-100 bg-blue-50 hover:bg-blue-100 transition-colors min-w-0 sm:min-w-[260px] ${className}`}
       >
         <div className="flex flex-col justify-center">
           <span className="font-semibold text-gray-900 text-sm">Chưa có robot nào</span>
@@ -286,12 +306,13 @@ export function RobotSelector({ className = "" }: RobotSelectorProps) {
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <button
-            className={`flex items-center px-3 py-2 rounded-xl shadow border border-gray-100 bg-blue-50 hover:bg-blue-100 transition-colors focus:outline-none min-w-[260px] ${className}`}
+            // Make trigger shrinkable on small screens so header layout stays intact
+            className={`flex items-center px-3 py-2 rounded-xl shadow border border-gray-100 bg-blue-50 hover:bg-blue-100 transition-colors focus:outline-none min-w-0 sm:min-w-[260px] ${className}`}
           >
             <Image src={displayAvatar} alt="AlphaMini" width={50} height={50} className="object-cover object-top rounded-lg" />
-            <div className="flex flex-col justify-center ml-3 leading-tight text-left">
-              <span className="font-semibold text-base text-gray-900">{displayName}</span>
-              <span className="text-xs text-gray-500 font-mono tracking-wide mt-0.5">
+            <div className="flex flex-col justify-center ml-3 leading-tight text-left min-w-0">
+              <span className="font-semibold text-base text-gray-900 truncate">{displayName}</span>
+              <span className="text-xs text-gray-500 font-mono tracking-wide mt-0.5 truncate max-w-[120px] sm:max-w-[180px]">
                 {isMultiMode ? "Multi mode" : selectedRobots[0]?.serialNumber ?? ""}
               </span>
             </div>

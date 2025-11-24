@@ -106,7 +106,7 @@ export default function UserLayout({ children }: UserLayoutProps) {
 
         {/* Main Content */}
         <main
-          className={`transition-all duration-300 ease-in-out pt-13 ${isSidebarOpen ? "ml-64" : "ml-24"
+          className={`transition-all duration-300 ease-in-out pt-15 ${isSidebarOpen ? "md:ml-64 ml-0" : "md:ml-24 ml-0"
             }`}
         >
           <div className="mt-10 bg-white min-h-screen">

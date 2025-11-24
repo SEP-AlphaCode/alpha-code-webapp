@@ -91,7 +91,7 @@ export default function ChildrenLayout({ children }: ChildrenLayoutProps) {
 
         {/* Main Content */}
         <main
-          className={`transition-all duration-300 ease-in-out pt-20 overflow-hidden ${isSidebarOpen ? "ml-72" : "ml-24"
+          className={`transition-all duration-300 ease-in-out pt-20 overflow-hidden mt-5 ${isSidebarOpen ? "md:ml-72 ml-0" : "md:ml-24 ml-0"
             }`}
         >
           <div className="w-full h-full">

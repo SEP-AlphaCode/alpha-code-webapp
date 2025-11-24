@@ -51,8 +51,13 @@ export function UserHeader({
                 <Menu className="h-6 w-6" />
               </Button>
             </SheetTrigger>
+            {/* Compact robot selector on mobile (avatar-only) */}
+            <div className="lg:hidden ml-2">
+              <RobotSelector compact className="" />
+            </div>
             <SheetContent side="left" className="p-0 sm:max-w-xs">
               <UserSidebar
+                mobileMode={true}
                 isSidebarOpen={true}
                 navigationItems={navigationItems}
                 isActiveRoute={isActiveRoute}
@@ -77,11 +82,13 @@ export function UserHeader({
 
         {/* Right Actions */}
         <div className="flex items-center space-x-2 sm:space-x-4">
-          {/* Notifications */}
+          {/* Notifications (always visible) */}
           <NotificationBell accountId={accountData?.id || null} />
 
-          {/* Robot Selector Dropdown */}
-          <RobotSelector/>
+          {/* Full Robot Selector for large screens only */}
+          <div className="hidden lg:block">
+            <RobotSelector />
+          </div>
         </div>
       </div>
     </header>

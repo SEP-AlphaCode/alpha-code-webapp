@@ -215,15 +215,15 @@ export default function JoystickPage() {
     <ProtectLicense>
       <div className="min-h-screen bg-gradient-to-br from-slate-50 via-gray-100 to-slate-200 p-6">
         <div className="max-w-5xl mx-auto">
-          <header className="flex items-center justify-between mb-6">
+          <header className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-6 gap-4">
             <div>
-              <h1 className="text-3xl md:text-4xl font-extrabold text-gray-900">🎮 Trung Tâm Điều Khiển</h1>
+              <h1 className="text-2xl md:text-3xl lg:text-4xl font-extrabold text-gray-900">🎮 Trung Tâm Điều Khiển</h1>
               <p className="text-sm text-gray-600">Mô phỏng • Xem trước tương tác • Gán nút cho hành động robot</p>
             </div>
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-4 w-full sm:w-auto">
               <Button 
                 onClick={() => setIsConfigModalOpen(true)} 
-                className="bg-gradient-to-r from-blue-600 to-blue-700 text-white hover:from-blue-700 hover:to-blue-800 hover:text-white shadow-lg"
+                className="w-full sm:w-auto bg-gradient-to-r from-blue-600 to-blue-700 text-white hover:from-blue-700 hover:to-blue-800 hover:text-white shadow-lg"
               >
                 ⚙️ Cấu hình Joystick
               </Button>
@@ -236,22 +236,22 @@ export default function JoystickPage() {
               <div className="flex flex-col lg:flex-row items-center gap-8 lg:gap-12">
                 <div className="flex flex-col items-center gap-6 w-full lg:w-1/3">
                   <Badge variant="secondary" className="mb-2 bg-gray-200 text-gray-700">Cần điều khiển trái</Badge>
-                  <div ref={leftJoystickRef as React.RefObject<HTMLDivElement>} onPointerDown={handlePointerDown} className="relative w-28 h-28 rounded-full bg-gradient-to-br from-gray-200 to-gray-300 border-4 border-gray-400 flex items-center justify-center shadow-inner cursor-grab active:cursor-grabbing" style={{ touchAction: 'none' }}>
-                    <motion.div className="absolute w-6 h-6 bg-gradient-to-br from-blue-500 to-blue-600 rounded-full shadow-lg border-2 border-white" animate={{ x: leftJoystick.x * 32, y: leftJoystick.y * 32 }} transition={{ type: 'spring', stiffness: 300, damping: 30 }} />
+                    <div ref={leftJoystickRef as React.RefObject<HTMLDivElement>} onPointerDown={handlePointerDown} className="relative w-20 h-20 sm:w-24 sm:h-24 md:w-28 md:h-28 rounded-full bg-gradient-to-br from-gray-200 to-gray-300 border-4 border-gray-400 flex items-center justify-center shadow-inner cursor-grab active:cursor-grabbing" style={{ touchAction: 'none' }}>
+                      <motion.div className="absolute w-5 h-5 md:w-6 md:h-6 bg-gradient-to-br from-blue-500 to-blue-600 rounded-full shadow-lg border-2 border-white" animate={{ x: leftJoystick.x * 24, y: leftJoystick.y * 24 }} transition={{ type: 'spring', stiffness: 300, damping: 30 }} />
                     <div className="absolute inset-2 rounded-full border border-gray-300 opacity-50" />
                   </div>
-                  <div className="text-xs text-gray-500 text-center">({(leftJoystick.x * 100).toFixed(1)}, {(leftJoystick.y * 100).toFixed(1)})</div>
+                    <div className="text-xs text-gray-500 text-center">({(leftJoystick.x * 100).toFixed(1)}, {(leftJoystick.y * 100).toFixed(1)})</div>
                   <div className="mt-4">
                     <Badge variant="secondary" className="bg-gray-200 text-gray-700">Phím hướng</Badge>
-                    <div className="mt-3 grid grid-cols-3 gap-1 w-24 h-24">
+                      <div className="mt-3 grid grid-cols-3 gap-1 w-20 h-20 sm:w-24 sm:h-24">
                       <div />
-                      <Button variant={buttons.up ? 'default' : 'outline'} size="sm" className="h-8 w-8 p-0 rounded-sm text-sm font-bold" onClick={() => handleDPadButtonPress('up')}>↑</Button>
+                        <Button variant={buttons.up ? 'default' : 'outline'} size="sm" className="h-7 w-7 sm:h-8 sm:w-8 p-0 rounded-sm text-sm font-bold" onClick={() => handleDPadButtonPress('up')}>↑</Button>
                       <div />
-                      <Button variant={buttons.left ? 'default' : 'outline'} size="sm" className="h-8 w-8 p-0 rounded-sm text-sm font-bold" onClick={() => handleDPadButtonPress('left')}>←</Button>
+                        <Button variant={buttons.left ? 'default' : 'outline'} size="sm" className="h-7 w-7 sm:h-8 sm:w-8 p-0 rounded-sm text-sm font-bold" onClick={() => handleDPadButtonPress('left')}>←</Button>
                       <div className="w-8 h-8 bg-gray-300 rounded-sm" />
-                      <Button variant={buttons.right ? 'default' : 'outline'} size="sm" className="h-8 w-8 p-0 rounded-sm text-sm font-bold" onClick={() => handleDPadButtonPress('right')}>→</Button>
+                        <Button variant={buttons.right ? 'default' : 'outline'} size="sm" className="h-7 w-7 sm:h-8 sm:w-8 p-0 rounded-sm text-sm font-bold" onClick={() => handleDPadButtonPress('right')}>→</Button>
                       <div />
-                      <Button variant={buttons.down ? 'default' : 'outline'} size="sm" className="h-8 w-8 p-0 rounded-sm text-sm font-bold" onClick={() => handleDPadButtonPress('down')}>↓</Button>
+                        <Button variant={buttons.down ? 'default' : 'outline'} size="sm" className="h-7 w-7 sm:h-8 sm:w-8 p-0 rounded-sm text-sm font-bold" onClick={() => handleDPadButtonPress('down')}>↓</Button>
                       <div />
                     </div>
                   </div>
@@ -260,26 +260,26 @@ export default function JoystickPage() {
                 <div className="flex flex-col items-center gap-6 w-full lg:w-1/3">
                   <div className="w-full max-w-xs">
                     <div className="text-center mb-2"><Badge variant="outline" className="text-xs">🎥 Camera Robot{selectedRobot && (<span className="ml-1">• {selectedRobot.name}</span>)}</Badge></div>
-                    <RobotVideoStream robotSerial={robotSerial} className="w-full h-48 rounded-xl border-2 border-gray-300 shadow-lg" />
+                    <RobotVideoStream robotSerial={robotSerial} className="w-full h-40 md:h-48 rounded-xl border-2 border-gray-300 shadow-lg" />
                   </div>
                   <div className="flex flex-col items-center gap-2">
                     <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-purple-600 rounded-2xl flex items-center justify-center shadow-lg"><span className="text-2xl text-white font-bold">🤖</span></div>
                     <div className="text-sm font-semibold text-gray-700">Alpha Mini</div>
                     <div className="text-xs text-gray-500">Giao diện điều khiển</div>
                   </div>
-                  <div className="flex gap-3">
-                    <Button variant={buttons.SELECT ? 'default' : 'outline'} size="sm" onClick={() => handleButtonPress('SELECT')} className="px-3 py-1 text-xs font-semibold">SELECT</Button>
-                    <Button variant={buttons.START ? 'default' : 'outline'} size="sm" onClick={() => handleButtonPress('START')} className="px-3 py-1 text-xs font-semibold">START</Button>
+                  <div className="flex gap-3 flex-wrap justify-center">
+                    <Button variant={buttons.SELECT ? 'default' : 'outline'} size="sm" onClick={() => handleButtonPress('SELECT')} className="px-3 py-1 text-xs font-semibold w-28 sm:w-auto">SELECT</Button>
+                    <Button variant={buttons.START ? 'default' : 'outline'} size="sm" onClick={() => handleButtonPress('START')} className="px-3 py-1 text-xs font-semibold w-28 sm:w-auto">START</Button>
                   </div>
                 </div>
 
                 <div className="flex flex-col items-center gap-6 w-full lg:w-1/3">
                   <Badge variant="secondary" className="mb-2 bg-gray-200 text-gray-700">Nút hành động</Badge>
-                  <div className="relative w-32 h-32">
-                    <motion.button className="absolute top-0 left-1/2 -translate-x-1/2 w-12 h-12 rounded-full bg-gradient-to-br from-green-400 to-green-500 text-white font-bold text-lg shadow-lg border-2 border-white flex items-center justify-center" whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.95 }} animate={{ scale: buttons.Y ? 0.95 : 1 }} onClick={() => handleActionButtonPress('Y')}>Y</motion.button>
-                    <motion.button className="absolute top-1/2 left-0 -translate-y-1/2 w-12 h-12 rounded-full bg-gradient-to-br from-blue-400 to-blue-500 text-white font-bold text-lg shadow-lg border-2 border-white flex items-center justify-center" whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.95 }} animate={{ scale: buttons.X ? 0.95 : 1 }} onClick={() => handleActionButtonPress('X')}>X</motion.button>
-                    <motion.button className="absolute top-1/2 right-0 -translate-y-1/2 w-12 h-12 rounded-full bg-gradient-to-br from-red-400 to-red-500 text-white font-bold text-lg shadow-lg border-2 border-white flex items-center justify-center" whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.95 }} animate={{ scale: buttons.B ? 0.95 : 1 }} onClick={() => handleActionButtonPress('B')}>B</motion.button>
-                    <motion.button className="absolute bottom-0 left-1/2 -translate-x-1/2 w-12 h-12 rounded-full bg-gradient-to-br from-yellow-400 to-yellow-500 text-white font-bold text-lg shadow-lg border-2 border-white flex items-center justify-center" whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.95 }} animate={{ scale: buttons.A ? 0.95 : 1 }} onClick={() => handleActionButtonPress('A')}>A</motion.button>
+                  <div className="relative w-24 h-24 sm:w-28 sm:h-28 md:w-32 md:h-32">
+                    <motion.button className="absolute top-0 left-1/2 -translate-x-1/2 w-10 h-10 md:w-12 md:h-12 rounded-full bg-gradient-to-br from-green-400 to-green-500 text-white font-bold text-base md:text-lg shadow-lg border-2 border-white flex items-center justify-center" whileHover={{ scale: 1.07 }} whileTap={{ scale: 0.95 }} animate={{ scale: buttons.Y ? 0.95 : 1 }} onClick={() => handleActionButtonPress('Y')}>Y</motion.button>
+                    <motion.button className="absolute top-1/2 left-0 -translate-y-1/2 w-10 h-10 md:w-12 md:h-12 rounded-full bg-gradient-to-br from-blue-400 to-blue-500 text-white font-bold text-base md:text-lg shadow-lg border-2 border-white flex items-center justify-center" whileHover={{ scale: 1.07 }} whileTap={{ scale: 0.95 }} animate={{ scale: buttons.X ? 0.95 : 1 }} onClick={() => handleActionButtonPress('X')}>X</motion.button>
+                    <motion.button className="absolute top-1/2 right-0 -translate-y-1/2 w-10 h-10 md:w-12 md:h-12 rounded-full bg-gradient-to-br from-red-400 to-red-500 text-white font-bold text-base md:text-lg shadow-lg border-2 border-white flex items-center justify-center" whileHover={{ scale: 1.07 }} whileTap={{ scale: 0.95 }} animate={{ scale: buttons.B ? 0.95 : 1 }} onClick={() => handleActionButtonPress('B')}>B</motion.button>
+                    <motion.button className="absolute bottom-0 left-1/2 -translate-x-1/2 w-10 h-10 md:w-12 md:h-12 rounded-full bg-gradient-to-br from-yellow-400 to-yellow-500 text-white font-bold text-base md:text-lg shadow-lg border-2 border-white flex items-center justify-center" whileHover={{ scale: 1.07 }} whileTap={{ scale: 0.95 }} animate={{ scale: buttons.A ? 0.95 : 1 }} onClick={() => handleActionButtonPress('A')}>A</motion.button>
                   </div>
                   <div className="text-sm text-gray-700 text-center space-y-1 mt-2">
                     <div className="flex items-center gap-2"><span>🟡 A:</span><span className="font-medium">{actionDescriptions.A?.name || 'Chưa cấu hình'}</span></div>

@@ -22,7 +22,7 @@ interface RobotActionTabProps {
   error: string | null;
 }
 
-export function RobotActionTab({
+export function  RobotActionTab({
   actions,
   currentActionIndex,
   setCurrentActionIndex,
@@ -75,7 +75,8 @@ export function RobotActionTab({
                   animate={{ opacity: 1, x: 0 }}
                   exit={{ opacity: 0, x: -50 }}
                   transition={{ duration: 0.4, ease: "easeInOut" }}
-                  className="grid grid-cols-4 gap-6"
+                  // responsive grid: 2 cols on xs, 3 on sm, 4 on md+
+                  className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 sm:gap-6"
                 >
                   {actions.map((actionItem, index) => (
                     <div
@@ -90,13 +91,14 @@ export function RobotActionTab({
                           onActionSelect(actionItem);
                           sendCommandToBackend(actionItem.code);
                         }}
-                        className={`w-24 h-24 rounded-full flex items-center justify-center shadow-md transition-all duration-200 hover:scale-110 ${
+                        className={`rounded-full flex items-center justify-center shadow-md transition-all duration-200 hover:scale-110 ${
                           currentActionIndex ===
                           (currentPage - 1) * pageSize + index
                             ? `ring-4 ring-offset-2 ring-blue-400 bg-white`
                             : "bg-white hover:bg-gray-100"
                         }`}
-                      >
+                        >
+                        <div className="w-16 h-16 sm:w-20 sm:h-20 md:w-24 md:h-24 flex items-center justify-center">
                         {/* Ưu tiên hiển thị icon -> imageUrl -> fallback */}
                         {actionItem.icon ? (
                           <span className="text-2xl">{actionItem.icon}</span>
@@ -112,8 +114,9 @@ export function RobotActionTab({
                         ) : (
                           <span className="text-2xl">🎬</span>
                         )}
+                        </div>
                       </button>
-                      <span className="text-xs font-medium text-gray-700 mt-2 text-center max-w-30 truncate">
+                      <span className="text-xs font-medium text-gray-700 mt-2 text-center truncate max-w-[90px] sm:max-w-[120px]">
                         {actionItem.name}
                       </span>
                     </div>
