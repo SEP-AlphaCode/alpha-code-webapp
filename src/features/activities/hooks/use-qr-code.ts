@@ -60,7 +60,7 @@ export const useQRCode = () => {
     };
 
     const useUpdateQRCodeStatus = () => {
-        return useMutation<QRCodesResponse, Error, { id: string; status: string }>({
+        return useMutation<QRCodesResponse, Error, { id: string; status: number }>({
             mutationFn: ({ id, status }) => updateQRCodeStatus(id, status),
             onSuccess: () => {
                 queryClient.invalidateQueries({ queryKey: ["qrcodes"] });
