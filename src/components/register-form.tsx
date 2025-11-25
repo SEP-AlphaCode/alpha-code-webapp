@@ -30,6 +30,8 @@ export default function RegisterForm() {
     gender: '0',
   })
 
+  const passwordsMatch = formData.confirmPassword.length === 0 || formData.password === formData.confirmPassword
+
 
   const handleFile = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
@@ -78,32 +80,41 @@ export default function RegisterForm() {
                 <h1 className="text-2xl font-bold">Đăng ký tài khoản</h1>
                 <p className="text-muted-foreground">Tạo tài khoản Alpha Mini để bắt đầu.</p>
               </div>
+
               <div className="grid gap-3">
                 <Label htmlFor="username">Tên đăng nhập</Label>
                 <Input id="username" name="username" value={formData.username} onChange={handleChange} required />
               </div>
+
               <div className="grid gap-3">
                 <Label htmlFor="fullName">Họ và tên</Label>
                 <Input id="fullName" name="fullName" value={formData.fullName} onChange={handleChange} required />
               </div>
+
               <div className="grid gap-3">
                 <Label htmlFor="email">Email</Label>
                 <Input id="email" name="email" type="email" value={formData.email} onChange={handleChange} required />
               </div>
+
               <div className="grid gap-3">
                 <Label htmlFor="phone">Số điện thoại</Label>
                 <Input id="phone" name="phone" value={formData.phone} onChange={handleChange} />
               </div>
+
               <div className="grid gap-3 md:grid-cols-2">
                 <div className="grid gap-3">
                   <Label htmlFor="password">Mật khẩu</Label>
                   <Input id="password" name="password" type="password" value={formData.password} onChange={handleChange} required />
                 </div>
-                <div className="grid gap-3">
-                  <Label htmlFor="confirmPassword">Xác nhận</Label>
-                  <Input id="confirmPassword" name="confirmPassword" type="password" value={formData.confirmPassword} onChange={handleChange} required />
+                <div className="grid gap-2">
+                  <Label htmlFor="confirmPassword">Xác nhận mật khẩu</Label>
+                  <Input id="confirmPassword" name="confirmPassword" type="password" value={formData.confirmPassword} onChange={handleChange} required aria-invalid={!passwordsMatch} />
+                  {!passwordsMatch && formData.confirmPassword.length > 0 && (
+                    <p className="text-sm text-red-600">Mật khẩu không khớp</p>
+                  )}
                 </div>
               </div>
+
               <div className="grid gap-3 md:grid-cols-2">
                 <div className="grid gap-3">
                   <Label>Giới tính</Label>
@@ -116,25 +127,28 @@ export default function RegisterForm() {
                     </SelectContent>
                   </Select>
                 </div>
-              </div>
-              <div className="grid gap-2">
-                <Label>Ảnh đại diện</Label>
-                <div className="flex items-center gap-3">
-                  <Input type="file" accept="image/*" onChange={handleFile} />
-                  {previewUrl && (
-                    <div className="w-10 h-10 rounded-full overflow-hidden border">
-                      <Image src={previewUrl} alt="preview" width={40} height={40} className="object-cover" />
-                    </div>
-                  )}
+
+                <div className="grid gap-2">
+                  <Label>Ảnh đại diện</Label>
+                  <div className="flex items-center gap-3">
+                    <Input type="file" accept="image/*" onChange={handleFile} />
+                    {previewUrl && (
+                      <div className="w-10 h-10 rounded-full overflow-hidden border">
+                        <Image src={previewUrl} alt="preview" width={40} height={40} className="object-cover" />
+                      </div>
+                    )}
+                  </div>
                 </div>
               </div>
-      <Button
-        type="submit"
-        className="w-full text-white font-semibold py-3 rounded-2xl bg-gradient-to-r from-blue-600 to-blue-500 shadow-lg transition transform duration-200 hover:scale-[1.02] hover:from-blue-700 hover:to-blue-600 hover:shadow-xl active:translate-y-0.5 focus:outline-none focus:ring-4 focus:ring-blue-300/40 disabled:opacity-60 disabled:cursor-not-allowed"
-        disabled={registerMutation.isPending}
-      >
-        {registerMutation.isPending ? 'Đang đăng ký...' : 'Đăng ký'}
-      </Button>
+
+              <Button
+                type="submit"
+                className="w-full text-white font-semibold py-3 rounded-2xl bg-gradient-to-r from-blue-600 to-blue-500 shadow-lg transition transform duration-200 hover:scale-[1.02] hover:from-blue-700 hover:to-blue-600 hover:shadow-xl active:translate-y-0.5 focus:outline-none focus:ring-4 focus:ring-blue-300/40 disabled:opacity-60 disabled:cursor-not-allowed"
+                disabled={registerMutation.isPending || !passwordsMatch}
+              >
+                {registerMutation.isPending ? 'Đang đăng ký...' : 'Đăng ký'}
+              </Button>
+
               <div className="text-center text-sm">Đã có tài khoản? <a className="underline" href="/login">Đăng nhập</a></div>
             </div>
           </form>
