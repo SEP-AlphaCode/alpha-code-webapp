@@ -379,7 +379,7 @@ export default function BundleDetailPage() {
                   <Button
                     className="w-full bg-blue-600 hover:bg-blue-700 text-white h-16 text-lg font-bold rounded-2xl shadow-lg hover:shadow-2xl hover:scale-105 transition-all duration-300"
                     onClick={() => {
-                      const accessToken = sessionStorage.getItem("access_token");
+                      const accessToken = sessionStorage.getItem("accessToken");
                       if (!accessToken) {
                         toast.error("Vui lòng đăng nhập để mua", {
                           description: "Bạn cần đăng nhập để tiếp tục thanh toán",
