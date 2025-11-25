@@ -128,9 +128,13 @@ export default function RegisterForm() {
                   )}
                 </div>
               </div>
-      <Button type="submit" className="w-full bg-[color:var(--chart-2)] text-white" disabled={registerMutation.isPending}>
+      <Button
+        type="submit"
+        className="w-full text-white font-semibold py-3 rounded-2xl bg-gradient-to-r from-blue-600 to-blue-500 shadow-lg transition transform duration-200 hover:scale-[1.02] hover:from-blue-700 hover:to-blue-600 hover:shadow-xl active:translate-y-0.5 focus:outline-none focus:ring-4 focus:ring-blue-300/40 disabled:opacity-60 disabled:cursor-not-allowed"
+        disabled={registerMutation.isPending}
+      >
         {registerMutation.isPending ? 'Đang đăng ký...' : 'Đăng ký'}
-              </Button>
+      </Button>
               <div className="text-center text-sm">Đã có tài khoản? <a className="underline" href="/login">Đăng nhập</a></div>
             </div>
           </form>
