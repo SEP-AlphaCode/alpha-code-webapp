@@ -20,6 +20,8 @@ export const useActivities = (
   return useQuery({
     queryKey: ['activities', page, size, search || '', robotModelId, accountId], // 👈 thêm vào queryKey để cache theo model
     queryFn: ({ signal }) => getPagedActivitiesByAccount(page, size, accountId, search, signal, robotModelId), // 👈 truyền vào đây
+    // only enable the query when an accountId is provided to avoid invalid backend calls
+    enabled: !!accountId,
     staleTime: 1000 * 60 * 2,
     refetchOnWindowFocus: false,
     refetchOnMount: true,

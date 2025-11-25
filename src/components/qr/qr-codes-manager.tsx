@@ -31,6 +31,7 @@ import ErrorState from "@/components/error-state"
 import { getUserInfoFromToken } from "@/utils/tokenUtils"
 import { toast } from 'sonner'
 import { useRobotStore } from "@/hooks/use-robot-store"
+import { Activity } from "@/types/activities"
 
 function CreateQRCodeModal({ isOpen, onClose, onSubmit, isLoading, accountId }: {
   isOpen: boolean
@@ -60,8 +61,8 @@ function CreateQRCodeModal({ isOpen, onClose, onSubmit, isLoading, accountId }: 
   // load activities for selection when accountId is available
   const accountForQuery = formData.accountId || accountId || ''
   // useActivities signature: (page, size, accountId, search?, robotModelId?)
-  // pass robotModelId as the 5th arg; use empty search string when not searching
-  const activitiesQuery = accountForQuery ? useActivities(1, 1000, accountForQuery, '', robotModelId) : null
+  // Call hook unconditionally (enabled flag inside hook prevents network call when no accountId)
+  const activitiesQuery = useActivities(1, 1000, accountForQuery, '', robotModelId)
   const activities = activitiesQuery?.data?.data || []
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -121,8 +122,8 @@ function CreateQRCodeModal({ isOpen, onClose, onSubmit, isLoading, accountId }: 
               </SelectTrigger>
               <SelectContent>
                 {activities.length ? (
-                  activities.map((a: any, idx: number) => (
-                    <SelectItem key={`${a.id ?? 'act'}-${idx}`} value={a.id ?? `__${idx}`}>{a.name || a.title || a.id || `#${idx + 1}`}</SelectItem>
+                  activities.map((a: Activity, idx: number) => (
+                    <SelectItem key={`${a.id ?? 'act'}-${idx}`} value={a.id ?? `__${idx}`}>{a.name || a.id || `#${idx + 1}`}</SelectItem>
                   ))
                 ) : (
                   <SelectItem value="__none" disabled>Không có hoạt động</SelectItem>
