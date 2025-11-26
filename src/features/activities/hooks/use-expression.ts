@@ -8,7 +8,7 @@ export const useExpression = () => {
 
     const { selectedRobot } = useRobotStore()
 
-    const model = selectedRobot?.robotModelId || "default"
+    const model = selectedRobot?.robotModelId
 
     const useGetPagedExpressions = (page: number, limit: number, search?: string) => {
         return useQuery({
