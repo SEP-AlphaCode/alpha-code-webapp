@@ -117,11 +117,10 @@ export default function EditOsmoCardModal({
     { value: 'red', label: 'Red' },
     { value: 'blue', label: 'Blue' },
     { value: 'green', label: 'Green' },
-    { value: 'yellow', label: 'Yellow' },
     { value: 'purple', label: 'Purple' },
     { value: 'pink', label: 'Pink' },
     { value: 'orange', label: 'Orange' },
-    { value: 'gray', label: 'Gray' }
+    // removed yellow and gray per requested constraints
   ];
 
   // Initialize form data when card changes
@@ -255,48 +254,27 @@ export default function EditOsmoCardModal({
   const handleSave = () => {
     if (!card || !validateForm()) return;
 
-    // For PATCH request, only send changed fields
-    const updatedData: Partial<OsmoCard> = {};
+    // Build a full partial payload containing current form values so backend receives necessary fields
+    const updatedData: Partial<OsmoCard> = {
+      name: formData.name,
+      color: formData.color,
+      status: formData.status,
+      actionId: formData.actionId || undefined,
+      actionName: formData.actionName || undefined,
+      expressionId: formData.expressionId || undefined,
+      expressionName: formData.expressionName || undefined,
+      danceId: formData.danceId || undefined,
+      danceName: formData.danceName || undefined,
+      extendedActionId: formData.extendedActionId || undefined,
+      extendedActionName: formData.extendedActionName || undefined,
+      skillId: formData.skillId || undefined,
+      skillName: formData.skillName || undefined,
+    };
 
-    // Compare with original card data and only include changed fields
-    if (formData.name !== card.name) {
-      updatedData.name = formData.name;
-    }
-    if (formData.color !== card.color) {
-      updatedData.color = formData.color;
-    }
-    if (formData.status !== card.status) {
-      updatedData.status = formData.status;
-    }
-    if (formData.actionId !== card.actionId) {
-      updatedData.actionId = formData.actionId;
-    }
-    if (formData.actionName !== card.actionName) {
-      updatedData.actionName = formData.actionName;
-    }
-    if (formData.expressionId !== card.expressionId) {
-      updatedData.expressionId = formData.expressionId;
-    }
-    if (formData.expressionName !== card.expressionName) {
-      updatedData.expressionName = formData.expressionName;
-    }
-    if (formData.danceId !== card.danceId) {
-      updatedData.danceId = formData.danceId;
-    }
-    if (formData.danceName !== card.danceName) {
-      updatedData.danceName = formData.danceName;
-    }
-    if (formData.extendedActionId !== card.extendedActionId) {
-      updatedData.extendedActionId = formData.extendedActionName;
-    }
-    if (formData.skillId !== card.skillId) {
-      updatedData.skillId = formData.skillId;
-    }
-    // Only call API if there are actual changes
+    // Only call API if there are actual values to send
     if (Object.keys(updatedData).length > 0) {
-      onSave(card.id, updatedData);
+      onSave(card!.id, updatedData);
     } else {
-      // No changes, just close modal
       handleClose();
     }
   };

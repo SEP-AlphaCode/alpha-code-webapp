@@ -14,7 +14,7 @@ export type OsmoCard = {
     statusText: string;
     actionCode: number;
     extendedActionId: string,
-    extendedActonName: string,
+    extendedActionName: string,
     skillId: string,
     skillName: string
 };
