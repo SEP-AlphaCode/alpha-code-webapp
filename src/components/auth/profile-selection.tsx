@@ -156,7 +156,7 @@ export function ProfileSelection() {
                       {profile.name}
                     </span>
                     <span className="text-xs text-gray-500 mt-1 text-center">
-                      {profile.isKid ? '👶 Trẻ em' : '👨‍👩‍👧 Phụ huynh'}
+                      {profile.isKid ? 'Trẻ em' : 'Phụ huynh'}
                     </span>
                   </div>
                 );

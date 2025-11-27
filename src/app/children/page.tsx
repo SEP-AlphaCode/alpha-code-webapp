@@ -228,7 +228,7 @@ export default function ChildrenDashboard() {
               <div className="flex items-center justify-between">
                 <CardTitle className="text-2xl font-black flex items-center gap-2 text-gray-900">
                   <Heart className="w-7 h-7 text-red-500 animate-pulse" />
-                  Học tiếp nào! 🎮
+                  Học tiếp nào!
                 </CardTitle>
                 <Button variant="ghost" size="sm" asChild className="font-bold">
                   <Link href="/parent/courses">
@@ -268,7 +268,7 @@ export default function ChildrenDashboard() {
                           <Button size="sm" asChild className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white rounded-xl font-bold shadow-md">
                             <Link href={`/parent/courses/${course.slug}`}>
                               <PlayCircle className="w-4 h-4 mr-1" />
-                              Học tiếp! 🚀
+                              Học tiếp!
                             </Link>
                           </Button>
                         </div>
@@ -381,32 +381,32 @@ export default function ChildrenDashboard() {
             <CardHeader className="pb-3">
               <CardTitle className="text-xl font-black flex items-center gap-2 text-gray-900">
                 <Sparkles className="w-6 h-6 text-purple-600" />
-                Làm gì tiếp nhỉ? 🤔
+                Làm gì tiếp nhỉ?
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-2">
               <Button variant="outline" className="w-full justify-start font-bold border-2 hover:bg-purple-100 hover:border-purple-400 rounded-xl" asChild>
                 <Link href="/children/blockly-coding">
                   <Code className="w-5 h-5 mr-2 text-purple-600" />
-                  Lập trình Blockly 🎨
+                  Lập trình Blockly
                 </Link>
               </Button>
               <Button variant="outline" className="w-full justify-start font-bold border-2 hover:bg-blue-100 hover:border-blue-400 rounded-xl" asChild>
                 <Link href="/children/robot">
                   <Bot className="w-5 h-5 mr-2 text-blue-600" />
-                  Điều khiển Robot 🤖
+                  Điều khiển Robot
                 </Link>
               </Button>
               <Button variant="outline" className="w-full justify-start font-bold border-2 hover:bg-green-100 hover:border-green-400 rounded-xl" asChild>
                 <Link href="/children/activities">
                   <Target className="w-5 h-5 mr-2 text-green-600" />
-                  Hoạt động vui 🎮
+                  Hoạt động vui
                 </Link>
               </Button>
               <Button variant="outline" className="w-full justify-start font-bold border-2 hover:bg-pink-100 hover:border-pink-400 rounded-xl" asChild>
                 <Link href="/parent/courses">
                   <BookOpen className="w-5 h-5 mr-2 text-pink-600" />
-                  Khóa học mới 📚
+                  Khóa học mới
                 </Link>
               </Button>
             </CardContent>
