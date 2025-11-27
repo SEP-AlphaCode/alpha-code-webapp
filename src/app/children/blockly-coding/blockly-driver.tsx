@@ -1,3 +1,4 @@
+import ProtectAddon from '@/components/protect-addon';
 import BlocklyUI from './ui';
 import { useGetSelectOptions } from '@/features/block-coding/hooks';
 import { useRobotStore } from '@/hooks/use-robot-store';
@@ -25,19 +26,20 @@ export default function UseMe() {
         extActions: to2DArray(extActions),
         skills: to2DArray(skills)
     }
-    if(!selectedRobot) {
+    if (!selectedRobot) {
         return <p>...</p>
     }
 
     return (
         <div className="relative">
-
-            <BlocklyUI
-                robotModelId={selectedRobot.robotModelId}
-                serial={selectedRobot.serialNumber}
-                hasAllData={!isLoading}
-                data={data}
-            />
+            <ProtectAddon>
+                <BlocklyUI
+                    robotModelId={selectedRobot.robotModelId}
+                    serial={selectedRobot.serialNumber}
+                    hasAllData={!isLoading}
+                    data={data}
+                />
+            </ProtectAddon>
         </div>
     );
 }

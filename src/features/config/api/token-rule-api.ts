@@ -1,4 +1,5 @@
-import { TokenRule } from '@/types/pricing';
+import { TokenRule, CreateTokenRuleRequest, UpdateTokenRuleRequest, PatchTokenRuleRequest } from '@/types/pricing';
+import { PagedResult } from '@/types/page-result';
 import { paymentsHttp } from '@/utils/http';
 
 // Token Rule API - for managing token costs across different services (NLP, AI, etc.)
@@ -8,11 +9,12 @@ export const getTokenRules = async (
   page: number = 1,
   limit: number = 10,
   search?: string
-): Promise<{ data: TokenRule[]; total_count: number; page: number; per_page: number; total_pages: number; has_next: boolean; has_previous: boolean }> => {
+): Promise<PagedResult<TokenRule>> => {
   try {
     const params = new URLSearchParams({
       page: page.toString(),
-      limit: limit.toString(),
+      // backend expects `size` rather than `limit`
+      size: limit.toString(),
     });
     
     if (search && search.trim()) {
@@ -37,25 +39,33 @@ export const getTokenRuleById = async (id: string): Promise<TokenRule> => {
   }
 };
 
-export const createTokenRule = async (cost: number, code: string, note?: string): Promise<TokenRule> => {
+export const createTokenRule = async (payload: CreateTokenRuleRequest): Promise<TokenRule> => {
   try {
-    const response = await paymentsHttp.post('/token-rules', { cost, code, note });
-    return response.data;
+    const response = await paymentsHttp.post('/token-rules', payload);
+    return response.data as TokenRule;
   } catch (error) {
     console.error('Error creating token rule:', error);
     throw new Error('Failed to create token rule');
   }
 };
 
-export const updateTokenRule = async (id: string, cost: number, code: string, note?: string): Promise<TokenRule> => {
+export const updateTokenRule = async (payload: UpdateTokenRuleRequest): Promise<TokenRule> => {
   try {
-    const response = await paymentsHttp.put(`/token-rules/${id}`, null, {
-      params: { cost, code, note },
-    });
-    return response.data;
+    const response = await paymentsHttp.put(`/token-rules/${payload.id}`, payload);
+    return response.data as TokenRule;
   } catch (error) {
     console.error('Error updating token rule:', error);
     throw new Error('Failed to update token rule');
+  }
+};
+
+export const patchTokenRule = async (id: string, patch: PatchTokenRuleRequest): Promise<TokenRule> => {
+  try {
+    const response = await paymentsHttp.patch(`/token-rules/${id}`, patch);
+    return response.data as TokenRule;
+  } catch (error) {
+    console.error('Error patching token rule:', error);
+    throw new Error('Failed to patch token rule');
   }
 };
 

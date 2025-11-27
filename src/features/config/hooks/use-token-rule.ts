@@ -1,6 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
-import { createTokenRule, deleteTokenRule, getTokenRules, getTokenRuleById, updateTokenRule } from '../api/token-rule-api';
+import { createTokenRule, deleteTokenRule, getTokenRules, getTokenRuleById, updateTokenRule, patchTokenRule } from '../api/token-rule-api';
+import { CreateTokenRuleRequest, PatchTokenRuleRequest, UpdateTokenRuleRequest } from '@/types/pricing';
 
 // Get paginated token rules (cho các dịch vụ trong hệ thống)
 export const useGetTokenRules = (page: number, limit: number, search?: string) => {
@@ -25,11 +26,9 @@ export const useCreateTokenRule = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: ({ cost, code, note }: { cost: number; code: string; note?: string }) => 
-      createTokenRule(cost, code, note),
+    mutationFn: (payload: CreateTokenRuleRequest) => createTokenRule(payload),
 
     onSuccess: () => {
-      toast.success('Token rule created successfully');
       queryClient.invalidateQueries({ queryKey: ['token-rules'] });
     },
 
@@ -44,11 +43,9 @@ export const useUpdateTokenRule = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: ({ id, cost, code, note }: { id: string; cost: number; code: string; note?: string }) => 
-      updateTokenRule(id, cost, code, note),
+    mutationFn: (payload: UpdateTokenRuleRequest) => updateTokenRule(payload),
 
     onSuccess: () => {
-      toast.success('Token rule updated');
       queryClient.invalidateQueries({ queryKey: ['token-rules'] });
     },
 
