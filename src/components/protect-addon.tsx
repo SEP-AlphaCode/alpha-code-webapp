@@ -8,7 +8,7 @@ import { useAddonAccess } from "@/features/addon/hooks/use-license-key-addon";
 
 interface ProtectAddonProps {
   children: React.ReactNode;
-  category?: number;
+  category: number;
   sessionKeyName?: string;
   validateFn?: (payload: ValidateAddon) => Promise<{ allowed: boolean; status?: string } | boolean>;
   purchaseUrl?: string;
@@ -74,8 +74,13 @@ export const ProtectAddon = ({
   const accountId = getUserIdFromToken(accessToken || "") || undefined;
 
   const { useValidateAccess } = useAddonAccess();
+  // Build payload matching backend shape: ValidateAddon expects `key` (not `sessionKey`).
+  const validatePayload: ValidateAddon = { key: sessionKey, accountId, category };
+  // Small log to help debugging in dev
+  // eslint-disable-next-line no-console
+  console.log("ProtectAddon: calling useValidateAccess with", validatePayload);
   // Call the hook unconditionally — the internal `enabled` option will prevent queries when data is missing.
-  const query = useValidateAccess({ sessionKey, accountId, category } as ValidateAddon);
+  const query = useValidateAccess(validatePayload);
 
   // Redirect nếu chưa login
   useEffect(() => {
@@ -92,7 +97,7 @@ export const ProtectAddon = ({
     const checkAccess = async () => {
       setIsLoading(true);
       try {
-        const payload: ValidateAddon = { sessionKey, accountId, category };
+        const payload: ValidateAddon = { key: sessionKey, accountId, category };
         const result = await Promise.race([
           validateFn(payload),
           new Promise<never>((_, reject) => setTimeout(() => reject(new Error("Validation timeout")), 8000)),

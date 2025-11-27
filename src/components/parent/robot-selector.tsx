@@ -99,21 +99,21 @@ export function RobotSelector({ className = "", compact = false }: RobotSelector
 
   // Snapshot the important fields (avoid devtools live object expansion)
   try {
-    console.log(
-      "Robot Polling Snapshot:",
-      JSON.stringify(
-        robotInfos.map((info, i) => ({
-          requestedSerial: serialList[i],
-          infoSerialField: info.serial,
-          returned__requestedSerial: info.data?.__requestedSerial,
-          returnedSerialInsideData: info.data?.data?.serial_number,
-          status: info.status,
-          isLoading: info.isLoading,
-        })),
-        null,
-        2
-      )
-    );
+    // console.log(
+    //   "Robot Polling Snapshot:",
+    //   JSON.stringify(
+    //     robotInfos.map((info, i) => ({
+    //       requestedSerial: serialList[i],
+    //       infoSerialField: info.serial,
+    //       returned__requestedSerial: info.data?.__requestedSerial,
+    //       returnedSerialInsideData: info.data?.data?.serial_number,
+    //       status: info.status,
+    //       isLoading: info.isLoading,
+    //     })),
+    //     null,
+    //     2
+    //   )
+    // );
   } catch (e) {
     console.log("Robot Polling: (could not stringify)", robotInfos);
   }

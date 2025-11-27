@@ -163,7 +163,7 @@ export function NotificationBell({ accountId }: NotificationBellProps) {
           )}
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-96 p-0" align="end">
+      <PopoverContent className="w-[560px] max-w-[calc(100vw-2rem)] p-0" align="end">
         <NotificationList
           notifications={notificationsData?.content || []}
           accountId={accountId || undefined}

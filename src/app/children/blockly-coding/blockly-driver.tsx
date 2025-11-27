@@ -32,7 +32,7 @@ export default function UseMe() {
 
     return (
         <div className="relative">
-            <ProtectAddon>
+            <ProtectAddon category={4}>
                 <BlocklyUI
                     robotModelId={selectedRobot.robotModelId}
                     serial={selectedRobot.serialNumber}
