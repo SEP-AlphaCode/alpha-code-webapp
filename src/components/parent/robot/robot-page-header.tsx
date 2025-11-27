@@ -4,12 +4,23 @@ import { useState, useMemo } from "react"
 import { Switch } from "@/components/ui/switch"
 import { Label } from "@/components/ui/label"
 import { Button } from "@/components/ui/button"
-import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select"
+import {
+  Select,
+  SelectTrigger,
+  SelectValue,
+  SelectContent,
+  SelectItem,
+} from "@/components/ui/select"
 import { Trash2, PlusCircle } from "lucide-react"
 import { useRobotStore } from "@/hooks/use-robot-store"
 import { deleteRobot } from "@/features/robots/api/robot-api"
-// license key is read from sessionStorage (key)
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog"
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@/components/ui/dialog"
 import { useQueryClient } from "@tanstack/react-query"
 import { toast } from "sonner"
 import { webURL } from "@/app/constants/constants"
@@ -21,48 +32,68 @@ interface RobotPageHeaderProps {
   onAddRobot?: () => void
 }
 
-export function RobotPageHeader({ title, subtitle, onModelSelect, onAddRobot }: RobotPageHeaderProps) {
-  const { connectMode, setConnectMode, robots, selectedRobot, removeRobot } = useRobotStore()
+export function RobotPageHeader({
+  title,
+  subtitle,
+  onModelSelect,
+  onAddRobot,
+}: RobotPageHeaderProps) {
+  const {
+    connectMode,
+    setConnectMode,
+    robots,
+    selectedRobot,
+    removeRobot,
+  } = useRobotStore()
+
   const [selectedModel, setSelectedModel] = useState<string>("")
   const [isDeleting, setIsDeleting] = useState(false)
   const [checkingLicense, setCheckingLicense] = useState(false)
   const [buyModalOpen, setBuyModalOpen] = useState(false)
   const [confirmOpen, setConfirmOpen] = useState(false)
+
   const queryClient = useQueryClient()
 
+  // ----------------------------
+  // 🟦 Toggle Single / Multi Mode
+  // ----------------------------
   const handleToggle = async (checked: boolean) => {
     if (checked) {
       try {
-        setCheckingLicense(true);
+        setCheckingLicense(true)
 
         const sessionKey =
           typeof window !== "undefined"
-            ? sessionStorage.getItem("key") || null
-            : null;
+            ? sessionStorage.getItem("key")
+            : null
 
         if (sessionKey) {
-          setConnectMode("multi");
+          setConnectMode("multi")
         } else {
-          // Open a modal prompting purchase instead of rendering complex JSX inside toast
           setBuyModalOpen(true)
-          setConnectMode("single");
+          setConnectMode("single")
         }
       } catch (err) {
-        console.error("License key check failed", err);
-        toast.error("Không thể kiểm tra license. Vui lòng thử lại sau.");
-        setConnectMode("single");
+        console.error("License key check failed", err)
+        toast.error("Không thể kiểm tra license. Vui lòng thử lại sau.")
+        setConnectMode("single")
       } finally {
-        setCheckingLicense(false);
+        setCheckingLicense(false)
       }
     } else {
-      setConnectMode("single");
+      setConnectMode("single")
     }
-  };
+  }
 
-
+  // ----------------------------
+  // 📌 Model options (unique)
+  // ----------------------------
   const modelOptions = useMemo(() => {
-    const models = robots.map((r) => ({ id: r.robotModelId, name: r.robotModelName }))
-    return Array.from(new Map(models.map((m) => [m.name, m])).values())
+    const models = robots.map((r) => ({
+      id: r.robotModelId,
+      name: r.robotModelName,
+    }))
+    return Array.from(new Map(models.map((m) => [m.id, m])).values())
   }, [robots])
 
   const handleModelChange = (value: string) => {
@@ -70,32 +101,27 @@ export function RobotPageHeader({ title, subtitle, onModelSelect, onAddRobot }: 
     onModelSelect?.(value)
   }
 
+  // ----------------------------
+  // 🗑 Delete Robot
+  // ----------------------------
   const handleConfirmDelete = async () => {
     if (!selectedRobot) return
-    setIsDeleting(true)
 
+    setIsDeleting(true)
     try {
       await deleteRobot(selectedRobot.id)
-      removeRobot(selectedRobot.id)
+      removeRobot(selectedRobot.serialNumber)
 
-      // ⚡ Refetch lại list robot
       await queryClient.invalidateQueries({ queryKey: ["robots"] })
 
       toast.success(`Đã xóa robot "${selectedRobot.name}" thành công!`)
-    } catch (error: unknown) {
-      if (
-        typeof error === "object" &&
-        error !== null &&
-        "response" in error &&
-        typeof (error as { response?: { data?: { message?: string } } }).response === "object" &&
-        (error as { response?: { data?: { message?: string } } }).response?.data?.message
-      ) {
-        toast.error((error as { response?: { data?: { message?: string } } }).response?.data?.message ?? "Lỗi không xác định")
-      } else if (error instanceof Error) {
-        toast.error(error.message)
-      } else {
-        toast.error("Xóa robot thất bại!")
-      }
+    } catch (error: any) {
+      const message =
+        error?.response?.data?.message ||
+        error?.message ||
+        "Xóa robot thất bại!"
+
+      toast.error(message)
     } finally {
       setIsDeleting(false)
       setConfirmOpen(false)
@@ -104,39 +130,38 @@ export function RobotPageHeader({ title, subtitle, onModelSelect, onAddRobot }: 
 
   return (
     <>
-      <header className="mt-5 sticky top-0 z-10 bg-white/80 backdrop-blur border-b border-gray-200 mb-6 py-3 px-4 sm:py-4 sm:px-6 rounded-xl shadow flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-        <div className="w-full sm:w-auto">
-          <h1 className="text-2xl sm:text-3xl font-bold text-blue-900 tracking-tight">{title}</h1>
-          <span className="text-sm sm:text-base text-gray-500 font-medium">{subtitle}</span>
+      <header className="sticky top-0 z-10 bg-white/80 backdrop-blur border-b border-gray-200 mb-6 py-4 px-6 rounded-xl shadow flex items-center justify-between">
+        <div>
+          <h1 className="text-3xl font-bold text-blue-900 tracking-tight">
+            {title}
+          </h1>
+          <span className="text-base text-gray-500 font-medium">
+            {subtitle}
+          </span>
         </div>
 
-        <div className="w-full sm:w-auto flex flex-wrap items-center gap-2 sm:gap-4 justify-end">
+        <div className="flex items-center space-x-4">
           {/* 🧩 Model dropdown */}
           {connectMode === "multi" && (
-            <div className="w-full sm:w-auto">
-              <Select value={selectedModel} onValueChange={handleModelChange}>
-                <SelectTrigger className="w-full sm:w-[180px]">
-                  <SelectValue placeholder="Model" />
-                </SelectTrigger>
-                <SelectContent>
-                  {modelOptions.map((model) => (
-                    <SelectItem key={model.name ?? "unknown"} value={model.name ?? ""}>
-                      {model.name ?? "Unknown Model"}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
+            <Select value={selectedModel} onValueChange={handleModelChange}>
+              <SelectTrigger className="w-[180px]">
+                <SelectValue placeholder="Select Model" />
+              </SelectTrigger>
+              <SelectContent>
+                {modelOptions.map((model) => (
+                  <SelectItem key={model.name ?? "unknown"} value={model.name ?? ""}> {model.name ?? "Unknown Model"} </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           )}
 
           {/* ➕ Add Robot */}
           <Button onClick={onAddRobot} variant="outline" className="gap-2">
             <PlusCircle className="w-4 h-4" />
-            <span className="hidden sm:inline">Thêm mới Robot</span>
-            <span className="sm:hidden">Thêm</span>
+            Thêm mới Robot
           </Button>
 
-          {/* 🗑 Delete Selected Robot */}
+          {/* 🗑 Delete Robot */}
           <Button
             variant="destructive"
             onClick={() => setConfirmOpen(true)}
@@ -144,13 +169,12 @@ export function RobotPageHeader({ title, subtitle, onModelSelect, onAddRobot }: 
             className="gap-2"
           >
             <Trash2 className="w-4 h-4" />
-            <span className="hidden sm:inline">{isDeleting ? "Đang xóa..." : "Xóa Robot"}</span>
-            <span className="sm:hidden">{isDeleting ? "Đang..." : "Xóa"}</span>
+            {isDeleting ? "Đang xóa..." : "Xóa Robot"}
           </Button>
 
-          {/* 🔀 Toggle Single / Multi Mode */}
+          {/* 🔀 Single / Multi Mode */}
           <div className="flex items-center space-x-3">
-            <Label htmlFor="connect-mode" className="text-sm font-medium text-gray-700 select-none hidden sm:block">
+            <Label htmlFor="connect-mode" className="text-sm font-medium text-gray-700 select-none">
               {connectMode === "single" ? "Single Mode" : "Multi Mode"}
             </Label>
             <Switch
@@ -164,7 +188,7 @@ export function RobotPageHeader({ title, subtitle, onModelSelect, onAddRobot }: 
         </div>
       </header>
 
-      {/* Buy license modal (opened when user tries to enable Multi Mode without a key) */}
+      {/* 🔐 BUY LICENSE MODAL */}
       <Dialog open={buyModalOpen} onOpenChange={setBuyModalOpen}>
         <DialogContent className="max-w-sm">
           <DialogHeader>
@@ -172,7 +196,8 @@ export function RobotPageHeader({ title, subtitle, onModelSelect, onAddRobot }: 
           </DialogHeader>
 
           <div className="text-gray-700 mb-4">
-            Vui lòng mua license key để bật <span className="font-semibold text-blue-600">Multi Mode</span>.
+            Vui lòng mua license key để bật{" "}
+            <span className="font-semibold text-blue-600">Multi Mode</span>.
           </div>
 
           <DialogFooter className="flex justify-end space-x-2 mt-4">
@@ -181,8 +206,8 @@ export function RobotPageHeader({ title, subtitle, onModelSelect, onAddRobot }: 
             </Button>
             <Button
               onClick={() => {
-                window.open(`${webURL}/license-key`);
-                setBuyModalOpen(false);
+                window.open(`${webURL}/license-key`)
+                setBuyModalOpen(false)
               }}
             >
               Mua ngay
@@ -191,12 +216,13 @@ export function RobotPageHeader({ title, subtitle, onModelSelect, onAddRobot }: 
         </DialogContent>
       </Dialog>
 
-      {/* ⚠️ Confirm Delete Modal */}
+      {/* ⚠ CONFIRM DELETE MODAL */}
       <Dialog open={confirmOpen} onOpenChange={setConfirmOpen}>
         <DialogContent className="max-w-sm">
           <DialogHeader>
             <DialogTitle>Xác nhận xóa robot</DialogTitle>
           </DialogHeader>
+
           <p className="text-gray-600">
             Bạn có chắc chắn muốn xóa robot{" "}
             <span className="font-semibold text-red-600">
@@ -209,7 +235,11 @@ export function RobotPageHeader({ title, subtitle, onModelSelect, onAddRobot }: 
             <Button variant="outline" onClick={() => setConfirmOpen(false)}>
               Hủy
             </Button>
-            <Button variant="destructive" onClick={handleConfirmDelete} disabled={isDeleting}>
+            <Button
+              variant="destructive"
+              onClick={handleConfirmDelete}
+              disabled={isDeleting}
+            >
               {isDeleting ? "Đang xóa..." : "Xóa"}
             </Button>
           </DialogFooter>
