@@ -1,9 +1,6 @@
-import * as Blockly from 'blockly'
-import { useEffect, useState } from 'react';
 import BlocklyUI from './ui';
 import { useGetSelectOptions } from '@/features/block-coding/hooks';
 import { useRobotStore } from '@/hooks/use-robot-store';
-import { toast } from 'sonner';
 
 export default function UseMe() {
     const { selectedRobot } = useRobotStore()
