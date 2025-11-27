@@ -11,7 +11,7 @@ export default function ProTips() {
           <div className="p-2 bg-gradient-to-r from-amber-400 to-orange-500 rounded-lg">
             <Sparkles className="w-5 h-5 text-white" />
           </div>
-          <h3 className="text-xl font-bold text-gray-800">💡 Mẹo Hữu Ích</h3>
+          <h3 className="text-xl font-bold text-gray-800">Mẹo Hữu Ích</h3>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <ul className="space-y-3 text-sm text-gray-600">

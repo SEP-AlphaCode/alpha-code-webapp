@@ -8,5 +8,6 @@ const ClientSideComponent = dynamic(
 );
 
 export default function Page() {
-    return <ClientSideComponent />
+    
+    return <ClientSideComponent />;
 }

@@ -2,7 +2,7 @@ import {QRCodeRequest, QRCodesResponse} from '@/types/qrcode';
 import { activitiesHttp } from '@/utils/http';
 
 export const createQRCode = async (data: QRCodeRequest): Promise<QRCodesResponse> => {
-  const response = await activitiesHttp.post('/qrcode', data);
+  const response = await activitiesHttp.post('/qr-codes', data);
   return response.data;
 };
 
@@ -48,7 +48,10 @@ export const getAllQRCodes = async ({
 };
 
 
-export const updateQRCodeStatus = async (id: string, status: string): Promise<QRCodesResponse> => {
-  const response = await activitiesHttp.patch(`/qr-codes/${id}/status`, { status });
+export const updateQRCodeStatus = async (id: string, status: number): Promise<QRCodesResponse> => {
+  // Backend expects status as a request param, not in the JSON body
+  const response = await activitiesHttp.patch(`/qr-codes/${id}/status`, null, {
+    params: { status }
+  });
   return response.data;
 };

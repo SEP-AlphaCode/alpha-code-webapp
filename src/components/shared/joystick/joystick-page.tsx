@@ -295,11 +295,11 @@ export default function JoystickPage() {
           <Card className="bg-white/70 backdrop-blur-sm border border-gray-200 shadow-lg p-6">
             <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
               <div>
-                <h4 className="text-sm font-semibold text-gray-800 mb-2">🕹️ Joystick</h4>
+                <h4 className="text-sm font-semibold text-gray-800 mb-2">Joystick</h4>
                 <div className="text-xs text-gray-600">Left: ({(leftJoystick.x * 100).toFixed(1)}, {(leftJoystick.y * 100).toFixed(1)})</div>
               </div>
               <div>
-                <h4 className="text-sm font-semibold text-gray-800 mb-2">🎛️ Các nút</h4>
+                <h4 className="text-sm font-semibold text-gray-800 mb-2">Các nút</h4>
                 <div className="flex flex-wrap gap-2">
                   {Object.entries(buttons).map(([btn, pressed]) => (
                     <Badge key={btn} variant={pressed ? 'default' : 'outline'} className={`px-3 py-1 ${pressed ? 'bg-blue-500 text-white' : 'bg-gray-100 text-gray-700'}`}>{btn}</Badge>
@@ -307,7 +307,7 @@ export default function JoystickPage() {
                 </div>
               </div>
               <div>
-                <h4 className="text-sm font-semibold text-gray-800 mb-2">🎯 Hành động đã gán</h4>
+                <h4 className="text-sm font-semibold text-gray-800 mb-2">Hành động đã gán</h4>
                 <div className="text-xs text-gray-600 space-y-1">
                   <div>🟡 A: {actionDescriptions.A?.name || 'Chưa cấu hình'}</div>
                   <div>🔴 B: {actionDescriptions.B?.name || 'Chưa cấu hình'}</div>
@@ -316,7 +316,7 @@ export default function JoystickPage() {
                 </div>
               </div>
               <div>
-                <h4 className="text-sm font-semibold text-gray-800 mb-2">📋 Hướng dẫn</h4>
+                <h4 className="text-sm font-semibold text-gray-800 mb-2">Hướng dẫn</h4>
                 <div className="text-xs text-gray-600 space-y-1">
                   <div>• Kéo/nhấn cần để di chuyển</div>
                   <div>• Nhấn ABXY để thực hiện hành động</div>

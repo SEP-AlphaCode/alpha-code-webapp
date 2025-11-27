@@ -323,8 +323,10 @@ export default function BundleDetailPage() {
                     className="w-full h-full object-cover"
                   />
                   {hasValidDiscount && (
-                    <div className="absolute top-6 right-6 bg-red-600 text-white px-5 py-3 rounded-2xl font-bold text-xl shadow-2xl">
-                      Giảm {discountPercent}%
+                    <div className="absolute top-6 right-6 bg-red-600 text-white rounded-2xl font-bold shadow-2xl">
+                      <div className="max-w-[160px] px-3 py-2 text-sm truncate text-center whitespace-nowrap">
+                        Giảm {discountPercent}%
+                      </div>
                     </div>
                   )}
                 </div>
@@ -355,17 +357,19 @@ export default function BundleDetailPage() {
             <div className="lg:col-span-1">
               <Card className="border-0 shadow-2xl overflow-hidden rounded-3xl">
                 {/* Price Header */}
-                <div className="bg-gradient-to-br from-blue-600 to-blue-700 text-white p-8">
+                <div className="relative z-20 bg-gradient-to-br from-blue-600 to-blue-700 text-white p-8">
                   <div className="text-xs font-bold mb-3 opacity-90 tracking-wide uppercase">Giá gói bundle</div>
-                  <div className="flex items-baseline gap-3">
-                    <span className="text-5xl font-black">
-                      {formatCurrency(displayPrice)}
-                    </span>
+                  <div className="flex flex-col items-start gap-2">
                     {hasValidDiscount && (
-                      <span className="text-lg line-through opacity-60">
+                      <span className="text-sm line-through opacity-60">
                         {formatCurrency(originalPrice)}
                       </span>
                     )}
+                    <div className="flex items-baseline gap-3">
+                      <span className="text-5xl font-black">
+                        {formatCurrency(displayPrice)}
+                      </span>
+                    </div>
                   </div>
                   {hasValidDiscount && (
                     <Badge className="mt-4 bg-white text-blue-600 font-bold px-4 py-2 rounded-full text-sm">
@@ -379,7 +383,7 @@ export default function BundleDetailPage() {
                   <Button
                     className="w-full bg-blue-600 hover:bg-blue-700 text-white h-16 text-lg font-bold rounded-2xl shadow-lg hover:shadow-2xl hover:scale-105 transition-all duration-300"
                     onClick={() => {
-                      const accessToken = sessionStorage.getItem("access_token");
+                      const accessToken = sessionStorage.getItem("accessToken");
                       if (!accessToken) {
                         toast.error("Vui lòng đăng nhập để mua", {
                           description: "Bạn cần đăng nhập để tiếp tục thanh toán",

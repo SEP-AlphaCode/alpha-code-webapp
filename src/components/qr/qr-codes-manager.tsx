@@ -23,31 +23,57 @@ import {
 } from "@/components/ui/select"
 import { Label } from "@/components/ui/label"
 import { useQRCode } from "@/features/activities/hooks/use-qr-code"
+import { useActivities } from "@/features/activities/hooks/use-activities"
 import { QRCode as QRCodeType, QRCodeRequest } from "@/types/qrcode"
 import Image from "next/image"
 import LoadingState from "@/components/loading-state"
 import ErrorState from "@/components/error-state"
 import { getUserInfoFromToken } from "@/utils/tokenUtils"
+import { toast } from 'sonner'
+import { useRobotStore } from "@/hooks/use-robot-store"
+import { Activity } from "@/types/activities"
 
-function CreateQRCodeModal({ isOpen, onClose, onSubmit, isLoading }: {
+function CreateQRCodeModal({ isOpen, onClose, onSubmit, isLoading, accountId }: {
   isOpen: boolean
   onClose: () => void
   onSubmit: (data: QRCodeRequest) => void
   isLoading: boolean
+  accountId?: string
 }) {
   const [formData, setFormData] = useState<QRCodeRequest>({
     name: "",
     qrCode: "",
     status: 1,
     activityId: "",
-    accountId: "",
+    accountId: accountId ?? "",
     color: "yellow",
   })
 
+  // If accountId prop changes (modal opened with logged-in user), sync into formData
+  React.useEffect(() => {
+    if (accountId) setFormData((p) => ({ ...p, accountId }))
+  }, [accountId])
+
+  const { selectedRobot } = useRobotStore();
+
+  const robotModelId = selectedRobot?.robotModelId || "";
+
+  // load activities for selection when accountId is available
+  const accountForQuery = formData.accountId || accountId || ''
+  // useActivities signature: (page, size, accountId, search?, robotModelId?)
+  // Call hook unconditionally (enabled flag inside hook prevents network call when no accountId)
+  const activitiesQuery = useActivities(1, 1000, accountForQuery, '', robotModelId)
+  const activities = activitiesQuery?.data?.data || []
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
-    if (!formData.name || !formData.qrCode || !formData.activityId || !formData.accountId || !formData.color) {
-      // keep simple validation; upstream could add toast
+    if (!formData.name || !formData.qrCode || !formData.activityId || !formData.color) {
+      toast.error('Vui lòng điền tất cả các trường bắt buộc (tên, nội dung, hoạt động, màu).')
+      return
+    }
+    if (!formData.accountId) {
+      // accountId is required by backend; guide user to login
+      toast.error('Bạn cần đăng nhập để tạo thẻ QR — mã tài khoản được lấy tự động từ phiên đăng nhập.')
       return
     }
     onSubmit(formData)
@@ -89,25 +115,24 @@ function CreateQRCodeModal({ isOpen, onClose, onSubmit, isLoading }: {
             />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="activityId">Mã hoạt động *</Label>
-            <Input
-              id="activityId"
-              value={formData.activityId}
-              onChange={(e) => setFormData({ ...formData, activityId: e.target.value })}
-              placeholder="Nhập mã hoạt động"
-              required
-            />
+            <Label htmlFor="activityId">Hoạt động *</Label>
+            <Select value={formData.activityId} onValueChange={(v: string) => setFormData({ ...formData, activityId: v })}>
+              <SelectTrigger>
+                <SelectValue placeholder={activities.length ? 'Chọn hoạt động' : 'Không có hoạt động'} />
+              </SelectTrigger>
+              <SelectContent>
+                {activities.length ? (
+                  activities.map((a: Activity, idx: number) => (
+                    <SelectItem key={`${a.id ?? 'act'}-${idx}`} value={a.id ?? `__${idx}`}>{a.name || a.id || `#${idx + 1}`}</SelectItem>
+                  ))
+                ) : (
+                  <SelectItem value="__none" disabled>Không có hoạt động</SelectItem>
+                )}
+              </SelectContent>
+            </Select>
           </div>
-          <div className="space-y-2">
-            <Label htmlFor="accountId">Mã tài khoản *</Label>
-            <Input
-              id="accountId"
-              value={formData.accountId}
-              onChange={(e) => setFormData({ ...formData, accountId: e.target.value })}
-              placeholder="Nhập mã tài khoản"
-              required
-            />
-          </div>
+
+          {/* accountId is taken from token when available — no visible input shown */}
           <div className="space-y-2">
             <Label htmlFor="color">Màu thẻ</Label>
             <Select value={formData.color} onValueChange={(value: string) => setFormData({ ...formData, color: value })}>
@@ -138,7 +163,7 @@ function CreateQRCodeModal({ isOpen, onClose, onSubmit, isLoading }: {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="1">Đang bật</SelectItem>
-                <SelectItem value="0">Tắt</SelectItem>
+                <SelectItem value="2">Tắt</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -152,7 +177,7 @@ function CreateQRCodeModal({ isOpen, onClose, onSubmit, isLoading }: {
   )
 }
 
-function ConfirmDialog({ open, title, description, onClose, onConfirm, loading }:{
+function ConfirmDialog({ open, title, description, onClose, onConfirm, loading }: {
   open: boolean
   title: string
   description: string
@@ -206,7 +231,8 @@ export default function QRCodesManager() {
 
   const accountId = getCurrentUserAccountId()
 
-  const statusNumber = statusFilter === 'enabled' ? 1 : statusFilter === 'disabled' ? 0 : undefined
+  // backend expects enum numbers: 1 = enabled, 2 = disabled
+  const statusNumber = statusFilter === 'enabled' ? 1 : statusFilter === 'disabled' ? 2 : undefined
 
   const qrCodesQuery = qrCodeHooks.useGetAllQRCodes(page, pageSize, statusNumber, accountId)
   const { data: qrCodesResponse, isLoading, error, refetch, isFetching } = qrCodesQuery
@@ -220,7 +246,7 @@ export default function QRCodesManager() {
     switch (status) {
       case 1:
         return <Badge variant="default" className="bg-green-100 text-green-800">Đang bật</Badge>
-      case 0:
+      case 2:
         return <Badge variant="destructive" className="bg-red-100 text-red-800">Đã tắt</Badge>
       default:
         return <Badge variant="secondary">Không rõ</Badge>
@@ -273,7 +299,9 @@ export default function QRCodesManager() {
   }
 
   const handleStatusChange = async (id: string, newStatus: string) => {
-    await updateStatusMutation.mutateAsync({ id, status: newStatus })
+    // map UI values to backend enum: enabled -> 1, disabled -> 2
+    const mappedStatus = newStatus === 'enabled' ? 1 : 2
+    await updateStatusMutation.mutateAsync({ id, status: mappedStatus })
     refetch()
   }
 
@@ -349,7 +377,7 @@ export default function QRCodesManager() {
             <div className="h-4 w-4 bg-red-500 rounded-full"></div>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{qrCodes?.filter((q: QRCodeType) => q.status === 0).length || 0}</div>
+            <div className="text-2xl font-bold">{qrCodes?.filter((q: QRCodeType) => q.status === 2).length || 0}</div>
             <p className="text-xs text-muted-foreground">Không hoạt động</p>
           </CardContent>
         </Card>
@@ -459,10 +487,11 @@ export default function QRCodesManager() {
             </div>
           ) : viewMode === "grid" ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-              {filteredQRCodes.map((qrCode) => {
+              {filteredQRCodes.map((qrCode, _idx) => {
                 const isHovered = hoveredCardId === qrCode.id
+                const key = `${qrCode.id ?? 'qr'}-${_idx}`
                 return (
-                  <div key={qrCode.id} className={`relative group transition-all duration-300 ${isHovered ? "scale-105" : ""} pb-3 md:pb-9 overflow-visible`} onMouseEnter={() => setHoveredCardId(qrCode.id)} onMouseLeave={() => setHoveredCardId(null)}>
+                  <div key={key} className={`relative group transition-all duration-300 ${isHovered ? "scale-105" : ""} pb-3 md:pb-9 overflow-visible`} onMouseEnter={() => setHoveredCardId(qrCode.id)} onMouseLeave={() => setHoveredCardId(null)}>
                     <div className={`relative border-4 rounded-2xl p-8 aspect-[3/4] flex flex-col items-center justify-center shadow-lg hover:shadow-2xl transition-all duration-300 overflow-visible ${getColorClass(qrCode.color)}`}>
                       <div className="absolute top-4 right-4">{getStatusBadge(qrCode.status)}</div>
                       <div className="text-center w-full mb-2 mt-6">
@@ -513,8 +542,8 @@ export default function QRCodesManager() {
             </div>
           ) : (
             <div className="space-y-3">
-              {filteredQRCodes.map((qrCode) => (
-                <Card key={qrCode.id} className="hover:shadow-md transition-shadow">
+              {filteredQRCodes.map((qrCode, _idx) => (
+                <Card key={`${qrCode.id ?? 'qr'}-${_idx}`} className="hover:shadow-md transition-shadow">
                   <CardContent className="p-4">
                     <div className="flex items-center gap-4">
                       <div className={`w-16 h-16 border border-gray-300 rounded-lg p-2 flex items-center justify-center flex-shrink-0 ${getColorClass(qrCode.color)}`}>
@@ -558,7 +587,7 @@ export default function QRCodesManager() {
       </Card>
 
       {/* Create Modal */}
-      <CreateQRCodeModal isOpen={isCreateModalOpen} onClose={() => setIsCreateModalOpen(false)} onSubmit={handleCreateQRCode} isLoading={createQRCodeMutation.isPending} />
+      <CreateQRCodeModal isOpen={isCreateModalOpen} onClose={() => setIsCreateModalOpen(false)} onSubmit={handleCreateQRCode} isLoading={createQRCodeMutation.isPending} accountId={accountId} />
 
       {/* Confirm Delete Modal */}
       <ConfirmDialog

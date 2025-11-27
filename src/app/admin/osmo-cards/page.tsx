@@ -15,6 +15,7 @@ import ViewOsmoCardModal from '@/components/osmo-cards/view-osmo-card-modal';
 import EditOsmoCardModal from '@/components/osmo-cards/edit-osmo-card-modal';
 import CreateOsmoCardModal from '@/components/osmo-cards/create-osmo-card-modal';
 import { ApiResponse } from '@/types/api-error';
+import { OsmoCard as OsmoCardType } from '@/types/osmo-card';
 
 export default function OsmoCardManagement() {
   const [searchTerm, setSearchTerm] = useState('');
@@ -40,6 +41,41 @@ export default function OsmoCardManagement() {
   const osmoCards = useMemo(() => {
     return osmoCardsResponse?.data || [];
   }, [osmoCardsResponse?.data]);
+
+  // Helper to extract error message from various error shapes (axios, ApiResponse, plain Error)
+  const extractErrorInfo = (error: unknown): { message: string; status?: number } => {
+    const isObject = (v: unknown): v is Record<string, unknown> => typeof v === 'object' && v !== null;
+
+    try {
+      if (!error) return { message: 'Unknown error' };
+
+      // axios-like: error.response?.data
+      if (isObject(error) && 'response' in error) {
+        const resp = (error as { response?: unknown }).response;
+        if (isObject(resp) && 'data' in resp && isObject((resp as { data?: unknown }).data)) {
+          const data = (resp as { data: unknown }).data as Record<string, unknown>;
+          if (typeof data.message === 'string') return { message: data.message, status: typeof data.status === 'number' ? (data.status as number) : undefined };
+          if (typeof data.error === 'string') return { message: data.error, status: typeof data.status === 'number' ? (data.status as number) : undefined };
+        }
+      }
+
+      // ApiResponse shape
+      if (isObject(error) && 'message' in error && typeof (error as { message?: unknown }).message === 'string') {
+        const api = error as unknown as ApiResponse;
+        return { message: api.message ?? 'Unknown error', status: api.status };
+      }
+
+      // Plain Error (Error instance)
+      if (error instanceof Error && typeof error.message === 'string') {
+        return { message: error.message };
+      }
+
+      // Fallback to string conversion
+      return { message: String(error) };
+    } catch (e) {
+      return { message: 'An unexpected error occurred' };
+    }
+  };
 
   // Get unique colors and statuses for filters
   const availableColors = useMemo(() => {
@@ -126,30 +162,21 @@ export default function OsmoCardManagement() {
         setEditApiError(undefined);
         toast.success('Osmo Card updated successfully');
       },
-      onError: (error: Error) => {
-        // Cast error to ApiResponse to access custom properties
-        const apiError = error as unknown as ApiResponse;
-        // Store error for modal to display field-specific errors
-        setEditApiError(apiError);
+        onError: (error: unknown) => {
+          // Cast error to ApiResponse to access custom properties and extract message robustly
+          const apiError = error as unknown as ApiResponse;
+          // Store error for modal to display field-specific errors
+          setEditApiError(apiError);
 
-        // Extract error message from API response
-        let errorMessage = 'Failed to update Osmo Card';
-        const errorDescription = 'Please check the form and try again.';
+          const extracted = extractErrorInfo(error);
+          const errorMessage = extracted.message || 'Failed to update Osmo Card';
+          const errorDescription = 'Please check the form and try again.';
 
-        if (apiError) {
-
-          // Handle validation errors (422)
-          const response = (error as unknown as ApiResponse);
-          if (typeof response?.message === 'string') {
-            errorMessage = response.message;
-          }
+          toast.error(errorMessage, {
+            description: errorDescription,
+            duration: 5000, // Show longer for error messages
+          });
         }
-
-        toast.error(errorMessage, {
-          description: errorDescription,
-          duration: 5000, // Show longer for error messages
-        });
-      }
     });
   };
 
@@ -175,22 +202,11 @@ export default function OsmoCardManagement() {
         toast.success('Osmo Card created successfully');
       },
       onError: (error: Error) => {
-        // Extract error message from API response
-        let errorMessage = 'Failed to create Osmo Card';
+        const extracted = extractErrorInfo(error);
+        const errorMessage = extracted.message || 'Failed to create Osmo Card';
         const errorDescription = 'Please try again later.';
 
-        // Try to extract API error details if available
-        // @ts-expect-error - Error object might have additional properties from API response
-        const response = (error as ApiResponse);
-        if (typeof response?.message === 'string') {
-          errorMessage = response.message;
-        }
-        // If response.message is not a string, keep the default
-
-        toast.error(errorMessage, {
-          description: errorDescription,
-          duration: 5000,
-        });
+        toast.error(errorMessage, { description: errorDescription, duration: 5000 });
       }
     });
   };

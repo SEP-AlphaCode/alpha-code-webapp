@@ -173,7 +173,7 @@ export default function MyCoursePage() {
                   <div>
                     <div className="inline-flex items-center gap-2 bg-gradient-to-r from-blue-600 to-purple-600 text-white px-4 py-2 rounded-full text-xs font-bold mb-4 shadow-md">
                       <Award className="w-4 h-4" />
-                      <span>✨ Đặc biệt dành cho bạn</span>
+                      <span>Đặc biệt dành cho bạn</span>
                     </div>
                     
                     <h3 className="text-xl md:text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent mb-3">

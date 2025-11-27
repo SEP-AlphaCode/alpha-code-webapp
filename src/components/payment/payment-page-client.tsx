@@ -401,10 +401,14 @@ export default function PaymentPageClient(props: PaymentPageClientProps = {}) {
         }
         case 'bundle': {
           if (bundleQuery.data) {
-            const b = bundleQuery.data as { name?: string; title?: string; price?: number; amount?: number; description?: string }
+            const b = bundleQuery.data as { name?: string; title?: string; price?: number; amount?: number; discountPrice?: number; description?: string; image?: string }
             setFetchedTitle(b.name ?? b.title ?? null)
-            setFetchedPrice(b.price ?? b.amount ?? 0)
+            // Prefer discountPrice when it's present and less than price
+            const basePrice = b.price ?? b.amount ?? 0
+            const hasValidDiscount = typeof b.discountPrice === 'number' && b.discountPrice > 0 && b.discountPrice < basePrice
+            setFetchedPrice(hasValidDiscount ? b.discountPrice! : basePrice)
             setFetchedDescription(b.description ?? null)
+            setFetchedImage(b.image ?? null)
           }
           break
         }
