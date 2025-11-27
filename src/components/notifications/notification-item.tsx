@@ -34,12 +34,12 @@ export function NotificationItem({ notification, onClose }: NotificationItemProp
   return (
     <div
       onClick={handleClick}
-      className={`w-full p-4 hover:bg-gray-50 cursor-pointer transition-colors ${
+      className={`relative w-full p-4 hover:bg-gray-50 cursor-pointer transition-colors ${
         isUnread ? "bg-blue-50" : ""
       }`}
     >
       <div className="flex items-start justify-between gap-3 w-full">
-        <div className="flex-1 min-w-0 overflow-hidden pr-3">
+        <div className="flex-1 min-w-0 overflow-hidden">
           <div className="flex items-center gap-2 mb-1">
             {isUnread && (
               <span className="w-2 h-2 bg-blue-500 rounded-full flex-shrink-0" />
@@ -66,8 +66,8 @@ export function NotificationItem({ notification, onClose }: NotificationItemProp
         <Button
           variant="ghost"
           size="icon"
-          className="h-8 w-8 flex-shrink-0 text-gray-400 hover:text-red-500"
           onClick={handleDelete}
+          className="h-8 w-8 absolute right-3 top-4 text-gray-400 hover:text-red-500"
         >
           <Trash2 className="h-4 w-4" />
         </Button>
