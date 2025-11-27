@@ -23,7 +23,8 @@ import {
   Joystick,
   Activity,
   Bot,
-  SquareCode,   // Dấu đánh dấu
+  SquareCode,
+  Home,   // Dấu đánh dấu
 } from "lucide-react";
 
 import { useAuth } from "@/features/auth/hooks/use-auth";
@@ -54,6 +55,7 @@ const adminNavigationItems = [
 // Navigation items hiện tại của Parent (Giữ nguyên hoặc tùy chỉnh)
 const parentNavigationItems = [
   { name: "Bảng điều khiển", href: "/parent", icon: LayoutDashboard },
+  { name: "Smart Home", href: "/parent/smart-home", icon: Home },
   { name: "Robot", href: "/parent/robot", icon: ToyBrick },
   { name: "Joystick", href: "/parent/joystick", icon: Joystick },
   { name: "Hoạt động", href: "/parent/activities", icon: Activity },
@@ -65,6 +67,7 @@ const parentNavigationItems = [
 // Navigation items cho Child (Ví dụ)
 const childNavigationItems = [
   { name: "Bảng điều khiển của tôi", href: "/children", icon: LayoutDashboard },
+  { name: "Smart Home Kit", href: "/children/smart-home", icon: Home },
   { name: "Hoạt động", href: "/children/activities", icon: Activity },
   { name: "Điều khiển", href: "/children/joystick", icon: Joystick },
   { name: "Qr Codes", href: "/children/qr-codes", icon: QrCode },

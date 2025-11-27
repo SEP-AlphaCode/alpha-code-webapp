@@ -21,6 +21,27 @@ export interface TokenRule {
   lastUpdated: string
 }
 
+// Request/DTO shapes for TokenRule endpoints
+export interface CreateTokenRuleRequest {
+  code: string
+  cost: number
+  note?: string
+}
+
+export interface UpdateTokenRuleRequest {
+  id: string
+  code: string
+  cost: number
+  note?: string
+  status?: number
+}
+
+export type PatchTokenRuleRequest = Partial<{
+  code: string
+  cost: number
+  note: string
+}>;
+
 export interface LicensePricingConfig {
   id: string
   value: number

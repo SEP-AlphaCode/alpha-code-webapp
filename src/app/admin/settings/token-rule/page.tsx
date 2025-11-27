@@ -159,7 +159,8 @@ export default function TokenRulePage() {
           id: selectedRule.id,
           code: formData.code.trim(),
           cost,
-          note: formData.note.trim() || undefined
+          note: formData.note.trim() || undefined,
+          status: 1
         })
         toast.success('Cập nhật token rule thành công!')
         setEditModalOpen(false)
