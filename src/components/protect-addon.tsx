@@ -63,7 +63,7 @@ export const ProtectAddon = ({
   category,
   sessionKeyName = "key",
   validateFn,
-  purchaseUrl = "/payment",
+  purchaseUrl = "/addons",
 }: ProtectAddonProps) => {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(true);
