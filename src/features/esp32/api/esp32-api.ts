@@ -42,63 +42,63 @@ export const getAllEsp32s = async (
 }
 
 export const getEsp32ById = async (id: string) => {
-  const response = await robotsHttp.get<Esp32>(`/api/v1/esp32s/${id}`)
+  const response = await robotsHttp.get<Esp32>(`/esp32s/${id}`)
   return response.data
 }
 
 export const getEsp32ByAccountId = async (accountId: string) => {
-  const response = await robotsHttp.get<Esp32>(`/api/v1/esp32s/account/${accountId}`)
+  const response = await robotsHttp.get<Esp32>(`/esp32s/account/${accountId}`)
   return response.data
 }
 
 export const createEsp32 = async (data: Omit<Esp32, 'id' | 'createdAt' | 'lastUpdated'>) => {
-  const response = await robotsHttp.post('/api/v1/esp32s', data)
+  const response = await robotsHttp.post('/esp32s', data)
   return response.data
 }
 
 export const updateEsp32 = async (id: string, data: Partial<Omit<Esp32, 'id' | 'createdAt' | 'lastUpdated'>>) => {
-  const response = await robotsHttp.put(`/api/v1/esp32s/${id}`, data)
+  const response = await robotsHttp.put(`/esp32s/${id}`, data)
   return response.data
 }
 
 export const patchEsp32 = async (id: string, data: Partial<Omit<Esp32, 'id' | 'createdAt' | 'lastUpdated'>>) => {
-  const response = await robotsHttp.patch(`/api/v1/esp32s/${id}`, data)
+  const response = await robotsHttp.patch(`/esp32s/${id}`, data)
   return response.data
 }
 
 export const deleteEsp32 = async (id: string) => {
-  const response = await robotsHttp.delete(`/api/v1/esp32s/${id}`)
+  const response = await robotsHttp.delete(`/esp32s/${id}`)
   return response.data
 }
 
 export const changeEsp32Status = async (id: string, status: number) => {
-  const response = await robotsHttp.patch(`/api/v1/esp32s/${id}/change-status`, null, { params: { status } })
+  const response = await robotsHttp.patch(`/esp32s/${id}/change-status`, null, { params: { status } })
   return response.data
 }
 
 export const sendEsp32Message = async (id: string, name: string, message: string, language: string) => {
-  const response = await robotsHttp.post(`/api/v1/esp32s/${id}/send-message`, null, {
+  const response = await robotsHttp.post(`/esp32s/${id}/send-message`, null, {
     params: { name, message, language },
   })
   return response.data
 }
 
 export const getEsp32Devices = async (id: string) => {
-  const response = await robotsHttp.get<Esp32Device[]>(`/api/v1/esp32s/devices/${id}`)
+  const response = await robotsHttp.get<Esp32Device[]>(`/esp32s/devices/${id}`)
   return response.data
 }
 
 export const addEsp32Device = async (id: string, name: string, type: string) => {
-  const response = await robotsHttp.post(`/api/v1/esp32s/devices/${id}`, null, { params: { name, type } })
+  const response = await robotsHttp.post(`/esp32s/devices/${id}`, null, { params: { name, type } })
   return response.data
 }
 
 export const removeEsp32Device = async (id: string, name: string) => {
-  const response = await robotsHttp.delete(`/api/v1/esp32s/devices/${id}`, { params: { name } })
+  const response = await robotsHttp.delete(`/esp32s/devices/${id}`, { params: { name } })
   return response.data
 }
 
 export const updateEsp32Device = async (id: string, name: string, newType: string) => {
-  const response = await robotsHttp.patch(`/api/v1/esp32s/devices/${id}`, null, { params: { name, newType } })
+  const response = await robotsHttp.patch(`/esp32s/devices/${id}`, null, { params: { name, newType } })
   return response.data
 }
