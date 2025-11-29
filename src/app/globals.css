@@ -380,3 +380,14 @@
   animation: fade-in 0.4s ease-out forwards;
 }
 
+.clamp-2-break {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  overflow: hidden;
+
+  /* ép cả từ dài có _ phải tách dòng */
+  word-break: break-all;
+  /* (tuỳ chọn) support tốt hơn cho Chrome mới */
+  overflow-wrap: anywhere;
+}

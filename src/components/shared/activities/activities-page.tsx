@@ -153,6 +153,11 @@ export default function ActivitiesPage() {
   const getStatusText = (status: number) => { switch (status) { case 1: return "Đã xuất bản"; case 0: return "Bản nháp"; case 2: return "Đã lưu trữ"; default: return "Không xác định"; } }
   const formatDate = (dateString: string) => new Date(dateString).toLocaleDateString("vi-VN", { year: "numeric", month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" })
 
+  const truncateLongWords = (s: string, max = 50) => {
+    if (!s) return s
+    return s.replace(/\S{51,}/g, (m) => m.slice(0, max) + '…')
+  }
+
   const CreateActivityForm = () => {
     const [formData, setFormData] = useState({ name: "", type: "", data: "", status: 1, statusText: "ACTIVE", accountId: accountId || "", robotModelId: selectedRobot?.robotModelId ?? "" })
     useEffect(() => { setFormData(prev => ({ ...prev, accountId: accountId || "", robotModelId: selectedRobot?.robotModelId ?? "" })) }, [accountId, selectedRobot?.robotModelId])
@@ -265,8 +270,8 @@ export default function ActivitiesPage() {
             <div className="text-center py-16"><Activity className="w-16 h-16 text-gray-400 mx-auto mb-4" /><h3 className="text-lg font-semibold text-gray-900 mb-2">Không tìm thấy hoạt động</h3><p className="text-gray-600 mb-6">Thử thay đổi bộ lọc hoặc tạo hoạt động mới</p><Button onClick={() => setIsCreateModalOpen(true)}><Plus className="w-4 h-4 mr-2" />Tạo hoạt động đầu tiên</Button></div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {filteredActivities.map((activity) => (
-                  <Card key={activity.id} className="group hover:shadow-lg transition-all duration-200 border-0 shadow-md h-full">
+              {filteredActivities.map((activity) => (
+                <Card key={activity.id} className="group hover:shadow-lg transition-all duration-200 border-0 shadow-md h-full">
                   <CardHeader className="pb-3">
                     <div className="flex items-start justify-between">
                       <div className="flex items-center gap-2">{getTypeIcon(activity.type)}<Badge variant="secondary" className={getTypeColor(activity.type)}>{activity.type === "lesson" ? "Bài học" : activity.type === "game" ? "Trò chơi" : activity.type === "exercise" ? "Bài tập" : "Dự án"}</Badge></div>
@@ -292,7 +297,17 @@ export default function ActivitiesPage() {
                               <div><span className="text-xs text-gray-500">Thời lượng:</span><p className="font-semibold text-lg text-green-600">{activity.data.music_info?.duration || Math.max(...activity.data.activity.actions.map((a: ActionActivites) => a.start_time + a.duration)).toFixed(1)}s</p></div>
                             </div>
                           )}
-                          {activity.data.music_info?.name && (<div className="flex items-center gap-2 mt-2 text-sm text-purple-600 bg-purple-50 p-2 rounded"><span>🎵</span><span className="font-medium">{activity.data.music_info.name}</span></div>)}
+                          {activity.data.music_info?.name && (
+                            <div className="flex items-start gap-2 mt-2 text-sm text-purple-600 bg-purple-50 p-2 rounded w-full">
+                              <span className="flex-shrink-0">🎵</span>
+                              <div
+                                className="font-medium flex-1 min-w-0 break-all whitespace-normal overflow-hidden line-clamp-2"
+                                title={activity.data.music_info.name}
+                              >
+                                {truncateLongWords(activity.data.music_info.name)}
+                              </div>
+                            </div>
+                          )}
                         </div>
                       </div>
                     ) : (<p className="text-gray-600 text-sm line-clamp-3">Hoạt động Alpha Mini - {activity.type}</p>)}
@@ -312,7 +327,7 @@ export default function ActivitiesPage() {
                       <Button size="sm" variant="outline" className="flex-shrink-0"><Eye className="w-4 h-4" /></Button>
                       <Button size="sm" variant="outline" className="flex-shrink-0"><Edit className="w-4 h-4" /></Button>
                     </div>
-                    <div className="text-xs text-gray-400 border-t pt-3">Lần cuối cập nhật: {activity.lastUpdate != null? formatDate(activity.lastUpdate) : 'N/A'}</div>
+                    <div className="text-xs text-gray-400 border-t pt-3">Lần cuối cập nhật: {activity.lastUpdate != null ? formatDate(activity.lastUpdate) : 'N/A'}</div>
                   </CardContent>
                 </Card>
               ))}
