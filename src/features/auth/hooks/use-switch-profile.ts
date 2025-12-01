@@ -5,6 +5,7 @@ import axios from 'axios';
 import { useRouter } from 'next/navigation';
 import { SwitchProfileResponse } from '@/types/login';
 import { getTokenPayload } from '@/utils/tokenUtils';
+import { setAccessTokenCookie, setLicenseKeyCookie } from '@/utils/cookieUtils';
 
 export const useSwitchProfile = () => {
   const router = useRouter();
@@ -17,6 +18,12 @@ export const useSwitchProfile = () => {
       sessionStorage.setItem('accessToken', data.accessToken);
       sessionStorage.setItem('refreshToken', data.refreshToken);
       sessionStorage.setItem('key', data.key);
+
+      // Set cookies để server-side validation
+      setAccessTokenCookie(data.accessToken);
+      if (data.key) {
+        setLicenseKeyCookie(data.key);
+      }
 
       // Giải mã accessToken để lấy fullName
       const accountData = getTokenPayload(data.accessToken);

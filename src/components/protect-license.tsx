@@ -4,6 +4,7 @@ import React, { useEffect, useState } from "react";
 import { useValidateLicenseKey } from "@/features/license-key/hooks/use-license-key";
 import { getUserIdFromToken } from "@/utils/tokenUtils";
 import LoadingState from "./loading-state";
+import { setLicenseKeyCookie, setAccessTokenCookie } from "@/utils/cookieUtils";
 
 interface ProtectLicenseProps {
   children: React.ReactNode;
@@ -84,6 +85,17 @@ export const ProtectLicense = ({ children, accountId, licenseKey, purchaseUrl = 
   }, [query?.isLoading, query?.isFetching]);
 
   const isAllowedDerived = query.data;
+
+  // Set cookies khi validate license key thành công
+  useEffect(() => {
+    if (query.data === true && inferredLicenseKey && inferredAccountId) {
+      const token = typeof window !== 'undefined' ? sessionStorage.getItem('accessToken') : null;
+      setLicenseKeyCookie(inferredLicenseKey);
+      if (token) {
+        setAccessTokenCookie(token);
+      }
+    }
+  }, [query.data, inferredLicenseKey, inferredAccountId]);
 
   // DEBUG: show query results in console to help trace why it may still block
   // Remove or disable these logs in production
