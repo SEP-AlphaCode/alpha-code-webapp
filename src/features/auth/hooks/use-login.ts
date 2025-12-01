@@ -4,6 +4,7 @@ import { useRouter } from 'next/navigation';
 import { LoginRequest, TokenResponse, LoginWithProfileResponse } from '@/types/login';
 import { getTokenPayload } from '@/utils/tokenUtils';
 import { toast } from 'sonner';
+import { setAccessTokenCookie, setLicenseKeyCookie } from '@/utils/cookieUtils';
 
 export const useLogin = () => {
   const router = useRouter();
@@ -22,6 +23,12 @@ export const useLogin = () => {
         sessionStorage.setItem('accessToken', data.accessToken);
         sessionStorage.setItem('refreshToken', data.refreshToken);
         sessionStorage.setItem('key', data.key || ''); // Lưu key nếu có
+        
+        // Set cookies để server-side validation
+        setAccessTokenCookie(data.accessToken);
+        if (data.key) {
+          setLicenseKeyCookie(data.key);
+        }
         
         const accountData = getTokenPayload(data.accessToken);
         if (!accountData) {
@@ -151,6 +158,12 @@ export const useGoogleLogin = () => {
         sessionStorage.setItem('accessToken', data.accessToken);
         sessionStorage.setItem('refreshToken', data.refreshToken);
         sessionStorage.setItem('key', data.key || ''); // Lưu key nếu có
+
+        // Set cookies để server-side validation
+        setAccessTokenCookie(data.accessToken);
+        if (data.key) {
+          setLicenseKeyCookie(data.key);
+        }
 
         const accountData = getTokenPayload(data.accessToken);
         if (!accountData) {

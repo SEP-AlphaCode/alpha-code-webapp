@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { getUserIdFromToken } from "@/utils/tokenUtils";
 import { ValidateAddon } from "@/types/addon";
 import { useAddonAccess } from "@/features/addon/hooks/use-license-key-addon";
+import { setAddonKeyCookie, setAccessTokenCookie } from "@/utils/cookieUtils";
 
 interface ProtectAddonProps {
   children: React.ReactNode;
@@ -121,13 +122,22 @@ export const ProtectAddon = ({
     return () => { mounted = false; };
   }, [validateFn, sessionKey, accountId, category]);
 
-  // Update state từ query (React Query)
+  // Update state từ query (React Query) và set cookies khi validate thành công
   useEffect(() => {
     if (query) {
       setIsLoading(query.isLoading || query.isFetching);
-      if (query.data !== undefined) setIsAllowed(Boolean(query.data));
+      if (query.data !== undefined) {
+        const allowed = Boolean(query.data);
+        setIsAllowed(allowed);
+        
+        // Set cookies khi validate thành công
+        if (allowed && sessionKey && accessToken) {
+          setAddonKeyCookie(sessionKey);
+          setAccessTokenCookie(accessToken);
+        }
+      }
     }
-  }, [query?.data, query?.isLoading, query?.isFetching, query]);
+  }, [query?.data, query?.isLoading, query?.isFetching, query, sessionKey, accessToken]);
 
   if (isLoading) {
     return (
