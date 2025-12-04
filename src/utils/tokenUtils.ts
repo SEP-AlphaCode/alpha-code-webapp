@@ -49,7 +49,9 @@ export const getUserInfoFromToken = (token: string): Partial<JWTPayload> | null 
     username: payload.username,
     email: payload.email,
     roleId: payload.roleId,
-    roleName: payload.roleName
+    roleName: payload.roleName,
+    profileId: payload.profileId,
+    profileName: payload.profileName
   };
 };
 

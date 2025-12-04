@@ -44,6 +44,11 @@ export function StaffSidebar({ ...props }: React.ComponentProps<typeof Sidebar>)
       url: "/staff",
       icon: Home,
     },
+    {
+      name: "Hồ sơ",
+      url: "/staff/profile",
+      icon: Home,
+    },
   ], []);
 
   React.useEffect(() => {
