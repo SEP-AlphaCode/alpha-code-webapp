@@ -58,6 +58,11 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       name: "Thẻ Osmo",
       url: "/admin/osmo-cards",
       icon: CreditCard,
+    },
+    {
+      name: "Hồ sơ",
+      url: "/admin/profile",
+      icon: Users,
     }
   ], []);
   React.useEffect(() => {
