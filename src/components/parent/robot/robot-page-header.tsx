@@ -115,11 +115,13 @@ export function RobotPageHeader({
       await queryClient.invalidateQueries({ queryKey: ["robots"] })
 
       toast.success(`Đã xóa robot "${selectedRobot.name}" thành công!`)
-    } catch (error: any) {
+    } catch (error: unknown) {
       const message =
-        error?.response?.data?.message ||
-        error?.message ||
-        "Xóa robot thất bại!"
+        error && typeof error === 'object' && 'response' in error && error.response && typeof error.response === 'object' && 'data' in error.response && error.response.data && typeof error.response.data === 'object' && 'message' in error.response.data
+          ? (error.response.data as { message: string }).message
+          : error && typeof error === 'object' && 'message' in error
+          ? (error as { message: string }).message
+          : "Xóa robot thất bại!"
 
       toast.error(message)
     } finally {
