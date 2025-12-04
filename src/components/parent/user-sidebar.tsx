@@ -112,7 +112,7 @@ export function UserSidebar({
               <button className="w-full focus:outline-none">
                 <div className="flex items-center gap-3 p-2 rounded-xl bg-white border border-gray-200 shadow-sm hover:bg-blue-50 transition-colors cursor-pointer">
                   <Avatar className="h-11 w-11 border border-gray-300 shadow">
-                    <AvatarImage src="/your-profile-image.jpg" alt="Profile" />
+                    <AvatarImage src="" alt="Profile" />
                     <AvatarFallback className="bg-blue-600 text-white font-medium">
                       {accountData?.fullName ? accountData.fullName.charAt(0).toUpperCase() : "T"}
                     </AvatarFallback>
@@ -139,7 +139,7 @@ export function UserSidebar({
               <DropdownMenuSeparator />
               <DropdownMenuGroup>
                 <DropdownMenuItem asChild>
-                  <Link href="/user/profile" className="cursor-pointer">
+                  <Link href="/parent/profile" className="cursor-pointer">
                     <UserCircle className="mr-2 h-4 w-4" />
                     <span>Profile</span>
                   </Link>
@@ -170,7 +170,7 @@ export function UserSidebar({
               <button className="w-full flex justify-center items-center py-3 focus:outline-none">
                 <div className="flex items-center justify-center">
                   <Avatar className="h-11 w-11 border border-gray-300 shadow-sm">
-                    <AvatarImage src="/your-profile-image.jpg" alt="Profile" />
+                    <AvatarImage src="" alt="Profile" />
                     <AvatarFallback className="bg-blue-600 text-white font-medium text-lg flex items-center justify-center">
                       {accountData?.fullName
                         ? accountData.fullName.charAt(0).toUpperCase()

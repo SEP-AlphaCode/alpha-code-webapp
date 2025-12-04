@@ -17,19 +17,21 @@ export const useUserProfile = () => {
   });
 };
 
-export const useProfileByAccountId = (accountId: string) => {
+export const useProfileByAccountId = (accountId: string, options?: { enabled?: boolean }) => {
   return useQuery({
     queryKey: ['profile', 'account', accountId],
     queryFn: () => getProfileByAccountId(accountId),
     staleTime: 1000 * 60 * 5, // 5 minutes
+    enabled: options?.enabled !== false && !!accountId,
   });
 };
 
-export const useProfileById = (profileId: string) => {
+export const useProfileById = (profileId: string, options?: { enabled?: boolean }) => {
   return useQuery({
     queryKey: ['profile', 'id', profileId],
     queryFn: () => getProfileById(profileId),
     staleTime: 1000 * 60 * 5, // 5 minutes
+    enabled: options?.enabled !== false && !!profileId, // Only fetch when enabled and profileId exists
   });
 };
 

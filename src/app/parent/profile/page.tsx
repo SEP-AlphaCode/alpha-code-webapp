@@ -1,7 +1,7 @@
-"use client";
+'use client';
 
 import React from 'react';
-import { Briefcase } from 'lucide-react';
+import { Users } from 'lucide-react';
 import LoadingState from '@/components/loading-state';
 import ErrorState from '@/components/error-state';
 import { ProfileHeader } from '@/components/shared/profile/profile-header';
@@ -10,7 +10,7 @@ import { PersonalInfoForm } from '@/components/shared/profile/personal-info-form
 import { ActivityLogCard } from '@/components/shared/profile/activity-log-card';
 import { useProfileData } from '@/components/shared/profile/use-profile-data';
 
-export default function StaffProfilePage() {
+export default function ParentProfilePage() {
   const {
     account,
     isLoading,
@@ -44,7 +44,7 @@ export default function StaffProfilePage() {
     <div className="container mx-auto py-8 px-4">
       {/* Header */}
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900">Hồ Sơ Nhân Viên</h1>
+        <h1 className="text-3xl font-bold text-gray-900">Hồ Sơ Phụ Huynh</h1>
         <p className="text-gray-500 mt-2">Quản lý cài đặt tài khoản và tùy chọn của bạn</p>
       </div>
 
@@ -53,13 +53,12 @@ export default function StaffProfilePage() {
         <div className="lg:col-span-1">
           <ProfileHeader
             account={account}
-            roleIcon={Briefcase}
-            roleBadgeText="Nhân Viên"
-            roleBadgeVariant="secondary"
+            roleIcon={Users}
+            roleBadgeText="Phụ Huynh"
+            roleBadgeVariant="default"
           />
           
           <AccountStatusCard account={account} />
-          
         </div>
 
         {/* Main Content */}
