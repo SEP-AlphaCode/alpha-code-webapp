@@ -6,6 +6,27 @@ import { Esp32Device } from '@/types/esp32'
 import { getUserIdFromToken } from '@/utils/tokenUtils'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Badge } from '@/components/ui/badge'
+import { Separator } from '@/components/ui/separator'
+import { 
+  HomeIcon, 
+  Wifi, 
+  Plus, 
+  Edit, 
+  Trash2, 
+  Lightbulb, 
+  ThermometerSun,
+  Fan,
+  Power,
+  Settings,
+  RefreshCw,
+  AlertCircle,
+  CheckCircle2
+} from 'lucide-react'
+import { Label } from '@/components/ui/label'
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 
 export default function ParentSmartHomePage() {
   const { useGetEsp32ByAccountId, useCreateEsp32, useUpdateEsp32, useDeleteEsp32, useAddEsp32Device, useRemoveEsp32Device, useUpdateEsp32Device } = useEsp32()
@@ -30,7 +51,18 @@ export default function ParentSmartHomePage() {
 
   // Device form
   const [deviceForm, setDeviceForm] = useState({ name: '', type: '' })
-  const [editingDeviceIndex, setEditingDeviceIndex] = useState<number | null>(null)
+  const [editingDevice, setEditingDevice] = useState<{ name: string; type: string; id?: string } | null>(null)
+  const [showCreateDialog, setShowCreateDialog] = useState(false)
+  const [showDeviceDialog, setShowDeviceDialog] = useState(false)
+
+  // Device type icons
+  const getDeviceIcon = (type: string) => {
+    const typeUpper = type.toUpperCase()
+    if (typeUpper.includes('LED') || typeUpper.includes('LIGHT')) return Lightbulb
+    if (typeUpper.includes('FAN') || typeUpper.includes('VENTILADOR')) return Fan
+    if (typeUpper.includes('TEMP') || typeUpper.includes('SENSOR')) return ThermometerSun
+    return Power
+  }
 
   // Mutations
   const createEspMut = useCreateEsp32()
@@ -109,6 +141,7 @@ export default function ParentSmartHomePage() {
     try {
       await addDeviceMut.mutateAsync({ id: esp.id, name: deviceForm.name, type: deviceForm.type })
       setDeviceForm({ name: '', type: '' })
+      setShowDeviceDialog(false)
       refetch()
     } catch (e) {
       console.error(e)
@@ -126,22 +159,23 @@ export default function ParentSmartHomePage() {
     }
   }
 
-  const handleEditDevice = (index: number) => {
-    if (devices.length === 0) return
-    const d = devices[index]
-    if (!d) return
-    setDeviceForm({ name: d.name, type: d.type })
-    setEditingDeviceIndex(index)
+  const handleEditDevice = (device: { name: string; type: string; id?: string }) => {
+    setDeviceForm({ name: device.name, type: device.type })
+    setEditingDevice(device)
+    setShowDeviceDialog(true)
   }
 
-  const handleUpdateDevice = async () => {
-    if (!esp?.id || editingDeviceIndex === null) return
-    const oldName = devices?.[editingDeviceIndex]?.name
-    if (!oldName) return
+  const handleSaveDevice = async () => {
+    if (!esp?.id || !editingDevice) return
     try {
-      await updateDeviceMut.mutateAsync({ id: esp.id, name: oldName, newType: deviceForm.type })
-      setEditingDeviceIndex(null)
+      await updateDeviceMut.mutateAsync({ 
+        id: esp.id, 
+        name: editingDevice.name, 
+        newType: deviceForm.type 
+      })
+      setEditingDevice(null)
       setDeviceForm({ name: '', type: '' })
+      setShowDeviceDialog(false)
       refetch()
     } catch (e) {
       console.error(e)
@@ -149,101 +183,424 @@ export default function ParentSmartHomePage() {
   }
 
   return (
-    <div className="p-4">
-      <h1 className="text-2xl font-semibold mb-4">Quản lý Smart Home Kit</h1>
-      <p className="text-sm text-muted-foreground mb-6">Quản lý các thiết bị ESP32 và Smart Home Kit của bạn.</p>
+    <div className="container max-w-7xl mx-auto p-6 space-y-6">
+      {/* Header */}
+      <div className="flex items-center gap-3">
+        <div className="p-3 bg-primary/10 rounded-lg">
+          <HomeIcon className="h-6 w-6 text-primary" />
+        </div>
+        <div>
+          <h1 className="text-3xl font-bold">Smart Home</h1>
+          <p className="text-sm text-muted-foreground">Quản lý thiết bị ESP32 và Smart Home Kit của bạn</p>
+        </div>
+      </div>
 
-      <section>
-        {isLoading ? (
-          <div className="text-sm text-gray-600">Đang tải thiết bị...</div>
-        ) : isError ? (
-          <div className="text-sm text-red-600">Lỗi khi tải thiết bị: {(() => {
-            const e = error as unknown
-            if (e && typeof e === 'object' && 'message' in e) return String((e as { message?: unknown }).message)
-            return String(e)
-          })() || 'Unknown error'}. <button onClick={() => refetch()} className="underline">Thử lại</button></div>
-        ) : !esp ? (
-          <div className="max-w-md">
-            <h3 className="font-medium mb-2">Tạo ESP32 mới</h3>
-            <div className="space-y-2">
-              <Input placeholder="Name" value={form.name} onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleChange('name', e.target.value)} />
-              <Input placeholder="MAC Address" value={form.macAddress} onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleChange('macAddress', e.target.value)} />
-              <Input placeholder="Firmware Version" type="number" value={form.firmwareVersion} onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleChange('firmwareVersion', Number(e.target.value))} />
-              <Input placeholder="Topic Pub" value={form.topicPub} onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleChange('topicPub', e.target.value)} />
-              <Input placeholder="Topic Sub" value={form.topicSub} onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleChange('topicSub', e.target.value)} />
-                <div className="flex gap-2">
-                <Button onClick={handleCreate} disabled={createEspMut.isPending}>Tạo</Button>
-                <Button variant="ghost" onClick={() => { setForm({ name: '', macAddress: '', firmwareVersion: 1, topicPub: '', topicSub: '' }) }}>Đặt lại</Button>
-              </div>
+      {/* Content */}
+      {isLoading ? (
+        <Card>
+          <CardContent className="p-12 flex flex-col items-center justify-center">
+            <RefreshCw className="h-8 w-8 animate-spin text-muted-foreground mb-3" />
+            <p className="text-sm text-muted-foreground">Đang tải thiết bị...</p>
+          </CardContent>
+        </Card>
+      ) : isError ? (
+        <Card>
+          <CardContent className="p-12 flex flex-col items-center justify-center">
+            <AlertCircle className="h-12 w-12 text-destructive mb-4" />
+            <p className="text-lg font-semibold mb-2">Không thể tải thiết bị</p>
+            <p className="text-sm text-muted-foreground mb-4">
+              {(() => {
+                const e = error as unknown
+                if (e && typeof e === 'object' && 'message' in e) return String((e as { message?: unknown }).message)
+                return 'Đã xảy ra lỗi không xác định'
+              })()}
+            </p>
+            <Button onClick={() => refetch()} variant="outline">
+              <RefreshCw className="h-4 w-4 mr-2" />
+              Thử lại
+            </Button>
+          </CardContent>
+        </Card>
+      ) : !esp ? (
+        /* Create ESP32 Dialog */
+        <Card>
+          <CardHeader>
+            <div className="flex items-center gap-2">
+              <Wifi className="h-5 w-5 text-muted-foreground" />
+              <CardTitle>Tạo ESP32 mới</CardTitle>
             </div>
-          </div>
-        ) : (
-          <div className="max-w-3xl grid grid-cols-1 gap-6">
-            <div className="p-4 border rounded-lg shadow-sm">
-              <div className="flex justify-between items-start">
-                <div>
-                  <h3 className="font-medium">{esp.name}</h3>
-                  <p className="text-xs text-gray-500">MAC: {esp.macAddress}</p>
+            <CardDescription>
+              Chưa có thiết bị ESP32 nào. Tạo thiết bị đầu tiên của bạn để bắt đầu.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="esp-name">Tên thiết bị</Label>
+              <Input 
+                id="esp-name"
+                placeholder="ESP32 - Living Room" 
+                value={form.name} 
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleChange('name', e.target.value)} 
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="esp-mac">Địa chỉ MAC</Label>
+              <Input 
+                id="esp-mac"
+                placeholder="AA:BB:CC:DD:EE:FF" 
+                value={form.macAddress} 
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleChange('macAddress', e.target.value)} 
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="esp-firmware">Phiên bản Firmware</Label>
+              <Input 
+                id="esp-firmware"
+                type="number" 
+                placeholder="1" 
+                value={form.firmwareVersion} 
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleChange('firmwareVersion', Number(e.target.value))} 
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="esp-pub">Topic Pub</Label>
+              <Input 
+                id="esp-pub"
+                placeholder="esp32/pub" 
+                value={form.topicPub} 
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleChange('topicPub', e.target.value)} 
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="esp-sub">Topic Sub</Label>
+              <Input 
+                id="esp-sub"
+                placeholder="esp32/sub" 
+                value={form.topicSub} 
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleChange('topicSub', e.target.value)} 
+              />
+            </div>
+          </CardContent>
+          <CardContent className="flex gap-2 pt-0">
+            <Button onClick={handleCreate} disabled={createEspMut.isPending}>
+              {createEspMut.isPending ? (
+                <>
+                  <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
+                  Đang tạo...
+                </>
+              ) : (
+                <>
+                  <Plus className="h-4 w-4 mr-2" />
+                  Tạo ESP32
+                </>
+              )}
+            </Button>
+            <Button 
+              variant="ghost" 
+              onClick={() => setForm({ name: '', macAddress: '', firmwareVersion: 1, topicPub: '', topicSub: '' })}
+            >
+              Đặt lại
+            </Button>
+          </CardContent>
+        </Card>
+      ) : (
+        <div className="space-y-6">
+          {/* ESP32 Info Card */}
+          <Card>
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 bg-primary/10 rounded-lg">
+                    <Wifi className="h-6 w-6 text-primary" />
+                  </div>
+                  <div>
+                    <CardTitle>{esp.name}</CardTitle>
+                    <CardDescription className="flex items-center gap-2 mt-1">
+                      <span>MAC: {esp.macAddress}</span>
+                      <Separator orientation="vertical" className="h-4" />
+                      <Badge variant="outline">v{esp.firmwareVersion}</Badge>
+                    </CardDescription>
+                  </div>
                 </div>
                 <div className="flex gap-2">
-                  <Button onClick={() => setIsEditing(v => !v)}>{isEditing ? 'Huỷ' : 'Chỉnh sửa'}</Button>
-                  <Button variant="destructive" onClick={handleDelete} disabled={deleteEspMut.isPending}>Xóa</Button>
+                  <Button 
+                    variant={isEditing ? "outline" : "default"} 
+                    size="sm"
+                    onClick={() => setIsEditing(v => !v)}
+                  >
+                    {isEditing ? (
+                      <>
+                        <RefreshCw className="h-4 w-4 mr-2" />
+                        Hủy
+                      </>
+                    ) : (
+                      <>
+                        <Edit className="h-4 w-4 mr-2" />
+                        Chỉnh sửa
+                      </>
+                    )}
+                  </Button>
+                  <Button 
+                    variant="destructive" 
+                    size="sm"
+                    onClick={handleDelete} 
+                    disabled={deleteEspMut.isPending}
+                  >
+                    <Trash2 className="h-4 w-4 mr-2" />
+                    Xóa
+                  </Button>
                 </div>
               </div>
+            </CardHeader>
 
-              {isEditing && (
-                <div className="mt-4 space-y-2">
-                  <Input placeholder="Name" value={form.name} onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleChange('name', e.target.value)} />
-                  <Input placeholder="MAC Address" value={form.macAddress} onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleChange('macAddress', e.target.value)} />
-                  <Input placeholder="Firmware Version" type="number" value={form.firmwareVersion} onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleChange('firmwareVersion', Number(e.target.value))} />
-                  <Input placeholder="Topic Pub" value={form.topicPub} onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleChange('topicPub', e.target.value)} />
-                  <Input placeholder="Topic Sub" value={form.topicSub} onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleChange('topicSub', e.target.value)} />
-                    <div className="flex gap-2 mt-2">
-                    <Button onClick={handleUpdate} disabled={updateEspMut.isPending}>Lưu</Button>
-                    <Button variant="ghost" onClick={() => { setIsEditing(false); setForm({ name: esp.name, macAddress: esp.macAddress, firmwareVersion: esp.firmwareVersion, topicPub: esp.topicPub, topicSub: esp.topicSub }) }}>Huỷ</Button>
+            {isEditing && (
+              <CardContent className="space-y-4 border-t pt-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="edit-name">Tên thiết bị</Label>
+                    <Input 
+                      id="edit-name"
+                      value={form.name} 
+                      onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleChange('name', e.target.value)} 
+                    />
                   </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="edit-mac">Địa chỉ MAC</Label>
+                    <Input 
+                      id="edit-mac"
+                      value={form.macAddress} 
+                      onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleChange('macAddress', e.target.value)} 
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="edit-firmware">Phiên bản Firmware</Label>
+                    <Input 
+                      id="edit-firmware"
+                      type="number" 
+                      value={form.firmwareVersion} 
+                      onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleChange('firmwareVersion', Number(e.target.value))} 
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="edit-pub">Topic Pub</Label>
+                    <Input 
+                      id="edit-pub"
+                      value={form.topicPub} 
+                      onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleChange('topicPub', e.target.value)} 
+                    />
+                  </div>
+                  <div className="space-y-2 md:col-span-2">
+                    <Label htmlFor="edit-sub">Topic Sub</Label>
+                    <Input 
+                      id="edit-sub"
+                      value={form.topicSub} 
+                      onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleChange('topicSub', e.target.value)} 
+                    />
+                  </div>
+                </div>
+                <div className="flex gap-2">
+                  <Button onClick={handleUpdate} disabled={updateEspMut.isPending}>
+                    {updateEspMut.isPending ? (
+                      <>
+                        <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
+                        Đang lưu...
+                      </>
+                    ) : (
+                      <>
+                        <CheckCircle2 className="h-4 w-4 mr-2" />
+                        Lưu thay đổi
+                      </>
+                    )}
+                  </Button>
+                  <Button 
+                    variant="ghost" 
+                    onClick={() => { 
+                      setIsEditing(false)
+                      setForm({ 
+                        name: esp.name, 
+                        macAddress: esp.macAddress, 
+                        firmwareVersion: esp.firmwareVersion, 
+                        topicPub: esp.topicPub, 
+                        topicSub: esp.topicSub 
+                      })
+                    }}
+                  >
+                    Hủy
+                  </Button>
+                </div>
+              </CardContent>
+            )}
+          </Card>
+
+          {/* Devices Card */}
+          <Card>
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <div>
+                  <CardTitle>Thiết bị thông minh</CardTitle>
+                  <CardDescription>
+                    {devices.length === 0 ? 'Chưa có thiết bị nào' : `${devices.length} thiết bị đã kết nối`}
+                  </CardDescription>
+                </div>
+                <Button 
+                  onClick={() => {
+                    setEditingDevice(null)
+                    setDeviceForm({ name: '', type: '' })
+                    setShowDeviceDialog(true)
+                  }}
+                >
+                  <Plus className="h-4 w-4 mr-2" />
+                  Thêm thiết bị
+                </Button>
+              </div>
+            </CardHeader>
+            <CardContent>
+              {devices.length === 0 ? (
+                <div className="text-center py-12 text-muted-foreground">
+                  <Settings className="h-12 w-12 mx-auto mb-3 opacity-50" />
+                  <p>Chưa có thiết bị nào được thêm</p>
+                  <p className="text-sm mt-1">Nhấn &quot;Thêm thiết bị&quot; để bắt đầu</p>
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {devices.map((device: Esp32Device) => {
+                    const DeviceIcon = getDeviceIcon(device.type)
+                    return (
+                      <Card key={device.name} className="overflow-hidden hover:shadow-md transition-shadow">
+                        <CardContent className="p-4">
+                          <div className="flex items-start justify-between mb-3">
+                            <div className="p-2 bg-primary/10 rounded-lg">
+                              <DeviceIcon className="h-5 w-5 text-primary" />
+                            </div>
+                            <div className="flex gap-1">
+                              <Button 
+                                variant="ghost" 
+                                size="icon" 
+                                className="h-8 w-8"
+                                onClick={() => handleEditDevice(device)}
+                              >
+                                <Edit className="h-4 w-4" />
+                              </Button>
+                              <Button 
+                                variant="ghost" 
+                                size="icon" 
+                                className="h-8 w-8 text-destructive hover:text-destructive"
+                                onClick={() => handleRemoveDevice(device.name)}
+                              >
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
+                            </div>
+                          </div>
+                          <h3 className="font-semibold text-sm mb-1">{device.name}</h3>
+                          <Badge variant="secondary" className="text-xs">{device.type}</Badge>
+                        </CardContent>
+                      </Card>
+                    )
+                  })}
                 </div>
               )}
+            </CardContent>
+          </Card>
+        </div>
+      )}
+
+      {/* Device Dialog */}
+      <Dialog open={showDeviceDialog} onOpenChange={setShowDeviceDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>
+              {editingDevice ? 'Chỉnh sửa thiết bị' : 'Thêm thiết bị mới'}
+            </DialogTitle>
+            <DialogDescription>
+              {editingDevice 
+                ? 'Cập nhật thông tin thiết bị của bạn' 
+                : 'Thêm một thiết bị thông minh mới vào ESP32'}
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label htmlFor="device-name">Tên thiết bị</Label>
+              <Input 
+                id="device-name"
+                placeholder="Đèn phòng khách" 
+                value={deviceForm.name} 
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleDeviceChange('name', e.target.value)}
+                disabled={!!editingDevice}
+              />
             </div>
-
-            {/* Devices */}
-            <div className="p-4 border rounded-lg shadow-sm">
-              <h4 className="font-medium mb-3">Thiết bị ({devices.length || 0})</h4>
-
-              <div className="space-y-2">
-                {devices.map((d: Esp32Device, idx: number) => (
-                  <div key={d.name} className="flex items-center justify-between p-2 border rounded">
-                    <div>
-                      <div className="font-medium">{d.name}</div>
-                      <div className="text-xs text-gray-500">{d.type}</div>
+            <div className="space-y-2">
+              <Label htmlFor="device-type">Loại thiết bị</Label>
+              <Select 
+                value={deviceForm.type} 
+                onValueChange={(value) => handleDeviceChange('type', value)}
+              >
+                <SelectTrigger id="device-type">
+                  <SelectValue placeholder="Chọn loại thiết bị" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="LED">
+                    <div className="flex items-center gap-2">
+                      <Lightbulb className="h-4 w-4" />
+                      <span>Đèn LED</span>
                     </div>
-                    <div className="flex gap-2">
-                      <Button size="sm" onClick={() => handleEditDevice(idx)}>Sửa</Button>
-                      <Button size="sm" variant="destructive" onClick={() => handleRemoveDevice(d.name)}>Xóa</Button>
+                  </SelectItem>
+                  <SelectItem value="FAN">
+                    <div className="flex items-center gap-2">
+                      <Fan className="h-4 w-4" />
+                      <span>Quạt</span>
                     </div>
-                  </div>
-                ))}
-              </div>
-
-              <div className="mt-4 border-t pt-4">
-                <h5 className="font-medium mb-2">Thêm thiết bị</h5>
-                <div className="flex gap-2 items-center">
-                  <Input placeholder="Tên thiết bị" value={deviceForm.name} onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleDeviceChange('name', e.target.value)} />
-                  <Input placeholder="Loại (ví dụ: LED)" value={deviceForm.type} onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleDeviceChange('type', e.target.value)} />
-                  {editingDeviceIndex === null ? (
-                    <Button onClick={handleAddDevice} disabled={addDeviceMut.isPending}>Thêm</Button>
-                  ) : (
-                    <>
-                      <Button onClick={handleUpdateDevice} disabled={updateDeviceMut.isPending}>Cập nhật</Button>
-                      <Button variant="ghost" onClick={() => { setEditingDeviceIndex(null); setDeviceForm({ name: '', type: '' }) }}>Huỷ</Button>
-                    </>
-                  )}
-                </div>
-              </div>
+                  </SelectItem>
+                  <SelectItem value="TEMP_SENSOR">
+                    <div className="flex items-center gap-2">
+                      <ThermometerSun className="h-4 w-4" />
+                      <span>Cảm biến nhiệt độ</span>
+                    </div>
+                  </SelectItem>
+                  <SelectItem value="OTHER">
+                    <div className="flex items-center gap-2">
+                      <Power className="h-4 w-4" />
+                      <span>Khác</span>
+                    </div>
+                  </SelectItem>
+                </SelectContent>
+              </Select>
             </div>
           </div>
-        )}
-      </section>
+          <DialogFooter>
+            <Button 
+              variant="outline" 
+              onClick={() => {
+                setShowDeviceDialog(false)
+                setEditingDevice(null)
+                setDeviceForm({ name: '', type: '' })
+              }}
+            >
+              Hủy
+            </Button>
+            <Button 
+              onClick={editingDevice ? handleSaveDevice : handleAddDevice}
+              disabled={!deviceForm.name || !deviceForm.type || addDeviceMut.isPending || updateDeviceMut.isPending}
+            >
+              {(addDeviceMut.isPending || updateDeviceMut.isPending) ? (
+                <>
+                  <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
+                  Đang lưu...
+                </>
+              ) : editingDevice ? (
+                <>
+                  <CheckCircle2 className="h-4 w-4 mr-2" />
+                  Cập nhật
+                </>
+              ) : (
+                <>
+                  <Plus className="h-4 w-4 mr-2" />
+                  Thêm
+                </>
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }

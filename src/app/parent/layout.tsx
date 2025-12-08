@@ -8,7 +8,7 @@ import { getUserInfoFromToken } from "@/utils/tokenUtils";
 import { AccountData } from "@/types/account";
 import { UserHeader } from "@/components/parent/user-header";
 import { UserSidebar } from "@/components/parent/user-sidebar";
-import { Activity, BookPlus, Bot, Gamepad, Home, LayoutDashboard, Music, QrCode } from "lucide-react";
+import { Activity, BookPlus, Bot, Gamepad, Home, LayoutDashboard, Music, QrCode, HomeIcon } from "lucide-react";
 
 interface UserLayoutProps {
   children: React.ReactNode;
@@ -44,6 +44,7 @@ export default function UserLayout({ children }: UserLayoutProps) {
   const navigationItems = [
     { name: "Home", href: "/", icon: Home },
     { name: "Dashboard", href: "/parent", icon: LayoutDashboard },
+    { name: "Smart Home", href: "/parent/smart-home", icon: HomeIcon },
     { name: "Robots", href: "/parent/robot", icon: Bot },
     { name: "Tay Cầm Điều Khiển", href: "/parent/joystick", icon: Gamepad },
     { name: "Hoạt Động Robot", href: "/parent/activities", icon: Activity },
