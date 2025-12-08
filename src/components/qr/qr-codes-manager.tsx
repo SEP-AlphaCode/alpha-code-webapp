@@ -105,7 +105,7 @@ function CreateQRCodeModal({ isOpen, onClose, onSubmit, isLoading, accountId }: 
             />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="qrCode">Nội dung QR *</Label>
+            <Label htmlFor="qrCode">Mã Code QR *</Label>
             <Input
               id="qrCode"
               value={formData.qrCode}
