@@ -7,6 +7,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge'
 import { Separator } from '@/components/ui/separator'
 import { Button } from '@/components/ui/button'
+import { Switch } from '@/components/ui/switch'
+import { toast } from 'sonner'
 import { 
   HomeIcon, 
   Wifi, 
@@ -26,8 +28,9 @@ interface Esp32Device {
 }
 
 export default function ChildrenSmartHomePage() {
-  const { useGetAllEsp32s } = useEsp32()
+  const { useGetEsp32ByAccountId, useSendEsp32Message } = useEsp32()
   const [accountId, setAccountId] = useState<string>('')
+  const [deviceStates, setDeviceStates] = useState<Record<string, boolean>>({})
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
@@ -39,8 +42,8 @@ export default function ChildrenSmartHomePage() {
     }
   }, [])
 
-  const { useGetEsp32ByAccountId } = useEsp32()
   const { data: esp, isLoading, isError, error, refetch } = useGetEsp32ByAccountId(accountId)
+  const sendMessageMut = useSendEsp32Message()
 
   // Extract devices from ESP32 metadata
   const devices = React.useMemo((): Esp32Device[] => {
@@ -65,6 +68,26 @@ export default function ChildrenSmartHomePage() {
     if (typeUpper.includes('FAN')) return Fan
     if (typeUpper.includes('TEMP') || typeUpper.includes('SENSOR')) return ThermometerSun
     return Power
+  }
+
+  const handleToggleDevice = async (deviceName: string, currentState: boolean) => {
+    if (!esp?.id) return
+    const newState = !currentState
+    const message = newState ? 'on' : 'off'
+    
+    try {
+      await sendMessageMut.mutateAsync({
+        id: esp.id,
+        name: deviceName,
+        message: message,
+        language: 'en'
+      })
+      setDeviceStates(prev => ({ ...prev, [deviceName]: newState }))
+      toast.success(`Đã ${newState ? 'bật' : 'tắt'} thiết bị ${deviceName}`)
+    } catch (e) {
+      console.error(e)
+      toast.error(`Không thể ${newState ? 'bật' : 'tắt'} thiết bị`)
+    }
   }
 
   return (
@@ -165,16 +188,29 @@ export default function ChildrenSmartHomePage() {
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                   {devices.map((device: Esp32Device) => {
                     const DeviceIcon = getDeviceIcon(device.type)
+                    const isOn = deviceStates[device.name] || false
                     return (
                       <Card key={device.name} className="overflow-hidden">
                         <CardContent className="p-4">
-                          <div className="flex items-start gap-3">
+                          <div className="flex items-start gap-3 mb-3">
                             <div className="p-2 bg-primary/10 rounded-lg">
                               <DeviceIcon className="h-5 w-5 text-primary" />
                             </div>
                             <div className="flex-1 min-w-0">
                               <h3 className="font-semibold text-sm truncate">{device.name}</h3>
                               <Badge variant="secondary" className="text-xs mt-1">{device.type}</Badge>
+                            </div>
+                          </div>
+                          <Separator className="mb-3" />
+                          <div className="flex items-center justify-between">
+                            <span className="text-xs text-muted-foreground">Trạng thái</span>
+                            <div className="flex items-center gap-2">
+                              <span className="text-xs font-medium">{isOn ? 'Bật' : 'Tắt'}</span>
+                              <Switch 
+                                checked={isOn}
+                                onCheckedChange={() => handleToggleDevice(device.name, isOn)}
+                                disabled={sendMessageMut.isPending}
+                              />
                             </div>
                           </div>
                         </CardContent>

@@ -22,14 +22,20 @@ import {
   Settings,
   RefreshCw,
   AlertCircle,
-  CheckCircle2
+  CheckCircle2,
+  Activity,
+  Zap,
+  Signal
 } from 'lucide-react'
 import { Label } from '@/components/ui/label'
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { Switch } from '@/components/ui/switch'
+import { toast } from 'sonner'
+import LoadingState from '@/components/loading-state'
 
 export default function ParentSmartHomePage() {
-  const { useGetEsp32ByAccountId, useCreateEsp32, useUpdateEsp32, useDeleteEsp32, useAddEsp32Device, useRemoveEsp32Device, useUpdateEsp32Device } = useEsp32()
+  const { useGetEsp32ByAccountId, useCreateEsp32, useUpdateEsp32, useDeleteEsp32, useAddEsp32Device, useRemoveEsp32Device, useUpdateEsp32Device, useSendEsp32Message } = useEsp32()
   const [accountId, setAccountId] = useState<string>('')
 
   useEffect(() => {
@@ -54,6 +60,8 @@ export default function ParentSmartHomePage() {
   const [editingDevice, setEditingDevice] = useState<{ name: string; type: string; id?: string } | null>(null)
   const [showCreateDialog, setShowCreateDialog] = useState(false)
   const [showDeviceDialog, setShowDeviceDialog] = useState(false)
+  const [deviceStates, setDeviceStates] = useState<Record<string, boolean>>({})
+  const [expandedDevice, setExpandedDevice] = useState<string | null>(null)
 
   // Device type icons
   const getDeviceIcon = (type: string) => {
@@ -71,6 +79,7 @@ export default function ParentSmartHomePage() {
   const addDeviceMut = useAddEsp32Device()
   const removeDeviceMut = useRemoveEsp32Device()
   const updateDeviceMut = useUpdateEsp32Device()
+  const sendMessageMut = useSendEsp32Message()
 
   useEffect(() => {
     if (esp) {
@@ -182,48 +191,165 @@ export default function ParentSmartHomePage() {
     }
   }
 
+  const handleToggleDevice = async (deviceName: string, currentState: boolean) => {
+    if (!esp?.id) return
+    const newState = !currentState
+    const message = newState ? 'on' : 'off'
+    
+    try {
+      await sendMessageMut.mutateAsync({
+        id: esp.id,
+        name: deviceName,
+        message: message,
+        language: 'en'
+      })
+      setDeviceStates(prev => ({ ...prev, [deviceName]: newState }))
+      toast.success(`Đã ${newState ? 'bật' : 'tắt'} thiết bị ${deviceName}`)
+    } catch (e) {
+      console.error(e)
+      toast.error(`Không thể ${newState ? 'bật' : 'tắt'} thiết bị`)
+    }
+  }
+
   return (
-    <div className="container max-w-7xl mx-auto p-6 space-y-6">
-      {/* Header */}
-      <div className="flex items-center gap-3">
-        <div className="p-3 bg-primary/10 rounded-lg">
-          <HomeIcon className="h-6 w-6 text-primary" />
+    <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5">
+      <div className="container max-w-7xl mx-auto p-6 space-y-6">
+        {/* Header */}
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            <div className="p-3 bg-gradient-to-br from-primary to-primary/60 rounded-xl shadow-lg">
+              <HomeIcon className="h-7 w-7 text-primary-foreground" />
+            </div>
+            <div>
+              <h1 className="text-4xl font-black text-foreground" style={{ fontWeight: 900 }}>Smart Home</h1>
+              <p className="text-sm text-muted-foreground mt-1">Điều khiển và giám sát thiết bị thông minh</p>
+            </div>
+          </div>
+          {esp && (
+            <div className="flex items-center gap-2 px-4 py-2 bg-primary/10 rounded-full">
+              <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
+              <span className="text-sm font-medium">Đang kết nối</span>
+            </div>
+          )}
         </div>
-        <div>
-          <h1 className="text-3xl font-bold">Smart Home</h1>
-          <p className="text-sm text-muted-foreground">Quản lý thiết bị ESP32 và Smart Home Kit của bạn</p>
-        </div>
-      </div>
 
       {/* Content */}
       {isLoading ? (
-        <Card>
-          <CardContent className="p-12 flex flex-col items-center justify-center">
-            <RefreshCw className="h-8 w-8 animate-spin text-muted-foreground mb-3" />
-            <p className="text-sm text-muted-foreground">Đang tải thiết bị...</p>
-          </CardContent>
-        </Card>
+        <LoadingState message="Đang tải thiết bị..." />
       ) : isError ? (
-        <Card>
-          <CardContent className="p-12 flex flex-col items-center justify-center">
-            <AlertCircle className="h-12 w-12 text-destructive mb-4" />
-            <p className="text-lg font-semibold mb-2">Không thể tải thiết bị</p>
-            <p className="text-sm text-muted-foreground mb-4">
-              {(() => {
-                const e = error as unknown
-                if (e && typeof e === 'object' && 'message' in e) return String((e as { message?: unknown }).message)
-                return 'Đã xảy ra lỗi không xác định'
-              })()}
-            </p>
-            <Button onClick={() => refetch()} variant="outline">
-              <RefreshCw className="h-4 w-4 mr-2" />
-              Thử lại
-            </Button>
-          </CardContent>
-        </Card>
+        (() => {
+          const e = error as unknown
+          const is404 = e && typeof e === 'object' && 'response' in e && 
+                       (e as any)?.response?.status === 404
+          
+          if (is404) {
+            // Show create form for 404 (no ESP32 found)
+            return (
+              <Card className="border-dashed">
+                <CardHeader>
+                  <div className="flex items-center gap-2">
+                    <Wifi className="h-5 w-5 text-muted-foreground" />
+                    <CardTitle>Tạo ESP32 mới</CardTitle>
+                  </div>
+                  <CardDescription>
+                    Chưa có thiết bị ESP32 nào. Tạo thiết bị đầu tiên của bạn để bắt đầu.
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="esp-name">Tên thiết bị</Label>
+                    <Input 
+                      id="esp-name"
+                      placeholder="ESP32 - Living Room" 
+                      value={form.name} 
+                      onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleChange('name', e.target.value)} 
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="esp-mac">Địa chỉ MAC</Label>
+                    <Input 
+                      id="esp-mac"
+                      placeholder="AA:BB:CC:DD:EE:FF" 
+                      value={form.macAddress} 
+                      onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleChange('macAddress', e.target.value)} 
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="esp-firmware">Phiên bản Firmware</Label>
+                    <Input 
+                      id="esp-firmware"
+                      type="number" 
+                      placeholder="1" 
+                      value={form.firmwareVersion} 
+                      onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleChange('firmwareVersion', Number(e.target.value))} 
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="esp-pub">Topic Pub</Label>
+                    <Input 
+                      id="esp-pub"
+                      placeholder="esp32/pub" 
+                      value={form.topicPub} 
+                      onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleChange('topicPub', e.target.value)} 
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="esp-sub">Topic Sub</Label>
+                    <Input 
+                      id="esp-sub"
+                      placeholder="esp32/sub" 
+                      value={form.topicSub} 
+                      onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleChange('topicSub', e.target.value)} 
+                    />
+                  </div>
+                </CardContent>
+                <CardContent className="flex gap-2 pt-0">
+                  <Button onClick={handleCreate} disabled={createEspMut.isPending}>
+                    {createEspMut.isPending ? (
+                      <>
+                        <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
+                        Đang tạo...
+                      </>
+                    ) : (
+                      <>
+                        <Plus className="h-4 w-4 mr-2" />
+                        Tạo ESP32
+                      </>
+                    )}
+                  </Button>
+                  <Button 
+                    variant="ghost" 
+                    onClick={() => setForm({ name: '', macAddress: '', firmwareVersion: 1, topicPub: '', topicSub: '' })}
+                  >
+                    Đặt lại
+                  </Button>
+                </CardContent>
+              </Card>
+            )
+          }
+          
+          // Show error for other errors
+          return (
+            <Card className="border-dashed">
+              <CardContent className="p-12 flex flex-col items-center justify-center">
+                <AlertCircle className="h-12 w-12 text-destructive mb-4" />
+                <p className="text-lg font-semibold mb-2">Không thể tải thiết bị</p>
+                <p className="text-sm text-muted-foreground mb-4">
+                  {e && typeof e === 'object' && 'message' in e 
+                    ? String((e as { message?: unknown }).message)
+                    : 'Đã xảy ra lỗi không xác định'}
+                </p>
+                <Button onClick={() => refetch()} variant="outline">
+                  <RefreshCw className="h-4 w-4 mr-2" />
+                  Thử lại
+                </Button>
+              </CardContent>
+            </Card>
+          )
+        })()
       ) : !esp ? (
         /* Create ESP32 Dialog */
-        <Card>
+        <Card className="border-dashed">
           <CardHeader>
             <div className="flex items-center gap-2">
               <Wifi className="h-5 w-5 text-muted-foreground" />
@@ -304,24 +430,66 @@ export default function ParentSmartHomePage() {
           </CardContent>
         </Card>
       ) : (
-        <div className="space-y-6">
-          {/* ESP32 Info Card */}
-          <Card>
-            <CardHeader>
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <div className="p-2 bg-primary/10 rounded-lg">
-                    <Wifi className="h-6 w-6 text-primary" />
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+          {/* Left Sidebar - ESP32 Info & Stats */}
+          <div className="lg:col-span-4 space-y-6">
+            {/* Stats Cards */}
+            <div className="grid grid-cols-2 gap-4">
+              <Card className="border-l-4 border-l-primary shadow-md">
+                <CardContent className="p-4">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-xs text-muted-foreground font-medium">Tổng thiết bị</p>
+                      <p className="text-2xl font-bold mt-1">{devices.length}</p>
+                    </div>
+                    <div className="p-3 bg-primary/10 rounded-lg">
+                      <Activity className="h-5 w-5 text-primary" />
+                    </div>
                   </div>
-                  <div>
-                    <CardTitle>{esp.name}</CardTitle>
-                    <CardDescription className="flex items-center gap-2 mt-1">
-                      <span>MAC: {esp.macAddress}</span>
-                      <Separator orientation="vertical" className="h-4" />
-                      <Badge variant="outline">v{esp.firmwareVersion}</Badge>
+                </CardContent>
+              </Card>
+              <Card className="border-l-4 border-l-green-500 shadow-md">
+                <CardContent className="p-4">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-xs text-muted-foreground font-medium">Đang bật</p>
+                      <p className="text-2xl font-bold mt-1 text-green-600">{Object.values(deviceStates).filter(Boolean).length}</p>
+                    </div>
+                    <div className="p-3 bg-green-500/10 rounded-lg">
+                      <Zap className="h-5 w-5 text-green-500" />
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* ESP32 Info Card */}
+            <Card className="shadow-lg">
+              <CardHeader className="pb-4">
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="p-3 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl shadow-md">
+                    <Wifi className="h-6 w-6 text-white" />
+                  </div>
+                  <div className="flex-1">
+                    <CardTitle className="text-xl">{esp.name}</CardTitle>
+                    <CardDescription className="flex items-center gap-2 mt-1.5">
+                      <Signal className="h-3 w-3" />
+                      <span className="text-xs">{esp.macAddress}</span>
                     </CardDescription>
                   </div>
                 </div>
+                <div className="flex flex-wrap items-center gap-2">
+                  <Badge variant="outline" className="text-xs">
+                    <Power className="h-3 w-3 mr-1" />
+                    Firmware v{esp.firmwareVersion}
+                  </Badge>
+                  <Badge variant="secondary" className="text-xs">
+                    <Activity className="h-3 w-3 mr-1" />
+                    ESP32
+                  </Badge>
+                </div>
+                <Separator className="mt-4" />
+                <div className="flex items-center justify-between mt-4">
                 <div className="flex gap-2">
                   <Button 
                     variant={isEditing ? "outline" : "default"} 
@@ -431,15 +599,20 @@ export default function ParentSmartHomePage() {
               </CardContent>
             )}
           </Card>
+          </div>
 
-          {/* Devices Card */}
-          <Card>
-            <CardHeader>
+          {/* Main Content - Devices Grid */}
+          <div className="lg:col-span-8 space-y-6">
+          <Card className="shadow-lg">
+            <CardHeader className="border-b">
               <div className="flex items-center justify-between">
                 <div>
-                  <CardTitle>Thiết bị thông minh</CardTitle>
-                  <CardDescription>
-                    {devices.length === 0 ? 'Chưa có thiết bị nào' : `${devices.length} thiết bị đã kết nối`}
+                  <CardTitle className="text-2xl flex items-center gap-2">
+                    <Settings className="h-6 w-6 text-primary" />
+                    Thiết bị thông minh
+                  </CardTitle>
+                  <CardDescription className="mt-2">
+                    {devices.length === 0 ? 'Chưa có thiết bị nào' : `Quản lý ${devices.length} thiết bị đã kết nối`}
                   </CardDescription>
                 </div>
                 <Button 
@@ -448,6 +621,8 @@ export default function ParentSmartHomePage() {
                     setDeviceForm({ name: '', type: '' })
                     setShowDeviceDialog(true)
                   }}
+                  size="lg"
+                  className="shadow-md"
                 >
                   <Plus className="h-4 w-4 mr-2" />
                   Thêm thiết bị
@@ -462,21 +637,44 @@ export default function ParentSmartHomePage() {
                   <p className="text-sm mt-1">Nhấn &quot;Thêm thiết bị&quot; để bắt đầu</p>
                 </div>
               ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {devices.map((device: Esp32Device) => {
                     const DeviceIcon = getDeviceIcon(device.type)
+                    const isOn = deviceStates[device.name] || false
                     return (
-                      <Card key={device.name} className="overflow-hidden hover:shadow-md transition-shadow">
-                        <CardContent className="p-4">
-                          <div className="flex items-start justify-between mb-3">
-                            <div className="p-2 bg-primary/10 rounded-lg">
-                              <DeviceIcon className="h-5 w-5 text-primary" />
+                      <Card 
+                        key={device.name} 
+                        className={`overflow-hidden transition-all duration-300 hover:shadow-xl border-2 ${
+                          isOn ? 'border-primary/50 bg-primary/5' : 'border-transparent'
+                        }`}
+                      >
+                        <CardContent className="p-5">
+                          <div className="flex items-start justify-between mb-4">
+                            <div className="flex items-center gap-3">
+                              <div className={`p-3 rounded-xl transition-all ${
+                                isOn 
+                                  ? 'bg-gradient-to-br from-primary to-primary/60 shadow-lg' 
+                                  : 'bg-muted'
+                              }`}>
+                                <DeviceIcon className={`h-6 w-6 ${
+                                  isOn ? 'text-primary-foreground' : 'text-muted-foreground'
+                                }`} />
+                              </div>
+                              <div>
+                                <h3 className="font-semibold text-base mb-1">{device.name}</h3>
+                                <Badge 
+                                  variant={isOn ? "default" : "secondary"} 
+                                  className="text-xs"
+                                >
+                                  {device.type}
+                                </Badge>
+                              </div>
                             </div>
                             <div className="flex gap-1">
                               <Button 
                                 variant="ghost" 
                                 size="icon" 
-                                className="h-8 w-8"
+                                className="h-8 w-8 hover:bg-primary/10"
                                 onClick={() => handleEditDevice(device)}
                               >
                                 <Edit className="h-4 w-4" />
@@ -484,15 +682,47 @@ export default function ParentSmartHomePage() {
                               <Button 
                                 variant="ghost" 
                                 size="icon" 
-                                className="h-8 w-8 text-destructive hover:text-destructive"
+                                className="h-8 w-8 text-destructive hover:bg-destructive/10"
                                 onClick={() => handleRemoveDevice(device.name)}
                               >
                                 <Trash2 className="h-4 w-4" />
                               </Button>
                             </div>
                           </div>
-                          <h3 className="font-semibold text-sm mb-1">{device.name}</h3>
-                          <Badge variant="secondary" className="text-xs">{device.type}</Badge>
+                          
+                          <Separator className="my-4" />
+                          
+                          {/* Main Control */}
+                          <div className="space-y-4">
+                            <div className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
+                              <div className="flex items-center gap-2">
+                                <Power className={`h-4 w-4 ${
+                                  isOn ? 'text-green-500' : 'text-muted-foreground'
+                                }`} />
+                                <span className="text-sm font-medium">Nguồn điện</span>
+                              </div>
+                              <div className="flex items-center gap-3">
+                                <Button
+                                  size="sm"
+                                  variant={isOn ? "default" : "outline"}
+                                  onClick={() => handleToggleDevice(device.name, isOn)}
+                                  disabled={sendMessageMut.isPending}
+                                  className={isOn ? "bg-green-500 hover:bg-green-600" : ""}
+                                >
+                                  <Power className="h-4 w-4 mr-2" />
+                                  {isOn ? 'Tắt' : 'Bật'}
+                                </Button>
+                              </div>
+                            </div>
+                            
+                            {/* Status Indicator */}
+                            {isOn && (
+                              <div className="flex items-center gap-2 text-xs text-muted-foreground animate-in fade-in slide-in-from-top-2 duration-300">
+                                <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
+                                <span>Thiết bị đang hoạt động</span>
+                              </div>
+                            )}
+                          </div>
                         </CardContent>
                       </Card>
                     )
@@ -501,8 +731,10 @@ export default function ParentSmartHomePage() {
               )}
             </CardContent>
           </Card>
+          </div>
         </div>
       )}
+      </div>
 
       {/* Device Dialog */}
       <Dialog open={showDeviceDialog} onOpenChange={setShowDeviceDialog}>
