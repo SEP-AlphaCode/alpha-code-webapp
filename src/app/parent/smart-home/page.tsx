@@ -240,7 +240,7 @@ export default function ParentSmartHomePage() {
         (() => {
           const e = error as unknown
           const is404 = e && typeof e === 'object' && 'response' in e && 
-                       (e as any)?.response?.status === 404
+                       (e as { response?: { status?: number } })?.response?.status === 404
           
           if (is404) {
             // Show create form for 404 (no ESP32 found)
