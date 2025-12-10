@@ -14,10 +14,10 @@ import 'blockly/javascript'; // Or the generator of your choice
 import { pythonHttp } from '@/utils/http';
 
 type BlocklyUIProps = {
-    robotModelId: string,
-    serial: string,
-    hasAllData: boolean,
-    data: {
+    robotModelId?: string,
+    serial?: string,
+    hasAllData?: boolean,
+    data?: {
         actions: string[][],
         extActions: string[][],
         exps: string[][],
@@ -68,10 +68,12 @@ export default function BlocklyUI({ robotModelId, serial, hasAllData, data }: Bl
         }
     }
 
-    const actualInit = () => {
+    const actualInit = (helper?: Operations) => {
+        const useHelper = helper ?? wsHelper
         if (!workspaceRef.current) return;
         if (!blocklyRef.current) return;
-        if (!wsHelper) return;
+        if (!useHelper) return;
+        if (!robotModelId || !data || !serial) return;
 
         if (!definedModels.has(robotModelId)) {
             const allBlocks = loadModelIdData(robotModelId, data.actions, data.extActions, data.exps, data.skills)
@@ -81,30 +83,50 @@ export default function BlocklyUI({ robotModelId, serial, hasAllData, data }: Bl
         const gen = buildCodeGeneratorForModelId(robotModelId, serial)
         setCodeGenerator(gen)
 
-        workspaceRef.current?.updateToolbox(wsHelper.getDefaultToolbox())
-        const newToolbox = wsHelper.getToolboxForRobotModel(robotModelId)
+        workspaceRef.current?.updateToolbox(useHelper.getDefaultToolbox())
+        const newToolbox = useHelper.getToolboxForRobotModel(robotModelId)
         // curToolbox.contents.push(robotCategory)
         workspaceRef.current.updateToolbox(newToolbox)
     }
 
     useEffect(() => {
         if (!blocklyRef || !blocklyRef.current) return;
+        console.log('Injecting blockly');
+
         workspaceRef.current = Blockly.inject(blocklyRef.current, { toolbox })
         if (!workspaceRef.current) { return; }
         const tmp = blockControls(workspaceRef.current)
         setWsHelper(tmp)
         tmp.addStrayScrollbarDestructor?.(blocklyRef.current)
         tmp.setUpUI()
+        // If data already loaded, initialize immediately with the local helper
+        if (hasAllData) {
+            try {
+                tmp.loadFromJson({})
+            } catch {}
+            actualInit(tmp)
+            if (robotModelId) setDefinedModel(prev => {
+                const s = new Set(prev); s.add(robotModelId); return s;
+            })
+        }
+        console.log('Injected blockly!');
+        
 
         // Give Blockly a chance to measure and render correctly after mount
         setTimeout(() => {
             try {
                 if (workspaceRef.current) Blockly.svgResize(workspaceRef.current)
             } catch { /* ignore */ }
-        }, 0)
+        }, 10)
 
         return () => {
-            if (!workspaceRef.current) { return; }
+            console.log('Disposing ws');
+            if (!workspaceRef.current) {
+                console.log('WS not found');
+                return;
+            }
+            console.log('WS found. Disposing it');
+
             workspaceRef.current.dispose()
             workspaceRef.current = undefined
             // restore toolbox if necessary
@@ -131,7 +153,7 @@ export default function BlocklyUI({ robotModelId, serial, hasAllData, data }: Bl
         drawerRef.current.appendChild(tb)
         setIsToolboxOpen(true)
         // redraw workspace after toolbox moves
-        setTimeout(() => { try { if (workspaceRef.current) Blockly.svgResize(workspaceRef.current) } catch {} }, 50)
+        setTimeout(() => { try { if (workspaceRef.current) Blockly.svgResize(workspaceRef.current) } catch { } }, 50)
     }
 
     const closeToolboxDrawer = () => {
@@ -142,19 +164,24 @@ export default function BlocklyUI({ robotModelId, serial, hasAllData, data }: Bl
         }
         setIsToolboxOpen(false)
         // redraw workspace after toolbox restores
-        setTimeout(() => { try { if (workspaceRef.current) Blockly.svgResize(workspaceRef.current) } catch {} }, 50)
+        setTimeout(() => { try { if (workspaceRef.current) Blockly.svgResize(workspaceRef.current) } catch { } }, 50)
     }
 
+    // initialization: run immediately after injection (above) when possible,
+    // and also run when `wsHelper` becomes available later to avoid race conditions
     useEffect(() => {
         if (!hasAllData) return;
-        // Wipe the workspace
-        wsHelper?.loadFromJson({})
-        // Redo init
-        actualInit()
-        definedModels.add(robotModelId)
-    }, [robotModelId, hasAllData])
+        if (!wsHelper) return;
+        try { wsHelper.loadFromJson({}) } catch {}
+        actualInit(wsHelper)
+        if (robotModelId) setDefinedModel(prev => { const s = new Set(prev); s.add(robotModelId); return s; })
+    }, [robotModelId, hasAllData, wsHelper])
 
+    /**
+     * Rebuild code generator when serial changes (to update websocket target)
+     */
     useEffect(() => {
+        if (!robotModelId || !data || !serial) return;
         const gen = buildCodeGeneratorForModelId(robotModelId, serial)
         setCodeGenerator(gen)
     }, [serial])
@@ -164,19 +191,23 @@ export default function BlocklyUI({ robotModelId, serial, hasAllData, data }: Bl
         const onResize = () => {
             try {
                 if (workspaceRef.current) Blockly.svgResize(workspaceRef.current)
-            } catch {}
+            } catch { }
         }
         window.addEventListener('resize', onResize)
         return () => window.removeEventListener('resize', onResize)
     }, [])
 
     const handleRun = () => {
+        if (!robotModelId) {
+            toast.error('Vui lòng chọn robot trước khi chạy')
+            return
+        }
         if (!codeGenerator || !wsHelper) return;
         try {
             const code = wsHelper.makeListCode(codeGenerator);
             executeCode(code.code, code.listVar);
         } catch {
-            toast.error('❌ Lỗi khi chạy mã')
+            toast.error('Lỗi khi chạy mã')
         }
     }
 
@@ -202,9 +233,6 @@ export default function BlocklyUI({ robotModelId, serial, hasAllData, data }: Bl
         const blockData = wsHelper.serialize();
         localStorage.setItem(key + '.' + robotModelId, JSON.stringify(blockData));
         toast.success("💾 Đã lưu kết quả!");
-        // workspaceRef.current?.getAllBlocks().forEach(b => {
-        //     console.log(b);
-        // })
     }
 
     const handleLoad = () => {
@@ -225,7 +253,7 @@ export default function BlocklyUI({ robotModelId, serial, hasAllData, data }: Bl
     }
 
     return (
-    <div className="min-h-screen flex flex-col lg:flex-row overflow-hidden pt-8 lg:pt-0">
+        <div className="min-h-screen flex flex-col lg:flex-row overflow-hidden pt-8 lg:pt-0">
             {/* Main Layout - Full Screen */}
             <div className="flex-1 flex flex-col lg:flex-row overflow-hidden min-h-0">
                 {/* Left Sidebar with Robot */}
@@ -330,7 +358,7 @@ export default function BlocklyUI({ robotModelId, serial, hasAllData, data }: Bl
                     </div>
                     {/* Mobile bottom quick actions (visible on small screens) */}
                     <div className="lg:hidden fixed bottom-0 left-0 right-0 z-50 bg-white border-t shadow-md p-2"
-                         style={{ paddingBottom: 'calc(env(safe-area-inset-bottom, 0px) + 8px)' }}>
+                        style={{ paddingBottom: 'calc(env(safe-area-inset-bottom, 0px) + 8px)' }}>
                         <div className="max-w-4xl mx-auto flex items-center justify-between px-2">
                             <Button size="sm" onClick={handleRun} disabled={isRunning} className="flex-1 mx-1">
                                 <Play className="w-5 h-5 mr-2" />

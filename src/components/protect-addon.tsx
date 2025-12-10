@@ -79,7 +79,6 @@ export const ProtectAddon = ({
   const validatePayload: ValidateAddon = { key: sessionKey, accountId, category };
   // Small log to help debugging in dev
   // eslint-disable-next-line no-console
-  console.log("ProtectAddon: calling useValidateAccess with", validatePayload);
   // Call the hook unconditionally — the internal `enabled` option will prevent queries when data is missing.
   const query = useValidateAccess(validatePayload);
 

@@ -72,7 +72,7 @@ const customBlockTemplate: BaseBlockDef[] = [
         "type": ".expression",
         "tooltip": "",
         "helpUrl": "",
-        "message0": "Execute expression felt %1 %2 times %3",
+        "message0": "Execute expression %1 %2 times %3",
         "args0": [
             {
                 "type": "field_dropdown",

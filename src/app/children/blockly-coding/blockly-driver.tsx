@@ -26,16 +26,13 @@ export default function UseMe() {
         extActions: to2DArray(extActions),
         skills: to2DArray(skills)
     }
-    if (!selectedRobot) {
-        return <p>...</p>
-    }
-
+    
     return (
         <div className="relative">
             <ProtectAddon category={4}>
                 <BlocklyUI
-                    robotModelId={selectedRobot.robotModelId}
-                    serial={selectedRobot.serialNumber}
+                    robotModelId={selectedRobot?.robotModelId}
+                    serial={selectedRobot?.serialNumber}
                     hasAllData={!isLoading}
                     data={data}
                 />
