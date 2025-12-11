@@ -30,7 +30,7 @@ export type Activity = {
   status: number;
   type: string;
   createdDate: string;
-  lastUpdate: string;
+  lastUpdated: string;
   statusText: string;
   robotModelId: string;
 }
