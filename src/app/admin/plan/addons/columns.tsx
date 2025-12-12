@@ -30,6 +30,8 @@ const formatCategory = (category: number) => {
       return "Nhà thông minh"
     case 4:
       return "Lập trình Blockly"
+    case 5:
+      return "Phép thuật tranh vẽ"
     default:
       return "Khác"
   }
