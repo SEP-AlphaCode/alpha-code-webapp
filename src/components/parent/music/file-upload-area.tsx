@@ -96,7 +96,7 @@ export default function FileUploadArea({
                   </div>
                   <div className="flex items-center gap-2 px-4 py-2 bg-gray-50 border border-gray-200 rounded-full shadow-sm hover:shadow-md transition-all duration-200">
                     <Bot className="w-4 h-4 text-gray-600" />
-                    <span className="text-sm font-medium text-gray-700">Vũ Đạo AI</span>
+                    <span className="text-sm font-medium text-gray-700">Vũ Đạo Tự Động</span>
                   </div>
                   <div className="flex items-center gap-2 px-4 py-2 bg-gray-50 border border-gray-200 rounded-full shadow-sm hover:shadow-md transition-all duration-200">
                     <Zap className="w-4 h-4 text-gray-600" />

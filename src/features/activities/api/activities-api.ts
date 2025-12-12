@@ -20,7 +20,6 @@ export const getPagedActivitiesByAccount = async (
   signal?: AbortSignal,
   robotModelId?: string
 ) => {
-  console.log('API Call - getPagedActivities:', { page, size, search, robotModelId, accountId });
   try {
     const response = await activitiesHttp.get<ActivitiesResponse>('/activities/account', {
       params: {
@@ -33,7 +32,6 @@ export const getPagedActivitiesByAccount = async (
       signal,
     });
 
-    console.log('API Response - getPagedActivities:', response.data);
     return response.data;
   } catch (error: unknown) {
     if (error && typeof error === 'object') {

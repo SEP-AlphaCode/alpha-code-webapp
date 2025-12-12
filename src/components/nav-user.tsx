@@ -1,10 +1,7 @@
 "use client"
 
 import {
-  BadgeCheck,
-  Bell,
   ChevronsUpDown,
-  CreditCard,
   LogOut,
   User,
 } from "lucide-react"
@@ -116,25 +113,13 @@ export function NavUser({
                 className="hover:bg-gray-100 hover:text-gray-900 transition-colors duration-200 cursor-pointer"
               >
                 <User />
-                Profile
-              </DropdownMenuItem>
-              <DropdownMenuItem className="hover:bg-gray-100 hover:text-gray-900 transition-colors duration-200 cursor-pointer">
-                <BadgeCheck />
-                Account
-              </DropdownMenuItem>
-              <DropdownMenuItem className="hover:bg-gray-100 hover:text-gray-900 transition-colors duration-200 cursor-pointer">
-                <CreditCard />
-                Billing
-              </DropdownMenuItem>
-              <DropdownMenuItem className="hover:bg-gray-100 hover:text-gray-900 transition-colors duration-200 cursor-pointer">
-                <Bell />
-                Notifications
+                Hồ Sơ
               </DropdownMenuItem>
             </DropdownMenuGroup>
             <DropdownMenuSeparator />
             <DropdownMenuItem onClick={logOut} className="hover:bg-red-100 hover:text-red-900 transition-colors duration-200 cursor-pointer">
               <LogOut />
-              Log out
+              Đăng Xuất
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>

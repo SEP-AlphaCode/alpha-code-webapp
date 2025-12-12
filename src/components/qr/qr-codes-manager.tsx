@@ -105,7 +105,7 @@ function CreateQRCodeModal({ isOpen, onClose, onSubmit, isLoading, accountId }: 
             />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="qrCode">Nội dung QR *</Label>
+            <Label htmlFor="qrCode">Mã Code QR *</Label>
             <Input
               id="qrCode"
               value={formData.qrCode}
@@ -231,10 +231,8 @@ export default function QRCodesManager() {
 
   const accountId = getCurrentUserAccountId()
 
-  // backend expects enum numbers: 1 = enabled, 2 = disabled
-  const statusNumber = statusFilter === 'enabled' ? 1 : statusFilter === 'disabled' ? 2 : undefined
-
-  const qrCodesQuery = qrCodeHooks.useGetAllQRCodes(page, pageSize, statusNumber, accountId)
+  // Load all QR codes without server-side status filter (filter on client for better UX)
+  const qrCodesQuery = qrCodeHooks.useGetAllQRCodes(page, pageSize, undefined, accountId)
   const { data: qrCodesResponse, isLoading, error, refetch, isFetching } = qrCodesQuery
   const createQRCodeMutation = qrCodeHooks.useCreateQRCode()
   const deleteQRCodeMutation = qrCodeHooks.useDeleteQRCode()
@@ -279,7 +277,6 @@ export default function QRCodesManager() {
     return list.filter(q => {
       const matchesSearch = q.name.toLowerCase().includes(searchTerm.toLowerCase())
         || q.qrCode.toLowerCase().includes(searchTerm.toLowerCase())
-        || q.activityId.toLowerCase().includes(searchTerm.toLowerCase())
       const matchesStatus = statusFilter === "all" || getStatusText(q.status) === statusFilter
       return matchesSearch && matchesStatus
     })
@@ -357,8 +354,8 @@ export default function QRCodesManager() {
             <QrCode className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{qrCodes?.length || 0}</div>
-            <p className="text-xs text-muted-foreground">Số thẻ QR trong hệ thống</p>
+            <div className="text-2xl font-bold">{filteredQRCodes?.length || 0}</div>
+            <p className="text-xs text-muted-foreground">Số thẻ QR {searchTerm || statusFilter !== "all" ? "phù hợp" : "trong hệ thống"}</p>
           </CardContent>
         </Card>
         <Card className="border-l-4 border-l-green-500">
@@ -367,7 +364,7 @@ export default function QRCodesManager() {
             <div className="h-4 w-4 bg-green-500 rounded-full"></div>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{qrCodes?.filter((q: QRCodeType) => q.status === 1).length || 0}</div>
+            <div className="text-2xl font-bold">{filteredQRCodes?.filter((q: QRCodeType) => q.status === 1).length || 0}</div>
             <p className="text-xs text-muted-foreground">Sẵn sàng sử dụng</p>
           </CardContent>
         </Card>
@@ -377,7 +374,7 @@ export default function QRCodesManager() {
             <div className="h-4 w-4 bg-red-500 rounded-full"></div>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{qrCodes?.filter((q: QRCodeType) => q.status === 2).length || 0}</div>
+            <div className="text-2xl font-bold">{filteredQRCodes?.filter((q: QRCodeType) => q.status === 2).length || 0}</div>
             <p className="text-xs text-muted-foreground">Không hoạt động</p>
           </CardContent>
         </Card>
@@ -397,7 +394,7 @@ export default function QRCodesManager() {
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
                 <Input
-                  placeholder="Tìm theo tên, nội dung, hoặc hoạt động..."
+                  placeholder="Tìm theo tên hoặc nội dung QR..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   className="pl-10"
