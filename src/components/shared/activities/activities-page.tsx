@@ -15,9 +15,6 @@ import {
   Clock,
   Users,
   Play,
-  MoreVertical,
-  Edit,
-  Eye,
   BookOpen,
   Zap,
   Trophy,
@@ -25,17 +22,21 @@ import {
   Target,
   Activity,
   Loader2,
-  Square
+  Square,
+  Trash2,
+  Eye,
+  Edit,
+  MoreVertical
 } from "lucide-react"
 import { Pagination } from "@/components/ui/pagination"
+import { PerPageSelector } from "@/components/ui/per-page-selector"
 import {
   DropdownMenu,
-  DropdownMenuTrigger,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import { PerPageSelector } from "@/components/ui/per-page-selector"
-import { useActivities, useCreateActivity, useDeleteActivity } from "@/features/activities/hooks/use-activities"
+import { useActivities, useCreateActivity, useDeleteActivity, useUpdateActivity } from "@/features/activities/hooks/use-activities"
 import { useRobotControls } from "@/features/users/hooks/use-websocket"
 import { useRobotStore } from "@/hooks/use-robot-store"
 import { Activity as ActivityType, ActivityData } from "@/types/activities"
@@ -52,10 +53,13 @@ export default function ActivitiesPage() {
   const [searchTerm, setSearchTerm] = useState("")
   const [debouncedSearchTerm, setDebouncedSearchTerm] = useState("")
   const [filterType, setFilterType] = useState<string>("all")
-  const [filterStatus, setFilterStatus] = useState<string>("1")
+  const [filterStatus, setFilterStatus] = useState<string>("all")
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false)
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false)
   const [activityToDelete, setActivityToDelete] = useState<ActivityType | null>(null)
+  const [isViewModalOpen, setIsViewModalOpen] = useState(false)
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false)
+  const [selectedActivity, setSelectedActivity] = useState<ActivityType | null>(null)
   const [currentPage, setCurrentPage] = useState(1)
   const [perPage, setPerPage] = useState(12)
   const [accountId, setAccountId] = useState<string>('');
@@ -95,6 +99,7 @@ export default function ActivitiesPage() {
   const { data: activitiesData, isLoading, error, refetch } = useActivities(currentPage, perPage, accountId, debouncedSearchTerm, selectedRobot?.robotModelId ?? '');
   const createActivityMutation = useCreateActivity()
   const deleteActivityMutation = useDeleteActivity()
+  const updateActivityMutation = useUpdateActivity()
 
   const activities = useMemo(() => activitiesData?.data || [], [activitiesData?.data])
   const pagination = useMemo(() => activitiesData ? {
@@ -153,11 +158,6 @@ export default function ActivitiesPage() {
   const getStatusText = (status: number) => { switch (status) { case 1: return "Đã xuất bản"; case 0: return "Bản nháp"; case 2: return "Đã lưu trữ"; default: return "Không xác định"; } }
   const formatDate = (dateString: string) => new Date(dateString).toLocaleDateString("vi-VN", { year: "numeric", month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" })
 
-  const truncateLongWords = (s: string, max = 50) => {
-    if (!s) return s
-    return s.replace(/\S{51,}/g, (m) => m.slice(0, max) + '…')
-  }
-
   const CreateActivityForm = () => {
     const [formData, setFormData] = useState({ name: "", type: "", data: "", status: 1, statusText: "ACTIVE", accountId: accountId || "", robotModelId: selectedRobot?.robotModelId ?? "" })
     useEffect(() => { setFormData(prev => ({ ...prev, accountId: accountId || "", robotModelId: selectedRobot?.robotModelId ?? "" })) }, [accountId, selectedRobot?.robotModelId])
@@ -182,10 +182,6 @@ export default function ActivitiesPage() {
               <SelectTrigger><SelectValue placeholder="Chọn loại" /></SelectTrigger>
               <SelectContent>
                 <SelectItem value="dance_with_music">Nhảy với nhạc</SelectItem>
-                <SelectItem value="lesson">Bài học</SelectItem>
-                <SelectItem value="game">Trò chơi</SelectItem>
-                <SelectItem value="exercise">Bài tập</SelectItem>
-                <SelectItem value="project">Dự án</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -238,10 +234,6 @@ export default function ActivitiesPage() {
                 <SelectContent>
                   <SelectItem value="all">Tất cả loại</SelectItem>
                   <SelectItem value="dance_with_music">Nhảy với nhạc</SelectItem>
-                  <SelectItem value="lesson">Bài học</SelectItem>
-                  <SelectItem value="game">Trò chơi</SelectItem>
-                  <SelectItem value="exercise">Bài tập</SelectItem>
-                  <SelectItem value="project">Dự án</SelectItem>
                 </SelectContent>
               </Select>
               <Select value={filterStatus} onValueChange={setFilterStatus}>
@@ -251,7 +243,6 @@ export default function ActivitiesPage() {
                   <SelectItem value="1">Đã xuất bản</SelectItem>
                   <SelectItem value="0">Bản nháp</SelectItem>
                   <SelectItem value="2">Đã lưu trữ</SelectItem>
-                  <SelectItem value="dance_with_music">Nhảy với nhạc</SelectItem>
                 </SelectContent>
               </Select>
               <Dialog open={isCreateModalOpen} onOpenChange={setIsCreateModalOpen}>
@@ -270,17 +261,32 @@ export default function ActivitiesPage() {
             <div className="text-center py-16"><Activity className="w-16 h-16 text-gray-400 mx-auto mb-4" /><h3 className="text-lg font-semibold text-gray-900 mb-2">Không tìm thấy hoạt động</h3><p className="text-gray-600 mb-6">Thử thay đổi bộ lọc hoặc tạo hoạt động mới</p><Button onClick={() => setIsCreateModalOpen(true)}><Plus className="w-4 h-4 mr-2" />Tạo hoạt động đầu tiên</Button></div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {filteredActivities.map((activity) => (
-                <Card key={activity.id} className="group hover:shadow-lg transition-all duration-200 border-0 shadow-md h-full">
+                {filteredActivities.map((activity) => (
+                  <Card key={activity.id} className="group hover:shadow-lg transition-all duration-200 border-0 shadow-md h-full">
                   <CardHeader className="pb-3">
                     <div className="flex items-start justify-between">
-                      <div className="flex items-center gap-2">{getTypeIcon(activity.type)}<Badge variant="secondary" className={getTypeColor(activity.type)}>{activity.type === "lesson" ? "Bài học" : activity.type === "game" ? "Trò chơi" : activity.type === "exercise" ? "Bài tập" : "Dự án"}</Badge></div>
+                      <div className="flex items-center gap-2">{getTypeIcon(activity.type)}<Badge variant="secondary" className={getTypeColor(activity.type)}>{activity.type === "dance_with_music" ? "Nhảy với nhạc" : activity.type}</Badge></div>
                       <DropdownMenu>
-                        <DropdownMenuTrigger asChild><Button variant="ghost" size="sm" className="opacity-0 group-hover:opacity-100 transition-opacity"><MoreVertical className="w-4 h-4" /></Button></DropdownMenuTrigger>
+                        <DropdownMenuTrigger asChild>
+                          <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                            <MoreVertical className="h-4 w-4" />
+                          </Button>
+                        </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
-                          <DropdownMenuItem onSelect={() => { /* view */ }}>Xem</DropdownMenuItem>
-                          <DropdownMenuItem onSelect={() => { /* edit */ }}>Chỉnh sửa</DropdownMenuItem>
-                          <DropdownMenuItem onSelect={() => handleDeleteClick(activity)} className="text-red-600 focus:text-red-600">Xóa</DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => {
+                            setSelectedActivity(activity)
+                            setIsViewModalOpen(true)
+                          }}>
+                            <Eye className="mr-2 h-4 w-4" />
+                            Xem
+                          </DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => {
+                            setSelectedActivity(activity)
+                            setIsEditModalOpen(true)
+                          }}>
+                            <Edit className="mr-2 h-4 w-4" />
+                            Chỉnh sửa
+                          </DropdownMenuItem>
                         </DropdownMenuContent>
                       </DropdownMenu>
                     </div>
@@ -290,24 +296,14 @@ export default function ActivitiesPage() {
                     {activity.type === "dance_with_music" && activity.data && activity.data.activity ? (
                       <div className="space-y-3">
                         <div className="text-sm text-gray-600">
-                          <div className="flex items-center gap-2 mb-2"><div className="w-2 h-2 bg-green-500 rounded-full"></div><span className="font-medium">Hoạt động nhảy múa với AI</span></div>
+                          <div className="flex items-center gap-2 mb-2"><div className="w-2 h-2 bg-green-500 rounded-full"></div><span className="font-medium">Hoạt động nhảy múa</span></div>
                           {activity.data.activity.actions && (
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 p-3 bg-gray-50 rounded-lg">
                               <div><span className="text-xs text-gray-500">Số hành động:</span><p className="font-semibold text-lg text-blue-600">{activity.data.activity.actions.length}</p></div>
                               <div><span className="text-xs text-gray-500">Thời lượng:</span><p className="font-semibold text-lg text-green-600">{activity.data.music_info?.duration || Math.max(...activity.data.activity.actions.map((a: ActionActivites) => a.start_time + a.duration)).toFixed(1)}s</p></div>
                             </div>
                           )}
-                          {activity.data.music_info?.name && (
-                            <div className="flex items-start gap-2 mt-2 text-sm text-purple-600 bg-purple-50 p-2 rounded w-full">
-                              <span className="flex-shrink-0">🎵</span>
-                              <div
-                                className="font-medium flex-1 min-w-0 break-all whitespace-normal overflow-hidden line-clamp-2"
-                                title={activity.data.music_info.name}
-                              >
-                                {truncateLongWords(activity.data.music_info.name)}
-                              </div>
-                            </div>
-                          )}
+                          {activity.data.music_info?.name && (<div className="flex items-center gap-2 mt-2 text-sm text-purple-600 bg-purple-50 p-2 rounded"><span>🎵</span><span className="font-medium">{activity.data.music_info.name}</span></div>)}
                         </div>
                       </div>
                     ) : (<p className="text-gray-600 text-sm line-clamp-3">Hoạt động Alpha Mini - {activity.type}</p>)}
@@ -324,10 +320,13 @@ export default function ActivitiesPage() {
                     </div>
                     <div className="flex flex-wrap gap-2 pt-4">
                       <Button size="sm" className="flex-1 min-w-[120px]" onClick={() => handleStartActivity(activity)} disabled={isRobotLoading || !selectedRobotSerial}>{isRobotLoading ? (<Loader2 className="w-4 h-4 mr-1 animate-spin" />) : (<Play className="w-4 h-4 mr-1" />)}Bắt đầu</Button>
-                      <Button size="sm" variant="outline" className="flex-shrink-0"><Eye className="w-4 h-4" /></Button>
-                      <Button size="sm" variant="outline" className="flex-shrink-0"><Edit className="w-4 h-4" /></Button>
+                      <Button size="sm" variant="destructive" onClick={() => handleDeleteClick(activity)} className="flex-shrink-0"><Trash2 className="w-4 h-4" /></Button>
                     </div>
-                    <div className="text-xs text-gray-400 border-t pt-3">Lần cuối cập nhật: {activity.lastUpdate != null ? formatDate(activity.lastUpdate) : 'N/A'}</div>
+                    {activity.lastUpdated && activity.lastUpdated !== activity.createdDate && (
+                      <div className="text-xs text-gray-400 border-t pt-3 mt-3">
+                        Cập nhật: {formatDate(activity.lastUpdated)}
+                      </div>
+                    )}
                   </CardContent>
                 </Card>
               ))}
@@ -348,6 +347,199 @@ export default function ActivitiesPage() {
             <Card className="text-center border-0 shadow-md"><CardContent className="p-6"><div className="w-12 h-12 bg-orange-100 rounded-full flex items-center justify-center mx-auto mb-4"><Clock className="w-6 h-6 text-orange-600" /></div><h3 className="text-2xl font-bold text-gray-900">{pagination?.total_count || 0}</h3><p className="text-gray-600">Tổng số</p></CardContent></Card>
           </div>
         </div>
+
+        {/* View Activity Modal */}
+        <Dialog open={isViewModalOpen} onOpenChange={setIsViewModalOpen}>
+          <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle>Chi tiết hoạt động</DialogTitle>
+            </DialogHeader>
+            {selectedActivity && (
+              <div className="space-y-6 pt-4">
+                <div>
+                  <label className="text-sm font-semibold text-gray-700 block mb-2">Tên hoạt động</label>
+                  <p className="text-gray-900 text-lg">{selectedActivity.name}</p>
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="text-sm font-semibold text-gray-700 block mb-2">Loại hoạt động</label>
+                    <Badge variant="secondary" className={getTypeColor(selectedActivity.type)}>
+                      {selectedActivity.type === "dance_with_music" ? "Nhảy với nhạc" : selectedActivity.type}
+                    </Badge>
+                  </div>
+                  <div>
+                    <label className="text-sm font-semibold text-gray-700 block mb-2">Trạng thái</label>
+                    <Badge variant="outline" className={getStatusColor(selectedActivity.status)}>
+                      {getStatusText(selectedActivity.status)}
+                    </Badge>
+                  </div>
+                </div>
+                {selectedActivity.type === "dance_with_music" && selectedActivity.data && selectedActivity.data.activity && (
+                  <div className="space-y-4">
+                    <div>
+                      <label className="text-sm font-semibold text-gray-700 block mb-2">Thông tin nhạc</label>
+                      {selectedActivity.data.music_info?.name && (
+                        <div className="flex items-center gap-2 text-purple-600 bg-purple-50 p-3 rounded-lg">
+                          <span>🎵</span>
+                          <span className="font-medium">{selectedActivity.data.music_info.name}</span>
+                          {selectedActivity.data.music_info.duration && (
+                            <span className="text-sm">- {selectedActivity.data.music_info.duration}s</span>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                    {selectedActivity.data.activity.actions && (
+                      <div>
+                        <label className="text-sm font-semibold text-gray-700 block mb-2">Hành động ({selectedActivity.data.activity.actions.length})</label>
+                        <div className="grid grid-cols-2 gap-4 p-4 bg-gray-50 rounded-lg">
+                          <div>
+                            <span className="text-xs text-gray-500">Số hành động:</span>
+                            <p className="font-semibold text-2xl text-blue-600">{selectedActivity.data.activity.actions.length}</p>
+                          </div>
+                          <div>
+                            <span className="text-xs text-gray-500">Thời lượng:</span>
+                            <p className="font-semibold text-2xl text-green-600">
+                              {selectedActivity.data.music_info?.duration || 
+                                Math.max(...selectedActivity.data.activity.actions.map((a: ActionActivites) => a.start_time + a.duration)).toFixed(1)}s
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )}
+                <div>
+                  <label className="text-sm font-semibold text-gray-700 block mb-2">Ngày tạo</label>
+                  <p className="text-gray-600">{formatDate(selectedActivity.createdDate)}</p>
+                </div>
+                {selectedActivity.lastUpdated && (
+                  <div>
+                    <label className="text-sm font-semibold text-gray-700 block mb-2">Cập nhật lần cuối</label>
+                    <p className="text-gray-600">{formatDate(selectedActivity.lastUpdated)}</p>
+                  </div>
+                )}
+                <div className="flex justify-end pt-4">
+                  <Button onClick={() => setIsViewModalOpen(false)} variant="outline">
+                    Đóng
+                  </Button>
+                </div>
+              </div>
+            )}
+          </DialogContent>
+        </Dialog>
+
+        {/* Edit Activity Modal */}
+        <Dialog open={isEditModalOpen} onOpenChange={setIsEditModalOpen}>
+          <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle>Chỉnh sửa hoạt động</DialogTitle>
+            </DialogHeader>
+            {selectedActivity && (
+              <div className="space-y-6 pt-4">
+                <div>
+                  <label className="text-sm font-medium text-gray-700 block mb-2">Tên hoạt động</label>
+                  <Input 
+                    value={selectedActivity.name} 
+                    onChange={(e) => setSelectedActivity({...selectedActivity, name: e.target.value})} 
+                    required 
+                  />
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="text-sm font-semibold text-gray-700 block mb-2">Loại hoạt động</label>
+                    <Badge variant="secondary" className={getTypeColor(selectedActivity.type)}>
+                      {selectedActivity.type === "dance_with_music" ? "Nhảy với nhạc" : selectedActivity.type}
+                    </Badge>
+                  </div>
+                  <div>
+                    <label className="text-sm font-semibold text-gray-700 block mb-2">Trạng thái</label>
+                    <Badge variant="outline" className={getStatusColor(selectedActivity.status)}>
+                      {getStatusText(selectedActivity.status)}
+                    </Badge>
+                  </div>
+                </div>
+                {selectedActivity.type === "dance_with_music" && selectedActivity.data && selectedActivity.data.activity && (
+                  <div className="space-y-4">
+                    <div>
+                      <label className="text-sm font-semibold text-gray-700 block mb-2">Thông tin nhạc</label>
+                      {selectedActivity.data.music_info?.name && (
+                        <div className="flex items-center gap-2 text-purple-600 bg-purple-50 p-3 rounded-lg">
+                          <span>🎵</span>
+                          <span className="font-medium">{selectedActivity.data.music_info.name}</span>
+                          {selectedActivity.data.music_info.duration && (
+                            <span className="text-sm">- {selectedActivity.data.music_info.duration}s</span>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                    {selectedActivity.data.activity.actions && (
+                      <div>
+                        <label className="text-sm font-semibold text-gray-700 block mb-2">Hành động ({selectedActivity.data.activity.actions.length})</label>
+                        <div className="grid grid-cols-2 gap-4 p-4 bg-gray-50 rounded-lg">
+                          <div>
+                            <span className="text-xs text-gray-500">Số hành động:</span>
+                            <p className="font-semibold text-2xl text-blue-600">{selectedActivity.data.activity.actions.length}</p>
+                          </div>
+                          <div>
+                            <span className="text-xs text-gray-500">Thời lượng:</span>
+                            <p className="font-semibold text-2xl text-green-600">
+                              {selectedActivity.data.music_info?.duration || 
+                                Math.max(...selectedActivity.data.activity.actions.map((a: ActionActivites) => a.start_time + a.duration)).toFixed(1)}s
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )}
+                <div>
+                  <label className="text-sm font-semibold text-gray-700 block mb-2">Ngày tạo</label>
+                  <p className="text-gray-600">{formatDate(selectedActivity.createdDate)}</p>
+                </div>
+                {selectedActivity.lastUpdated && (
+                  <div>
+                    <label className="text-sm font-semibold text-gray-700 block mb-2">Cập nhật lần cuối</label>
+                    <p className="text-gray-600">{formatDate(selectedActivity.lastUpdated)}</p>
+                  </div>
+                )}
+                <div className="flex gap-2 pt-4">
+                  <Button onClick={() => {
+                    if (selectedActivity) {
+                      updateActivityMutation.mutate(
+                        { id: selectedActivity.id, data: { name: selectedActivity.name } },
+                        {
+                          onSuccess: () => {
+                            setIsEditModalOpen(false)
+                            setSelectedActivity(null)
+                          }
+                        }
+                      )
+                    }
+                  }} className="flex-1" disabled={updateActivityMutation.isPending}>
+                    {updateActivityMutation.isPending ? (
+                      <>
+                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                        Đang cập nhật...
+                      </>
+                    ) : (
+                      <>
+                        <Edit className="w-4 h-4 mr-2" />
+                        Cập nhật
+                      </>
+                    )}
+                  </Button>
+                  <Button 
+                    variant="outline" 
+                    onClick={() => setIsEditModalOpen(false)}
+                    disabled={updateActivityMutation.isPending}
+                  >
+                    Hủy
+                  </Button>
+                </div>
+              </div>
+            )}
+          </DialogContent>
+        </Dialog>
 
         {/* Delete Confirmation Modal */}
         <Dialog open={isDeleteModalOpen} onOpenChange={setIsDeleteModalOpen}>

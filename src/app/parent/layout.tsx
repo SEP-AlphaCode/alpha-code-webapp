@@ -8,7 +8,7 @@ import { getUserInfoFromToken } from "@/utils/tokenUtils";
 import { AccountData } from "@/types/account";
 import { UserHeader } from "@/components/parent/user-header";
 import { UserSidebar } from "@/components/parent/user-sidebar";
-import { Activity, BookPlus, Bot, Gamepad, Home, LayoutDashboard, Music, QrCode, HomeIcon } from "lucide-react";
+import { Activity, BookPlus, Bot, Gamepad, Home, LayoutDashboard, Music, QrCode, HomeIcon ,  Wand2 } from "lucide-react";
 
 interface UserLayoutProps {
   children: React.ReactNode;
@@ -51,6 +51,7 @@ export default function UserLayout({ children }: UserLayoutProps) {
     { name: "Âm Nhạc", href: "/parent/music", icon: Music },
     { name: "Mã QR", href: "/parent/qr-codes", icon: QrCode },
     { name: "Khoá học của tôi", href: "/parent/courses/my-course", icon: BookPlus },
+    { name: "Phép thuật tranh vẽ", href: "/parent/magic-sketch", icon: Wand2 },
   ];
 
   const isActiveRoute = (href: string) => {

@@ -21,7 +21,9 @@ interface Props {
 export default function CourseCard({ course, variant = 'grid', basePath = '/parent/courses', onSelect }: Props) {
   const router = useRouter()
   const totalLessons = 'totalLesson' in course ? course.totalLesson : ('totalLessons' in course ? course.totalLessons : 0)
-  const progressPercent = 'progressPercent' in course ? course.progressPercent : undefined
+  const rawProgressPercent = 'progressPercent' in course ? course.progressPercent : undefined
+  // Limit progress to maximum 100%
+  const progressPercent = rawProgressPercent !== undefined ? Math.min(Math.round(rawProgressPercent), 100) : undefined
   const price = 'price' in course ? (course.price as number) : undefined
 
   const handleClick = async () => {

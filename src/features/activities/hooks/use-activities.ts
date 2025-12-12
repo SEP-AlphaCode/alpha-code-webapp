@@ -85,7 +85,7 @@ export const useUpdateActivity = () => {
       updateActivity(id, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['activities'] });
-      toast.success('Activity updated successfully!');
+      toast.success('Chỉnh sửa hoạt động thành công!');
     },
     onError: (error: unknown) => {
       const errorMessage = error && typeof error === 'object' && 'message' in error 
