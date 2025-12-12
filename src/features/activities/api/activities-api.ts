@@ -51,7 +51,7 @@ export const getActivityById = async (id: string) => {
     return response.data;
 };
 
-export const createActivity = async (activityData: Omit<Activity, 'id' | 'createdDate' | 'lastUpdate'>) => {
+export const createActivity = async (activityData: Omit<Activity, 'id' | 'createdDate' | 'lastUpdated'>) => {
   try {
     const response = await activitiesHttp.post('/activities', activityData);
     return response.data;

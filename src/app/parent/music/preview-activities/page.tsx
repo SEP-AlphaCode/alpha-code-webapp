@@ -158,7 +158,7 @@ export default function PreviewActivitiesPage() {
         return
       }
 
-      const activityData: Omit<Activity, 'id' | 'createdDate' | 'lastUpdate'> = {
+      const activityData: Omit<Activity, 'id' | 'createdDate' | 'lastUpdated'> = {
         accountId: userInfo.id,
         data: dancePlan,
         name: trimmedName,
