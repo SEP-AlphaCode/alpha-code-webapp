@@ -1,13 +1,13 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
 import {
   ImageIcon, Video, PlayCircle, Clock, ArrowLeft,
-  Wand2, CheckCircle2, RefreshCcw, X, Edit3, Loader2, AlertCircle
+  Wand2, CheckCircle2, RefreshCcw, X, Edit3, Loader2, AlertCircle, Play
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { VideoCapture } from "@/types/magic-sketch";
@@ -45,24 +45,43 @@ export const SketchDetailView = ({ item, onBack }: SketchDetailViewProps) => {
   const [description, setDescription] = useState(item.description || "");
   const [isRegenerating, setIsRegenerating] = useState(false);
   const [showModal, setShowModal] = useState(false);
+  
+  // State quản lý trạng thái UI
+  const [isPlaying, setIsPlaying] = useState(false);
+  
+  // 1. Tạo Ref để điều khiển video trực tiếp
+  const videoRef = useRef<HTMLVideoElement>(null);
 
-  // Hook generate
   const { mutate: generate, isPending } = useGenerateVideo();
 
-  // Reset state khi đổi item
+  // Reset state khi item thay đổi
   useEffect(() => {
     setDescription(item.description || "");
     setIsRegenerating(false);
+    setIsPlaying(false);
   }, [item]);
 
   const handleExecute = () => {
     generate({ id: item.id, description: description });
     setIsRegenerating(false);
+    setIsPlaying(false);
   };
 
   const handlePreSubmit = () => {
     if (!description.trim()) setShowModal(true);
     else handleExecute();
+  };
+
+  // 2. Hàm xử lý Play Video (Fix lỗi bấm 2 lần)
+  const handlePlayVideo = () => {
+    setIsPlaying(true); // Cập nhật UI để hiện controls
+    
+    // Đợi 1 chút để React render xong controls rồi mới gọi play
+    setTimeout(() => {
+        if (videoRef.current) {
+            videoRef.current.play().catch(err => console.error("Auto-play blocked:", err));
+        }
+    }, 0);
   };
 
   return (
@@ -81,7 +100,7 @@ export const SketchDetailView = ({ item, onBack }: SketchDetailViewProps) => {
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 h-auto lg:h-[650px]">
-          {/* CỘT TRÁI: ẢNH INPUT */}
+          {/* CỘT TRÁI */}
           <div className="lg:col-span-4 flex flex-col gap-4">
             <Card className="h-full border-blue-100 shadow-sm overflow-hidden flex flex-col">
               <div className="bg-gray-50 p-3 border-b font-medium text-gray-700 flex items-center gap-2 text-sm">
@@ -93,7 +112,7 @@ export const SketchDetailView = ({ item, onBack }: SketchDetailViewProps) => {
             </Card>
           </div>
 
-          {/* CỘT PHẢI: VIDEO / FORM */}
+          {/* CỘT PHẢI */}
           <div className="lg:col-span-8">
             <Card className="h-full border-blue-100 shadow-md flex flex-col overflow-hidden">
               <div className="bg-white p-3 border-b font-medium text-gray-900 flex items-center justify-between">
@@ -105,32 +124,35 @@ export const SketchDetailView = ({ item, onBack }: SketchDetailViewProps) => {
 
               <div className="flex-1 flex flex-col relative bg-gray-900">
                 
-                {/* ================================================================================== */}
-                {/* VIDEO PLAYER - ĐÃ CHỈNH SỬA */}
-                {/* ================================================================================== */}
+                {/* VIDEO PLAYER AREA */}
                 {item.isCreated && !isPending && item.videoUrl && (
-                  <div 
-                    className={cn(
-                      // Thêm padding (p-6) và background tối để tạo khung
-                      "flex-1 flex items-center justify-center overflow-hidden p-6 transition-all bg-gray-900", 
-                      isRegenerating ? "opacity-30 blur-sm" : ""
-                    )}
-                  >
+                  <div className={cn("flex-1 flex items-center justify-center overflow-hidden p-6 transition-all bg-gray-900 relative group", isRegenerating ? "opacity-30 blur-sm" : "")}>
+                    
+                    {/* 3. Gắn ref vào video và bỏ autoPlay tự động của React */}
                     <video 
+                      ref={videoRef}
                       src={item.videoUrl} 
-                      controls={!isRegenerating} 
-                      autoPlay 
+                      controls={isPlaying} 
                       loop 
-                      // Thay đổi style cho thẻ video:
-                      // - w-auto h-auto: Giữ tỷ lệ gốc
-                      // - max-h-[450px]: Giới hạn chiều cao tối đa
-                      // - max-w-full: Không tràn ngang
-                      // - rounded-lg & shadow: Bo góc và đổ bóng đẹp mắt
                       className="w-auto h-auto max-w-full max-h-[450px] object-contain rounded-lg shadow-[0_10px_30px_rgba(0,0,0,0.5)]" 
+                      // Khi video bị pause thủ công, ta có thể hiện lại nút Play lớn nếu muốn
+                      onPause={() => setIsPlaying(false)}
+                      onPlay={() => setIsPlaying(true)}
                     />
+
+                    {/* NÚT PLAY LỚN */}
+                    {!isPlaying && (
+                        <div className="absolute inset-0 flex items-center justify-center z-20 bg-black/20 backdrop-blur-[1px]">
+                            <button 
+                                onClick={handlePlayVideo} // Gọi hàm xử lý mới
+                                className="transform transition-all duration-300 hover:scale-110 group-hover:bg-blue-600/90 bg-blue-600 text-white rounded-full p-6 shadow-2xl border-4 border-white/20"
+                            >
+                                <Play className="w-12 h-12 fill-current pl-1" />
+                            </button>
+                        </div>
+                    )}
                   </div>
                 )}
-                {/* ================================================================================== */}
 
                 {/* FORM INPUT AREA (Giữ nguyên) */}
                 {(!item.isCreated || isRegenerating || isPending) && (
@@ -139,7 +161,7 @@ export const SketchDetailView = ({ item, onBack }: SketchDetailViewProps) => {
                       <div className="text-center py-10">
                         <Loader2 className="w-12 h-12 text-blue-500 animate-spin mx-auto mb-4" />
                         <h3 className="font-semibold text-gray-900">Đang tạo video...</h3>
-                        <p className="text-sm text-gray-500 mt-2">AI đang xử lý yêu cầu của bạn.</p>
+                        <p className="text-sm text-gray-500 mt-2">AI đang xử lý yêu cầu của bạn (Có thể mất 30-60s).</p>
                       </div>
                     ) : (
                       <div className={cn("w-full flex flex-col gap-4", !item.isCreated && "max-w-lg text-center")}>
