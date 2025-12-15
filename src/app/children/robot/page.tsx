@@ -8,9 +8,9 @@ import { RobotPageHeader } from "@/components/parent/robot/robot-page-header";
 import { RobotGrid } from "@/components/parent/robot/robot-grid";
 import { RobotDetails } from "@/components/parent/robot/robot-details";
 import { ProgrammingSection } from "@/components/parent/robot/programming-section";
-import { EntertainmentSection } from "@/components/parent/robot/entertainment-section";
 import { ThingsToTrySection } from "@/components/parent/robot/things-to-try-section";
 import { RobotModal } from "@/app/admin/robot-models/robot-modal";
+import { EntertainmentSection } from "@/components/children/entertainment-section-children";
 
 // Prompts
 const thingsToTryPrompts = [
