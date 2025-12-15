@@ -60,6 +60,37 @@ export function ViewActionModal({
     }
   }
 
+  const getTypeBadge = (type: number) => {
+    if (type === 1) {
+      return (
+        <Badge className="bg-blue-100 text-blue-800 hover:bg-blue-100">
+          <span className="w-2 h-2 bg-blue-500 rounded-full mr-1"></span>
+          Yếu
+        </Badge>
+      )
+    } else if (type === 2) {
+      return (
+        <Badge className="bg-yellow-100 text-yellow-800 hover:bg-yellow-100">
+          <span className="w-2 h-2 bg-yellow-500 rounded-full mr-1"></span>
+          Trung bình
+        </Badge>
+      )
+    } else if (type === 3) {
+      return (
+        <Badge className="bg-red-100 text-red-800 hover:bg-red-100">
+          <span className="w-2 h-2 bg-red-500 rounded-full mr-1"></span>
+          Mạnh
+        </Badge>
+      )
+    } else {
+      return (
+        <Badge className="bg-gray-100 text-gray-800 hover:bg-gray-100">
+          Không xác định
+        </Badge>
+      )
+    }
+  }
+
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-[600px]">
@@ -135,7 +166,7 @@ export function ViewActionModal({
           <div className="space-y-4">
             <h3 className="text-lg font-semibold text-gray-800 border-b pb-2">Cấu hình</h3>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="flex items-start gap-3">
                 <Clock className="h-4 w-4 text-blue-500 mt-1 flex-shrink-0" />
                 <div className="flex-1">
@@ -171,6 +202,16 @@ export function ViewActionModal({
                   }`}>
                     {action.canInterrupt ? 'Có' : 'Không'}
                   </p>
+                </div>
+              </div>
+
+              <div className="flex items-start gap-3">
+                <Settings className="h-4 w-4 text-indigo-500 mt-1 flex-shrink-0" />
+                <div className="flex-1">
+                  <label className="text-sm font-medium text-gray-700">Cường độ</label>
+                  <div className="mt-1">
+                    {getTypeBadge(action.type)}
+                  </div>
                 </div>
               </div>
             </div>

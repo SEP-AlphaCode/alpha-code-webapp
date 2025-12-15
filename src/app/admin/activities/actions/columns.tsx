@@ -94,6 +94,12 @@ const RobotModel = () => (
     </span>
 )
 
+const TypeHeaderCell = () => (
+    <span className="flex items-center gap-1 text-indigo-600 font-semibold">
+        Cường độ
+    </span>
+)
+
 // Cell components
 const DescriptionCell = ({ description }: { description?: string }) => (
     <div className="max-w-xs">
@@ -145,6 +151,31 @@ const CanInterruptCell = ({ canInterrupt }: { canInterrupt: boolean }) => (
         </span>
     )
 )
+
+const TypeCell = ({ type }: { type: number }) => {
+    let color = "bg-gray-200 text-gray-700";
+    let text = "Không xác định";
+    let icon = null;
+    if (type === 1) {
+        color = "bg-blue-100 text-blue-700";
+        text = "Yếu";
+        icon = <svg className="h-4 w-4 text-blue-500 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor"><circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="2" fill="currentColor" /></svg>;
+    } else if (type === 2) {
+        color = "bg-yellow-100 text-yellow-700";
+        text = "Trung bình";
+        icon = <svg className="h-4 w-4 text-yellow-500 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor"><circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="2" fill="currentColor" /></svg>;
+    } else if (type === 3) {
+        color = "bg-red-100 text-red-700";
+        text = "Mạnh";
+        icon = <svg className="h-4 w-4 text-red-500 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor"><circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="2" fill="currentColor" /></svg>;
+    }
+    return (
+        <span className={`inline-flex items-center px-2 py-1 rounded ${color} font-semibold text-xs`}>
+            {icon}
+            {text}
+        </span>
+    )
+}
 
 const ActionCell = ({
     action,
@@ -278,6 +309,11 @@ export const createColumns = (
             accessorKey: "canInterrupt",
             header: () => <CanInterruptHeaderCell />,
             cell: ({ row }) => <CanInterruptCell canInterrupt={row.original.canInterrupt} />,
+        },
+        {
+            accessorKey: "type",
+            header: () => <TypeHeaderCell />,
+            cell: ({ row }) => <TypeCell type={row.original.type} />,
         },
         {
             id: "actions",

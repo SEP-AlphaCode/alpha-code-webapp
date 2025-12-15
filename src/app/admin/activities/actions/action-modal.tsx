@@ -78,6 +78,7 @@ export function CreateActionModal({
       status: 1,
       canInterrupt: true,
       icon: "",
+      type: 1,
     },
   })
 
@@ -93,6 +94,7 @@ export function CreateActionModal({
         status: editAction.status,
         canInterrupt: editAction.canInterrupt,
         icon: editAction.icon,
+        type: editAction.type || 1,
       })
     } else {
       reset({
@@ -104,6 +106,7 @@ export function CreateActionModal({
         status: 1,
         canInterrupt: true,
         icon: "",
+        type: 1,
       })
     }
   }, [editAction, isEditMode, reset])
@@ -111,6 +114,7 @@ export function CreateActionModal({
   const canInterrupt = watch("canInterrupt")
   const status = watch("status")
   const robotModelId = watch("robotModelId")
+  const type = watch("type")
 
   const onSubmit = async (data: ActionModal & { robotModelId?: string }) => {
     try {
@@ -273,6 +277,33 @@ export function CreateActionModal({
             <Label htmlFor="canInterrupt" className="text-sm font-medium cursor-pointer">
               Có thể ngắt giữa chừng
             </Label>
+          </div>
+
+          {/* Type - Cường độ */}
+          <div className="space-y-2">
+            <Label htmlFor="type">Cường độ *</Label>
+            <Select value={type?.toString() || "1"} onValueChange={(v) => setValue("type", parseInt(v))}>
+              <SelectTrigger>
+                <SelectValue placeholder="Chọn cường độ" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="1">
+                  <span className="flex items-center gap-2">
+                    <span className="w-2 h-2 bg-blue-300 rounded-full"></span>Yếu
+                  </span>
+                </SelectItem>
+                <SelectItem value="2">
+                  <span className="flex items-center gap-2">
+                    <span className="w-2 h-2 bg-yellow-500 rounded-full"></span>Trung bình
+                  </span>
+                </SelectItem>
+                <SelectItem value="3">
+                  <span className="flex items-center gap-2">
+                    <span className="w-2 h-2 bg-red-500 rounded-full"></span>Mạnh
+                  </span>
+                </SelectItem>
+              </SelectContent>
+            </Select>
           </div>
 
           <DialogFooter>
