@@ -8,7 +8,7 @@ import { getUserInfoFromToken } from "@/utils/tokenUtils";
 import { AccountData } from "@/types/account";
 import { ChildrenHeader } from "../../components/children/children-header";
 import { ChildrenSidebar } from "../../components/children/children-sidebar";
-import { Home, Blocks, BookOpen, Trophy, Video, Library, Info, Activity, Joystick, QrCode, Bot, HomeIcon } from "lucide-react";
+import { Home, Blocks, BookOpen, Trophy, Video, Library, Info, Activity, Joystick, QrCode, Bot, HomeIcon, Wand2 } from "lucide-react";
 
 interface ChildrenLayoutProps {
   children: React.ReactNode;
@@ -50,6 +50,7 @@ export default function ChildrenLayout({ children }: ChildrenLayoutProps) {
     { name: "Điều khiển", href: "/children/joystick", icon: <Joystick className={iconClass} /> },
     { name: "Qr Codes", href: "/children/qr-codes", icon: <QrCode className={iconClass} /> },
     { name: "Khóa học của bé", href: "/children/courses/my-course", icon: <BookOpen className={iconClass} /> },
+    { name: "Phép thuật tranh vẽ", href: "/children/magic-sketch", icon: <Wand2 className={iconClass} /> },
   ];
 
   const isActiveRoute = (href: string) => {

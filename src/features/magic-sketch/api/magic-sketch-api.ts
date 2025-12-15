@@ -3,7 +3,7 @@ import { VideoCaptureResponse, UploadResponse, VideoCapture } from "@/types/magi
 
 export const magicSketchApi = {
   // 1. LẤY DANH SÁCH (GALLERY)
-  getSketchList: async (accountId: string, page = 1, size = 100): Promise<VideoCaptureResponse> => {
+  getSketchList: async (accountId: string, page = 1, size = 8): Promise<VideoCaptureResponse> => {
     const response = await robotsHttp.get<VideoCaptureResponse>('/video-captures', {
       params: { 
         accountId, 
@@ -43,5 +43,11 @@ export const magicSketchApi = {
       }
     );
     return response.data;
+  },
+
+  // 4. XÓA BẢN GHI
+  deleteCapture: async (id: string): Promise<boolean> => {
+    await robotsHttp.delete(`/video-captures/${id}`);
+    return true;
   }
 };

@@ -6,14 +6,12 @@ const KEYS = {
 };
 
 // Hook lấy danh sách
-export const useGetSketchList = (accountId: string | null) => {
+// Hook lấy danh sách (Update thêm tham số page)
+export const useGetSketchList = (accountId: string | null, page: number = 1) => {
   return useQuery({
-    queryKey: [KEYS.LIST, accountId],
-    queryFn: () => magicSketchApi.getSketchList(accountId || ""),
+    queryKey: [KEYS.LIST, accountId, page], // Thêm page vào key để cache từng trang
+    queryFn: () => magicSketchApi.getSketchList(accountId || "", page),
     enabled: !!accountId,
-    
-    // FIX QUAN TRỌNG: Giữ lại data cũ trong lúc đang fetch data mới
-    // Giúp UI không bị nháy loading và không bị văng ra gallery
     placeholderData: (previousData) => previousData, 
   });
 };
@@ -37,6 +35,17 @@ export const useGenerateVideo = () => {
     mutationFn: ({ id, description }: { id: string; description: string }) => 
       magicSketchApi.generateVideoById(id, description),
     onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: [KEYS.LIST] });
+    },
+  });
+};
+
+export const useDeleteCapture = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (id: string) => magicSketchApi.deleteCapture(id),
+    onSuccess: () => {
+      // Invalidate để load lại danh sách sau khi xóa
       queryClient.invalidateQueries({ queryKey: [KEYS.LIST] });
     },
   });

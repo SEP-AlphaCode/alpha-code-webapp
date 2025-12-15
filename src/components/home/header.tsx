@@ -16,6 +16,7 @@ import {
   School,
   Target,
   Music,
+  PenTool,
   BarChart2, // Phân tích hệ thống
   QrCode,     // Mã QR
   CreditCard, // Thẻ Osmo (dùng icon thẻ tín dụng)
@@ -57,6 +58,7 @@ const parentNavigationItems = [
   { name: "Bảng điều khiển", href: "/parent", icon: LayoutDashboard },
   { name: "Smart Home", href: "/parent/smart-home", icon: Home },
   { name: "Robot", href: "/parent/robot", icon: ToyBrick },
+  { name: "Phép thuật tranh vẽ", href: "/parent/magic-sketch", icon: PenTool },
   { name: "Joystick", href: "/parent/joystick", icon: Joystick },
   { name: "Hoạt động", href: "/parent/activities", icon: Activity },
   { name: "Âm nhạc", href: "/parent/music", icon: Music },
@@ -74,6 +76,7 @@ const childNavigationItems = [
   { name: "Robot", href: "/children/robot", icon: Bot },
   { name: "Lập trình", href: "/children/blockly-coding", icon: SquareCode },
   { name: "Khoá học của tôi", href: "/children/courses/my-course", icon: School },
+  { name: "Phép thuật tranh vẽ", href: "/children/magic-sketch", icon: PenTool },
 ];
 
 
