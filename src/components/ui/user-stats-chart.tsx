@@ -79,7 +79,7 @@ export function UserStatsChart({ stats, isLoading }: UserStatsChartProps) {
                 borderRadius: '8px',
                 boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)'
               }}
-              formatter={(value: string | number, name: string) => {
+              formatter={(value: string | number | undefined, name: string | undefined) => {
                 if (name === "Growth Rate (%)") {
                   return [`${stats.growthRate.toFixed(1)}%`, name]
                 }

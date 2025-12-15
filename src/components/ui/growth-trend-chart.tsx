@@ -83,11 +83,11 @@ export function GrowthTrendChart({ stats, isLoading }: GrowthTrendChartProps) {
                 borderRadius: '8px',
                 boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)'
               }}
-              formatter={(value: string | number, name: string) => {
+              formatter={(value: string | number | undefined, name: string | undefined) => {
                 if (name === "growth") {
-                  return [`${Number(value).toFixed(1)}%`, 'Tốc độ tăng trưởng'];
+                  return [`${Number(value ?? 0).toFixed(1)}%`, 'Tốc độ tăng trưởng'];
                 }
-                return [value, 'Người dùng'];
+                return [value ?? 0, 'Người dùng'];
               }}
             />
             <ReferenceLine y={0} stroke="#6b7280" strokeDasharray="5 5" />

@@ -84,7 +84,7 @@ export function UserDistributionChart({ stats, onlineCount, isLoading }: UserDis
                 borderRadius: '8px',
                 boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)'
               }}
-              formatter={(value: string | number, name: string) => [value, name]}
+              formatter={(value: string | number | undefined, name: string | undefined) => [value, name]}
             />
             <Legend 
               verticalAlign="bottom" 
