@@ -1,10 +1,10 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { getTaskStatus } from '@/features/users/api/music-api';
-import { TaskProgress } from '@/types/music';
+import { TaskProgress, DancePlanReposnse } from '@/types/music';
 
 interface UseTaskProgressOptions {
   taskId: string | null;
-  onComplete?: (result: any) => void;
+  onComplete?: (result: DancePlanReposnse) => void;
   onError?: (error: string) => void;
   pollingInterval?: number; // in milliseconds
 }
