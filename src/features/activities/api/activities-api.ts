@@ -61,7 +61,7 @@ export const createActivity = async (activityData: Omit<Activity, 'id' | 'create
   }
 };
 
-export const updateActivity = async (id: string, activityData: Partial<Omit<Activity, 'id' | 'createdDate' | 'lastUpdate'>>) => {
+export const updateActivity = async (id: string, activityData: Partial<Omit<Activity, 'id' | 'createdDate' | 'lastUpdated'>>) => {
     const response = await activitiesHttp.patch(`/activities/${id}`, activityData);
     return response.data;
 };
