@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useRef } from "react"
+import { useState, useRef, useEffect, useCallback } from "react"
 import { useRouter } from "next/navigation"
 import { uploadMusicAsync } from "@/features/users/api/music-api"
 import { toast } from "sonner"
@@ -10,7 +10,7 @@ import BackgroundDecorations from "@/components/parent/music/background-decorati
 import LoadingOverlay from "@/components/parent/music/loading-overlay"
 import MediaPreview from "@/components/parent/music/media-preview"
 import ProTips from "@/components/parent/music/pro-tips"
-import { navigateToPreviewActivities } from "@/utils/preview-navigation"
+import { navigateToPreviewActivities, cleanupOldPreviewData } from "@/utils/preview-navigation"
 import ProtectLicense from "@/components/protect-license"
 import { useRobotStore } from "@/hooks/use-robot-store"
 import { useTaskProgress } from "@/hooks/use-task-progress"
@@ -38,36 +38,46 @@ export default function MusicPage() {
 
   const robotModelId = selectedRobot?.robotModelId || "";
 
-  // Progress tracking hook
-  const { progress, message: progressMessage, startPolling, reset: resetProgress } = useTaskProgress({
-    taskId,
-    onComplete: (result: DancePlanReposnse) => {
-      toast.success("Tạo dance plan thành công! Đang chuyển hướng...")
+  // Cleanup old preview data on mount
+  useEffect(() => {
+    cleanupOldPreviewData()
+  }, [])
 
-      // Prepare time range text
-      let timeRangeText = ""
-      if (startTime && endTime) {
-        timeRangeText = `${startTime.includes(':') ? startTime : formatTime(parseFloat(startTime))} - ${endTime.includes(':') ? endTime : formatTime(parseFloat(endTime))} (${(parseTimeToSeconds(endTime) - parseTimeToSeconds(startTime)).toFixed(1)}s)`
-      }
+  // Memoize callbacks to prevent recreating on every render
+  const handleTaskComplete = useCallback((result: DancePlanReposnse) => {
+    toast.success("Tạo vũ đạo thành công!")
 
-      // Use sessionStorage navigation
-      setTimeout(() => {
-        navigateToPreviewActivities(router, {
-          dancePlan: result,
-          fileName: currentFile?.name || "music",
-          timeRange: timeRangeText,
-        }, "parent")
-        setIsGeneratingPlan(false)
-        setTaskId(null)
-        resetProgress()
-      }, 1000)
-    },
-    onError: (error: string) => {
-      toast.error(error)
+    // Prepare time range text
+    let timeRangeText = ""
+    if (startTime && endTime) {
+      timeRangeText = `${startTime.includes(':') ? startTime : formatTime(parseFloat(startTime))} - ${endTime.includes(':') ? endTime : formatTime(parseFloat(endTime))} (${(parseTimeToSeconds(endTime) - parseTimeToSeconds(startTime)).toFixed(1)}s)`
+    }
+
+    // Use sessionStorage navigation
+    setTimeout(() => {
+      navigateToPreviewActivities(router, {
+        dancePlan: result,
+        fileName: currentFile?.name || "music",
+        timeRange: timeRangeText,
+      }, "parent")
       setIsGeneratingPlan(false)
       setTaskId(null)
       resetProgress()
-    },
+    }, 1000)
+  }, [startTime, endTime, currentFile, router])
+
+  const handleTaskError = useCallback((error: string) => {
+    toast.error(error)
+    setIsGeneratingPlan(false)
+    setTaskId(null)
+    resetProgress()
+  }, [])
+
+  // Progress tracking hook
+  const { progress, message: progressMessage, startPolling, reset: resetProgress } = useTaskProgress({
+    taskId,
+    onComplete: handleTaskComplete,
+    onError: handleTaskError,
     pollingInterval: 2000, // Poll every 2 seconds
   });
 
