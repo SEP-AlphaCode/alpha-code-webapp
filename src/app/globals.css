@@ -391,3 +391,23 @@
   /* (tuỳ chọn) support tốt hơn cho Chrome mới */
   overflow-wrap: anywhere;
 }
+
+/* Smooth horizontal scroll animation for category list */
+@keyframes scroll-horizontal {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(-50%);
+  }
+}
+
+.animate-scroll-horizontal {
+  animation: scroll-horizontal 30s linear infinite;
+  display: flex;
+}
+
+.animate-scroll-horizontal.pause-animation,
+.animate-scroll-horizontal:hover {
+  animation-play-state: paused;
+}
