@@ -12,7 +12,7 @@ export const CATEGORY_NAME = 'Robot'
 export type Operations = {
     serialize: () => { [key: string]: unknown },
     loadFromJson: (json: { [key: string]: unknown }) => void,
-    makeListCode: (gen: JavascriptGenerator) => { code: string, listVar: string },
+    makeListCode: (gen: JavascriptGenerator) => { code: string },
     addStrayScrollbarDestructor: (injectedDiv: HTMLDivElement) => void,
     sendCommandToBackend: (
         actions: { type: string, code?: string, text?: string, lang?: string }[],
@@ -39,11 +39,10 @@ export const blockControls = (ws: Blockly.WorkspaceSvg): Operations => {
             const listVar = 'pending_call_' + (uuid.v4()).replaceAll('-', '_')
             let mainFn = `
 function main() {
-    var ${listVar} = []
     try{
         ${main}
         return {
-            result: ${listVar}
+            result: true
         }
     }
     catch(e) {
@@ -62,10 +61,8 @@ function main() {
             error: String(e)
         }
     }
-}
+}`
 
-return main()`
-            mainFn = mainFn.replaceAll('<LIST_VAR>', listVar)
             const injected = injectLoopCheck(mainFn)
             mainFn = injected.result
             const checkFnName = injected.checkFnName
@@ -75,7 +72,7 @@ function ${checkFnName}() {
     //console.log('Checking loop time', ${nowVarName} - ${startTimeVarName})
     if(${nowVarName} - ${startTimeVarName} >= 0.25 * 1000) throw Error("Time exceeded")
 }`
-            return { code: loopCheck + '\n' + mainFn, listVar }
+            return { code: loopCheck + '\n' + mainFn + '\n' + 'return main()' }
         }
         catch (e) {
             console.log(e);
