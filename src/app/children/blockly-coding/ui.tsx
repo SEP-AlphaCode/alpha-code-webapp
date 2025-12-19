@@ -132,7 +132,6 @@ export default function BlocklyUI({ robotModelId, serial, hasAllData, data }: Bl
 
     useEffect(() => {
         if (!blocklyRef || !blocklyRef.current) return;
-        console.log('Injecting blockly');
 
         workspaceRef.current = Blockly.inject(blocklyRef.current, { toolbox })
         if (!workspaceRef.current) { return; }
@@ -150,7 +149,6 @@ export default function BlocklyUI({ robotModelId, serial, hasAllData, data }: Bl
                 const s = new Set(prev); s.add(robotModelId); return s;
             })
         }
-        console.log('Injected blockly!');
 
 
         // Give Blockly a chance to measure and render correctly after mount
@@ -161,12 +159,9 @@ export default function BlocklyUI({ robotModelId, serial, hasAllData, data }: Bl
         }, 10)
 
         return () => {
-            console.log('Disposing ws');
             if (!workspaceRef.current) {
-                console.log('WS not found');
                 return;
             }
-            console.log('WS found. Disposing it');
 
             workspaceRef.current.dispose()
             workspaceRef.current = undefined
