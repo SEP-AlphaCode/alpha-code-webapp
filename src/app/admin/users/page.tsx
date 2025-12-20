@@ -113,10 +113,10 @@ export default function UserManagement() {
     const confirmDelete = () => (
       <div className="flex flex-col space-y-3">
         <div className="text-sm text-gray-700">
-          Are you sure you want to delete <strong>{userName}</strong>?
+          Bạn có chắc chắn muốn xóa <strong>{userName}</strong>?
         </div>
         <div className="text-xs text-gray-500">
-          This action cannot be undone.
+          Hành động này không thể hoàn tác.
         </div>
         <div className="flex space-x-2 justify-end">
           <button
@@ -124,20 +124,20 @@ export default function UserManagement() {
             className="px-3 py-1 text-xs bg-gray-200 text-gray-700 rounded hover:bg-gray-300 transition-colors"
             disabled={deleteAccountMutation.isPending}
           >
-            Cancel
+            Hủy
           </button>
           <button
             onClick={() => {
               deleteAccountMutation.mutate(userId, {
                 onSuccess: () => {
-                  toast.success(`User "${userName}" deleted successfully!`);
+                  toast.success(`Đã xóa người dùng "${userName}" thành công!`);
                 },
                 onError: (error) => {
                   console.error(' Error deleting user:', error);
                   const errorMessage = error instanceof Error
                     ? error.message
-                    : 'Failed to delete user';
-                  toast.error(`Error: ${errorMessage}`);
+                    : 'Không thể xóa người dùng';
+                  toast.error(`Lỗi: ${errorMessage}`);
                 }
               });
               toast.dismiss();
@@ -145,7 +145,7 @@ export default function UserManagement() {
             className="px-3 py-1 text-xs bg-red-600 text-white rounded hover:bg-red-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             disabled={deleteAccountMutation.isPending}
           >
-            {deleteAccountMutation.isPending ? 'Deleting...' : 'Delete'}
+            {deleteAccountMutation.isPending ? 'Đang xóa...' : 'Xóa'}
           </button>
         </div>
       </div>
@@ -180,12 +180,12 @@ export default function UserManagement() {
     // Reactivate: call change-status API to set status to 1 and clear bannedReason
     changeStatusMutation.mutate({ id: userId, status: 1, bannedReason: null }, {
       onSuccess: () => {
-        toast.success(`${userName} has been activated successfully!`);
+        toast.success(`${userName} đã được kích hoạt thành công!`);
       },
       onError: (error) => {
         console.error('❌ Error re-activating user:', error);
-        const errorMessage = error instanceof Error ? error.message : 'Failed to activate user';
-        toast.error(`Error: ${errorMessage}`);
+        const errorMessage = error instanceof Error ? error.message : 'Không thể kích hoạt người dùng';
+        toast.error(`Lỗi: ${errorMessage}`);
       }
     });
   };
@@ -197,13 +197,13 @@ export default function UserManagement() {
 
     changeStatusMutation.mutate({ id: banUserId, status: 2, bannedReason: banReason }, {
       onSuccess: () => {
-        toast.success(`${userName} has been banned.`);
+        toast.success(`${userName} đã bị cấm.`);
         closeBanModal();
       },
       onError: (error) => {
         console.error('❌ Error banning user:', error);
-        const errorMessage = error instanceof Error ? error.message : 'Failed to ban user';
-        toast.error(`Error: ${errorMessage}`);
+        const errorMessage = error instanceof Error ? error.message : 'Không thể cấm người dùng';
+        toast.error(`Lỗi: ${errorMessage}`);
       }
     });
   };
@@ -237,14 +237,14 @@ export default function UserManagement() {
       onSuccess: () => {
         setIsCreateModalOpen(false);
         setCreateError(''); // Clear any errors
-        setCreateSuccess('User created successfully!');
+        setCreateSuccess('Tạo người dùng thành công!');
 
         // Clear success message after 3 seconds
         setTimeout(() => setCreateSuccess(''), 3000);
       },
       onError: (error) => {
         // Extract meaningful error message from API response
-        let errorMessage = 'Unknown error occurred while creating user';
+        let errorMessage = 'Đã xảy ra lỗi không xác định khi tạo người dùng';
 
         if (error instanceof Error) {
           try {
@@ -310,7 +310,7 @@ export default function UserManagement() {
         <div className="bg-green-50 border border-green-200 rounded-md p-3">
           <div className="flex">
             <div className="text-green-700 text-sm">
-              <strong>Success:</strong> {createSuccess}
+              <strong>Thành công:</strong> {createSuccess}
             </div>
           </div>
         </div>
@@ -371,22 +371,22 @@ export default function UserManagement() {
         <div className="fixed inset-0 z-50 flex items-center justify-center">
           <div className="absolute inset-0 bg-black opacity-40" onClick={closeBanModal} />
           <div className="relative z-10 w-full max-w-md bg-white rounded shadow-lg p-6">
-            <h3 className="text-lg font-medium mb-2">Ban user</h3>
-            <p className="text-sm text-gray-600 mb-4">Provide a reason for banning this user (shown to admins).</p>
+            <h3 className="text-lg font-medium mb-2">Cấm người dùng</h3>
+            <p className="text-sm text-gray-600 mb-4">Cung cấp lý do cấm người dùng này (hiển thị cho quản trị viên).</p>
             <textarea
               className="w-full border rounded p-2 mb-4"
               rows={4}
               value={banReason}
               onChange={(e) => setBanReason(e.target.value)}
-              placeholder="Reason for ban"
+              placeholder="Lý do cấm"
             />
             <div className="flex justify-end space-x-2">
-               <button className="px-4 py-2 bg-gray-200 rounded" onClick={closeBanModal}>Cancel</button> 
+               <button className="px-4 py-2 bg-gray-200 rounded" onClick={closeBanModal}>Hủy</button> 
                <button 
                  className="px-4 py-2 bg-red-600 text-white rounded" 
                  onClick={confirmBan} 
                  disabled={changeStatusMutation.isPending} 
-               >{changeStatusMutation.isPending ? 'Banning...' : 'Ban user'}</button> 
+               >{changeStatusMutation.isPending ? 'Đang cấm...' : 'Cấm người dùng'}</button> 
             </div>
           </div>
         </div>

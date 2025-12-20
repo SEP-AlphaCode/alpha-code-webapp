@@ -89,12 +89,12 @@ export default function UserTableRow({
             {user.statusNumber === 1 ? (
               <>
                 <UserX className="h-4 w-4" />
-                <span>Ban</span>
+                <span>Cấm</span>
               </>
             ) : (
               <>
                 <UserCheck className="h-4 w-4" />
-                <span>Activate</span>
+                <span>Kích hoạt</span>
               </>
             )}
           </Button>
@@ -105,7 +105,7 @@ export default function UserTableRow({
             className="text-red-600 hover:text-red-700 flex items-center space-x-1"
           >
             <Trash2 className="h-4 w-4" />
-            <span>Delete</span>
+            <span>Xóa</span>
           </Button>
         </div>
       </td>

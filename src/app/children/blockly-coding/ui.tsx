@@ -12,6 +12,7 @@ import { Button } from '@/components/ui/button';
 import 'blockly/blocks';
 import 'blockly/javascript'; // Or the generator of your choice
 import { pythonHttp } from '@/utils/http';
+import { apiPythonUrl } from '@/app/constants/constants';
 
 type BlocklyUIProps = {
     robotModelId?: string,
@@ -37,34 +38,74 @@ export default function BlocklyUI({ robotModelId, serial, hasAllData, data }: Bl
     const [definedModels, setDefinedModel] = useState(new Set<string>())
     const [isRunning, setIsRunning] = useState(false)
     const [showRobot, setShowRobot] = useState(false)
+    const pollRef = useRef<number | null>(null)
+    const [robotStatus, setRobotStatus] = useState<'idle' | 'connecting' | 'running' | 'finished' | 'unreachable'>('idle')
     const key = 'AlphaCode'
-    const executeCode = (code: string, resultKey: string) => {
+    const stopPolling = () => {
+        if (pollRef.current) {
+            clearInterval(pollRef.current)
+            pollRef.current = null
+        }
+    }
+
+    const startPolling = () => {
+        setRobotStatus('connecting')
+        // poll every 2s
+        if (pollRef.current) stopPolling()
+        pollRef.current = window.setInterval(async () => {
+            try {
+                const res = await pythonHttp.get('/robot/coding-block/' + serial)
+                const json = res.data
+                // expected shape: { success: boolean, isRunning: boolean }
+                if (!json.success) {
+                    setRobotStatus('unreachable')
+                    toast.error('❌ Không thể kết nối tới robot')
+                    setIsRunning(false)
+                    setShowRobot(false)
+                    stopPolling()
+                } else if (json.isRunning) {
+                    setRobotStatus('running')
+                    setIsRunning(true)
+                    setShowRobot(true)
+                } else {
+                    setRobotStatus('finished')
+                    setIsRunning(false)
+                    setShowRobot(false)
+                    toast.success('✨ Robot đã hoàn thành thực thi')
+                    stopPolling()
+                }
+            } catch (e) {
+                console.error('Polling error', e)
+                setRobotStatus('unreachable')
+                toast.error('❌ Lỗi khi kiểm tra trạng thái robot')
+                setIsRunning(false)
+                setShowRobot(false)
+                stopPolling()
+            }
+        }, 1500)
+    }
+
+    const executeCode = (code: string) => {
         setIsRunning(true)
         setShowRobot(true)
 
-        toast.success('🎉 Đang chạy chương trình...')
         try {
-            // Use Function constructor to create an async function
-            console.log(code);
-
             const fn = new Function(code)
             const x = fn()
-            console.log(x);
-
-            if (x.error) {
+            if (x?.error) {
                 toast.error(x.error)
                 setShowRobot(false)
+                setIsRunning(false)
             } else {
-                toast.success('✨ Đã chạy thành công!')
-                setTimeout(() => setShowRobot(false), 2000)
+                toast.success('🎉 Đã gửi mã, bắt đầu kiểm tra trạng thái robot...')
+                // start polling the python service for robot status
+                startPolling()
             }
-        }
-        catch (e) {
+        } catch (e) {
             toast.error('❌ Lỗi khi chạy mã. Điều này xảy ra do mã không hợp lệ hoặc lỗi logic trong khối.')
             setShowRobot(false)
-        }
-        finally {
             setIsRunning(false)
+            stopPolling()
         }
     }
 
@@ -91,7 +132,6 @@ export default function BlocklyUI({ robotModelId, serial, hasAllData, data }: Bl
 
     useEffect(() => {
         if (!blocklyRef || !blocklyRef.current) return;
-        console.log('Injecting blockly');
 
         workspaceRef.current = Blockly.inject(blocklyRef.current, { toolbox })
         if (!workspaceRef.current) { return; }
@@ -103,14 +143,13 @@ export default function BlocklyUI({ robotModelId, serial, hasAllData, data }: Bl
         if (hasAllData) {
             try {
                 tmp.loadFromJson({})
-            } catch {}
+            } catch { }
             actualInit(tmp)
             if (robotModelId) setDefinedModel(prev => {
                 const s = new Set(prev); s.add(robotModelId); return s;
             })
         }
-        console.log('Injected blockly!');
-        
+
 
         // Give Blockly a chance to measure and render correctly after mount
         setTimeout(() => {
@@ -120,12 +159,9 @@ export default function BlocklyUI({ robotModelId, serial, hasAllData, data }: Bl
         }, 10)
 
         return () => {
-            console.log('Disposing ws');
             if (!workspaceRef.current) {
-                console.log('WS not found');
                 return;
             }
-            console.log('WS found. Disposing it');
 
             workspaceRef.current.dispose()
             workspaceRef.current = undefined
@@ -172,7 +208,7 @@ export default function BlocklyUI({ robotModelId, serial, hasAllData, data }: Bl
     useEffect(() => {
         if (!hasAllData) return;
         if (!wsHelper) return;
-        try { wsHelper.loadFromJson({}) } catch {}
+        try { wsHelper.loadFromJson({}) } catch { }
         actualInit(wsHelper)
         if (robotModelId) setDefinedModel(prev => { const s = new Set(prev); s.add(robotModelId); return s; })
     }, [robotModelId, hasAllData, wsHelper])
@@ -197,6 +233,13 @@ export default function BlocklyUI({ robotModelId, serial, hasAllData, data }: Bl
         return () => window.removeEventListener('resize', onResize)
     }, [])
 
+    // cleanup polling on unmount
+    useEffect(() => {
+        return () => {
+            stopPolling()
+        }
+    }, [])
+
     const handleRun = () => {
         if (!robotModelId) {
             toast.error('Vui lòng chọn robot trước khi chạy')
@@ -205,7 +248,7 @@ export default function BlocklyUI({ robotModelId, serial, hasAllData, data }: Bl
         if (!codeGenerator || !wsHelper) return;
         try {
             const code = wsHelper.makeListCode(codeGenerator);
-            executeCode(code.code, code.listVar);
+            executeCode(code.code);
         } catch {
             toast.error('Lỗi khi chạy mã')
         }
@@ -213,11 +256,14 @@ export default function BlocklyUI({ robotModelId, serial, hasAllData, data }: Bl
 
     const handleStop = () => {
         const f = async () => {
+            stopPolling()
             setIsRunning(false);
             setShowRobot(false);
+            setRobotStatus('idle')
             toast.info('⏸️ Đã dừng thực thi');
             await pythonHttp.post(`/websocket/command/${serial}`, {
-                type: 'stop_all_actions'
+                type: 'stop_all_actions',
+                data: {}
             }, {
                 headers: {
                     Accept: "application/json",
@@ -280,7 +326,13 @@ export default function BlocklyUI({ robotModelId, serial, hasAllData, data }: Bl
                         </div>
                         <div className="text-center">
                             <h2 className="text-2xl font-bold text-gray-900 mb-2">Robot Alpha</h2>
-                            <p className="text-gray-600 text-sm">Sẵn sàng lập trình!</p>
+                            <p className="text-gray-600 text-sm">
+                                {robotStatus === 'idle' && 'Sẵn sàng lập trình!'}
+                                {robotStatus === 'connecting' && 'Đang kết nối tới robot…'}
+                                {robotStatus === 'running' && 'Robot đang thực thi chương trình…'}
+                                {robotStatus === 'finished' && 'Robot đã hoàn thành.'}
+                                {robotStatus === 'unreachable' && 'Không thể kết nối tới robot.'}
+                            </p>
                         </div>
                     </div>
 

@@ -99,9 +99,9 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
     url: "#",
     icon: CreditCard,
     items: [
-      { title: "Subscription", url: "/admin/plan/subscription" },
-      { title: "Addon", url: "/admin/plan/addons" },
-      { title: "Bundle", url: "/admin/plan/bundle" },
+      { title: "Gói đăng ký", url: "/admin/plan/subscription" },
+      { title: "Tiện ích mở rộng", url: "/admin/plan/addons" },
+      { title: "Gói kết hợp", url: "/admin/plan/bundle" },
     ],
   },
   {

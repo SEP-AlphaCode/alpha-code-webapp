@@ -17,7 +17,7 @@ export default function StatisticsCards({
 }: StatisticsCardsProps) {
   const statisticsData = [
     {
-      title: 'Total Users',
+      title: 'Tổng Người Dùng',
       value: totalUsers,
       color: 'blue',
       bgColor: 'bg-blue-100',
@@ -25,7 +25,7 @@ export default function StatisticsCards({
       valueColor: 'text-gray-900'
     },
     {
-      title: 'Active Users',
+      title: 'Đang Hoạt Động',
       value: activeUsers,
       color: 'green',
       bgColor: 'bg-green-100',
@@ -33,7 +33,7 @@ export default function StatisticsCards({
       valueColor: 'text-green-600'
     },
     {
-      title: 'Teachers',
+      title: 'Giáo Viên',
       value: teachers,
       color: 'purple',
       bgColor: 'bg-purple-100',
@@ -41,7 +41,7 @@ export default function StatisticsCards({
       valueColor: 'text-purple-600'
     },
     {
-      title: 'Admins',
+      title: 'Quản Trị Viên',
       value: admins,
       color: 'red',
       bgColor: 'bg-red-100',

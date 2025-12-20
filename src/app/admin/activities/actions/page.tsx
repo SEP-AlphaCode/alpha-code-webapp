@@ -88,12 +88,12 @@ export default function ActionsPage() {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <div className="text-center">
-          <div className="text-lg text-red-600 mb-4">Error loading actions</div>
+          <div className="text-lg text-red-600 mb-4">Lỗi tải danh sách hành động</div>
           <button
             onClick={() => refetch()}
             className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors"
           >
-            Retry
+            Thử lại
           </button>
         </div>
       </div>
@@ -132,12 +132,12 @@ export default function ActionsPage() {
     if (!deleteAction) return
     try {
       await deleteActionMutation.mutateAsync(deleteAction.id)
-      toast.success("Action deleted successfully!")
+      toast.success("Đã xóa hành động thành công!")
       setIsDeleteModalOpen(false)
       setDeleteAction(null)
     } catch (error) {
       console.error("Error deleting action:", error)
-      toast.error("Failed to delete action. Please try again.")
+      toast.error("Không thể xóa hành động. Vui lòng thử lại.")
     }
   }
 
