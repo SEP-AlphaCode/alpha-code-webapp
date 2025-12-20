@@ -30,7 +30,7 @@ export default function SearchAndFilter({
       <div className="relative flex-1">
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 h-4 w-4" />
         <Input
-          placeholder="Search by name, email, or username..."
+          placeholder="Tìm theo tên, email hoặc tên người dùng..."
           value={searchTerm}
           onChange={(e) => onSearchChange(e.target.value)}
           className="pl-10 bg-white"
@@ -40,10 +40,10 @@ export default function SearchAndFilter({
       {/* Dropdown filter role */}
       <Select value={filterRole} onValueChange={onRoleChange}>
         <SelectTrigger className="w-[180px] bg-white">
-          <SelectValue placeholder="Filter by role" />
+          <SelectValue placeholder="Lọc theo vai trò" />
         </SelectTrigger>
         <SelectContent>
-          <SelectItem value="all">All Roles</SelectItem>
+          <SelectItem value="all">Tất Cả Vai Trò</SelectItem>
           {availableRoles.map((role) => (
             <SelectItem key={role} value={role}>
               {role.charAt(0).toUpperCase() + role.slice(1)}

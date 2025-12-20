@@ -43,23 +43,23 @@ export default function OsmoCardGrid({
             <div className="flex flex-col items-center space-y-4">
               <CreditCard className="h-12 w-12 text-gray-400" />
               <div>
-                <p className="text-gray-500 font-medium">No Osmo Cards found</p>
-                <p className="text-gray-400 text-sm">Create your first Osmo Card to get started</p>
+                <p className="text-gray-500 font-medium">Không tìm thấy thẻ Osmo</p>
+                <p className="text-gray-400 text-sm">Tạo thẻ Osmo đầu tiên để bắt đầu</p>
               </div>
               <Button 
                 className="flex items-center space-x-2"
                 onClick={onCreateCard}
               >
                 <Plus className="h-4 w-4" />
-                <span>Create Osmo Card</span>
+                <span>Tạo Thẻ Osmo</span>
               </Button>
             </div>
           ) : (
             <div className="flex flex-col items-center space-y-4">
               <Filter className="h-12 w-12 text-gray-400" />
               <div>
-                <p className="text-gray-500 font-medium">No cards match your criteria</p>
-                <p className="text-gray-400 text-sm">Try adjusting your search or filter settings</p>
+                <p className="text-gray-500 font-medium">Không có thẻ nào phù hợp</p>
+                <p className="text-gray-400 text-sm">Thử điều chỉnh tìm kiếm hoặc bộ lọc</p>
               </div>
             </div>
           )}

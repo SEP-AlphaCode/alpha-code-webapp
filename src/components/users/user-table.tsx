@@ -47,7 +47,7 @@ export default function UserTable({
   return (
     <Card>
       <CardHeader>
-        <CardTitle>User List</CardTitle>
+        <CardTitle>Danh Sách Người Dùng</CardTitle>
       </CardHeader>
       <CardContent>
         <SearchAndFilter
@@ -63,12 +63,12 @@ export default function UserTable({
           <table className="w-full border-collapse">
             <thead>
               <tr className="bg-gray-50 border-b border-gray-200">
-                <th className="text-left p-4 font-medium text-gray-900">User</th>
-                <th className="text-left p-4 font-medium text-gray-900">Role</th>
-                <th className="text-left p-4 font-medium text-gray-900">Status</th>
-                <th className="text-left p-4 font-medium text-gray-900">Gender</th>
-                <th className="text-left p-4 font-medium text-gray-900">Created</th>
-                <th className="text-left p-4 font-medium text-gray-900">Actions</th>
+                <th className="text-left p-4 font-medium text-gray-900">Người Dùng</th>
+                <th className="text-left p-4 font-medium text-gray-900">Vai Trò</th>
+                <th className="text-left p-4 font-medium text-gray-900">Trạng Thái</th>
+                <th className="text-left p-4 font-medium text-gray-900">Giới Tính</th>
+                <th className="text-left p-4 font-medium text-gray-900">Ngày Tạo</th>
+                <th className="text-left p-4 font-medium text-gray-900">Hành Động</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-200">
@@ -89,9 +89,9 @@ export default function UserTable({
         {filteredUsers.length === 0 && !isLoading && (
           <div className="text-center py-8">
             {totalUsers === 0 ? (
-              <p className="text-gray-500">No users found in the system.</p>
+              <p className="text-gray-500">Không tìm thấy người dùng nào trong hệ thống.</p>
             ) : (
-              <p className="text-gray-500">No users found matching your criteria.</p>
+              <p className="text-gray-500">Không tìm thấy người dùng nào phù hợp với tiêu chí tìm kiếm.</p>
             )}
           </div>
         )}

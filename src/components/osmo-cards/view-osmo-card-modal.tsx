@@ -7,7 +7,7 @@ import {
 } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
-import { Calendar, Activity, Music, Zap, Smile } from 'lucide-react';
+import { Calendar, Activity, Music, Zap, Smile, PlugZap, Brain } from 'lucide-react';
 import { OsmoCard } from '@/types/osmo-card';
 
 interface ViewOsmoCardModalProps {
@@ -24,6 +24,8 @@ export default function ViewOsmoCardModal({ isOpen, onClose, card }: ViewOsmoCar
     if (card.actionName && card.actionName !== 'No Action') return 'action';
     if (card.expressionName && card.expressionName !== 'No Expression') return 'expression';
     if (card.danceName && card.danceName !== 'No Dance') return 'dance';
+    if (card.extendedActionName && card.extendedActionName !== 'No Extended Action') return 'extendedAction';
+    if (card.skillName && card.skillName !== 'No Skill') return 'skill';
     return 'unknown';
   };
 
@@ -44,6 +46,16 @@ export default function ViewOsmoCardModal({ isOpen, onClose, card }: ViewOsmoCar
         bg: 'bg-orange-500', 
         icon: Music, 
         textColor: 'text-orange-600'
+      },
+      'extendedAction': { 
+        bg: 'bg-purple-500', 
+        icon: PlugZap, 
+        textColor: 'text-purple-600'
+      },
+      'skill': { 
+        bg: 'bg-green-500', 
+        icon: Brain, 
+        textColor: 'text-green-600'
       },
     };
     return styleMap[type.toLowerCase()] || { 
@@ -163,9 +175,6 @@ export default function ViewOsmoCardModal({ isOpen, onClose, card }: ViewOsmoCar
                   <label className="text-sm font-medium text-gray-600">Action</label>
                 </div>
                 <p className="text-gray-900">{card.actionName || 'No Action'}</p>
-                {card.actionId && (
-                  <p className="text-xs text-gray-500 mt-1">ID: {card.actionId}</p>
-                )}
               </div>
 
               {/* Expression */}
@@ -175,9 +184,24 @@ export default function ViewOsmoCardModal({ isOpen, onClose, card }: ViewOsmoCar
                   <label className="text-sm font-medium text-gray-600">Expression</label>
                 </div>
                 <p className="text-gray-900">{card.expressionName || 'No Expression'}</p>
-                {card.expressionId && (
-                  <p className="text-xs text-gray-500 mt-1">ID: {card.expressionId}</p>
-                )}
+              </div>
+
+              {/* Extended Action */}
+              <div className="p-4 border rounded-lg">
+                <div className="flex items-center space-x-2 mb-2">
+                  <PlugZap className="h-4 w-4 text-purple-500" />
+                  <label className="text-sm font-medium text-gray-600">Extended Action</label>
+                </div>
+                <p className="text-gray-900">{card.extendedActionName || 'No Extended Action'}</p>
+              </div>
+
+              {/* Skill */}
+              <div className="p-4 border rounded-lg">
+                <div className="flex items-center space-x-2 mb-2">
+                  <Brain className="h-4 w-4 text-green-500" />
+                  <label className="text-sm font-medium text-gray-600">Skill</label>
+                </div>
+                <p className="text-gray-900">{card.skillName || 'No Skill'}</p>
               </div>
 
               {/* Dance */}
@@ -187,9 +211,6 @@ export default function ViewOsmoCardModal({ isOpen, onClose, card }: ViewOsmoCar
                   <label className="text-sm font-medium text-gray-600">Dance</label>
                 </div>
                 <p className="text-gray-900">{card.danceName || 'No Dance'}</p>
-                {card.danceId && (
-                  <p className="text-xs text-gray-500 mt-1">ID: {card.danceId}</p>
-                )}
               </div>
             </div>
           </div>

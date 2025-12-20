@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Zap, Music, Smile, CreditCard, Eye, Edit, Trash2, MoreVertical } from 'lucide-react';
+import { Zap, Music, Smile, CreditCard, Eye, Edit, Trash2, MoreVertical, PlugZap, Brain } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { 
   DropdownMenu, 
@@ -63,6 +63,8 @@ export default function OsmoCardItem({
       'action': Zap,
       'expression': Smile,
       'dance': Music,
+      'extendedAction': PlugZap,
+      'skill': Brain,
     };
     return iconMap[type.toLowerCase()] || CreditCard;
   };
@@ -72,6 +74,8 @@ export default function OsmoCardItem({
     if (card.actionName && card.actionName !== 'No Action') return 'action';
     if (card.expressionName && card.expressionName !== 'No Expression') return 'expression';
     if (card.danceName && card.danceName !== 'No Dance') return 'dance';
+    if (card.extendedActionName && card.extendedActionName !== 'No Extended Action') return 'extendedAction';
+    if (card.skillName && card.skillName !== 'No Skill') return 'skill';
     return 'unknown';
   };
 
@@ -231,6 +235,12 @@ export default function OsmoCardItem({
               )}
               {cardType === 'expression' && card.expressionName && (
                 <p className="truncate max-w-24">{card.expressionName}</p>
+              )}
+              {cardType === 'extendedAction' && card.extendedActionName && (
+                <p className="truncate max-w-24">{card.extendedActionName}</p>
+              )}
+              {cardType === 'skill' && card.skillName && (
+                <p className="truncate max-w-24">{card.skillName}</p>
               )}
               {cardType === 'dance' && card.danceName && (
                 <p className="truncate max-w-24">{card.danceName}</p>

@@ -22,7 +22,7 @@ export default function StatisticsCards({ osmoCards }: StatisticsCardsProps) {
 
   const statisticsData = [
     {
-      label: 'Total Cards',
+      label: 'Tổng Thẻ',
       value: totalCards,
       color: 'text-gray-900',
       bgColor: 'bg-blue-100',
@@ -30,7 +30,7 @@ export default function StatisticsCards({ osmoCards }: StatisticsCardsProps) {
       icon: CreditCard
     },
     {
-      label: 'Active Cards',
+      label: 'Thẻ Hoạt Động',
       value: activeCards,
       color: 'text-green-600',
       bgColor: 'bg-green-100',
@@ -38,7 +38,7 @@ export default function StatisticsCards({ osmoCards }: StatisticsCardsProps) {
       icon: Activity
     },
     {
-      label: 'Unique Colors',
+      label: 'Màu Sắc',
       value: uniqueColors,
       color: 'text-purple-600',
       bgColor: 'bg-purple-100',
@@ -46,7 +46,7 @@ export default function StatisticsCards({ osmoCards }: StatisticsCardsProps) {
       icon: Palette
     },
     {
-      label: 'Recent Cards',
+      label: 'Thẻ Gần Đây',
       value: recentCards,
       color: 'text-orange-600',
       bgColor: 'bg-orange-100',
