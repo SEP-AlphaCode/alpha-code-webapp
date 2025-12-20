@@ -599,15 +599,32 @@ export default function JoystickConfigurationModal({
               {/* Icon from API field */}
               <div className="text-3xl flex items-center justify-center">
                 {type === 'expression'
-                  ? (item as Expression).imageUrl
-                    ? <Image
-                      src={(item as Expression).imageUrl}
-                      alt={item.name}
-                      width={48}
-                      height={48}
-                      className="w-12 h-12 object-cover rounded-full"
-                    />
-                    : '😊'
+                  ? (() => {
+                      const imageUrl = (item as Expression).imageUrl;
+                      const isValidUrl = imageUrl && 
+                                        imageUrl.trim() !== '' && 
+                                        (imageUrl.startsWith('http://') || 
+                                         imageUrl.startsWith('https://') || 
+                                         imageUrl.startsWith('/'));
+                      
+                      return isValidUrl
+                        ? <Image
+                            src={imageUrl}
+                            alt={item.name}
+                            width={48}
+                            height={48}
+                            className="w-12 h-12 object-cover rounded-full"
+                            onError={(e) => {
+                              // Fallback to emoji if image fails to load
+                              (e.target as HTMLImageElement).style.display = 'none';
+                              const parent = (e.target as HTMLImageElement).parentElement;
+                              if (parent) parent.textContent = '😊';
+                            }}
+                          />
+                        : <div className="w-12 h-12 rounded-full bg-gradient-to-br from-blue-100 to-purple-100 flex items-center justify-center text-2xl">
+                            😊
+                          </div>;
+                    })()
                   : type === 'skill'
                     ? (item as Skill).icon || '🎯'
                     : type === 'extendedaction'
