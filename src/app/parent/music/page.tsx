@@ -1,8 +1,8 @@
 "use client"
 
-import { useState, useRef } from "react"
+import { useState, useRef, useEffect, useCallback } from "react"
 import { useRouter } from "next/navigation"
-import { getDancePlan } from "@/features/users/api/music-api"
+import { uploadMusicAsync } from "@/features/users/api/music-api"
 import { toast } from "sonner"
 import MusicHeader from "@/components/parent/music/music-header"
 import FileUploadArea from "@/components/parent/music/file-upload-area"
@@ -10,9 +10,11 @@ import BackgroundDecorations from "@/components/parent/music/background-decorati
 import LoadingOverlay from "@/components/parent/music/loading-overlay"
 import MediaPreview from "@/components/parent/music/media-preview"
 import ProTips from "@/components/parent/music/pro-tips"
-import { navigateToPreviewActivities } from "@/utils/preview-navigation"
+import { navigateToPreviewActivities, cleanupOldPreviewData } from "@/utils/preview-navigation"
 import ProtectLicense from "@/components/protect-license"
 import { useRobotStore } from "@/hooks/use-robot-store"
+import { useTaskProgress } from "@/hooks/use-task-progress"
+import { DancePlanReposnse } from "@/types/music"
 
 export default function MusicPage() {
   const router = useRouter()
@@ -28,12 +30,56 @@ export default function MusicPage() {
   const [endTime, setEndTime] = useState<string>("")
   const [currentTime, setCurrentTime] = useState<number>(0)
   const [duration, setDuration] = useState<number>(0)
+  const [taskId, setTaskId] = useState<string | null>(null)
   const audioRef = useRef<HTMLAudioElement>(null)
   const videoRef = useRef<HTMLVideoElement>(null)
 
   const { selectedRobot } = useRobotStore();
 
   const robotModelId = selectedRobot?.robotModelId || "";
+
+  // Cleanup old preview data on mount
+  useEffect(() => {
+    cleanupOldPreviewData()
+  }, [])
+
+  // Memoize callbacks to prevent recreating on every render
+  const handleTaskComplete = useCallback((result: DancePlanReposnse) => {
+    toast.success("Tạo vũ đạo thành công!")
+
+    // Prepare time range text
+    let timeRangeText = ""
+    if (startTime && endTime) {
+      timeRangeText = `${startTime.includes(':') ? startTime : formatTime(parseFloat(startTime))} - ${endTime.includes(':') ? endTime : formatTime(parseFloat(endTime))} (${(parseTimeToSeconds(endTime) - parseTimeToSeconds(startTime)).toFixed(1)}s)`
+    }
+
+    // Use sessionStorage navigation
+    setTimeout(() => {
+      navigateToPreviewActivities(router, {
+        dancePlan: result,
+        fileName: currentFile?.name || "music",
+        timeRange: timeRangeText,
+      }, "parent")
+      setIsGeneratingPlan(false)
+      setTaskId(null)
+      resetProgress()
+    }, 1000)
+  }, [startTime, endTime, currentFile, router])
+
+  const handleTaskError = useCallback((error: string) => {
+    toast.error(error)
+    setIsGeneratingPlan(false)
+    setTaskId(null)
+    resetProgress()
+  }, [])
+
+  // Progress tracking hook
+  const { progress, message: progressMessage, startPolling, reset: resetProgress } = useTaskProgress({
+    taskId,
+    onComplete: handleTaskComplete,
+    onError: handleTaskError,
+    pollingInterval: 2000, // Poll every 2 seconds
+  });
 
   const handleFileChange = (file: File) => {
     if (file) {
@@ -204,8 +250,9 @@ export default function MusicPage() {
     }
 
     setIsGeneratingPlan(true)
+    resetProgress()
 
-    console.log("Generating dance plan with params:", {
+    console.log("Uploading music async with params:", {
       fileName: currentFile.name,
       robotModelId,
       startTime: startTimeNum,
@@ -213,24 +260,16 @@ export default function MusicPage() {
     });
 
     try {
-      const result = await getDancePlan(currentFile, robotModelId, startTimeNum, endTimeNum)
-
-      toast.success("Tạo dance plan thành công! Đang chuyển hướng...")
-
-      // Prepare time range text
-      let timeRangeText = ""
-      if (startTime && endTime) {
-        timeRangeText = `${startTime.includes(':') ? startTime : formatTime(parseFloat(startTime))} - ${endTime.includes(':') ? endTime : formatTime(parseFloat(endTime))} (${(parseTimeToSeconds(endTime) - parseTimeToSeconds(startTime)).toFixed(1)}s)`
-      }
-
-      // Use sessionStorage navigation instead of URL params
-      setTimeout(() => {
-        navigateToPreviewActivities(router, {
-          dancePlan: result,
-          fileName: currentFile.name,
-          timeRange: timeRangeText,
-        }, "parent")
-      }, 1000)
+      // Upload music asynchronously and get task_id
+      const result = await uploadMusicAsync(currentFile, robotModelId, startTimeNum, endTimeNum)
+      
+      console.log("Received task_id:", result.task_id)
+      
+      // Set task ID and start polling for progress
+      setTaskId(result.task_id)
+      startPolling()
+      
+      toast.success("Đã bắt đầu xử lý! Đang theo dõi tiến trình...")
     } catch (error: unknown) {
       let errorMessage = 'Có lỗi xảy ra. Vui lòng thử lại!'
 
@@ -259,7 +298,6 @@ export default function MusicPage() {
       }
 
       toast.error(errorMessage)
-    } finally {
       setIsGeneratingPlan(false)
     }
   }
@@ -268,7 +306,11 @@ export default function MusicPage() {
     <ProtectLicense>
       <div className="min-h-screen bg-white relative overflow-hidden p-10" suppressHydrationWarning>
         {/* Loading Overlay */}
-        <LoadingOverlay isGeneratingPlan={isGeneratingPlan} />
+        <LoadingOverlay 
+          isGeneratingPlan={isGeneratingPlan} 
+          progress={progress}
+          message={progressMessage || "Đang tạo vũ đạo. Vui lòng chờ..."}
+        />
 
         {/* Background Decorations */}
         <BackgroundDecorations />

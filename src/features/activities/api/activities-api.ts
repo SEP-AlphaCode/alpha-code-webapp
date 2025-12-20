@@ -20,7 +20,6 @@ export const getPagedActivitiesByAccount = async (
   signal?: AbortSignal,
   robotModelId?: string
 ) => {
-  console.log('API Call - getPagedActivities:', { page, size, search, robotModelId, accountId });
   try {
     const response = await activitiesHttp.get<ActivitiesResponse>('/activities/account', {
       params: {
@@ -33,7 +32,6 @@ export const getPagedActivitiesByAccount = async (
       signal,
     });
 
-    console.log('API Response - getPagedActivities:', response.data);
     return response.data;
   } catch (error: unknown) {
     if (error && typeof error === 'object') {
@@ -53,7 +51,7 @@ export const getActivityById = async (id: string) => {
     return response.data;
 };
 
-export const createActivity = async (activityData: Omit<Activity, 'id' | 'createdDate' | 'lastUpdate'>) => {
+export const createActivity = async (activityData: Omit<Activity, 'id' | 'createdDate' | 'lastUpdated'>) => {
   try {
     const response = await activitiesHttp.post('/activities', activityData);
     return response.data;
@@ -63,7 +61,7 @@ export const createActivity = async (activityData: Omit<Activity, 'id' | 'create
   }
 };
 
-export const updateActivity = async (id: string, activityData: Partial<Omit<Activity, 'id' | 'createdDate' | 'lastUpdate'>>) => {
+export const updateActivity = async (id: string, activityData: Partial<Omit<Activity, 'id' | 'createdDate' | 'lastUpdated'>>) => {
     const response = await activitiesHttp.patch(`/activities/${id}`, activityData);
     return response.data;
 };

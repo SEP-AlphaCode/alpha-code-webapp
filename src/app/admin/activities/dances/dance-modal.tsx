@@ -55,6 +55,7 @@ export function CreateDanceModal({
       status: 1,
       icon: "",
       robotModelId: "",
+      type: 1,
     }
   })
 
@@ -68,6 +69,7 @@ export function CreateDanceModal({
         status: editDance.status,
         icon: editDance.icon,
         robotModelId: editDance.robotModelId || "",
+        type: editDance.type || 1,
       })
     } else {
       reset({
@@ -78,11 +80,13 @@ export function CreateDanceModal({
         status: 1,
         icon: "",
         robotModelId: "",
+        type: 1,
       })
     }
   }, [editDance, isEditMode, reset])
 
   const status = watch("status")
+  const type = watch("type")
 
   const onSubmit = async (data: DanceModal) => {
     try {
@@ -255,6 +259,38 @@ export function CreateDanceModal({
                   <span className="flex items-center gap-2">
                     <span className="w-2 h-2 bg-red-500 rounded-full"></span>
                     Không kích hoạt
+                  </span>
+                </SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          {/* Cường độ */}
+          <div className="space-y-2">
+            <Label htmlFor="type" className="text-sm font-medium">
+              Cường độ *
+            </Label>
+            <Select
+              value={type?.toString() || "1"}
+              onValueChange={(value) => setValue("type", parseInt(value))}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Chọn cường độ" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="1">
+                  <span className="flex items-center gap-2">
+                    <span className="w-2 h-2 bg-blue-300 rounded-full"></span>Yếu
+                  </span>
+                </SelectItem>
+                <SelectItem value="2">
+                  <span className="flex items-center gap-2">
+                    <span className="w-2 h-2 bg-yellow-500 rounded-full"></span>Trung bình
+                  </span>
+                </SelectItem>
+                <SelectItem value="3">
+                  <span className="flex items-center gap-2">
+                    <span className="w-2 h-2 bg-red-500 rounded-full"></span>Mạnh
                   </span>
                 </SelectItem>
               </SelectContent>

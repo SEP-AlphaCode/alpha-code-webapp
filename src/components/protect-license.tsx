@@ -4,6 +4,7 @@ import React, { useEffect, useState } from "react";
 import { useValidateLicenseKey } from "@/features/license-key/hooks/use-license-key";
 import { getUserIdFromToken } from "@/utils/tokenUtils";
 import LoadingState from "./loading-state";
+import { setLicenseKeyCookie, setAccessTokenCookie } from "@/utils/cookieUtils";
 
 interface ProtectLicenseProps {
   children: React.ReactNode;
@@ -25,7 +26,7 @@ const LockedOverlayLicense = ({ purchaseUrl, children }: { purchaseUrl: string; 
         <p className="text-gray-200 mb-6 text-sm leading-relaxed">Bạn chưa nhập hoặc chưa kích hoạt license để truy cập nội dung này. Vui lòng nhập license hoặc mua để mở khóa.</p>
 
         <div className="flex gap-3 justify-center">
-          <button onClick={() => (window.location.href = purchaseUrl)} className="px-5 py-2 bg-amber-500 text-white font-semibold rounded-md hover:bg-amber-600">
+          <button onClick={() => (window.location.href = "/license-key")} className="px-5 py-2 bg-amber-500 text-white font-semibold rounded-md hover:bg-amber-600">
             Mua
           </button>
           <button onClick={() => (window.location.href = "/license-key")} className="px-5 py-2 border border-gray-300 text-gray-100 rounded-md hover:bg-gray-100 hover:text-black">
@@ -84,6 +85,17 @@ export const ProtectLicense = ({ children, accountId, licenseKey, purchaseUrl = 
   }, [query?.isLoading, query?.isFetching]);
 
   const isAllowedDerived = query.data;
+
+  // Set cookies khi validate license key thành công
+  useEffect(() => {
+    if (query.data === true && inferredLicenseKey && inferredAccountId) {
+      const token = typeof window !== 'undefined' ? sessionStorage.getItem('accessToken') : null;
+      setLicenseKeyCookie(inferredLicenseKey);
+      if (token) {
+        setAccessTokenCookie(token);
+      }
+    }
+  }, [query.data, inferredLicenseKey, inferredAccountId]);
 
   // DEBUG: show query results in console to help trace why it may still block
   // Remove or disable these logs in production

@@ -58,7 +58,7 @@ export default function DanceConfiguration({
           <Bot className="w-6 h-6 text-white" />
         </div>
         <div>
-          <h4 className="text-xl font-bold text-gray-900">Cấu Hình Vũ Đạo AI</h4>
+          <h4 className="text-xl font-bold text-gray-900">Cấu Hình Vũ Đạo</h4>
           <p className="text-sm text-gray-600">Tùy chỉnh thông số vũ đạo</p>
         </div>
       </div>
@@ -124,7 +124,7 @@ export default function DanceConfiguration({
           <div className="p-1 bg-gray-600 rounded-full">
             <Sparkles className="w-3 h-3 text-white" />
           </div>
-          AI sẽ phân tích nhịp điệu và tốc độ để tạo các động tác nhảy đồng bộ
+          Hệ thống sẽ phân tích nhịp điệu và tốc độ để tạo các động tác nhảy đồng bộ
         </div>
         
         {/* Show selected range */}

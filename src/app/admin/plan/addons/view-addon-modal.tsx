@@ -62,6 +62,8 @@ export function ViewAddonModal({
         return "Nhà thông minh"
       case 4:
         return "Lập trình Blockly"
+      case 5:
+        return "Phép thuật tranh vẽ"
       default:
         return "Không xác định"
     }

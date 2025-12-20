@@ -81,7 +81,7 @@ export function UserStatsOverview({ userStats, isLoading }: UserStatsOverviewPro
                 borderRadius: '8px',
                 boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)'
               }}
-              formatter={(value: string | number, name: string) => [value, name]}
+              formatter={(value: string | number | undefined, name: string | undefined) => [value, name]}
               labelFormatter={(label) => label}
             />
             <Bar dataKey="value" radius={[8, 8, 0, 0]}>

@@ -11,6 +11,7 @@ export type Dance = {
     robotModelId: string
     robotModelName: string
     statusText: string
+    type: number
 }
 
 export type DanceModal = {
@@ -21,4 +22,5 @@ export type DanceModal = {
     duration: number
     status: number
     icon: string
+    type: number
 }

@@ -6,7 +6,7 @@ import ProtectAddon from "@/components/protect-addon"
 
 export default function ChildrenQRCodesPage() {
   return <>
-    <ProtectAddon>
+    <ProtectAddon category={2}>
       <QRCodesManager />
     </ProtectAddon>
   </>

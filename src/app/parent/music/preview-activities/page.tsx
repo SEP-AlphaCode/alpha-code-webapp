@@ -89,6 +89,7 @@ export default function PreviewActivitiesPage() {
   // Sử dụng hook để tạo activity (tắt toast tự động)
   const createActivityMutation = useCreateActivity({ showToast: false })
 
+  // Load data from sessionStorage
   useEffect(() => {
     console.log("Loading preview activity data from sessionStorage");
     const sessionDataKey = searchParams.get('sessionKey') || 'preview_activity_data'
@@ -117,6 +118,35 @@ export default function PreviewActivitiesPage() {
     }
 
     setLoading(false)
+  }, [searchParams])
+
+  // Auto cleanup when leaving the page
+  useEffect(() => {
+    const sessionDataKey = searchParams.get('sessionKey') || 'preview_activity_data'
+    
+    // Cleanup function khi component unmount (navigate away)
+    return () => {
+      console.log('🧹 Cleaning up preview data on unmount')
+      sessionStorage.removeItem(sessionDataKey)
+      sessionStorage.removeItem(`${sessionDataKey}_actions`)
+    }
+  }, [searchParams])
+
+  // Cleanup on browser close or tab close
+  useEffect(() => {
+    const sessionDataKey = searchParams.get('sessionKey') || 'preview_activity_data'
+    
+    const handleBeforeUnload = () => {
+      console.log('🧹 Cleaning up preview data on page unload')
+      sessionStorage.removeItem(sessionDataKey)
+      sessionStorage.removeItem(`${sessionDataKey}_actions`)
+    }
+
+    window.addEventListener('beforeunload', handleBeforeUnload)
+
+    return () => {
+      window.removeEventListener('beforeunload', handleBeforeUnload)
+    }
   }, [searchParams])
 
   const handleSaveActivity = async () => {
@@ -158,7 +188,7 @@ export default function PreviewActivitiesPage() {
         return
       }
 
-      const activityData: Omit<Activity, 'id' | 'createdDate' | 'lastUpdate'> = {
+      const activityData: Omit<Activity, 'id' | 'createdDate' | 'lastUpdated'> = {
         accountId: userInfo.id,
         data: dancePlan,
         name: trimmedName,
@@ -173,8 +203,10 @@ export default function PreviewActivitiesPage() {
 
       toast.success(`✅ Hoạt động "${trimmedName}" đã được lưu thành công!`)
 
+      // Cleanup sessionStorage after saving
       const sessionDataKey = searchParams.get('sessionKey') || 'preview_activity_data'
       sessionStorage.removeItem(sessionDataKey)
+      sessionStorage.removeItem(`${sessionDataKey}_actions`)
 
       setIsModalOpen(false)
 

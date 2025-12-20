@@ -108,3 +108,29 @@ export function hasValidPreviewData(sessionKey?: string): boolean {
     return false
   }
 }
+
+/**
+ * Cleanup all preview data from sessionStorage
+ */
+export function cleanupOldPreviewData(): void {
+  try {
+    // Iterate through all sessionStorage keys
+    const keysToRemove: string[] = []
+    
+    for (let i = 0; i < sessionStorage.length; i++) {
+      const key = sessionStorage.key(i)
+      if (key && key.includes('preview_activity_data')) {
+        keysToRemove.push(key)
+      }
+    }
+    
+    // Remove all preview keys
+    keysToRemove.forEach(key => sessionStorage.removeItem(key))
+    
+    if (keysToRemove.length > 0) {
+      console.log(`🧹 Cleaned up ${keysToRemove.length} preview data keys`)
+    }
+  } catch (error) {
+    console.error('❌ Error cleaning up preview data:', error)
+  }
+}

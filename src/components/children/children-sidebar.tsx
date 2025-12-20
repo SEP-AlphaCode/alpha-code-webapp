@@ -134,22 +134,16 @@ export function ChildrenSidebar({
               <DropdownMenuSeparator />
               <DropdownMenuGroup>
                 <DropdownMenuItem asChild>
-                  <Link href="/user/profile" className="cursor-pointer">
-                    <UserCircle className="mr-2 h-4 w-4" />
-                    <span>Profile</span>
-                  </Link>
-                </DropdownMenuItem>
-                <DropdownMenuItem asChild>
                   <Link href="/user/settings" className="cursor-pointer">
                     <Settings className="mr-2 h-4 w-4" />
-                    <span>Settings</span>
+                    <span>Cài Đặt</span>
                   </Link>
                 </DropdownMenuItem>
               </DropdownMenuGroup>
               <DropdownMenuSeparator />
               <DropdownMenuItem onClick={onLogout} disabled={isLogoutPending}>
                 <LogOut className="mr-2 h-4 w-4" />
-                <span>Log out</span>
+                <span>Đăng Xuất</span>
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
@@ -184,22 +178,16 @@ export function ChildrenSidebar({
               <DropdownMenuSeparator />
               <DropdownMenuGroup>
                 <DropdownMenuItem asChild>
-                  <Link href="/user/profile" className="cursor-pointer">
-                    <UserCircle className="mr-2 h-4 w-4" />
-                    <span>Profile</span>
-                  </Link>
-                </DropdownMenuItem>
-                <DropdownMenuItem asChild>
                   <Link href="/user/settings" className="cursor-pointer">
                     <Settings className="mr-2 h-4 w-4" />
-                    <span>Settings</span>
+                    <span>Cài Đặt</span>
                   </Link>
                 </DropdownMenuItem>
               </DropdownMenuGroup>
               <DropdownMenuSeparator />
               <DropdownMenuItem onClick={onLogout} disabled={isLogoutPending}>
                 <LogOut className="mr-2 h-4 w-4" />
-                <span>Log out</span>
+                <span>Đăng Xuất</span>
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>

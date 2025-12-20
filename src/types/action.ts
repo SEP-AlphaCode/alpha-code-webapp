@@ -14,6 +14,7 @@ export type Action = {
     robotModelId: string
     robotModelName: string
     statusText?: string
+    type: number
 }
 
 export type ActionModal = {
@@ -25,6 +26,7 @@ export type ActionModal = {
     status: number
     canInterrupt: boolean
     icon: string
+    type: number
 }
 
 export type ActionActivites = {

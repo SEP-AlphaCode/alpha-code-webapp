@@ -5,10 +5,11 @@ import { useRouter } from "next/navigation";
 import { getUserIdFromToken } from "@/utils/tokenUtils";
 import { ValidateAddon } from "@/types/addon";
 import { useAddonAccess } from "@/features/addon/hooks/use-license-key-addon";
+import { setAddonKeyCookie, setAccessTokenCookie } from "@/utils/cookieUtils";
 
 interface ProtectAddonProps {
   children: React.ReactNode;
-  category?: number;
+  category: number;
   sessionKeyName?: string;
   validateFn?: (payload: ValidateAddon) => Promise<{ allowed: boolean; status?: string } | boolean>;
   purchaseUrl?: string;
@@ -63,7 +64,7 @@ export const ProtectAddon = ({
   category,
   sessionKeyName = "key",
   validateFn,
-  purchaseUrl = "/payment",
+  purchaseUrl = "/addons",
 }: ProtectAddonProps) => {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(true);
@@ -74,8 +75,12 @@ export const ProtectAddon = ({
   const accountId = getUserIdFromToken(accessToken || "") || undefined;
 
   const { useValidateAccess } = useAddonAccess();
+  // Build payload matching backend shape: ValidateAddon expects `key` (not `sessionKey`).
+  const validatePayload: ValidateAddon = { key: sessionKey, accountId, category };
+  // Small log to help debugging in dev
+  // eslint-disable-next-line no-console
   // Call the hook unconditionally — the internal `enabled` option will prevent queries when data is missing.
-  const query = useValidateAccess({ sessionKey, accountId, category } as ValidateAddon);
+  const query = useValidateAccess(validatePayload);
 
   // Redirect nếu chưa login
   useEffect(() => {
@@ -92,7 +97,7 @@ export const ProtectAddon = ({
     const checkAccess = async () => {
       setIsLoading(true);
       try {
-        const payload: ValidateAddon = { sessionKey, accountId, category };
+        const payload: ValidateAddon = { key: sessionKey, accountId, category };
         const result = await Promise.race([
           validateFn(payload),
           new Promise<never>((_, reject) => setTimeout(() => reject(new Error("Validation timeout")), 8000)),
@@ -116,13 +121,22 @@ export const ProtectAddon = ({
     return () => { mounted = false; };
   }, [validateFn, sessionKey, accountId, category]);
 
-  // Update state từ query (React Query)
+  // Update state từ query (React Query) và set cookies khi validate thành công
   useEffect(() => {
     if (query) {
       setIsLoading(query.isLoading || query.isFetching);
-      if (query.data !== undefined) setIsAllowed(Boolean(query.data));
+      if (query.data !== undefined) {
+        const allowed = Boolean(query.data);
+        setIsAllowed(allowed);
+        
+        // Set cookies khi validate thành công
+        if (allowed && sessionKey && accessToken) {
+          setAddonKeyCookie(sessionKey);
+          setAccessTokenCookie(accessToken);
+        }
+      }
     }
-  }, [query?.data, query?.isLoading, query?.isFetching, query]);
+  }, [query?.data, query?.isLoading, query?.isFetching, query, sessionKey, accessToken]);
 
   if (isLoading) {
     return (

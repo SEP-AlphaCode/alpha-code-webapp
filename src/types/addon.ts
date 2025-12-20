@@ -58,7 +58,7 @@ export type AddonPaginationResponse = {
 }
 
 export interface ValidateAddon {
-  sessionKey?: string;
+  key?: string;
   accountId?: string;
   category?: number;
 }

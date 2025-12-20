@@ -26,10 +26,10 @@ export default function MusicHeader() {
         {/* Enhanced Description */}
         <div className="max-w-3xl mx-auto space-y-4">
           <p className="text-xl md:text-2xl text-gray-600 leading-relaxed font-medium">
-            Tạo vũ đạo AI cho robot Alpha Mini
+            Tạo vũ đạo cho robot Alpha Mini
           </p>
           <p className="text-lg text-gray-500 leading-relaxed">
-            Tải lên nhạc và để AI tạo ra những động tác nhảy đồng bộ
+            Tải lên nhạc và tạo ra những động tác nhảy đồng bộ
           </p>
         </div>
 
@@ -37,7 +37,7 @@ export default function MusicHeader() {
         <div className="flex flex-wrap justify-center gap-4 mt-8">
           <div className="flex items-center gap-2 px-4 py-2 bg-white/80 backdrop-blur-sm border border-gray-200 rounded-xl shadow-sm hover:shadow-md transition-all duration-200">
             <div className="w-2 h-2 bg-gray-500 rounded-full animate-pulse"></div>
-            <span className="text-sm font-medium text-gray-700">AI Support</span>
+            <span className="text-sm font-medium text-gray-700">Smart Support</span>
           </div>
           <div className="flex items-center gap-2 px-4 py-2 bg-white/80 backdrop-blur-sm border border-gray-200 rounded-xl shadow-sm hover:shadow-md transition-all duration-200">
             <div className="w-2 h-2 bg-gray-500 rounded-full animate-pulse delay-300"></div>

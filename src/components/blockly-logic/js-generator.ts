@@ -91,10 +91,12 @@ export const buildCodeGeneratorForModelId = (modelId: string, serial: string): J
         const body = JSON.stringify({
             type: 'coding_block',
             data: {
-                type: block.type.split('.')[1],
-                data: {
-                    code: dropdown_action_name
-                }
+                actions: [{
+                    type: block.type.split('.')[1],
+                    data: {
+                        code: dropdown_action_name
+                    }
+                }]
             }
         })
         const comment = `// calling function ${block.type} ${count} time(s)\n`
@@ -109,9 +111,11 @@ export const buildCodeGeneratorForModelId = (modelId: string, serial: string): J
         const body = JSON.stringify({
             type: 'coding_block',
             data: {
-                type: 'tts',
-                lang: dropdown_language,
-                text: value_text
+                actions: [{
+                    type: 'tts',
+                    lang: dropdown_language,
+                    text: value_text
+                }]
             }
         })
         const comment = `// nói ${value_text}\n`
@@ -134,12 +138,14 @@ export const buildCodeGeneratorForModelId = (modelId: string, serial: string): J
         const body = JSON.stringify({
             type: 'coding_block',
             data: {
-                type: 'led',
-                color: JSON.parse(colour_name),
-                duration: Object.is(val_if_num, NaN) ? value_duration : val_if_num
+                actions: [{
+                    type: 'led',
+                    color: JSON.parse(colour_name),
+                    duration: Object.is(val_if_num, NaN) ? value_duration : val_if_num
+                }]
             }
         })
-        
+
         // TODO: Assemble javascript into the code variable.
         const comment = `// setting mouth LED for ${value_duration}(s)\n`
         const inner = baseRequest(body, 1)

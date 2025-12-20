@@ -1,11 +1,9 @@
 "use client"
 
 import {
-  BadgeCheck,
-  Bell,
   ChevronsUpDown,
-  CreditCard,
   LogOut,
+  User,
 } from "lucide-react"
 
 import {
@@ -28,6 +26,8 @@ import {
   useSidebar,
 } from "@/components/ui/sidebar"
 import { useLogout } from "@/features/auth/hooks/use-logout"
+import { useRouter } from "next/navigation"
+import { getTokenPayload } from "@/utils/tokenUtils"
 
 export function NavUser({
   user,
@@ -39,12 +39,34 @@ export function NavUser({
   }
 }) {
   const { isMobile } = useSidebar()
+  const router = useRouter()
+  
   // Initialize the logout mutation hook at component top-level
   const logoutMutation = useLogout()
 
   const logOut = () => {
     // Trigger the mutation when user clicks Log out
     logoutMutation.mutate()
+  }
+
+  const navigateToProfile = () => {
+    // Get user role from token to determine profile URL
+    const accessToken = sessionStorage.getItem('accessToken')
+    if (accessToken) {
+      const accountData = getTokenPayload(accessToken)
+      const roleName = accountData?.roleName?.toLowerCase()
+      
+      // Navigate based on role
+      if (roleName === 'admin') {
+        router.push('/admin/profile')
+      } else if (roleName === 'staff') {
+        router.push('/staff/profile')
+      } else if (roleName === 'parent' || roleName === 'user') {
+        router.push('/parent/profile')
+      } else if (roleName === 'child') {
+        router.push('/children/profile')
+      }
+    }
   }
 
   return (
@@ -86,23 +108,18 @@ export function NavUser({
             <DropdownMenuSeparator />
 
             <DropdownMenuGroup>
-              <DropdownMenuItem className="hover:bg-gray-100 hover:text-gray-900 transition-colors duration-200 cursor-pointer">
-                <BadgeCheck />
-                Account
-              </DropdownMenuItem>
-              <DropdownMenuItem className="hover:bg-gray-100 hover:text-gray-900 transition-colors duration-200 cursor-pointer">
-                <CreditCard />
-                Billing
-              </DropdownMenuItem>
-              <DropdownMenuItem className="hover:bg-gray-100 hover:text-gray-900 transition-colors duration-200 cursor-pointer">
-                <Bell />
-                Notifications
+              <DropdownMenuItem 
+                onClick={navigateToProfile}
+                className="hover:bg-gray-100 hover:text-gray-900 transition-colors duration-200 cursor-pointer"
+              >
+                <User />
+                Hồ Sơ
               </DropdownMenuItem>
             </DropdownMenuGroup>
             <DropdownMenuSeparator />
             <DropdownMenuItem onClick={logOut} className="hover:bg-red-100 hover:text-red-900 transition-colors duration-200 cursor-pointer">
               <LogOut />
-              Log out
+              Đăng Xuất
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>

@@ -380,3 +380,34 @@
   animation: fade-in 0.4s ease-out forwards;
 }
 
+.clamp-2-break {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  overflow: hidden;
+
+  /* ép cả từ dài có _ phải tách dòng */
+  word-break: break-all;
+  /* (tuỳ chọn) support tốt hơn cho Chrome mới */
+  overflow-wrap: anywhere;
+}
+
+/* Smooth horizontal scroll animation for category list */
+@keyframes scroll-horizontal {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(-50%);
+  }
+}
+
+.animate-scroll-horizontal {
+  animation: scroll-horizontal 30s linear infinite;
+  display: flex;
+}
+
+.animate-scroll-horizontal.pause-animation,
+.animate-scroll-horizontal:hover {
+  animation-play-state: paused;
+}

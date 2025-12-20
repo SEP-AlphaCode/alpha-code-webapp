@@ -12,12 +12,13 @@ import { Button } from '@/components/ui/button';
 import 'blockly/blocks';
 import 'blockly/javascript'; // Or the generator of your choice
 import { pythonHttp } from '@/utils/http';
+import { apiPythonUrl } from '@/app/constants/constants';
 
 type BlocklyUIProps = {
-    robotModelId: string,
-    serial: string,
-    hasAllData: boolean,
-    data: {
+    robotModelId?: string,
+    serial?: string,
+    hasAllData?: boolean,
+    data?: {
         actions: string[][],
         extActions: string[][],
         exps: string[][],
@@ -37,41 +38,83 @@ export default function BlocklyUI({ robotModelId, serial, hasAllData, data }: Bl
     const [definedModels, setDefinedModel] = useState(new Set<string>())
     const [isRunning, setIsRunning] = useState(false)
     const [showRobot, setShowRobot] = useState(false)
+    const pollRef = useRef<number | null>(null)
+    const [robotStatus, setRobotStatus] = useState<'idle' | 'connecting' | 'running' | 'finished' | 'unreachable'>('idle')
     const key = 'AlphaCode'
-    const executeCode = (code: string, resultKey: string) => {
-        setIsRunning(true)
-        setShowRobot(true)
-
-        toast.success('🎉 Đang chạy chương trình...')
-        try {
-            // Use Function constructor to create an async function
-            console.log(code);
-
-            const fn = new Function(code)
-            const x = fn()
-            console.log(x);
-
-            if (x.error) {
-                toast.error(x.error)
-                setShowRobot(false)
-            } else {
-                toast.success('✨ Đã chạy thành công!')
-                setTimeout(() => setShowRobot(false), 2000)
-            }
-        }
-        catch (e) {
-            toast.error('❌ Lỗi khi chạy mã. Điều này xảy ra do mã không hợp lệ hoặc lỗi logic trong khối.')
-            setShowRobot(false)
-        }
-        finally {
-            setIsRunning(false)
+    const stopPolling = () => {
+        if (pollRef.current) {
+            clearInterval(pollRef.current)
+            pollRef.current = null
         }
     }
 
-    const actualInit = () => {
+    const startPolling = () => {
+        setRobotStatus('connecting')
+        // poll every 2s
+        if (pollRef.current) stopPolling()
+        pollRef.current = window.setInterval(async () => {
+            try {
+                const res = await pythonHttp.get('/robot/coding-block/' + serial)
+                const json = res.data
+                // expected shape: { success: boolean, isRunning: boolean }
+                if (!json.success) {
+                    setRobotStatus('unreachable')
+                    toast.error('❌ Không thể kết nối tới robot')
+                    setIsRunning(false)
+                    setShowRobot(false)
+                    stopPolling()
+                } else if (json.isRunning) {
+                    setRobotStatus('running')
+                    setIsRunning(true)
+                    setShowRobot(true)
+                } else {
+                    setRobotStatus('finished')
+                    setIsRunning(false)
+                    setShowRobot(false)
+                    toast.success('✨ Robot đã hoàn thành thực thi')
+                    stopPolling()
+                }
+            } catch (e) {
+                console.error('Polling error', e)
+                setRobotStatus('unreachable')
+                toast.error('❌ Lỗi khi kiểm tra trạng thái robot')
+                setIsRunning(false)
+                setShowRobot(false)
+                stopPolling()
+            }
+        }, 1500)
+    }
+
+    const executeCode = (code: string) => {
+        setIsRunning(true)
+        setShowRobot(true)
+
+        try {
+            const fn = new Function(code)
+            const x = fn()
+            if (x?.error) {
+                toast.error(x.error)
+                setShowRobot(false)
+                setIsRunning(false)
+            } else {
+                toast.success('🎉 Đã gửi mã, bắt đầu kiểm tra trạng thái robot...')
+                // start polling the python service for robot status
+                startPolling()
+            }
+        } catch (e) {
+            toast.error('❌ Lỗi khi chạy mã. Điều này xảy ra do mã không hợp lệ hoặc lỗi logic trong khối.')
+            setShowRobot(false)
+            setIsRunning(false)
+            stopPolling()
+        }
+    }
+
+    const actualInit = (helper?: Operations) => {
+        const useHelper = helper ?? wsHelper
         if (!workspaceRef.current) return;
         if (!blocklyRef.current) return;
-        if (!wsHelper) return;
+        if (!useHelper) return;
+        if (!robotModelId || !data || !serial) return;
 
         if (!definedModels.has(robotModelId)) {
             const allBlocks = loadModelIdData(robotModelId, data.actions, data.extActions, data.exps, data.skills)
@@ -81,30 +124,45 @@ export default function BlocklyUI({ robotModelId, serial, hasAllData, data }: Bl
         const gen = buildCodeGeneratorForModelId(robotModelId, serial)
         setCodeGenerator(gen)
 
-        workspaceRef.current?.updateToolbox(wsHelper.getDefaultToolbox())
-        const newToolbox = wsHelper.getToolboxForRobotModel(robotModelId)
+        workspaceRef.current?.updateToolbox(useHelper.getDefaultToolbox())
+        const newToolbox = useHelper.getToolboxForRobotModel(robotModelId)
         // curToolbox.contents.push(robotCategory)
         workspaceRef.current.updateToolbox(newToolbox)
     }
 
     useEffect(() => {
         if (!blocklyRef || !blocklyRef.current) return;
+
         workspaceRef.current = Blockly.inject(blocklyRef.current, { toolbox })
         if (!workspaceRef.current) { return; }
         const tmp = blockControls(workspaceRef.current)
         setWsHelper(tmp)
         tmp.addStrayScrollbarDestructor?.(blocklyRef.current)
         tmp.setUpUI()
+        // If data already loaded, initialize immediately with the local helper
+        if (hasAllData) {
+            try {
+                tmp.loadFromJson({})
+            } catch { }
+            actualInit(tmp)
+            if (robotModelId) setDefinedModel(prev => {
+                const s = new Set(prev); s.add(robotModelId); return s;
+            })
+        }
+
 
         // Give Blockly a chance to measure and render correctly after mount
         setTimeout(() => {
             try {
                 if (workspaceRef.current) Blockly.svgResize(workspaceRef.current)
             } catch { /* ignore */ }
-        }, 0)
+        }, 10)
 
         return () => {
-            if (!workspaceRef.current) { return; }
+            if (!workspaceRef.current) {
+                return;
+            }
+
             workspaceRef.current.dispose()
             workspaceRef.current = undefined
             // restore toolbox if necessary
@@ -131,7 +189,7 @@ export default function BlocklyUI({ robotModelId, serial, hasAllData, data }: Bl
         drawerRef.current.appendChild(tb)
         setIsToolboxOpen(true)
         // redraw workspace after toolbox moves
-        setTimeout(() => { try { if (workspaceRef.current) Blockly.svgResize(workspaceRef.current) } catch {} }, 50)
+        setTimeout(() => { try { if (workspaceRef.current) Blockly.svgResize(workspaceRef.current) } catch { } }, 50)
     }
 
     const closeToolboxDrawer = () => {
@@ -142,19 +200,24 @@ export default function BlocklyUI({ robotModelId, serial, hasAllData, data }: Bl
         }
         setIsToolboxOpen(false)
         // redraw workspace after toolbox restores
-        setTimeout(() => { try { if (workspaceRef.current) Blockly.svgResize(workspaceRef.current) } catch {} }, 50)
+        setTimeout(() => { try { if (workspaceRef.current) Blockly.svgResize(workspaceRef.current) } catch { } }, 50)
     }
 
+    // initialization: run immediately after injection (above) when possible,
+    // and also run when `wsHelper` becomes available later to avoid race conditions
     useEffect(() => {
         if (!hasAllData) return;
-        // Wipe the workspace
-        wsHelper?.loadFromJson({})
-        // Redo init
-        actualInit()
-        definedModels.add(robotModelId)
-    }, [robotModelId, hasAllData])
+        if (!wsHelper) return;
+        try { wsHelper.loadFromJson({}) } catch { }
+        actualInit(wsHelper)
+        if (robotModelId) setDefinedModel(prev => { const s = new Set(prev); s.add(robotModelId); return s; })
+    }, [robotModelId, hasAllData, wsHelper])
 
+    /**
+     * Rebuild code generator when serial changes (to update websocket target)
+     */
     useEffect(() => {
+        if (!robotModelId || !data || !serial) return;
         const gen = buildCodeGeneratorForModelId(robotModelId, serial)
         setCodeGenerator(gen)
     }, [serial])
@@ -164,29 +227,43 @@ export default function BlocklyUI({ robotModelId, serial, hasAllData, data }: Bl
         const onResize = () => {
             try {
                 if (workspaceRef.current) Blockly.svgResize(workspaceRef.current)
-            } catch {}
+            } catch { }
         }
         window.addEventListener('resize', onResize)
         return () => window.removeEventListener('resize', onResize)
     }, [])
 
+    // cleanup polling on unmount
+    useEffect(() => {
+        return () => {
+            stopPolling()
+        }
+    }, [])
+
     const handleRun = () => {
+        if (!robotModelId) {
+            toast.error('Vui lòng chọn robot trước khi chạy')
+            return
+        }
         if (!codeGenerator || !wsHelper) return;
         try {
             const code = wsHelper.makeListCode(codeGenerator);
-            executeCode(code.code, code.listVar);
+            executeCode(code.code);
         } catch {
-            toast.error('❌ Lỗi khi chạy mã')
+            toast.error('Lỗi khi chạy mã')
         }
     }
 
     const handleStop = () => {
         const f = async () => {
+            stopPolling()
             setIsRunning(false);
             setShowRobot(false);
+            setRobotStatus('idle')
             toast.info('⏸️ Đã dừng thực thi');
             await pythonHttp.post(`/websocket/command/${serial}`, {
-                type: 'stop_all_actions'
+                type: 'stop_all_actions',
+                data: {}
             }, {
                 headers: {
                     Accept: "application/json",
@@ -202,9 +279,6 @@ export default function BlocklyUI({ robotModelId, serial, hasAllData, data }: Bl
         const blockData = wsHelper.serialize();
         localStorage.setItem(key + '.' + robotModelId, JSON.stringify(blockData));
         toast.success("💾 Đã lưu kết quả!");
-        // workspaceRef.current?.getAllBlocks().forEach(b => {
-        //     console.log(b);
-        // })
     }
 
     const handleLoad = () => {
@@ -225,7 +299,7 @@ export default function BlocklyUI({ robotModelId, serial, hasAllData, data }: Bl
     }
 
     return (
-    <div className="min-h-screen flex flex-col lg:flex-row overflow-hidden pt-8 lg:pt-0">
+        <div className="min-h-screen flex flex-col lg:flex-row overflow-hidden pt-8 lg:pt-0">
             {/* Main Layout - Full Screen */}
             <div className="flex-1 flex flex-col lg:flex-row overflow-hidden min-h-0">
                 {/* Left Sidebar with Robot */}
@@ -252,7 +326,13 @@ export default function BlocklyUI({ robotModelId, serial, hasAllData, data }: Bl
                         </div>
                         <div className="text-center">
                             <h2 className="text-2xl font-bold text-gray-900 mb-2">Robot Alpha</h2>
-                            <p className="text-gray-600 text-sm">Sẵn sàng lập trình!</p>
+                            <p className="text-gray-600 text-sm">
+                                {robotStatus === 'idle' && 'Sẵn sàng lập trình!'}
+                                {robotStatus === 'connecting' && 'Đang kết nối tới robot…'}
+                                {robotStatus === 'running' && 'Robot đang thực thi chương trình…'}
+                                {robotStatus === 'finished' && 'Robot đã hoàn thành.'}
+                                {robotStatus === 'unreachable' && 'Không thể kết nối tới robot.'}
+                            </p>
                         </div>
                     </div>
 
@@ -330,7 +410,7 @@ export default function BlocklyUI({ robotModelId, serial, hasAllData, data }: Bl
                     </div>
                     {/* Mobile bottom quick actions (visible on small screens) */}
                     <div className="lg:hidden fixed bottom-0 left-0 right-0 z-50 bg-white border-t shadow-md p-2"
-                         style={{ paddingBottom: 'calc(env(safe-area-inset-bottom, 0px) + 8px)' }}>
+                        style={{ paddingBottom: 'calc(env(safe-area-inset-bottom, 0px) + 8px)' }}>
                         <div className="max-w-4xl mx-auto flex items-center justify-between px-2">
                             <Button size="sm" onClick={handleRun} disabled={isRunning} className="flex-1 mx-1">
                                 <Play className="w-5 h-5 mr-2" />

@@ -33,15 +33,16 @@ interface CreateAddonModalProps {
   onClose: () => void
   editAddon?: Addon | null
   mode?: "create" | "edit"
-  // ✅ thêm dòng này
   onSuccess?: () => void
 }
 
+// ✅ Updated CATEGORY_MAP with Magic Sketch (Category 5)
 const CATEGORY_MAP = [
   { value: 1, label: "OSMO" },
   { value: 2, label: "QR CODE" },
   { value: 3, label: "NHÀ THÔNG MINH" },
-  { value: 4, label: "LẬP TRÌNH BLOCKLY" }
+  { value: 4, label: "LẬP TRÌNH BLOCKLY" },
+  { value: 5, label: "PHÉP THUẬT TRANH VẼ" } // New Category
 ]
 
 const STATUS_MAP = [
@@ -54,7 +55,7 @@ export function CreateAddonModal({
   onClose,
   editAddon = null,
   mode = "create",
-  onSuccess, // ✅ nhận thêm prop này
+  onSuccess,
 }: CreateAddonModalProps) {
   const { useCreateAddon, useUpdateAddon } = useAddon()
   const createAddonMutation = useCreateAddon()
@@ -117,7 +118,7 @@ export function CreateAddonModal({
 
       reset()
       onClose()
-      onSuccess?.() // ✅ gọi callback để refresh danh sách
+      onSuccess?.()
     } catch (error: unknown) {
       const errorMessage = error && typeof error === 'object' && 'response' in error
         ? (error as { response?: { data?: { message?: string } } }).response?.data?.message
