@@ -94,6 +94,8 @@ export default function OsmoCardManagement() {
         (card.expressionName || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
         (card.actionName || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
         (card.danceName || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (card.extendedActionName || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (card.skillName || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
         (card.color || '').toLowerCase().includes(searchTerm.toLowerCase());
       const matchesStatus = filterStatus === 'all' || card.status?.toString() === filterStatus;
       const matchesColor = filterColor === 'all' || card.color === filterColor;
@@ -111,8 +113,8 @@ export default function OsmoCardManagement() {
         console.error('Delete error:', error);
 
         // Extract error message from API response
-        const errorMessage = 'Failed to delete Osmo Card';
-        let errorDescription = 'Please try again later.';
+        const errorMessage = 'Không thể xóa thẻ Osmo';
+        let errorDescription = 'Vui lòng thử lại sau.';
 
         // Try to extract API error details if available
         const apiError = error as unknown as ApiResponse;
@@ -160,7 +162,7 @@ export default function OsmoCardManagement() {
         setEditModalOpen(false);
         setSelectedCard(null);
         setEditApiError(undefined);
-        toast.success('Osmo Card updated successfully');
+        toast.success('Đã cập nhật thẻ Osmo thành công');
       },
         onError: (error: unknown) => {
           // Cast error to ApiResponse to access custom properties and extract message robustly
@@ -169,8 +171,8 @@ export default function OsmoCardManagement() {
           setEditApiError(apiError);
 
           const extracted = extractErrorInfo(error);
-          const errorMessage = extracted.message || 'Failed to update Osmo Card';
-          const errorDescription = 'Please check the form and try again.';
+          const errorMessage = extracted.message || 'Không thể cập nhật thẻ Osmo';
+          const errorDescription = 'Vui lòng kiểm tra lại biểu mẫu và thử lại.';
 
           toast.error(errorMessage, {
             description: errorDescription,
@@ -199,12 +201,12 @@ export default function OsmoCardManagement() {
     createOsmoCardMutation.mutate(cardData, {
       onSuccess: () => {
         setCreateModalOpen(false);
-        toast.success('Osmo Card created successfully');
+        toast.success('Đã tạo thẻ Osmo thành công');
       },
       onError: (error: Error) => {
         const extracted = extractErrorInfo(error);
-        const errorMessage = extracted.message || 'Failed to create Osmo Card';
-        const errorDescription = 'Please try again later.';
+        const errorMessage = extracted.message || 'Không thể tạo thẻ Osmo';
+        const errorDescription = 'Vui lòng thử lại sau.';
 
         toast.error(errorMessage, { description: errorDescription, duration: 5000 });
       }
@@ -247,7 +249,7 @@ export default function OsmoCardManagement() {
       {/* Search and Filter */}
       <Card>
         <CardHeader>
-          <CardTitle>Osmo Card List</CardTitle>
+          <CardTitle>Danh Sách Thẻ Osmo</CardTitle>
         </CardHeader>
         <CardContent>
           <SearchAndFilter
