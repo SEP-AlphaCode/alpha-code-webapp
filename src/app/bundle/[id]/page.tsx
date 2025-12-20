@@ -30,7 +30,9 @@ import { Bundle } from "@/types/bundle"
 import Link from "next/link"
 import Image from "next/image"
 import { toast } from "sonner"
-import { getUserInfoFromToken } from "@/utils/tokenUtils"
+import { getUserInfoFromToken, getUserIdFromToken, getUserRoleFromToken } from "@/utils/tokenUtils"
+import { getAccountCourseByCourseAndAccount } from "@/features/courses/api/account-course-api"
+import { useEffect } from "react"
 
 const formatCurrency = (amount: number): string => {
   if (amount === 0) return "Miễn phí"
@@ -44,9 +46,10 @@ const formatCurrency = (amount: number): string => {
 type BundleCourseListProps = {
   courses: Course[]
   isLoading: boolean
+  onCourseClick: (course: Course) => void
 }
 
-const BundleCourseList = ({ courses, isLoading }: BundleCourseListProps) => (
+const BundleCourseList = ({ courses, isLoading, onCourseClick }: BundleCourseListProps) => (
   <div className="space-y-4">
     <div className="flex items-center justify-between">
       <h3 className="text-2xl font-bold text-gray-900">
@@ -71,7 +74,7 @@ const BundleCourseList = ({ courses, isLoading }: BundleCourseListProps) => (
     ) : (
       <div className="grid gap-3">
         {courses.map((course: Course, index: number) => (
-          <Link key={course.id} href={`/parent/courses/${course.slug}`}>
+          <div key={course.id} onClick={() => onCourseClick(course)}>
             <Card className="group border border-gray-200 hover:border-blue-300 hover:shadow-lg transition-all duration-300 bg-white overflow-hidden cursor-pointer">
               <CardContent className="p-0">
                 <div className="flex items-center gap-4 p-5">
@@ -104,7 +107,7 @@ const BundleCourseList = ({ courses, isLoading }: BundleCourseListProps) => (
                 </div>
               </CardContent>
             </Card>
-          </Link>
+          </div>
         ))}
       </div>
     )}
@@ -160,6 +163,37 @@ export default function BundleDetailPage() {
   }
 
   const activeBundle = bundle as Bundle
+
+  // Handler khi click vào course
+  const handleCourseClick = async (course: Course) => {
+    const accessToken = typeof window !== 'undefined' ? sessionStorage.getItem('accessToken') || '' : ''
+    const accountId = accessToken ? getUserIdFromToken(accessToken) : null
+    const roleName = accessToken ? (getUserRoleFromToken(accessToken) || '').toLowerCase() : ''
+    const roleBasePath = roleName === 'children' || roleName.includes('child') ? '/children/courses' : '/parent/courses'
+
+    // Nếu chưa đăng nhập, chuyển đến trang detail
+    if (!accountId) {
+      router.push(`${roleBasePath}/${course.slug}`)
+      return
+    }
+
+    try {
+      // Kiểm tra xem user đã enroll course này chưa
+      const accountCourse = await getAccountCourseByCourseAndAccount(course.id, accountId)
+      
+      if (accountCourse) {
+        // Đã enroll -> chuyển sang trang learning
+        router.push(`${roleBasePath}/learning/${course.slug}`)
+      } else {
+        // Chưa enroll -> chuyển sang trang detail
+        router.push(`${roleBasePath}/${course.slug}`)
+      }
+    } catch (error) {
+      console.error('Error checking enrollment:', error)
+      // Nếu có lỗi, vẫn cho phép xem detail
+      router.push(`${roleBasePath}/${course.slug}`)
+    }
+  }
 
   // Tính toán giá trị
   const totalCoursePrice = courses.reduce(
@@ -350,7 +384,7 @@ export default function BundleDetailPage() {
               </Card>
 
               {/* Course List */}
-              <BundleCourseList courses={courses} isLoading={coursesLoading} />
+              <BundleCourseList courses={courses} isLoading={coursesLoading} onCourseClick={handleCourseClick} />
             </div>
 
             {/* Right Sidebar */}
