@@ -48,7 +48,6 @@ function randomSuffix(): string {
 
 export function injectLoopCheck(code: string): { result: string, checkFnName: string } {
   try {
-    console.log('Injecting loop check into code:', code)
     const ast = parse(code, { ecmaVersion: 'latest', sourceType: 'script' }) as Node
 
     const checkFnName = '_loop_check_' + randomSuffix()
@@ -126,10 +125,8 @@ export function injectLoopCheck(code: string): { result: string, checkFnName: st
     walkSimple(ast, visitor)
 
     const result = generate(ast)
-    console.log('Injected code with loop check:', result)
     return { result, checkFnName }
   } catch (e) {
-    console.warn('injectLoopCheck fallback due to error', e)
     const fallbackName = '_loop_check_fallback'
     return { result: code, checkFnName: fallbackName }
   }

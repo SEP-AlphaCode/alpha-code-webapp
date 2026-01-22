@@ -38,12 +38,7 @@ export const buildCodeGeneratorForModelId = (modelId: string, serial: string): J
      * @returns A string code that push the number of call into variable 'list'
      */
     function baseRequest(body: string, n: unknown) {
-        const unit = `fetch("${callUrl}", {
-    headers: { 'Content-Type': 'application/json' },
-    method: 'POST', 
-    body:JSON.stringify(${body})
-})
-`
+        const unit = `$LIST.push(${body})`
         return `for(let i=0; i < ${n}; i++){ 
     ${unit}
 }`
@@ -63,15 +58,8 @@ export const buildCodeGeneratorForModelId = (modelId: string, serial: string): J
         // TODO: Assemble javascript into the code variable.
         //Inner function, fetch the ws call
         const body = JSON.stringify({
-            type: 'coding_block',
-            data: {
-                actions: [
-                    {
-                        type: block.type.split('.')[1],
-                        code: dropdown_action_name
-                    }
-                ]
-            }
+            type: block.type.split('.')[1],
+            code: dropdown_action_name
         })
         const comment = `// calling function ${block.type} ${count} time(s)\n`
         const inner = baseRequest(body, count)
@@ -89,14 +77,9 @@ export const buildCodeGeneratorForModelId = (modelId: string, serial: string): J
         // TODO: Assemble javascript into the code variable.
         //Inner function, fetch the ws call
         const body = JSON.stringify({
-            type: 'coding_block',
+            type: block.type.split('.')[1],
             data: {
-                actions: [{
-                    type: block.type.split('.')[1],
-                    data: {
-                        code: dropdown_action_name
-                    }
-                }]
+                code: dropdown_action_name
             }
         })
         const comment = `// calling function ${block.type} ${count} time(s)\n`
@@ -108,16 +91,11 @@ export const buildCodeGeneratorForModelId = (modelId: string, serial: string): J
     alphaCodeGenerator.forBlock['tts'] = (block) => {
         const value_text = alphaCodeGenerator.valueToCode(block, 'TEXT', Order.ATOMIC);
         const dropdown_language = block.getFieldValue('LANGUAGE');
-        const body = JSON.stringify({
-            type: 'coding_block',
-            data: {
-                actions: [{
+        const body = `{
                     type: 'tts',
-                    lang: dropdown_language,
-                    text: value_text
-                }]
-            }
-        })
+                    lang: "${dropdown_language}",
+                    text: \`\$\{${value_text}\}\`                
+        }`
         const comment = `// nói ${value_text}\n`
         const inner = baseRequest(body, 1)
         return `${comment} ${inner}\n`
@@ -136,14 +114,9 @@ export const buildCodeGeneratorForModelId = (modelId: string, serial: string): J
         const val_if_num = Number(value_duration);
         console.log(value_duration + 10);
         const body = JSON.stringify({
-            type: 'coding_block',
-            data: {
-                actions: [{
-                    type: 'led',
-                    color: JSON.parse(colour_name),
-                    duration: Object.is(val_if_num, NaN) ? value_duration : val_if_num
-                }]
-            }
+            type: 'led',
+            color: JSON.parse(colour_name),
+            duration: Object.is(val_if_num, NaN) ? value_duration : val_if_num
         })
 
         // TODO: Assemble javascript into the code variable.

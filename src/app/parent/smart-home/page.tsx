@@ -62,6 +62,8 @@ export default function ParentSmartHomePage() {
   const [showDeviceDialog, setShowDeviceDialog] = useState(false)
   const [deviceStates, setDeviceStates] = useState<Record<string, boolean>>({})
   const [expandedDevice, setExpandedDevice] = useState<string | null>(null)
+  const [showDeleteEspDialog, setShowDeleteEspDialog] = useState(false)
+  const [deviceToDelete, setDeviceToDelete] = useState<string | null>(null)
 
   // Device type icons
   const getDeviceIcon = (type: string) => {
@@ -136,12 +138,14 @@ export default function ParentSmartHomePage() {
 
   const handleDelete = async () => {
     if (!esp?.id) return
-    if (!confirm('Xác nhận xóa ESP32 này?')) return
     try {
       await deleteEspMut.mutateAsync(esp.id)
+      toast.success('Đã xóa ESP32 thành công')
+      setShowDeleteEspDialog(false)
       refetch()
     } catch (e) {
       console.error(e)
+      toast.error('Không thể xóa ESP32')
     }
   }
 
@@ -159,12 +163,14 @@ export default function ParentSmartHomePage() {
 
   const handleRemoveDevice = async (name: string) => {
     if (!esp?.id) return
-    if (!confirm(`Xác nhận xoá thiết bị ${name}?`)) return
     try {
       await removeDeviceMut.mutateAsync({ id: esp.id, name })
+      toast.success(`Đã xóa thiết bị ${name} thành công`)
+      setDeviceToDelete(null)
       refetch()
     } catch (e) {
       console.error(e)
+      toast.error(`Không thể xóa thiết bị ${name}`)
     }
   }
 
@@ -511,7 +517,7 @@ export default function ParentSmartHomePage() {
                   <Button 
                     variant="destructive" 
                     size="sm"
-                    onClick={handleDelete} 
+                    onClick={() => setShowDeleteEspDialog(true)} 
                     disabled={deleteEspMut.isPending}
                   >
                     <Trash2 className="h-4 w-4 mr-2" />
@@ -683,7 +689,7 @@ export default function ParentSmartHomePage() {
                                 variant="ghost" 
                                 size="icon" 
                                 className="h-8 w-8 text-destructive hover:bg-destructive/10"
-                                onClick={() => handleRemoveDevice(device.name)}
+                                onClick={() => setDeviceToDelete(device.name)}
                               >
                                 <Trash2 className="h-4 w-4" />
                               </Button>
@@ -735,6 +741,80 @@ export default function ParentSmartHomePage() {
         </div>
       )}
       </div>
+
+      {/* Delete ESP32 Confirmation Dialog */}
+      <Dialog open={showDeleteEspDialog} onOpenChange={setShowDeleteEspDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Xác nhận xóa ESP32</DialogTitle>
+            <DialogDescription>
+              Bạn có chắc chắn muốn xóa thiết bị ESP32 này? Hành động này không thể hoàn tác.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button 
+              variant="outline" 
+              onClick={() => setShowDeleteEspDialog(false)}
+            >
+              Hủy
+            </Button>
+            <Button 
+              variant="destructive" 
+              onClick={handleDelete}
+              disabled={deleteEspMut.isPending}
+            >
+              {deleteEspMut.isPending ? (
+                <>
+                  <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
+                  Đang xóa...
+                </>
+              ) : (
+                <>
+                  <Trash2 className="h-4 w-4 mr-2" />
+                  Xóa
+                </>
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Delete Device Confirmation Dialog */}
+      <Dialog open={!!deviceToDelete} onOpenChange={(open) => !open && setDeviceToDelete(null)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Xác nhận xóa thiết bị</DialogTitle>
+            <DialogDescription>
+              Bạn có chắc chắn muốn xóa thiết bị &quot;{deviceToDelete}&quot;? Hành động này không thể hoàn tác.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button 
+              variant="outline" 
+              onClick={() => setDeviceToDelete(null)}
+            >
+              Hủy
+            </Button>
+            <Button 
+              variant="destructive" 
+              onClick={() => deviceToDelete && handleRemoveDevice(deviceToDelete)}
+              disabled={removeDeviceMut.isPending}
+            >
+              {removeDeviceMut.isPending ? (
+                <>
+                  <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
+                  Đang xóa...
+                </>
+              ) : (
+                <>
+                  <Trash2 className="h-4 w-4 mr-2" />
+                  Xóa
+                </>
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       {/* Device Dialog */}
       <Dialog open={showDeviceDialog} onOpenChange={setShowDeviceDialog}>

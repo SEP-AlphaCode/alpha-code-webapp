@@ -10,7 +10,7 @@ import Image from 'next/image';
 import { Play, Square, Save, RotateCcw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import 'blockly/blocks';
-import 'blockly/javascript'; // Or the generator of your choice
+import 'blockly/javascript';
 import { pythonHttp } from '@/utils/http';
 import { apiPythonUrl } from '@/app/constants/constants';
 
@@ -41,52 +41,61 @@ export default function BlocklyUI({ robotModelId, serial, hasAllData, data }: Bl
     const pollRef = useRef<number | null>(null)
     const [robotStatus, setRobotStatus] = useState<'idle' | 'connecting' | 'running' | 'finished' | 'unreachable'>('idle')
     const key = 'AlphaCode'
-    const stopPolling = () => {
-        if (pollRef.current) {
-            clearInterval(pollRef.current)
-            pollRef.current = null
-        }
-    }
 
-    const startPolling = () => {
-        setRobotStatus('connecting')
-        // poll every 2s
-        if (pollRef.current) stopPolling()
-        pollRef.current = window.setInterval(async () => {
+    // Start continuous polling when component mounts and serial is available
+    useEffect(() => {
+        if (!serial) return;
+
+        const pollRobotStatus = async () => {
             try {
                 const res = await pythonHttp.get('/robot/coding-block/' + serial)
                 const json = res.data
-                // expected shape: { success: boolean, isRunning: boolean }
+
                 if (!json.success) {
                     setRobotStatus('unreachable')
-                    toast.error('❌ Không thể kết nối tới robot')
                     setIsRunning(false)
                     setShowRobot(false)
-                    stopPolling()
                 } else if (json.isRunning) {
                     setRobotStatus('running')
                     setIsRunning(true)
                     setShowRobot(true)
                 } else {
-                    setRobotStatus('finished')
+                    // Robot is idle/finished
+                    if (robotStatus === 'running') {
+                        // Just finished
+                        toast.success('✨ Robot đã hoàn thành thực thi')
+                        setRobotStatus('finished')
+                    } else if (robotStatus === 'connecting') {
+                        setRobotStatus('idle')
+                    }
                     setIsRunning(false)
                     setShowRobot(false)
-                    toast.success('✨ Robot đã hoàn thành thực thi')
-                    stopPolling()
                 }
             } catch (e) {
                 console.error('Polling error', e)
                 setRobotStatus('unreachable')
-                toast.error('❌ Lỗi khi kiểm tra trạng thái robot')
                 setIsRunning(false)
                 setShowRobot(false)
-                stopPolling()
             }
-        }, 1500)
-    }
+        }
+
+        // Poll immediately
+        pollRobotStatus()
+
+        // Set up interval for continuous polling
+        pollRef.current = window.setInterval(pollRobotStatus, 1000)
+
+        // Cleanup on unmount or when serial changes
+        return () => {
+            if (pollRef.current) {
+                clearInterval(pollRef.current)
+                pollRef.current = null
+            }
+        }
+    }, [serial])
 
     const executeCode = (code: string) => {
-        setIsRunning(true)
+        setRobotStatus('connecting')
         setShowRobot(true)
 
         try {
@@ -95,17 +104,22 @@ export default function BlocklyUI({ robotModelId, serial, hasAllData, data }: Bl
             if (x?.error) {
                 toast.error(x.error)
                 setShowRobot(false)
-                setIsRunning(false)
+                setRobotStatus('idle')
             } else {
-                toast.success('🎉 Đã gửi mã, bắt đầu kiểm tra trạng thái robot...')
-                // start polling the python service for robot status
-                startPolling()
+                toast.success('🎉 Đã gửi mã tới robot...')
+            }
+            if (x?.result) {
+                pythonHttp.post(`/websocket/command/${serial}`, {
+                    type: 'coding_block',
+                    data: {
+                        actions: x.result
+                    }
+                })
             }
         } catch (e) {
             toast.error('❌ Lỗi khi chạy mã. Điều này xảy ra do mã không hợp lệ hoặc lỗi logic trong khối.')
             setShowRobot(false)
-            setIsRunning(false)
-            stopPolling()
+            setRobotStatus('idle')
         }
     }
 
@@ -126,7 +140,6 @@ export default function BlocklyUI({ robotModelId, serial, hasAllData, data }: Bl
 
         workspaceRef.current?.updateToolbox(useHelper.getDefaultToolbox())
         const newToolbox = useHelper.getToolboxForRobotModel(robotModelId)
-        // curToolbox.contents.push(robotCategory)
         workspaceRef.current.updateToolbox(newToolbox)
     }
 
@@ -139,7 +152,7 @@ export default function BlocklyUI({ robotModelId, serial, hasAllData, data }: Bl
         setWsHelper(tmp)
         tmp.addStrayScrollbarDestructor?.(blocklyRef.current)
         tmp.setUpUI()
-        // If data already loaded, initialize immediately with the local helper
+
         if (hasAllData) {
             try {
                 tmp.loadFromJson({})
@@ -150,12 +163,10 @@ export default function BlocklyUI({ robotModelId, serial, hasAllData, data }: Bl
             })
         }
 
-
-        // Give Blockly a chance to measure and render correctly after mount
         setTimeout(() => {
             try {
                 if (workspaceRef.current) Blockly.svgResize(workspaceRef.current)
-            } catch { /* ignore */ }
+            } catch { }
         }, 10)
 
         return () => {
@@ -165,30 +176,26 @@ export default function BlocklyUI({ robotModelId, serial, hasAllData, data }: Bl
 
             workspaceRef.current.dispose()
             workspaceRef.current = undefined
-            // restore toolbox if necessary
             try {
                 const tb = document.querySelector('.blocklyToolboxDiv') as HTMLElement | null
                 if (tb && toolboxOriginalParent.current) {
                     if (toolboxOriginalNextSibling.current) toolboxOriginalParent.current.insertBefore(tb, toolboxOriginalNextSibling.current)
                     else toolboxOriginalParent.current.appendChild(tb)
                 }
-            } catch { /* ignore */ }
+            } catch { }
         }
     }, [])
 
-    // Move toolbox DOM into drawer when opening on mobile, restore when closing
     const openToolboxDrawer = () => {
         const tb = document.querySelector('.blocklyToolboxDiv') as HTMLElement | null
         if (!tb || !drawerRef.current) {
             setIsToolboxOpen(true)
             return
         }
-        // store original parent and next sibling so we can restore
         toolboxOriginalParent.current = tb.parentElement
         toolboxOriginalNextSibling.current = tb.nextSibling
         drawerRef.current.appendChild(tb)
         setIsToolboxOpen(true)
-        // redraw workspace after toolbox moves
         setTimeout(() => { try { if (workspaceRef.current) Blockly.svgResize(workspaceRef.current) } catch { } }, 50)
     }
 
@@ -199,12 +206,9 @@ export default function BlocklyUI({ robotModelId, serial, hasAllData, data }: Bl
             else toolboxOriginalParent.current.appendChild(tb)
         }
         setIsToolboxOpen(false)
-        // redraw workspace after toolbox restores
         setTimeout(() => { try { if (workspaceRef.current) Blockly.svgResize(workspaceRef.current) } catch { } }, 50)
     }
 
-    // initialization: run immediately after injection (above) when possible,
-    // and also run when `wsHelper` becomes available later to avoid race conditions
     useEffect(() => {
         if (!hasAllData) return;
         if (!wsHelper) return;
@@ -213,16 +217,12 @@ export default function BlocklyUI({ robotModelId, serial, hasAllData, data }: Bl
         if (robotModelId) setDefinedModel(prev => { const s = new Set(prev); s.add(robotModelId); return s; })
     }, [robotModelId, hasAllData, wsHelper])
 
-    /**
-     * Rebuild code generator when serial changes (to update websocket target)
-     */
     useEffect(() => {
         if (!robotModelId || !data || !serial) return;
         const gen = buildCodeGeneratorForModelId(robotModelId, serial)
         setCodeGenerator(gen)
     }, [serial])
 
-    // Recalc Blockly size on window resize so it stays visible on small screens
     useEffect(() => {
         const onResize = () => {
             try {
@@ -231,13 +231,6 @@ export default function BlocklyUI({ robotModelId, serial, hasAllData, data }: Bl
         }
         window.addEventListener('resize', onResize)
         return () => window.removeEventListener('resize', onResize)
-    }, [])
-
-    // cleanup polling on unmount
-    useEffect(() => {
-        return () => {
-            stopPolling()
-        }
     }, [])
 
     const handleRun = () => {
@@ -256,11 +249,8 @@ export default function BlocklyUI({ robotModelId, serial, hasAllData, data }: Bl
 
     const handleStop = () => {
         const f = async () => {
-            stopPolling()
-            setIsRunning(false);
-            setShowRobot(false);
             setRobotStatus('idle')
-            toast.info('⏸️ Đã dừng thực thi');
+            toast.info('⏸️ Đang dừng thực thi...');
             await pythonHttp.post(`/websocket/command/${serial}`, {
                 type: 'stop_all_actions',
                 data: {}
@@ -300,11 +290,8 @@ export default function BlocklyUI({ robotModelId, serial, hasAllData, data }: Bl
 
     return (
         <div className="min-h-screen flex flex-col lg:flex-row overflow-hidden pt-8 lg:pt-0">
-            {/* Main Layout - Full Screen */}
             <div className="flex-1 flex flex-col lg:flex-row overflow-hidden min-h-0">
-                {/* Left Sidebar with Robot */}
                 <div className="w-full lg:w-80 flex-shrink-0 bg-white border-b-4 lg:border-b-0 lg:border-r-4 border-blue-500 shadow-2xl flex flex-col">
-                    {/* Robot Display Area */}
                     <div className="flex-1 bg-gradient-to-b from-blue-100 to-white p-4 md:p-6 flex flex-col items-center justify-center min-h-0">
                         <div className="relative mb-6">
                             <div className="absolute inset-0 bg-blue-400 rounded-full blur-3xl opacity-30 animate-pulse"></div>
@@ -336,7 +323,6 @@ export default function BlocklyUI({ robotModelId, serial, hasAllData, data }: Bl
                         </div>
                     </div>
 
-                    {/* Control Buttons */}
                     <div className="bg-gray-900 p-4 md:p-6 space-y-3 border-t-4 border-blue-500">
                         <Button
                             onClick={handleRun}
@@ -385,11 +371,8 @@ export default function BlocklyUI({ robotModelId, serial, hasAllData, data }: Bl
                     </div>
                 </div>
 
-                {/* Right Side - Workspace Area */}
                 <div className="flex-1 min-w-0 flex flex-col bg-gray-100 overflow-hidden min-h-0 pb-24 lg:pb-0">
-                    {/* Workspace Container */}
                     <div className="flex-1 bg-white m-4 rounded-2xl shadow-2xl border-2 border-gray-300 overflow-visible">
-                        {/* Ensure a visible height on small screens so Blockly can render */}
                         <div className="relative w-full h-[60vh] lg:h-full">
                             <div
                                 ref={blocklyRef}
@@ -399,7 +382,6 @@ export default function BlocklyUI({ robotModelId, serial, hasAllData, data }: Bl
                         </div>
                     </div>
 
-                    {/* Info Bar at Bottom */}
                     <div className="bg-white mx-4 mb-4 p-4 rounded-xl shadow-lg border-2 border-gray-200">
                         <div className="flex items-center gap-4">
                             <div className="w-3 h-3 bg-blue-500 rounded-full animate-pulse"></div>
@@ -408,7 +390,7 @@ export default function BlocklyUI({ robotModelId, serial, hasAllData, data }: Bl
                             </p>
                         </div>
                     </div>
-                    {/* Mobile bottom quick actions (visible on small screens) */}
+
                     <div className="lg:hidden fixed bottom-0 left-0 right-0 z-50 bg-white border-t shadow-md p-2"
                         style={{ paddingBottom: 'calc(env(safe-area-inset-bottom, 0px) + 8px)' }}>
                         <div className="max-w-4xl mx-auto flex items-center justify-between px-2">

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import Image from 'next/image';
 import {
   Dialog,
@@ -15,8 +15,8 @@ import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Search, Save, Gamepad2, Settings } from 'lucide-react';
 import { toast } from 'sonner';
-import { useAction } from '@/features/activities/hooks/use-action';
-import { useDance } from '@/features/activities/hooks/use-dance';
+import { useRobotActions } from '@/hooks/use-robot-action';
+import { useDance } from '@/hooks/use-robot-dance';
 import { useExpression } from '@/features/activities/hooks/use-expression';
 import { useSkill } from '@/features/activities/hooks/use-skill';
 import { useExtendedActions } from '@/features/activities/hooks/use-extended-actions';
@@ -27,6 +27,7 @@ import { Dance } from '@/types/dance';
 import { Expression } from '@/types/expression';
 import { Skill } from '@/types/skill';
 import { ExtendedAction } from '@/types/extended-action';
+import { RobotAction } from '@/types/robot';
 import { getUserInfoFromToken } from '@/utils/tokenUtils';
 import { useRobotStore } from '@/hooks/use-robot-store';
 
@@ -58,7 +59,7 @@ export default function JoystickConfigurationModal({
   const [selectedButton, setSelectedButton] = useState<ButtonName>('A');
   const [searchTerm, setSearchTerm] = useState('');
   const [activeTab, setActiveTab] = useState<ActionType>('action');
-  const [isSaving, setIsSaving] = useState(false); // Add saving state to prevent multiple calls
+  const [isSaving, setIsSaving] = useState(false);
   const [buttonConfigs, setButtonConfigs] = useState<Record<ButtonName, ButtonConfig | null>>({
     A: null,
     B: null,
@@ -66,8 +67,35 @@ export default function JoystickConfigurationModal({
     Y: null,
   });
 
-  // API hooks
-  const { useGetPagedActions } = useAction();
+  // Pagination states - fetch 20 items mỗi lần
+  const [actionPage, setActionPage] = useState(1);
+  const [dancePage, setDancePage] = useState(1);
+  const [expressionPage, setExpressionPage] = useState(1);
+  const [skillPage, setSkillPage] = useState(1);
+  const [extendedActionPage, setExtendedActionPage] = useState(1);
+  
+  // Accumulated data từ các page
+  const [accumulatedActions, setAccumulatedActions] = useState<RobotAction[]>([]);
+  const [accumulatedDances, setAccumulatedDances] = useState<Dance[]>([]);
+  const [accumulatedExpressions, setAccumulatedExpressions] = useState<Expression[]>([]);
+  const [accumulatedSkills, setAccumulatedSkills] = useState<Skill[]>([]);
+  const [accumulatedExtendedActions, setAccumulatedExtendedActions] = useState<ExtendedAction[]>([]);
+  
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
+  const pageSize = 20;
+
+  // Get selected robot
+  const { selectedRobot } = useRobotStore();
+  const robotModelId = selectedRobot?.robotModelId || '';
+
+  // Debug: Log robot info
+  useEffect(() => {
+    console.log('🤖 Selected Robot:', selectedRobot);
+    console.log('🎯 Robot Model ID:', robotModelId);
+  }, [selectedRobot, robotModelId]);
+
+  // API hooks - sử dụng robotModelId từ robot đã chọn
   const { useGetPagedDances } = useDance();
   const { useGetPagedExpressions } = useExpression();
   const { useGetPagedSkills } = useSkill();
@@ -77,19 +105,212 @@ export default function JoystickConfigurationModal({
   // React Query mutations
   const createJoystickMutation = useCreateJoystick();
   const updateJoystickMutation = useUpdateJoystick();
-  const { selectedRobot } = useRobotStore();
 
-  const { data: actionsData } = useGetPagedActions(1, 100, searchTerm);
-  const { data: dancesData } = useGetPagedDances(1, 100, searchTerm);
-  const { data: expressionsData } = useGetPagedExpressions(1, 100, searchTerm);
-  const { data: skillsData } = useGetPagedSkills(1, 100, searchTerm);
-  const { data: extendedActionsData } = useGetPagedExtendedActions(1, 100, searchTerm);
+  // Fetch dữ liệu theo page (20 items mỗi lần)
+  const { data: actionsData, isLoading: actionsLoading, isFetching: actionsFetching } = useRobotActions(actionPage, pageSize, searchTerm, robotModelId);
+  const { data: dancesData, isLoading: dancesLoading, isFetching: dancesFetching } = useGetPagedDances(dancePage, pageSize, searchTerm);
+  const { data: expressionsData, isLoading: expressionsLoading, isFetching: expressionsFetching } = useGetPagedExpressions(expressionPage, pageSize, searchTerm);
+  const { data: skillsData, isLoading: skillsLoading, isFetching: skillsFetching } = useGetPagedSkills(skillPage, pageSize, searchTerm, robotModelId);
+  const { data: extendedActionsData, isLoading: extendedActionsLoading, isFetching: extendedActionsFetching } = useGetPagedExtendedActions(extendedActionPage, pageSize, searchTerm, robotModelId);
 
-  const actions = actionsData?.data || [];
-  const dances = dancesData?.data || [];
-  const expressions = expressionsData?.data || [];
-  const skills = skillsData?.data || [];
-  const extendedActions = extendedActionsData?.data || [];
+  // Debug: Log API data
+  useEffect(() => {
+    console.log('📊 API Data:', {
+      actions: actionsData,
+      dances: dancesData,
+      expressions: expressionsData,
+      skills: skillsData,
+      extendedActions: extendedActionsData
+    });
+    console.log('⏳ Loading States:', {
+      actionsLoading,
+      dancesLoading,
+      expressionsLoading,
+      skillsLoading,
+      extendedActionsLoading
+    });
+  }, [actionsData, dancesData, expressionsData, skillsData, extendedActionsData, 
+      actionsLoading, dancesLoading, expressionsLoading, skillsLoading, extendedActionsLoading]);
+
+  // Accumulate data khi fetch xong
+  useEffect(() => {
+    if (actionsData?.data) {
+      setAccumulatedActions(prev => {
+        // Reset nếu là page 1
+        if (actionPage === 1) return actionsData.data;
+        // Thêm vào data cũ, loại bỏ duplicate
+        const newData = actionsData.data.filter(item => !prev.some(p => p.id === item.id));
+        return [...prev, ...newData];
+      });
+    }
+  }, [actionsData, actionPage]);
+
+  useEffect(() => {
+    if (dancesData?.data) {
+      setAccumulatedDances(prev => {
+        if (dancePage === 1) return dancesData.data;
+        const newData = dancesData.data.filter(item => !prev.some(p => p.id === item.id));
+        return [...prev, ...newData];
+      });
+    }
+  }, [dancesData, dancePage]);
+
+  useEffect(() => {
+    if (expressionsData?.data) {
+      setAccumulatedExpressions(prev => {
+        if (expressionPage === 1) return expressionsData.data;
+        const newData = expressionsData.data.filter(item => !prev.some(p => p.id === item.id));
+        return [...prev, ...newData];
+      });
+    }
+  }, [expressionsData, expressionPage]);
+
+  useEffect(() => {
+    if (skillsData?.data) {
+      setAccumulatedSkills(prev => {
+        if (skillPage === 1) return skillsData.data;
+        const newData = skillsData.data.filter(item => !prev.some(p => p.id === item.id));
+        return [...prev, ...newData];
+      });
+    }
+  }, [skillsData, skillPage]);
+
+  useEffect(() => {
+    if (extendedActionsData?.data) {
+      setAccumulatedExtendedActions(prev => {
+        if (extendedActionPage === 1) return extendedActionsData.data;
+        const newData = extendedActionsData.data.filter(item => !prev.some(p => p.id === item.id));
+        return [...prev, ...newData];
+      });
+    }
+  }, [extendedActionsData, extendedActionPage]);
+
+  const actions = accumulatedActions;
+  const dances = accumulatedDances;
+  const expressions = accumulatedExpressions;
+  const skills = accumulatedSkills;
+  const extendedActions = accumulatedExtendedActions;
+
+  // Lấy total_count từ API response
+  const totalActions = actionsData?.total_count || 0;
+  const totalDances = dancesData?.total_count || 0;
+  const totalExpressions = expressionsData?.total_count || 0;
+  const totalSkills = skillsData?.total_count || 0;
+  const totalExtendedActions = extendedActionsData?.total_count || 0;
+
+  // Debug: Log accumulated data
+  useEffect(() => {
+    console.log('📦 Accumulated Data:', {
+      actions: actions.length,
+      dances: dances.length,
+      expressions: expressions.length,
+      skills: skills.length,
+      extendedActions: extendedActions.length
+    });
+    console.log('🔢 Total Count từ API:', {
+      totalActions,
+      totalDances,
+      totalExpressions,
+      totalSkills,
+      totalExtendedActions
+    });
+  }, [actions, dances, expressions, skills, extendedActions, 
+      totalActions, totalDances, totalExpressions, totalSkills, totalExtendedActions]);
+
+  // Check if có thể load thêm dựa vào has_next
+  const hasMoreActions = actionsData?.has_next || false;
+  const hasMoreDances = dancesData?.has_next || false;
+  const hasMoreExpressions = expressionsData?.has_next || false;
+  const hasMoreSkills = skillsData?.has_next || false;
+  const hasMoreExtendedActions = extendedActionsData?.has_next || false;
+
+  // Reset pagination và accumulated data khi thay đổi search hoặc tab
+  useEffect(() => {
+    setActionPage(1);
+    setDancePage(1);
+    setExpressionPage(1);
+    setSkillPage(1);
+    setExtendedActionPage(1);
+    setAccumulatedActions([]);
+    setAccumulatedDances([]);
+    setAccumulatedExpressions([]);
+    setAccumulatedSkills([]);
+    setAccumulatedExtendedActions([]);
+  }, [searchTerm]);
+
+  // Handle scroll event để load thêm items
+  const handleScroll = useCallback(() => {
+    if (!scrollContainerRef.current || isLoadingMore) return;
+
+    const { scrollTop, scrollHeight, clientHeight } = scrollContainerRef.current;
+    const scrollPercentage = (scrollTop + clientHeight) / scrollHeight;
+
+    // Khi scroll đến 80% thì load thêm (fetch page tiếp theo)
+    if (scrollPercentage > 0.8) {
+      let hasMore = false;
+      let isFetching = false;
+
+      switch (activeTab) {
+        case 'action':
+          hasMore = hasMoreActions;
+          isFetching = actionsFetching;
+          break;
+        case 'dance':
+          hasMore = hasMoreDances;
+          isFetching = dancesFetching;
+          break;
+        case 'expression':
+          hasMore = hasMoreExpressions;
+          isFetching = expressionsFetching;
+          break;
+        case 'skill':
+          hasMore = hasMoreSkills;
+          isFetching = skillsFetching;
+          break;
+        case 'extendedaction':
+          hasMore = hasMoreExtendedActions;
+          isFetching = extendedActionsFetching;
+          break;
+      }
+
+      // Chỉ load thêm nếu còn data và không đang fetch
+      if (hasMore && !isFetching) {
+        setIsLoadingMore(true);
+        
+        // Tăng page number để fetch page tiếp theo
+        switch (activeTab) {
+          case 'action':
+            setActionPage(prev => prev + 1);
+            break;
+          case 'dance':
+            setDancePage(prev => prev + 1);
+            break;
+          case 'expression':
+            setExpressionPage(prev => prev + 1);
+            break;
+          case 'skill':
+            setSkillPage(prev => prev + 1);
+            break;
+          case 'extendedaction':
+            setExtendedActionPage(prev => prev + 1);
+            break;
+        }
+
+        // Reset loading state sau khi fetch xong
+        setTimeout(() => setIsLoadingMore(false), 500);
+      }
+    }
+  }, [activeTab, hasMoreActions, hasMoreDances, hasMoreExpressions, hasMoreSkills, hasMoreExtendedActions, 
+      actionsFetching, dancesFetching, expressionsFetching, skillsFetching, extendedActionsFetching, isLoadingMore]);
+
+  // Attach scroll listener
+  useEffect(() => {
+    const scrollContainer = scrollContainerRef.current;
+    if (scrollContainer) {
+      scrollContainer.addEventListener('scroll', handleScroll);
+      return () => scrollContainer.removeEventListener('scroll', handleScroll);
+    }
+  }, [handleScroll]);
 
   // Sync existing joystick configurations with local state when modal opens
   useEffect(() => {
@@ -187,7 +408,7 @@ export default function JoystickConfigurationModal({
     return '';
   };
 
-  const handleAssignAction = (item: Action | Dance | Expression | Skill | ExtendedAction, type: ActionType) => {
+  const handleAssignAction = (item: RobotAction | Action | Dance | Expression | Skill | ExtendedAction, type: ActionType) => {
     const config: ButtonConfig = {
       buttonCode: selectedButton,
       actionType: type,
@@ -339,43 +560,105 @@ export default function JoystickConfigurationModal({
     }
   };
 
-  const renderActionGrid = (items: (Action | Dance | Expression | Skill | ExtendedAction)[], type: ActionType) => (
-    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 max-h-[400px] overflow-y-auto scrollbar-hide p-2">
-      {items.map((item) => (
-        <Card
-          key={item.id}
-          className="cursor-pointer hover:shadow-lg transition-all duration-200 border-2 hover:border-blue-400 hover:scale-105 group min-h-[100px] flex flex-col items-center justify-center p-4"
-          onClick={() => handleAssignAction(item, type)}
-        >
-          <div className="max-w-[70vh] flex flex-col items-center gap-3 text-center">
-            {/* Icon from API field */}
-            <div className="text-3xl flex items-center justify-center">
-              {type === 'expression'
-                ? (item as Expression).imageUrl
-                  ? <Image
-                    src={(item as Expression).imageUrl}
-                    alt={item.name}
-                    width={48}
-                    height={48}
-                    className="w-12 h-12 object-cover rounded-full"
-                  />
-                  : '😊'
-                : type === 'skill'
-                  ? (item as Skill).icon || '🎯'
-                  : type === 'extendedaction'
-                    ? (item as ExtendedAction).icon || '⚡'
-                    : (item as Action).icon || (type === 'action' ? '🎯' : '')
-              }
-            </div>
+  const renderActionGrid = (items: (RobotAction | Action | Dance | Expression | Skill | ExtendedAction)[], type: ActionType) => {
+    // Kiểm tra xem có đang loading không
+    const isCurrentlyLoading = () => {
+      switch (type) {
+        case 'action': return actionsLoading || actionsFetching;
+        case 'dance': return dancesLoading || dancesFetching;
+        case 'expression': return expressionsLoading || expressionsFetching;
+        case 'skill': return skillsLoading || skillsFetching;
+        case 'extendedaction': return extendedActionsLoading || extendedActionsFetching;
+        default: return false;
+      }
+    };
 
-            <div className="text-sm font-bold text-gray-800 group-hover:text-blue-600 transition-colors line-clamp-2">
-              {item.name}
+    const hasMore = () => {
+      switch (type) {
+        case 'action': return hasMoreActions;
+        case 'dance': return hasMoreDances;
+        case 'expression': return hasMoreExpressions;
+        case 'skill': return hasMoreSkills;
+        case 'extendedaction': return hasMoreExtendedActions;
+        default: return false;
+      }
+    };
+
+    return (
+      <div 
+        ref={scrollContainerRef}
+        className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 max-h-[400px] overflow-y-auto scrollbar-hide p-2"
+      >
+        {items.map((item) => (
+          <Card
+            key={item.id}
+            className="cursor-pointer hover:shadow-lg transition-all duration-200 border-2 hover:border-blue-400 hover:scale-105 group min-h-[100px] flex flex-col items-center justify-center p-4"
+            onClick={() => handleAssignAction(item, type)}
+          >
+            <div className="max-w-[70vh] flex flex-col items-center gap-3 text-center">
+              {/* Icon from API field */}
+              <div className="text-3xl flex items-center justify-center">
+                {type === 'expression'
+                  ? (() => {
+                      const imageUrl = (item as Expression).imageUrl;
+                      const isValidUrl = imageUrl && 
+                                        imageUrl.trim() !== '' && 
+                                        (imageUrl.startsWith('http://') || 
+                                         imageUrl.startsWith('https://') || 
+                                         imageUrl.startsWith('/'));
+                      
+                      return isValidUrl
+                        ? <Image
+                            src={imageUrl}
+                            alt={item.name}
+                            width={48}
+                            height={48}
+                            className="w-12 h-12 object-cover rounded-full"
+                            onError={(e) => {
+                              // Fallback to emoji if image fails to load
+                              (e.target as HTMLImageElement).style.display = 'none';
+                              const parent = (e.target as HTMLImageElement).parentElement;
+                              if (parent) parent.textContent = '😊';
+                            }}
+                          />
+                        : <div className="w-12 h-12 rounded-full bg-gradient-to-br from-blue-100 to-purple-100 flex items-center justify-center text-2xl">
+                            😊
+                          </div>;
+                    })()
+                  : type === 'skill'
+                    ? (item as Skill).icon || '🎯'
+                    : type === 'extendedaction'
+                      ? (item as ExtendedAction).icon || '⚡'
+                      : (item as Action).icon || (type === 'action' ? '🎯' : '')
+                }
+              </div>
+
+              <div className="text-sm font-bold text-gray-800 group-hover:text-blue-600 transition-colors line-clamp-2">
+                {item.name}
+              </div>
+            </div>
+          </Card>
+        ))}
+        
+        {/* Loading indicator khi đang fetch thêm */}
+        {isCurrentlyLoading() && items.length > 0 && (
+          <div className="col-span-full flex justify-center py-4">
+            <div className="text-sm text-gray-500 flex items-center gap-2">
+              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-gray-500"></div>
+              Đang tải thêm...
             </div>
           </div>
-        </Card>
-      ))}
-    </div>
-  );
+        )}
+
+        {/* Message khi đã hết data */}
+        {!hasMore() && items.length > 0 && (
+          <div className="col-span-full flex justify-center py-2">
+            <div className="text-xs text-gray-400">Đã hiển thị tất cả</div>
+          </div>
+        )}
+      </div>
+    );
+  };
 
   const getCurrentItems = () => {
     switch (activeTab) {
@@ -396,6 +679,9 @@ export default function JoystickConfigurationModal({
 
   const { items, type } = getCurrentItems();
 
+  // Kiểm tra nếu chưa chọn robot
+  const isRobotSelected = !!selectedRobot && !!robotModelId;
+
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className=" !w-[70vw] !max-w-none h-[90vh] flex flex-col scrollbar-hide">
@@ -410,6 +696,19 @@ export default function JoystickConfigurationModal({
             Gán hành động cho các nút của tay cầm. Chọn nút và sau đó chọn hành động tương ứng.
           </DialogDescription>
         </DialogHeader>
+
+        {/* Warning nếu chưa chọn robot */}
+        {!isRobotSelected && (
+          <div className="mx-6 mt-4 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+            <div className="flex items-center gap-3">
+              <div className="text-2xl">⚠️</div>
+              <div>
+                <div className="font-semibold text-yellow-800">Chưa chọn robot</div>
+                <div className="text-sm text-yellow-700">Vui lòng chọn robot trước khi cấu hình joystick</div>
+              </div>
+            </div>
+          </div>
+        )}
 
         <div className="flex-1 overflow-y-auto scrollbar-hide">
           <div className="space-y-6 p-6">
@@ -502,11 +801,11 @@ export default function JoystickConfigurationModal({
               <div className="w-full">
                 <div className="flex bg-gray-100 rounded-lg p-1 shadow-inner">
                   {[
-                    { key: 'action', label: 'Hành động', icon: '🎯', count: actions.length },
-                    { key: 'dance', label: 'Điệu nhảy', icon: '💃', count: dances.length },
-                    { key: 'expression', label: 'Biểu cảm', icon: '😊', count: expressions.length },
-                    { key: 'skill', label: 'Kỹ năng', icon: '🎯', count: skills.length },
-                    { key: 'extendedaction', label: 'Hành động mở rộng', icon: '⚡', count: extendedActions.length },
+                    { key: 'action', label: 'Hành động', icon: '🎯', count: totalActions },
+                    { key: 'dance', label: 'Điệu nhảy', icon: '💃', count: totalDances },
+                    { key: 'expression', label: 'Biểu cảm', icon: '😊', count: totalExpressions },
+                    { key: 'skill', label: 'Kỹ năng', icon: '🎯', count: totalSkills },
+                    { key: 'extendedaction', label: 'Hành động mở rộng', icon: '⚡', count: totalExtendedActions },
                   ].map((tab) => (
                     <button
                       key={tab.key}

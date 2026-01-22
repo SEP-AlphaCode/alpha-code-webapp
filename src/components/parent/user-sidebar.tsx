@@ -150,12 +150,6 @@ export function UserSidebar({
                     <span>Khóa Học Của Tôi</span>
                   </Link>
                 </DropdownMenuItem>
-                <DropdownMenuItem asChild>
-                  <Link href="/user/settings" className="cursor-pointer">
-                    <Settings className="mr-2 h-4 w-4" />
-                    <span>Cài Đặt</span>
-                  </Link>
-                </DropdownMenuItem>
               </DropdownMenuGroup>
               <DropdownMenuSeparator />
               <DropdownMenuItem onClick={onLogout} disabled={isLogoutPending}>

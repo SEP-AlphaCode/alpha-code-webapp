@@ -130,16 +130,7 @@ export function ChildrenSidebar({
                   <p className="text-sm font-medium leading-none">{accountData?.fullName || "User"}</p>
                   <p className="text-xs leading-none text-muted-foreground">{accountData?.email || "N/A"}</p>
                 </div>
-              </DropdownMenuLabel>
-              <DropdownMenuSeparator />
-              <DropdownMenuGroup>
-                <DropdownMenuItem asChild>
-                  <Link href="/user/settings" className="cursor-pointer">
-                    <Settings className="mr-2 h-4 w-4" />
-                    <span>Cài Đặt</span>
-                  </Link>
-                </DropdownMenuItem>
-              </DropdownMenuGroup>
+              </DropdownMenuLabel>      
               <DropdownMenuSeparator />
               <DropdownMenuItem onClick={onLogout} disabled={isLogoutPending}>
                 <LogOut className="mr-2 h-4 w-4" />

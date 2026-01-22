@@ -40,9 +40,10 @@ export const blockControls = (ws: Blockly.WorkspaceSvg): Operations => {
             let mainFn = `
 function main() {
     try{
+    const $LIST = []
         ${main}
         return {
-            result: true
+            result: $LIST
         }
     }
     catch(e) {
@@ -61,7 +62,7 @@ function main() {
             error: String(e)
         }
     }
-}`
+}`.replaceAll('$LIST', listVar)
 
             const injected = injectLoopCheck(mainFn)
             mainFn = injected.result
